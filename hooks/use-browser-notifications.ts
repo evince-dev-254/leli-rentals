@@ -27,10 +27,11 @@ export function useBrowserNotifications() {
   const { toast } = useToast()
 
   useEffect(() => {
-    // Check if browser supports notifications
-    setIsSupported('Notification' in window)
-    
-    if ('Notification' in window) {
+    // Check if browser supports notifications (guard window for SSR)
+    const supports = typeof window !== 'undefined' && 'Notification' in window
+    setIsSupported(supports)
+
+    if (supports) {
       setPermission(Notification.permission)
     }
   }, [])
@@ -86,6 +87,9 @@ export function useBrowserNotifications() {
     }
 
     try {
+      // Make sure we're in a browser environment
+      if (typeof window === 'undefined' || typeof Notification === 'undefined') return null
+
       const notification = new Notification(options.title, {
         body: options.body,
         icon: options.icon || '/favicon.ico',
@@ -106,11 +110,17 @@ export function useBrowserNotifications() {
 
       // Handle click
       notification.onclick = () => {
-        window.focus()
+        try {
+          if (typeof window !== 'undefined' && typeof window.focus === 'function') {
+            window.focus()
+          }
+        } catch (e) {
+          // ignore
+        }
         notification.close()
-        
-        // If there's data with a link, navigate to it
-        if (options.data?.link) {
+
+        // If there's data with a link, navigate to it (guard window)
+        if (options.data?.link && typeof window !== 'undefined') {
           window.location.href = options.data.link
         }
       }

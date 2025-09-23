@@ -6,6 +6,7 @@ import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { VideoBackground } from "@/components/video-background"
 import { Search, ArrowRight, User, Car, Home, Wrench, Laptop, Shirt, Music, Camera, Star, TrendingUp, Users, Shield, CheckCircle } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import Link from "next/link"
@@ -32,10 +33,13 @@ export default function HomePage() {
     <div className="min-h-screen bg-background transition-all duration-500">
       <Header />
 
-      <section className="relative h-[60vh] sm:h-[70vh] md:h-[80vh] lg:h-screen flex items-center justify-center hero-background">
-        <div className="absolute inset-0 bg-black/40 dark:bg-black/60 transition-all duration-500"></div>
-
-        <div className="relative z-10 text-center text-white max-w-4xl mx-auto px-4 sm:px-6">
+      <VideoBackground 
+        src="/videos/rental-hero-video.mp4" 
+        fallbackImage="/modern-rental-marketplace-hero-with-cars--apartmen.jpg"
+        className="h-[60vh] sm:h-[70vh] md:h-[80vh] lg:h-screen flex items-center justify-center"
+        overlayStyle="hero"
+      >
+        <div className="text-center text-white max-w-4xl mx-auto px-4 sm:px-6">
           <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-3 sm:mb-4 md:mb-6 text-balance drop-shadow-lg fade-in-up leading-tight">
             Find Your Perfect Rental
           </h1>
@@ -67,7 +71,7 @@ export default function HomePage() {
             </div>
           </div>
         </div>
-      </section>
+      </VideoBackground>
 
       <section className="py-12 sm:py-16 md:py-20 bg-gray-50 dark:bg-gray-900">
         <div className="container mx-auto px-4 sm:px-6 max-w-6xl">

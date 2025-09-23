@@ -146,7 +146,12 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
   const handleNotificationAction = (action: any, notification: any) => {
     if (action.link) {
       if (typeof window !== 'undefined') {
-        window.location.href = action.link
+        try {
+          window.location.href = action.link
+        } catch (e) {
+          // fallback: open in new tab
+          window.open(action.link, '_blank')
+        }
       }
       onClose()
     }

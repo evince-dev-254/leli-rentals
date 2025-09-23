@@ -17,11 +17,11 @@ export function useAccountTypeReminder() {
     const dismissedKey = `accountTypeReminder_dismissed_${user.id}`
     
     // Don't show if user has account type or has dismissed permanently
-    if (accountType || localStorage.getItem(dismissedKey) === 'true') {
+    if (accountType || (typeof window !== 'undefined' && localStorage.getItem(dismissedKey) === 'true')) {
       return
     }
 
-    const lastToast = localStorage.getItem(reminderKey)
+    const lastToast = (typeof window !== 'undefined') ? localStorage.getItem(reminderKey) : null
     const now = Date.now()
     const reminderInterval = 2 * 60 * 60 * 1000 // 2 hours
 
@@ -35,8 +35,10 @@ export function useAccountTypeReminder() {
           <div className="flex gap-2">
             <button
               onClick={() => {
-                localStorage.setItem(reminderKey, now.toString())
-                window.location.href = '/get-started'
+                if (typeof window !== 'undefined') {
+                  localStorage.setItem(reminderKey, now.toString())
+                  window.location.href = '/get-started'
+                }
               }}
               className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
             >
@@ -44,7 +46,9 @@ export function useAccountTypeReminder() {
             </button>
             <button
               onClick={() => {
-                localStorage.setItem(reminderKey, now.toString())
+                if (typeof window !== 'undefined') {
+                  localStorage.setItem(reminderKey, now.toString())
+                }
               }}
               className="px-3 py-1 bg-gray-200 text-gray-700 text-sm rounded hover:bg-gray-300"
             >

@@ -20,21 +20,29 @@ export function LikeButton({ itemId, itemTitle, className, size = "sm" }: LikeBu
   const { toast } = useToast()
 
   useEffect(() => {
-    // Load liked state from localStorage
-    const likedItems = JSON.parse(localStorage.getItem("likedItems") || "[]")
-    setIsLiked(likedItems.includes(itemId))
+    // Load liked state from localStorage (guard for SSR)
+    if (typeof window !== 'undefined') {
+      try {
+        const likedItems = JSON.parse(localStorage.getItem("likedItems") || "[]")
+        setIsLiked(likedItems.includes(itemId))
+      } catch (e) {
+        setIsLiked(false)
+      }
+    }
   }, [itemId])
 
   const handleLike = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
 
-    const likedItems = JSON.parse(localStorage.getItem("likedItems") || "[]")
+  const likedItems = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem("likedItems") || "[]") : []
 
     if (isLiked) {
       // Remove from liked items
       const updatedItems = likedItems.filter((id: string) => id !== itemId)
-      localStorage.setItem("likedItems", JSON.stringify(updatedItems))
+      if (typeof window !== 'undefined') {
+        localStorage.setItem("likedItems", JSON.stringify(updatedItems))
+      }
       setIsLiked(false)
       setLikeCount((prev) => prev - 1)
 
@@ -45,7 +53,9 @@ export function LikeButton({ itemId, itemTitle, className, size = "sm" }: LikeBu
     } else {
       // Add to liked items
       const updatedItems = [...likedItems, itemId]
-      localStorage.setItem("likedItems", JSON.stringify(updatedItems))
+      if (typeof window !== 'undefined') {
+        localStorage.setItem("likedItems", JSON.stringify(updatedItems))
+      }
       setIsLiked(true)
       setLikeCount((prev) => prev + 1)
 

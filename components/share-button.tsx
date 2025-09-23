@@ -22,7 +22,9 @@ interface ShareButtonProps {
 export function ShareButton({ itemId, itemTitle, itemDescription, className, size = "sm" }: ShareButtonProps) {
   const { toast } = useToast()
 
-  const shareUrl = typeof window !== "undefined" ? `${window.location.origin}/listings/${itemId}` : ""
+  const shareUrl = (typeof window !== "undefined" && window.location && window.location.origin)
+    ? `${window.location.origin}/listings/${itemId}`
+    : ''
   const shareText = `Check out this rental: ${itemTitle}`
 
   const handleNativeShare = async () => {
@@ -67,14 +69,12 @@ export function ShareButton({ itemId, itemTitle, itemDescription, className, siz
       email: `mailto:?subject=${encodeURIComponent(itemTitle)}&body=${encodedText}%20${encodedUrl}`,
     }
 
+    if (typeof window === 'undefined') return
+
     if (platform === "email") {
-      if (typeof window !== 'undefined') {
-        window.location.href = urls[platform as keyof typeof urls]
-      }
+      window.location.href = urls[platform as keyof typeof urls]
     } else {
-      if (typeof window !== 'undefined') {
-        window.open(urls[platform as keyof typeof urls], "_blank", "width=600,height=400")
-      }
+      window.open(urls[platform as keyof typeof urls], "_blank", "width=600,height=400")
     }
   }
 

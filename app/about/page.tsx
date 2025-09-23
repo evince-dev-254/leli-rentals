@@ -4,6 +4,7 @@ import { Header } from "@/components/header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { VideoBackground } from "@/components/video-background"
 import { Users, Shield, Star, Globe, Heart, CheckCircle, Zap, Target, Lightbulb } from "lucide-react"
 import Link from "next/link"
 
@@ -43,25 +44,25 @@ export default function AboutPage() {
     {
       name: "Sarah Chen",
       role: "CEO & Founder",
-      image: "/team-sarah.jpg",
+      image: "https://picsum.photos/400/400?random=1",
       bio: "Former tech executive with 15 years in marketplace platforms. Passionate about sustainable sharing economy.",
     },
     {
       name: "Marcus Rodriguez",
       role: "CTO",
-      image: "/team-marcus.jpg",
+      image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face&auto=format",
       bio: "Full-stack engineer and AI specialist. Previously led engineering teams at major tech companies.",
     },
     {
       name: "Emily Johnson",
       role: "Head of Operations",
-      image: "/team-emily.jpg",
+      image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop&crop=face&auto=format",
       bio: "Operations expert with background in logistics and customer experience optimization.",
     },
     {
       name: "David Kim",
       role: "Head of Design",
-      image: "/team-david.jpg",
+      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face&auto=format",
       bio: "Award-winning product designer focused on creating intuitive and beautiful user experiences.",
     },
   ]
@@ -94,32 +95,36 @@ export default function AboutPage() {
     <div className="min-h-screen bg-background">
       <Header />
 
-      {/* Hero Section */}
-      <section className="relative py-20 bg-gradient-to-br from-primary/10 via-background to-secondary/10">
+      {/* Hero Section with Video Background */}
+      <VideoBackground 
+        src="/videos/about-hero-video.mp4"
+        fallbackImage="/modern-rental-marketplace-hero-with-cars--apartmen.jpg"
+        className="py-20 flex items-center justify-center min-h-[60vh]"
+      >
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <Badge variant="secondary" className="mb-6 px-4 py-2 text-sm font-medium">
+            <Badge variant="secondary" className="mb-6 px-4 py-2 text-sm font-medium bg-white/20 backdrop-blur-sm text-white border-white/30">
               About Leli Rentals
             </Badge>
-            <h1 className="text-5xl md:text-6xl font-bold text-foreground mb-6 text-balance">
+            <h1 className="text-5xl md:text-6xl font-bold text-white mb-6 text-balance drop-shadow-lg">
               Revolutionizing the
-              <span className="text-primary"> Sharing Economy</span>
+              <span className="text-orange-400"> Sharing Economy</span>
             </h1>
-            <p className="text-xl text-muted-foreground mb-8 text-pretty max-w-3xl mx-auto leading-relaxed">
+            <p className="text-xl text-white/90 mb-8 text-pretty max-w-3xl mx-auto leading-relaxed drop-shadow-md">
               We're building the future of rentals by connecting people with the things they need, when they need them.
               From homes to vehicles, equipment to experiences - we make sharing simple, safe, and sustainable.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" asChild className="text-lg px-8 py-6">
+              <Button size="lg" asChild className="text-lg px-8 py-6 bg-orange-500 hover:bg-orange-600 text-white border-0 shadow-lg">
                 <Link href="/listings/homes">Start Exploring</Link>
               </Button>
-              <Button size="lg" variant="outline" asChild className="text-lg px-8 py-6 bg-transparent">
+              <Button size="lg" variant="outline" asChild className="text-lg px-8 py-6 bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white hover:text-gray-900">
                 <Link href="/contact">Join Our Mission</Link>
               </Button>
             </div>
           </div>
         </div>
-      </section>
+      </VideoBackground>
 
       {/* Stats Section */}
       <section className="py-16 bg-muted/30">
