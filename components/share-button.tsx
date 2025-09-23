@@ -68,9 +68,13 @@ export function ShareButton({ itemId, itemTitle, itemDescription, className, siz
     }
 
     if (platform === "email") {
-      window.location.href = urls[platform as keyof typeof urls]
+      if (typeof window !== 'undefined') {
+        window.location.href = urls[platform as keyof typeof urls]
+      }
     } else {
-      window.open(urls[platform as keyof typeof urls], "_blank", "width=600,height=400")
+      if (typeof window !== 'undefined') {
+        window.open(urls[platform as keyof typeof urls], "_blank", "width=600,height=400")
+      }
     }
   }
 

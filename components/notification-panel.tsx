@@ -145,7 +145,9 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
 
   const handleNotificationAction = (action: any, notification: any) => {
     if (action.link) {
-      window.location.href = action.link
+      if (typeof window !== 'undefined') {
+        window.location.href = action.link
+      }
       onClose()
     }
     

@@ -51,7 +51,9 @@ export function Header() {
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
-      window.location.href = `/listings?search=${encodeURIComponent(searchQuery.trim())}`
+      if (typeof window !== 'undefined') {
+        window.location.href = `/listings?search=${encodeURIComponent(searchQuery.trim())}`
+      }
     }
   }
 
