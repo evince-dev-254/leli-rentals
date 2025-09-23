@@ -6,9 +6,7 @@ import { Toaster } from "@/components/ui/toaster"
 import AISupportChat from "@/components/ai-support-chat"
 import { AuthProvider } from "@/components/auth-provider"
 import { NotificationProvider } from "@/lib/notification-context"
-import { AccountTypeReminder } from "@/components/account-type-reminder"
 import { AccountTypeModal } from "@/components/account-type-modal"
-import { useAccountTypeReminder } from "@/hooks/use-account-type-reminder"
 import { useAccountTypeModal } from "@/hooks/use-account-type-modal"
 
 interface ClientLayoutProps {
@@ -19,15 +17,11 @@ function ClientLayoutContent({ children }: ClientLayoutProps) {
   const [isChatOpen, setIsChatOpen] = useState(false)
   const toggleChat = () => setIsChatOpen(!isChatOpen)
   
-  // Enable account type reminders
-  useAccountTypeReminder()
-  
   // Enable account type modal
   const { isModalOpen, modalTrigger, closeModal } = useAccountTypeModal()
 
   return (
     <NotificationProvider>
-      <AccountTypeReminder variant="banner" />
       <AccountTypeModal 
         isOpen={isModalOpen} 
         onClose={closeModal} 
