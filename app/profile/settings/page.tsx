@@ -11,6 +11,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import ImageUpload from "@/components/image-upload"
+import { userProfileService } from "@/lib/user-profile-service"
 import {
   Dialog,
   DialogContent,
@@ -61,6 +63,7 @@ export default function AccountSettingsPage() {
     location: "",
     bio: "",
     website: "",
+    avatar: "",
   })
 
   const [passwordData, setPasswordData] = useState({
@@ -68,6 +71,13 @@ export default function AccountSettingsPage() {
     newPassword: "",
     confirmPassword: "",
   })
+
+  // Handle redirect if user is not logged in
+  useEffect(() => {
+    if (!user && !isLoading) {
+      router.push('/login')
+    }
+  }, [user, isLoading, router])
 
   // Load user settings on component mount
   useEffect(() => {
@@ -87,6 +97,7 @@ export default function AccountSettingsPage() {
             location: settings.profile.location || "",
             bio: settings.profile.bio || "",
             website: settings.profile.website || "",
+            avatar: settings.profile.avatar || user.avatar || "",
           })
         } else {
           // If no settings exist, initialize with user data
@@ -97,6 +108,7 @@ export default function AccountSettingsPage() {
             location: "",
             bio: "",
             website: "",
+            avatar: user.avatar || "",
           })
         }
       } catch (error) {
@@ -171,6 +183,44 @@ export default function AccountSettingsPage() {
         description: error.message || "Please try again or contact support.",
         variant: "destructive",
       })
+    }
+  }
+
+  // Handle profile image upload
+  const handleImageChange = async (file: File): Promise<boolean> => {
+    if (!user?.id) return false
+    
+    try {
+      const result = await userProfileService.updateProfileImage(user.id, file)
+      if (result.success) {
+        // Update local state with new avatar URL
+        setProfileData(prev => ({ ...prev, avatar: result.url || "" }))
+        return true
+      } else {
+        throw new Error(result.error)
+      }
+    } catch (error) {
+      console.error("Error updating profile image:", error)
+      return false
+    }
+  }
+
+  // Handle profile image removal
+  const handleImageRemove = async (): Promise<boolean> => {
+    if (!user?.id) return false
+    
+    try {
+      const result = await userProfileService.deleteProfileImage(user.id, profileData.avatar)
+      if (result.success) {
+        // Update local state to remove avatar
+        setProfileData(prev => ({ ...prev, avatar: "" }))
+        return true
+      } else {
+        throw new Error(result.error)
+      }
+    } catch (error) {
+      console.error("Error removing profile image:", error)
+      return false
     }
   }
 
@@ -359,7 +409,6 @@ export default function AccountSettingsPage() {
   }
 
   if (!user) {
-    router.push('/login')
     return null
   }
 
@@ -412,23 +461,13 @@ export default function AccountSettingsPage() {
                 <CardDescription>Update your personal details and contact information</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="flex items-center gap-6">
-                  <Avatar className="h-20 w-20 ring-4 ring-white shadow-lg">
-                    <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.name || "User"} />
-                    <AvatarFallback className="text-2xl bg-gradient-to-br from-blue-500 to-purple-600 text-white">
-                      {user.name?.charAt(0) || "U"}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <Button variant="outline" size="sm">
-                      <Camera className="h-4 w-4 mr-2" />
-                      Change Photo
-                    </Button>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      JPG, PNG or GIF. Max size 2MB.
-                    </p>
-                  </div>
-                </div>
+                <ImageUpload
+                  currentImageUrl={profileData.avatar}
+                  userName={profileData.name || user.name || "User"}
+                  onImageChange={handleImageChange}
+                  onImageRemove={handleImageRemove}
+                  maxSize={2}
+                />
 
                 <Dialog open={isEditingProfile} onOpenChange={setIsEditingProfile}>
                   <DialogTrigger asChild>

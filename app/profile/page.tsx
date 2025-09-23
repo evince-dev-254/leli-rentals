@@ -42,6 +42,7 @@ import { authAPI } from "@/lib/auth"
 import { profileService, UserProfile, UserReview, UserListing, UserBooking } from "@/lib/profile-service"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
+import { getUserAccountType } from "@/lib/account-type-utils"
 
 // Mock user data
 const mockUser = {
@@ -610,13 +611,15 @@ export default function ProfilePage() {
                   <CardDescription className="text-sm sm:text-base">Manage your Leli Rentals experience</CardDescription>
                 </CardHeader>
                     <CardContent className="space-y-3 sm:space-y-4">
-                      <Button 
-                        className="w-full justify-start bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white h-9 sm:h-10 text-sm sm:text-base"
-                        onClick={() => router.push('/profile/create-listing')}
-                      >
-                        <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                        Create New Listing
-                      </Button>
+                      {getUserAccountType() === 'owner' && (
+                        <Button 
+                          className="w-full justify-start bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white h-9 sm:h-10 text-sm sm:text-base"
+                          onClick={() => router.push('/profile/create-listing')}
+                        >
+                          <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                          Create New Listing
+                        </Button>
+                      )}
                       <Button 
                         variant="outline" 
                         className="w-full justify-start h-9 sm:h-10 text-sm sm:text-base"

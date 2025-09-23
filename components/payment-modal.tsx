@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import InternationalPhoneInput from '@/components/international-phone-input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -240,11 +241,9 @@ export default function PaymentModal({ isOpen, onClose, plan }: PaymentModalProp
               </div>
               
               <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="phone">Phone Number</Label>
-                <Input
-                  id="phone"
+                <InternationalPhoneInput
                   value={customerInfo.phone}
-                  onChange={(e) => setCustomerInfo(prev => ({ ...prev, phone: e.target.value }))}
+                  onChange={(phone) => setCustomerInfo(prev => ({ ...prev, phone }))}
                   placeholder="Enter your phone number (required for mobile payments)"
                 />
               </div>

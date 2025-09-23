@@ -77,7 +77,7 @@ export class OwnerDashboardClientService {
   // Get owner listings
   async getOwnerListings(ownerId: string): Promise<OwnerListing[]> {
     try {
-      const response = await fetch(`${this.baseUrl}/listings?ownerId=${ownerId}`)
+      const response = await fetch(`${this.baseUrl}/api/owner/listings?ownerId=${ownerId}`)
       if (!response.ok) {
         throw new Error('Failed to fetch owner listings')
       }
@@ -97,7 +97,7 @@ export class OwnerDashboardClientService {
   // Get owner bookings
   async getOwnerBookings(ownerId: string): Promise<OwnerBooking[]> {
     try {
-      const response = await fetch(`${this.baseUrl}/bookings?ownerId=${ownerId}`)
+      const response = await fetch(`${this.baseUrl}/api/owner/bookings?ownerId=${ownerId}`)
       if (!response.ok) {
         throw new Error('Failed to fetch owner bookings')
       }
@@ -119,7 +119,7 @@ export class OwnerDashboardClientService {
   // Get owner activity
   async getOwnerActivity(ownerId: string, limit: number = 10): Promise<OwnerActivity[]> {
     try {
-      const response = await fetch(`${this.baseUrl}/activity?ownerId=${ownerId}&limit=${limit}`)
+      const response = await fetch(`${this.baseUrl}/api/owner/activity?ownerId=${ownerId}&limit=${limit}`)
       if (!response.ok) {
         throw new Error('Failed to fetch owner activity')
       }

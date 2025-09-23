@@ -105,9 +105,8 @@ export function VideoBackground({
         <div 
           className="absolute inset-0 w-full h-full object-cover bg-cover bg-center bg-no-repeat video-bg-layer"
           style={{ 
-            '--fallback-bg': `url(${fallbackImage})`,
-            backgroundImage: 'var(--fallback-bg)'
-          } as React.CSSProperties}
+            backgroundImage: `url(${fallbackImage})`
+          }}
         />
       )}
 

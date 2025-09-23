@@ -39,6 +39,7 @@ import { useAuthContext } from "@/components/auth-provider"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { listingsService, Listing } from "@/lib/listings-service"
+import { getUserAccountType } from "@/lib/account-type-utils"
 
 const categories = [
   { value: "vehicles", label: "Vehicles" },
@@ -238,6 +239,18 @@ export default function ListingsPage() {
         description: "You must be logged in to create a listing",
         variant: "destructive",
       })
+      return
+    }
+
+    // Check if user is an owner
+    const userAccountType = getUserAccountType()
+    if (userAccountType !== 'owner') {
+      toast({
+        title: "Owner Access Required",
+        description: "Only users with owner accounts can create listings. Please change your account type to continue.",
+        variant: "destructive",
+      })
+      router.push('/get-started')
       return
     }
     

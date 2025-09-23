@@ -126,6 +126,7 @@ const pricingPlans = [
       monthly: 0,
       yearly: 0,
     },
+    currency: 'KSH',
     popular: false,
     features: [
       "Up to 3 listings",
@@ -152,6 +153,7 @@ const pricingPlans = [
       monthly: 2900,
       yearly: 29000,
     },
+    currency: 'KSH',
     popular: true,
     features: [
       "Unlimited listings",
@@ -178,6 +180,7 @@ const pricingPlans = [
       monthly: 9900,
       yearly: 99000,
     },
+    currency: 'KSH',
     popular: false,
     features: [
       "Everything in Pro",

@@ -17,6 +17,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
+import InternationalPhoneInput from "@/components/international-phone-input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
@@ -328,18 +329,12 @@ export function ItemDetailClient({ listing }: ItemDetailClientProps) {
                             </div>
                           </div>
                           <div>
-                            <Label htmlFor="phone">Phone</Label>
-                            <div className="relative">
-                              <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                              <Input
-                                id="phone"
-                                placeholder="Enter your phone number"
-                                className="pl-10"
-                                value={bookingData.phone}
-                                onChange={(e) => setBookingData((prev) => ({ ...prev, phone: e.target.value }))}
-                                required
-                              />
-                            </div>
+                            <InternationalPhoneInput
+                              value={bookingData.phone}
+                              onChange={(phone) => setBookingData((prev) => ({ ...prev, phone }))}
+                              placeholder="Enter your phone number"
+                              required
+                            />
                           </div>
                         </div>
                       </div>

@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useToast } from "@/hooks/use-toast"
 import { useAuthContext } from "@/components/auth-provider"
 import { ownerDashboardClientService, OwnerStats, OwnerListing, OwnerBooking, OwnerActivity } from "@/lib/owner-dashboard-client-service"
+import { getUserAccountType } from "@/lib/account-type-utils"
 import {
   Plus,
   TrendingUp,
@@ -89,6 +90,16 @@ export default function OwnerDashboard() {
   }, [user?.id, toast])
 
   const handleCreateListing = () => {
+    const userAccountType = getUserAccountType()
+    if (userAccountType !== 'owner') {
+      toast({
+        title: "Owner Access Required",
+        description: "Only users with owner accounts can create listings. Please change your account type to continue.",
+        variant: "destructive",
+      })
+      router.push('/get-started')
+      return
+    }
     router.push('/profile/create-listing')
   }
 

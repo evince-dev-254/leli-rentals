@@ -49,6 +49,7 @@ import { useAuthContext } from "@/components/auth-provider"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { listingsService } from "@/lib/listings-service"
+import { getUserAccountType } from "@/lib/account-type-utils"
 import Image from "next/image"
 
 const CATEGORIES = [
@@ -383,6 +384,44 @@ export default function CreateListingPage() {
               <Button onClick={() => router.push('/login')}>
                 Sign In
               </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
+  }
+
+  // Check if user is an owner
+  const userAccountType = getUserAccountType()
+  if (userAccountType !== 'owner') {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto px-4 py-8">
+          <Card>
+            <CardContent className="text-center py-12">
+              <div className="w-20 h-20 bg-gradient-to-br from-orange-500 to-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Settings className="h-10 w-10 text-white" />
+              </div>
+              <h2 className="text-2xl font-bold mb-2">Owner Access Required</h2>
+              <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                Only users with owner accounts can create listings. You need to upgrade your account type to start listing items for rent.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button 
+                  onClick={() => router.push('/get-started')}
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                >
+                  <Settings className="h-4 w-4 mr-2" />
+                  Change Account Type
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => router.push('/profile')}
+                >
+                  Back to Profile
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>
