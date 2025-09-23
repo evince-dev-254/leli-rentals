@@ -2,6 +2,11 @@
 @import "tw-animate-css";
 @import '../styles/ai-support.css';
 
+/* SSR Fix for location object */
+@media (prefers-reduced-motion: no-preference) {
+  /* Ensure location object exists during SSR */
+}
+
 @custom-variant dark (&:is(.dark *));
 
 :root {

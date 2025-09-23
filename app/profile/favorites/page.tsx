@@ -144,9 +144,9 @@ export default function FavoritesPage() {
       if (typeof window !== 'undefined' && navigator.share) {
         await navigator.share({
           title: "Check out this rental on Leli Rentals",
-          url: `${window.location.origin}/items/${listingId}`,
+          url: `${window.location?.origin || 'https://leli-rentals.com'}/items/${listingId}`,
         })
-      } else if (typeof window !== 'undefined') {
+      } else if (typeof window !== 'undefined' && window.location) {
         // Fallback: copy to clipboard
         await navigator.clipboard.writeText(`${window.location.origin}/items/${listingId}`)
         toast({
