@@ -219,14 +219,14 @@ export default function ListingsPage() {
     const userId = user?.id || 'demo_user'
 
     try {
-      if (navigator.share) {
+      if (typeof window !== 'undefined' && navigator.share) {
         await navigator.share({
           title: title,
           text: `Check out this rental: ${title}`,
           url: window.location.href
         })
         await trackShare(listingId, 'native_share')
-      } else {
+      } else if (typeof window !== 'undefined') {
         // Fallback to clipboard
         await navigator.clipboard.writeText(`${title} - ${window.location.href}`)
         await trackShare(listingId, 'clipboard')

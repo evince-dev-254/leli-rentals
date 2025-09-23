@@ -315,7 +315,9 @@ export default function MessagesPage() {
   }
 
   const handleCallOwner = (phoneNumber: string) => {
-    window.location.href = `tel:${phoneNumber.replace(/\D/g, '')}`
+    if (typeof window !== 'undefined') {
+      window.location.href = `tel:${phoneNumber.replace(/\D/g, '')}`
+    }
     toast({
       title: "Opening phone dialer",
       description: `Calling ${currentChat?.participantName}...`,

@@ -180,7 +180,11 @@ export default function TestDatabasePage() {
 
               {!user && (
                 <Button 
-                  onClick={() => window.location.href = '/login'}
+                  onClick={() => {
+                    if (typeof window !== 'undefined') {
+                      window.location.href = '/login'
+                    }
+                  }}
                   variant="outline"
                 >
                   Sign In to Test

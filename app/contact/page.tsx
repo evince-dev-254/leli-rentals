@@ -108,10 +108,14 @@ export default function ContactPage() {
   const handleContactMethod = (method: string, contact: string) => {
     switch (method) {
       case "email":
-        window.location.href = `mailto:${contact}`
+        if (typeof window !== 'undefined') {
+          window.location.href = `mailto:${contact}`
+        }
         break
       case "phone":
-        window.location.href = `tel:${contact.replace(/\D/g, "")}`
+        if (typeof window !== 'undefined') {
+          window.location.href = `tel:${contact.replace(/\D/g, "")}`
+        }
         break
       case "chat":
         setIsChatOpen(true)
@@ -121,7 +125,9 @@ export default function ContactPage() {
         })
         break
       case "emergency":
-        window.location.href = `tel:+254112081866`
+        if (typeof window !== 'undefined') {
+          window.location.href = `tel:+254112081866`
+        }
         break
       default:
         break

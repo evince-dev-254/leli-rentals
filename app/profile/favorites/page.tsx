@@ -141,14 +141,14 @@ export default function FavoritesPage() {
 
   const handleShareListing = async (listingId: string) => {
     try {
-      if (navigator.share) {
+      if (typeof window !== 'undefined' && navigator.share) {
         await navigator.share({
           title: "Check out this rental on Leli Rentals",
-          url: `${typeof window !== 'undefined' ? window.location.origin : ''}/items/${listingId}`,
+          url: `${window.location.origin}/items/${listingId}`,
         })
-      } else {
+      } else if (typeof window !== 'undefined') {
         // Fallback: copy to clipboard
-        await navigator.clipboard.writeText(`${typeof window !== 'undefined' ? window.location.origin : ''}/items/${listingId}`)
+        await navigator.clipboard.writeText(`${window.location.origin}/items/${listingId}`)
         toast({
           title: "Link copied!",
           description: "The listing link has been copied to your clipboard.",

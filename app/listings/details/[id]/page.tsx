@@ -159,14 +159,14 @@ export default function ListingDetailsPage() {
     if (!listing?.id || !listing?.title) return
 
     try {
-      if (navigator.share) {
+      if (typeof window !== 'undefined' && navigator.share) {
         await navigator.share({
           title: listing.title,
           text: `Check out this rental: ${listing.title}`,
           url: window.location.href
         })
         await trackShare(listing.id, 'native_share')
-      } else {
+      } else if (typeof window !== 'undefined') {
         await navigator.clipboard.writeText(`${listing.title} - ${window.location.href}`)
         await trackShare(listing.id, 'clipboard')
         toast({
@@ -220,7 +220,9 @@ export default function ListingDetailsPage() {
   const handleCallOwner = (phoneNumber: string) => {
     try {
       // Open phone dialer
-      window.location.href = `tel:${phoneNumber.replace(/\D/g, '')}`
+      if (typeof window !== 'undefined') {
+        window.location.href = `tel:${phoneNumber.replace(/\D/g, '')}`
+      }
       
       toast({
         title: "Opening phone dialer",
@@ -418,7 +420,11 @@ export default function ListingDetailsPage() {
             <Button 
               variant="outline" 
               size="sm" 
-              onClick={() => window.location.reload()}
+              onClick={() => {
+                if (typeof window !== 'undefined') {
+                  window.location.reload()
+                }
+              }}
             >
               Stay Here
             </Button>
