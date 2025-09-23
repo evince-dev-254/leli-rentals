@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Header } from "@/components/header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -39,6 +39,7 @@ import { useAuthContext } from "@/components/auth-provider"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import PaymentModal from "@/components/payment-modal"
+import { subscriptionService, UserSubscription, SUBSCRIPTION_PLANS } from "@/lib/subscription-service"
 
 // Mock payment methods
 const mockPaymentMethods = [
@@ -209,6 +210,8 @@ export default function BillingPage() {
   const { toast } = useToast()
   const [activeTab, setActiveTab] = useState("overview")
   const [isAddingPayment, setIsAddingPayment] = useState(false)
+  const [userSubscription, setUserSubscription] = useState<UserSubscription | null>(null)
+  const [isLoadingSubscription, setIsLoadingSubscription] = useState(true)
   const [newPaymentMethod, setNewPaymentMethod] = useState({
     cardNumber: "",
     expiryDate: "",
@@ -219,6 +222,65 @@ export default function BillingPage() {
   const [isYearly, setIsYearly] = useState(false)
   const [showPaymentModal, setShowPaymentModal] = useState(false)
   const [selectedPlanForPayment, setSelectedPlanForPayment] = useState<any>(null)
+
+  // Handle successful payment
+  const handlePaymentSuccess = async (transactionId: string) => {
+    if (!user?.id || !selectedPlanForPayment) return
+    
+    try {
+      // Create/update subscription
+      const subscription = await subscriptionService.createOrUpdateSubscription(
+        user.id,
+        selectedPlanForPayment.id,
+        selectedPlanForPayment.billingCycle || 'monthly',
+        'card', // payment method
+        transactionId
+      )
+      
+      // Update subscription status to active
+      await subscriptionService.updateSubscriptionStatus(user.id, 'active', transactionId)
+      
+      // Refresh subscription data
+      const updatedSubscription = await subscriptionService.getUserSubscription(user.id)
+      setUserSubscription(updatedSubscription)
+      
+      toast({
+        title: "Subscription Activated!",
+        description: `Your ${selectedPlanForPayment.name} plan is now active.`,
+      })
+    } catch (error) {
+      console.error('Error activating subscription:', error)
+      toast({
+        title: "Subscription Error",
+        description: "Payment was successful but there was an issue activating your subscription. Please contact support.",
+        variant: "destructive"
+      })
+    }
+  }
+
+  // Load user subscription data
+  useEffect(() => {
+    const loadSubscriptionData = async () => {
+      if (!user?.id) return
+      
+      try {
+        setIsLoadingSubscription(true)
+        const subscription = await subscriptionService.getUserSubscription(user.id)
+        setUserSubscription(subscription)
+      } catch (error) {
+        console.error('Error loading subscription:', error)
+        toast({
+          title: "Error",
+          description: "Failed to load subscription data",
+          variant: "destructive"
+        })
+      } finally {
+        setIsLoadingSubscription(false)
+      }
+    }
+
+    loadSubscriptionData()
+  }, [user, toast])
 
   const handleAddPaymentMethod = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -288,20 +350,25 @@ export default function BillingPage() {
   }
 
   const handleSelectPlan = async (planId: string) => {
-    const plan = pricingPlans.find(p => p.id === planId)
-    if (!plan) return
+    const plan = SUBSCRIPTION_PLANS.find(p => p.id === planId)
+    if (!plan || !user?.id) return
 
     // If it's a free plan, activate it directly
     if (plan.price.monthly === 0) {
       try {
-        // Simulate API call for free plan activation
-        await new Promise(resolve => setTimeout(resolve, 1500))
+        const subscription = await subscriptionService.createOrUpdateSubscription(
+          user.id,
+          planId,
+          'monthly'
+        )
+        setUserSubscription(subscription)
         
         toast({
           title: "Free plan activated!",
           description: "Your free subscription has been activated. You can upgrade anytime.",
         })
       } catch (error) {
+        console.error('Error activating free plan:', error)
         toast({
           title: "Error activating plan",
           description: "Please try again or contact support.",
@@ -314,7 +381,8 @@ export default function BillingPage() {
         ...plan,
         price: isYearly ? plan.price.yearly : plan.price.monthly,
         currency: 'KSh',
-        description: `${plan.description} - ${isYearly ? 'Annual' : 'Monthly'} billing`
+        description: `${plan.description} - ${isYearly ? 'Annual' : 'Monthly'} billing`,
+        billingCycle: isYearly ? 'yearly' : 'monthly'
       })
       setShowPaymentModal(true)
     }
@@ -398,37 +466,72 @@ export default function BillingPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-              <div className="space-y-2">
-                <div className="flex items-center gap-3">
-                  <Badge className="bg-purple-100 text-purple-800 border-purple-200">
-                    {mockSubscription.plan} Plan
-                  </Badge>
-                  <Badge className="bg-green-100 text-green-800 border-green-200">
-                    <CheckCircle className="h-3 w-3 mr-1" />
-                    Active
-                  </Badge>
+            {isLoadingSubscription ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+                <span className="ml-2">Loading subscription...</span>
+              </div>
+            ) : userSubscription ? (
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-3">
+                    <Badge className="bg-purple-100 text-purple-800 border-purple-200">
+                      {userSubscription.planName} Plan
+                    </Badge>
+                    <Badge className={`${
+                      userSubscription.status === 'active' 
+                        ? 'bg-green-100 text-green-800 border-green-200'
+                        : userSubscription.status === 'pending'
+                        ? 'bg-yellow-100 text-yellow-800 border-yellow-200'
+                        : 'bg-red-100 text-red-800 border-red-200'
+                    }`}>
+                      {userSubscription.status === 'active' && <CheckCircle className="h-3 w-3 mr-1" />}
+                      {userSubscription.status === 'pending' && <Clock className="h-3 w-3 mr-1" />}
+                      {userSubscription.status === 'cancelled' && <AlertCircle className="h-3 w-3 mr-1" />}
+                      {userSubscription.status.charAt(0).toUpperCase() + userSubscription.status.slice(1)}
+                    </Badge>
+                  </div>
+                  <div className="text-2xl font-bold text-purple-600">
+                    {userSubscription.amount === 0 ? 'Free' : `${userSubscription.currency} ${userSubscription.amount.toLocaleString()}/${userSubscription.billingCycle === 'yearly' ? 'year' : 'month'}`}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    {userSubscription.status === 'active' && userSubscription.amount > 0 && (
+                      <>Next billing: {userSubscription.nextBillingDate.toLocaleDateString()}</>
+                    )}
+                    {userSubscription.status === 'cancelled' && userSubscription.cancelledAt && (
+                      <>Cancelled: {userSubscription.cancelledAt.toLocaleDateString()}</>
+                    )}
+                    {userSubscription.amount === 0 && (
+                      <>Free plan - upgrade anytime</>
+                    )}
+                  </div>
                 </div>
-                <div className="text-2xl font-bold text-purple-600">
-                  ${mockSubscription.amount}/month
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  Next billing: {new Date(mockSubscription.nextBilling).toLocaleDateString()}
+                
+                <div className="space-y-2">
+                  <h4 className="font-semibold">Plan Features:</h4>
+                  <ul className="space-y-1 text-sm text-muted-foreground">
+                    {userSubscription.features.slice(0, 4).map((feature, index) => (
+                      <li key={index} className="flex items-center gap-2">
+                        <CheckCircle className="h-3 w-3 text-green-600" />
+                        {feature}
+                      </li>
+                    ))}
+                    {userSubscription.features.length > 4 && (
+                      <li className="text-xs text-muted-foreground">
+                        +{userSubscription.features.length - 4} more features
+                      </li>
+                    )}
+                  </ul>
                 </div>
               </div>
-              
-              <div className="space-y-2">
-                <h4 className="font-semibold">Plan Features:</h4>
-                <ul className="space-y-1 text-sm text-muted-foreground">
-                  {mockSubscription.features.map((feature, index) => (
-                    <li key={index} className="flex items-center gap-2">
-                      <CheckCircle className="h-3 w-3 text-green-600" />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
+            ) : (
+              <div className="text-center py-8">
+                <div className="text-muted-foreground mb-4">No active subscription</div>
+                <Button onClick={() => setActiveTab("plans")}>
+                  Choose a Plan
+                </Button>
               </div>
-            </div>
+            )}
           </CardContent>
         </Card>
 
@@ -766,8 +869,9 @@ export default function BillingPage() {
 
             {/* Pricing Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {pricingPlans.map((plan) => {
+              {SUBSCRIPTION_PLANS.map((plan) => {
                 const savings = calculateSavings(plan.price.monthly, plan.price.yearly)
+                const isCurrentPlan = userSubscription?.planId === plan.id
                 
                 return (
                   <Card 
@@ -792,7 +896,9 @@ export default function BillingPage() {
                           plan.id === 'free' ? 'text-gray-600' : 
                           plan.id === 'pro' ? 'text-blue-600' : 'text-purple-600'
                         }`}>
-                          {plan.icon}
+                          {plan.id === 'free' ? <Users className="h-6 w-6" /> :
+                           plan.id === 'pro' ? <Zap className="h-6 w-6" /> :
+                           <Crown className="h-6 w-6" />}
                         </div>
                       </div>
                       <CardTitle className="text-2xl font-bold">{plan.name}</CardTitle>
@@ -816,11 +922,21 @@ export default function BillingPage() {
                         )}
                       </div>
 
-                      <Button 
-                        className={`w-full mb-6 ${plan.buttonColor} text-white`}
+                      <Button
+                        className={`w-full mb-6 ${
+                          isCurrentPlan 
+                            ? 'bg-green-600 hover:bg-green-700' 
+                            : plan.buttonColor || 'bg-blue-600 hover:bg-blue-700'
+                        } text-white`}
                         onClick={() => handleSelectPlan(plan.id)}
+                        disabled={isCurrentPlan && userSubscription?.status === 'active'}
                       >
-                        {plan.price.monthly === 0 ? 'Get Started Free' : 'Choose Plan'}
+                        {isCurrentPlan && userSubscription?.status === 'active' 
+                          ? 'Current Plan' 
+                          : plan.price.monthly === 0 
+                          ? 'Get Started Free' 
+                          : 'Choose Plan'
+                        }
                       </Button>
 
                       <div className="space-y-3">
@@ -832,7 +948,7 @@ export default function BillingPage() {
                         ))}
                       </div>
 
-                      {plan.limitations.length > 0 && (
+                      {plan.limitations && plan.limitations.length > 0 && (
                         <div className="mt-6 pt-4 border-t">
                           <div className="text-sm text-muted-foreground mb-2">Limitations:</div>
                           <div className="space-y-1">
@@ -904,6 +1020,7 @@ export default function BillingPage() {
               setSelectedPlanForPayment(null)
             }}
             plan={selectedPlanForPayment}
+            onPaymentSuccess={handlePaymentSuccess}
           />
         )}
       </div>

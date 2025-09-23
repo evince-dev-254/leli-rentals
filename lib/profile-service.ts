@@ -190,12 +190,19 @@ export const profileService = {
         const fileExtension = file.name.split('.').pop() || 'jpg'
         const imageRef = ref(storage, `profile-images/${id}-${timestamp}.${fileExtension}`)
         
-        const snapshot = await uploadBytes(imageRef, file, {
+        // Add timeout for upload operation
+        const uploadPromise = uploadBytes(imageRef, file, {
           customMetadata: {
             uploadedBy: id,
             uploadedAt: new Date().toISOString()
           }
         })
+        
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Upload timeout')), 30000) // 30 second timeout
+        })
+        
+        const snapshot = await Promise.race([uploadPromise, timeoutPromise])
         
         const downloadURL = await getDownloadURL(snapshot.ref)
         
@@ -208,8 +215,11 @@ export const profileService = {
         console.error(`Upload attempt ${attempt} failed:`, error)
         
         // Check for specific error types
-        if (error.code === 'storage/retry-limit-exceeded') {
-          throw new Error("Upload timeout. Please check your internet connection and try again.")
+        if (error.code === 'storage/retry-limit-exceeded' || error.message === 'Upload timeout') {
+          console.warn("Firebase Storage retry limit exceeded or timeout - this is usually a temporary network issue")
+          if (attempt === maxRetries) {
+            throw new Error("Upload timeout. Please check your internet connection and try again.")
+          }
         }
         
         if (error.code === 'storage/unauthorized') {

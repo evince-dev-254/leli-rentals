@@ -40,6 +40,7 @@ import Link from "next/link"
 import { useAuthContext } from "@/components/auth-provider"
 import { authAPI } from "@/lib/auth"
 import { profileService, UserProfile, UserReview, UserListing, UserBooking } from "@/lib/profile-service"
+import { subscriptionService, UserSubscription } from "@/lib/subscription-service"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { getUserAccountType } from "@/lib/account-type-utils"
@@ -143,6 +144,7 @@ export default function ProfilePage() {
   const [userReviews, setUserReviews] = useState<UserReview[]>([])
   const [userListings, setUserListings] = useState<UserListing[]>([])
   const [userBookings, setUserBookings] = useState<UserBooking[]>([])
+  const [userSubscription, setUserSubscription] = useState<UserSubscription | null>(null)
   const [profileData, setProfileData] = useState({
     name: user?.name || "",
     email: user?.email || "",
@@ -177,16 +179,18 @@ export default function ProfilePage() {
           setUserProfile(newProfile)
         }
 
-        // Load user reviews, listings, and bookings
-        const [reviews, listings, bookings] = await Promise.all([
+        // Load user reviews, listings, bookings, and subscription
+        const [reviews, listings, bookings, subscription] = await Promise.all([
           profileService.getUserReviews(user.id),
           profileService.getUserListings(user.id),
-          profileService.getUserBookings(user.id)
+          profileService.getUserBookings(user.id),
+          subscriptionService.getUserSubscription(user.id)
         ])
 
         setUserReviews(reviews)
         setUserListings(listings)
         setUserBookings(bookings)
+        setUserSubscription(subscription)
 
         // Update stats
         await profileService.updateUserStats(user.id)
@@ -600,6 +604,65 @@ export default function ProfilePage() {
 
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-4 sm:space-y-6">
+            {/* Subscription Status */}
+            {userSubscription && (
+              <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-50 to-blue-50 mb-6">
+                <CardHeader className="pb-3 sm:pb-6">
+                  <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                    <Crown className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
+                    Subscription Status
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-3">
+                        <Badge className="bg-purple-100 text-purple-800 border-purple-200">
+                          {userSubscription.planName} Plan
+                        </Badge>
+                        <Badge className={`${
+                          userSubscription.status === 'active' 
+                            ? 'bg-green-100 text-green-800 border-green-200'
+                            : userSubscription.status === 'pending'
+                            ? 'bg-yellow-100 text-yellow-800 border-yellow-200'
+                            : 'bg-red-100 text-red-800 border-red-200'
+                        }`}>
+                          {userSubscription.status.charAt(0).toUpperCase() + userSubscription.status.slice(1)}
+                        </Badge>
+                      </div>
+                      <div className="text-lg font-semibold">
+                        {userSubscription.amount === 0 ? 'Free' : `KSh ${userSubscription.amount.toLocaleString()}/${userSubscription.billingCycle === 'yearly' ? 'year' : 'month'}`}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {userSubscription.status === 'active' && userSubscription.amount > 0 && (
+                          <>Next billing: {userSubscription.nextBillingDate.toLocaleDateString()}</>
+                        )}
+                        {userSubscription.amount === 0 && (
+                          <>Free plan - upgrade anytime for more features</>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button asChild variant="outline">
+                        <Link href="/profile/billing">
+                          <CreditCard className="h-4 w-4 mr-2" />
+                          Manage Billing
+                        </Link>
+                      </Button>
+                      {userSubscription.planId === 'free' && (
+                        <Button asChild>
+                          <Link href="/profile/billing?tab=plans">
+                            <Crown className="h-4 w-4 mr-2" />
+                            Upgrade
+                          </Link>
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
               {/* Quick Actions */}
               <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-purple-50">

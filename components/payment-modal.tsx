@@ -30,15 +30,18 @@ interface PaymentModalProps {
   isOpen: boolean
   onClose: () => void
   plan: {
+    id?: string
     name: string
     price: number
     currency: string
     description: string
     features: string[]
+    billingCycle?: 'monthly' | 'yearly'
   }
+  onPaymentSuccess?: (transactionId: string) => void
 }
 
-export default function PaymentModal({ isOpen, onClose, plan }: PaymentModalProps) {
+export default function PaymentModal({ isOpen, onClose, plan, onPaymentSuccess }: PaymentModalProps) {
   const { toast } = useToast()
   const [selectedMethod, setSelectedMethod] = useState<string>('')
   const [isProcessing, setIsProcessing] = useState(false)
@@ -120,11 +123,16 @@ export default function PaymentModal({ isOpen, onClose, plan }: PaymentModalProp
 
       if (result.success) {
         toast({
-          title: "Payment Initiated",
+          title: "Payment Successful!",
           description: result.message,
         })
         
-        // Close modal after successful payment initiation
+        // Call success callback with transaction ID
+        if (onPaymentSuccess && result.transactionId) {
+          onPaymentSuccess(result.transactionId)
+        }
+        
+        // Close modal after successful payment
         setTimeout(() => {
           onClose()
         }, 2000)
