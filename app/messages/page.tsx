@@ -358,51 +358,52 @@ export default function MessagesPage() {
       
       <div className="container mx-auto px-4 sm:px-6 max-w-7xl py-6">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
+        <div className="flex items-center justify-between mb-4 lg:mb-6">
+          <div className="flex items-center gap-2 lg:gap-4 min-w-0 flex-1">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => router.back()}
-              className="btn-animate"
+              className="btn-animate flex-shrink-0"
             >
-              <ArrowLeft className="h-5 w-5" />
+              <ArrowLeft className="h-4 w-4 lg:h-5 lg:w-5" />
             </Button>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Messages</h1>
-              <p className="text-gray-600 dark:text-gray-400">Connect with rental owners and manage your conversations</p>
+            <div className="min-w-0 flex-1">
+              <h1 className="text-xl lg:text-3xl font-bold text-gray-900 dark:text-gray-100 truncate">Messages</h1>
+              <p className="text-xs lg:text-sm text-gray-600 dark:text-gray-400 hidden sm:block">Connect with rental owners and manage your conversations</p>
             </div>
           </div>
           
-          <div className="flex items-center gap-2">
-            <Badge variant="secondary" className="px-3 py-1">
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <Badge variant="secondary" className="px-2 lg:px-3 py-1 text-xs lg:text-sm">
               {chatSessions.reduce((sum, chat) => sum + chat.unreadCount, 0)} unread
             </Badge>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-200px)]">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 h-[calc(100vh-180px)] lg:h-[calc(100vh-200px)]">
           {/* Chat List */}
-          <div className="lg:col-span-1 space-y-4">
+          <div className={`lg:col-span-1 space-y-4 ${activeChat ? 'hidden lg:block' : 'block'}`}>
             {/* Search and Filter */}
             <Card className="card-animate">
-              <CardContent className="p-4">
-                <div className="space-y-3">
+              <CardContent className="p-3 lg:p-4">
+                <div className="space-y-2 lg:space-y-3">
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                     <Input
                       placeholder="Search conversations..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10"
+                      className="pl-10 text-sm lg:text-base"
                     />
                   </div>
                   
-                  <div className="flex gap-2">
+                  <div className="flex gap-1 lg:gap-2 overflow-x-auto pb-1">
                     <Button
                       variant={filterStatus === "all" ? "default" : "outline"}
                       size="sm"
                       onClick={() => setFilterStatus("all")}
+                      className="text-xs lg:text-sm px-2 lg:px-3 flex-shrink-0"
                     >
                       All
                     </Button>
@@ -410,6 +411,7 @@ export default function MessagesPage() {
                       variant={filterStatus === "unread" ? "default" : "outline"}
                       size="sm"
                       onClick={() => setFilterStatus("unread")}
+                      className="text-xs lg:text-sm px-2 lg:px-3 flex-shrink-0"
                     >
                       Unread
                     </Button>
@@ -417,6 +419,7 @@ export default function MessagesPage() {
                       variant={filterStatus === "bookings" ? "default" : "outline"}
                       size="sm"
                       onClick={() => setFilterStatus("bookings")}
+                      className="text-xs lg:text-sm px-2 lg:px-3 flex-shrink-0"
                     >
                       Bookings
                     </Button>
@@ -426,7 +429,7 @@ export default function MessagesPage() {
             </Card>
 
             {/* Chat Sessions */}
-            <div className="space-y-2 max-h-[calc(100vh-350px)] overflow-y-auto">
+            <div className="space-y-2 max-h-[calc(100vh-280px)] lg:max-h-[calc(100vh-350px)] overflow-y-auto">
               {filteredChats.map((chat) => (
                 <Card
                   key={chat.id}
@@ -437,48 +440,48 @@ export default function MessagesPage() {
                   }`}
                   onClick={() => handleChatSelect(chat.id)}
                 >
-                  <CardContent className="p-4">
-                    <div className="flex items-start gap-3">
-                      <Avatar className="h-12 w-12">
+                  <CardContent className="p-3 lg:p-4">
+                    <div className="flex items-start gap-2 lg:gap-3">
+                      <Avatar className="h-10 w-10 lg:h-12 lg:w-12 flex-shrink-0">
                         <AvatarImage src={chat.participantAvatar} alt={chat.participantName} />
                         <AvatarFallback>{chat.participantName.charAt(0)}</AvatarFallback>
                       </Avatar>
                       
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-semibold text-gray-900 dark:text-gray-100 truncate">
+                        <div className="flex items-center gap-1 lg:gap-2 mb-1">
+                          <h3 className="font-semibold text-gray-900 dark:text-gray-100 truncate text-sm lg:text-base">
                             {chat.participantName}
                           </h3>
                           {chat.participantVerified && (
-                            <Shield className="h-3 w-3 text-blue-500" />
+                            <Shield className="h-3 w-3 text-blue-500 flex-shrink-0" />
                           )}
                           {chat.unreadCount > 0 && (
-                            <Badge variant="destructive" className="text-xs px-1 py-0">
+                            <Badge variant="destructive" className="text-xs px-1 py-0 flex-shrink-0">
                               {chat.unreadCount}
                             </Badge>
                           )}
                         </div>
                         
                         {chat.listingTitle && (
-                          <p className="text-sm text-gray-600 dark:text-gray-400 truncate mb-1">
+                          <p className="text-xs lg:text-sm text-gray-600 dark:text-gray-400 truncate mb-1">
                             {chat.listingTitle}
                           </p>
                         )}
                         
                         {chat.lastMessage && (
-                          <p className="text-sm text-gray-500 dark:text-gray-500 truncate">
+                          <p className="text-xs lg:text-sm text-gray-500 dark:text-gray-500 truncate">
                             {chat.lastMessage.content}
                           </p>
                         )}
                         
-                        <div className="flex items-center justify-between mt-2">
+                        <div className="flex items-center justify-between mt-1 lg:mt-2">
                           <div className="flex items-center gap-1">
-                            <Star className="h-3 w-3 text-yellow-400 fill-current" />
+                            <Star className="h-3 w-3 text-yellow-400 fill-current flex-shrink-0" />
                             <span className="text-xs text-gray-500">
                               {chat.participantRating}
                             </span>
                           </div>
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs text-gray-500 flex-shrink-0">
                             {formatTime(chat.updatedAt)}
                           </span>
                         </div>
@@ -494,64 +497,78 @@ export default function MessagesPage() {
           <div className="lg:col-span-2">
             {currentChat ? (
               <Card className="h-full flex flex-col card-animate">
+                {/* Mobile Back Button */}
+                <div className="lg:hidden p-4 border-b border-gray-200 dark:border-gray-700">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setActiveChat(null)}
+                    className="flex items-center gap-2"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                    Back to Messages
+                  </Button>
+                </div>
                 {/* Chat Header */}
-                <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+                <div className="p-3 lg:p-4 border-b border-gray-200 dark:border-gray-700">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-10 w-10">
+                    <div className="flex items-center gap-2 lg:gap-3 min-w-0 flex-1">
+                      <Avatar className="h-8 w-8 lg:h-10 lg:w-10 flex-shrink-0">
                         <AvatarImage src={currentChat.participantAvatar} alt={currentChat.participantName} />
                         <AvatarFallback>{currentChat.participantName.charAt(0)}</AvatarFallback>
                       </Avatar>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-semibold text-gray-900 dark:text-gray-100">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1 lg:gap-2">
+                          <h3 className="font-semibold text-gray-900 dark:text-gray-100 truncate text-sm lg:text-base">
                             {currentChat.participantName}
                           </h3>
                           {currentChat.participantVerified && (
-                            <Badge variant="secondary" className="text-xs">
+                            <Badge variant="secondary" className="text-xs flex-shrink-0">
                               <Shield className="h-3 w-3 mr-1" />
-                              Verified
+                              <span className="hidden sm:inline">Verified</span>
                             </Badge>
                           )}
                         </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                          <Star className="h-3 w-3 text-yellow-400 fill-current" />
-                          <span>{currentChat.participantRating} Owner Rating</span>
+                        <div className="flex items-center gap-1 lg:gap-2 text-xs lg:text-sm text-gray-600 dark:text-gray-400">
+                          <Star className="h-3 w-3 text-yellow-400 fill-current flex-shrink-0" />
+                          <span className="truncate">{currentChat.participantRating} Owner Rating</span>
                         </div>
                       </div>
                     </div>
                     
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 lg:gap-2 flex-shrink-0">
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={() => handleCallOwner(currentChat.participantPhone || '+254700000000')}
+                        className="text-xs lg:text-sm px-2 lg:px-3"
                       >
-                        <Phone className="h-4 w-4 mr-1" />
-                        Call
+                        <Phone className="h-3 w-3 lg:h-4 lg:w-4 mr-1" />
+                        <span className="hidden sm:inline">Call</span>
                       </Button>
-                      <Button size="sm" variant="outline">
-                        <MoreVertical className="h-4 w-4" />
+                      <Button size="sm" variant="outline" className="p-2">
+                        <MoreVertical className="h-3 w-3 lg:h-4 lg:w-4" />
                       </Button>
                     </div>
                   </div>
                   
                   {currentChat.listingTitle && (
-                    <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                      <div className="flex items-center gap-3">
+                    <div className="mt-2 lg:mt-3 p-2 lg:p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                      <div className="flex items-center gap-2 lg:gap-3">
                         <img
                           src={currentChat.listingImage}
                           alt={currentChat.listingTitle}
-                          className="w-12 h-12 rounded-lg object-cover"
+                          className="w-8 h-8 lg:w-12 lg:h-12 rounded-lg object-cover flex-shrink-0"
                         />
-                        <div className="flex-1">
-                          <h4 className="font-medium text-gray-900 dark:text-gray-100">
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-medium text-gray-900 dark:text-gray-100 text-sm lg:text-base truncate">
                             {currentChat.listingTitle}
                           </h4>
                           {currentChat.bookingId && (
-                            <Badge variant="outline" className="text-xs mt-1">
+                            <Badge variant="outline" className="text-xs mt-1 flex-shrink-0">
                               <Calendar className="h-3 w-3 mr-1" />
-                              Active Booking
+                              <span className="hidden sm:inline">Active Booking</span>
+                              <span className="sm:hidden">Booking</span>
                             </Badge>
                           )}
                         </div>
@@ -561,20 +578,20 @@ export default function MessagesPage() {
                 </div>
 
                 {/* Messages */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                <div className="flex-1 overflow-y-auto p-2 lg:p-4 space-y-3 lg:space-y-4">
                   {messages.map((message) => (
                     <div
                       key={message.id}
                       className={`flex ${message.senderId === user?.id ? 'justify-end' : 'justify-start'}`}
                     >
                       <div
-                        className={`max-w-[70%] rounded-lg px-4 py-2 ${
+                        className={`max-w-[85%] lg:max-w-[70%] rounded-lg px-3 py-2 lg:px-4 ${
                           message.senderId === user?.id
                             ? 'bg-blue-600 text-white'
                             : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
                         }`}
                       >
-                        <p className="text-sm">{message.content}</p>
+                        <p className="text-sm lg:text-sm break-words">{message.content}</p>
                         <div className="flex items-center justify-end gap-1 mt-1">
                           <span className="text-xs opacity-70">
                             {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -596,7 +613,7 @@ export default function MessagesPage() {
                 </div>
 
                 {/* Message Input */}
-                <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+                <div className="p-2 lg:p-4 border-t border-gray-200 dark:border-gray-700">
                   <div className="flex gap-2">
                     <Input
                       placeholder="Type your message..."
@@ -604,12 +621,12 @@ export default function MessagesPage() {
                       onChange={(e) => setMessageInput(e.target.value)}
                       onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                       disabled={sendingMessage}
-                      className="flex-1"
+                      className="flex-1 text-sm lg:text-base"
                     />
                     <Button
                       onClick={handleSendMessage}
                       disabled={!messageInput.trim() || sendingMessage}
-                      className="btn-animate"
+                      className="btn-animate px-3 lg:px-4"
                     >
                       {sendingMessage ? (
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
