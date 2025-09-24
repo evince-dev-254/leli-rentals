@@ -139,12 +139,14 @@ export default function ListingDetailsPage() {
   const handleSave = async () => {
     if (!listing?.id) return
     
+    // Check the current saved state BEFORE toggling
+    const wasSaved = interactions[listing.id]?.saved
+    
     try {
       await toggleSave(listing.id)
-      const isSaved = interactions[listing.id]?.saved
       toast({
-        title: isSaved ? "Saved!" : "Unsaved",
-        description: isSaved ? "Added to your saved listings" : "Removed from saved listings"
+        title: wasSaved ? "Unsaved" : "Saved!",
+        description: wasSaved ? "Removed from saved listings" : "Added to your saved listings"
       })
     } catch (error) {
       toast({
