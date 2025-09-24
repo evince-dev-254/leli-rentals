@@ -30,7 +30,18 @@
     "firebase": "^10.7.1",
     "@react-native-async-storage/async-storage": "1.23.1",
     "react-native-svg": "15.2.0",
-    "react-native-paper": "^5.12.3"
+    "react-native-paper": "^5.12.3",
+    "expo-image-picker": "~15.0.7",
+    "expo-camera": "~15.0.14",
+    "expo-location": "~17.0.1",
+    "expo-constants": "~16.0.2",
+    "expo-device": "~6.0.2",
+    "expo-notifications": "~0.28.16",
+    "expo-linking": "~6.3.1",
+    "expo-sharing": "~12.0.1",
+    "react-native-image-viewing": "^0.2.2",
+    "react-native-modal": "^13.0.1",
+    "react-native-vector-icons": "^10.0.3"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

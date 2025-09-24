@@ -113,7 +113,9 @@ const MainTabs = () => {
           if (route.name === 'Home') {
             iconName = focused ? 'home' : 'home-outline';
           } else if (route.name === 'Listings') {
-            iconName = focused ? 'list' : 'list-outline';
+            iconName = focused ? 'grid' : 'grid-outline';
+          } else if (route.name === 'Messages') {
+            iconName = focused ? 'chatbubbles' : 'chatbubbles-outline';
           } else if (route.name === 'Profile') {
             iconName = focused ? 'person' : 'person-outline';
           } else {
@@ -127,6 +129,9 @@ const MainTabs = () => {
         tabBarStyle: {
           backgroundColor: theme.colors.surface,
           borderTopColor: theme.colors.outline,
+          height: 60,
+          paddingBottom: 8,
+          paddingTop: 8,
         },
         headerStyle: {
           backgroundColor: theme.colors.surface,
@@ -137,17 +142,34 @@ const MainTabs = () => {
       <Tab.Screen 
         name="Home" 
         component={HomeStack}
-        options={{ headerShown: false }}
+        options={{ 
+          headerShown: false,
+          tabBarLabel: 'Home'
+        }}
       />
       <Tab.Screen 
         name="Listings" 
         component={ListingsStack}
-        options={{ headerShown: false }}
+        options={{ 
+          headerShown: false,
+          tabBarLabel: 'Browse'
+        }}
+      />
+      <Tab.Screen 
+        name="Messages" 
+        component={MessagesScreen}
+        options={{ 
+          headerShown: false,
+          tabBarLabel: 'Messages'
+        }}
       />
       <Tab.Screen 
         name="Profile" 
         component={ProfileStack}
-        options={{ headerShown: false }}
+        options={{ 
+          headerShown: false,
+          tabBarLabel: 'Profile'
+        }}
       />
     </Tab.Navigator>
   );
