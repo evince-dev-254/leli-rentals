@@ -803,18 +803,9 @@ export default function ListingsPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => {
-                          // Open messaging app with this listing's owner
-                          const messagingEvent = new CustomEvent('openMessaging', {
-                            detail: {
-                              type: 'start-new-chat',
-                              participantId: listing.owner?.uid,
-                              listingData: {
-                                title: listing.title,
-                                image: listing.image
-                              }
-                            }
-                          });
-                          window.dispatchEvent(messagingEvent);
+                          // Navigate directly to messages page with owner info
+                          const messagesUrl = `/messages?owner=${encodeURIComponent(listing.owner?.name || 'Unknown')}&listing=${encodeURIComponent(listing.title)}&ownerId=${listing.owner?.id || 'unknown'}`
+                          router.push(messagesUrl)
                         }}
                         className="btn-animate transition-all duration-200 text-xs sm:text-sm px-2 sm:px-3 bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700 text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/30"
                       >

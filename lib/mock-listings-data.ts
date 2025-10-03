@@ -87,7 +87,41 @@ export const generateMockListings = (): Listing[] => {
     "/images/Luxury Sports Car.jpg", "/luxury-cars-in-modern-showroom.jpg", "/modern-apartment-city-view.png",
     "/images/Vintage Camera Collection.jpg", "/professional-construction-and-industrial-equipment.jpg",
     "/elegant-event-venue-with-chandeliers-and-tables.jpg", "/designer-clothing-and-fashion-accessories.jpg",
-    "/modern-electronics-and-tech-gadgets-display.jpg", "/images/Gaming Setup.jpg", "/images/Mountain Bike.jpg"
+    "/modern-electronics-and-tech-gadgets-display.jpg", "/images/Gaming Setup.jpg", "/images/Mountain Bike.jpg",
+    "/images/Professional Camera Kit.jpg", "/images/Construction Tools.jpg", "/images/Sound System.jpg",
+    "/images/Drone Kit.jpg", "/images/Welding Equipment.jpg", "/images/Power Tools.jpg",
+    "/images/Audio Board.jpg", "/images/Lighting Equipment.jpg", "/images/Generator.jpg",
+    "/images/Excavator.jpg", "/images/Crane.jpg", "/images/Concrete Mixer.jpg",
+    "/images/Scaffolding.jpg", "/images/Safety Gear.jpg", "/images/Measuring Tools.jpg",
+    "/images/Cutting Tools.jpg", "/images/Drilling Equipment.jpg", "/images/Painting Tools.jpg",
+    "/images/Cleaning Equipment.jpg", "/images/Office Equipment.jpg", "/images/Wedding Hall.jpg",
+    "/images/Conference Center.jpg", "/images/Outdoor Venue.jpg", "/images/Banquet Hall.jpg",
+    "/images/Garden Venue.jpg", "/images/Rooftop Terrace.jpg", "/images/Beach Venue.jpg",
+    "/images/Museum Venue.jpg", "/images/Gallery Space.jpg", "/images/Theater Hall.jpg",
+    "/images/Sports Complex.jpg", "/images/Community Center.jpg", "/images/Hotel Conference.jpg",
+    "/images/Restaurant Room.jpg", "/images/Wine Bar.jpg", "/images/Cultural Center.jpg",
+    "/images/Exhibition Hall.jpg", "/images/Convention Center.jpg", "/images/Auditorium.jpg",
+    "/images/Chapel.jpg", "/images/Evening Gown.jpg", "/images/Handbag Collection.jpg",
+    "/images/Luxury Watch.jpg", "/images/Designer Shoes.jpg", "/images/Jewelry Set.jpg",
+    "/images/Cocktail Dress.jpg", "/images/Business Suit.jpg", "/images/Wedding Dress.jpg",
+    "/images/Designer Jacket.jpg", "/images/Luxury Scarf.jpg", "/images/Designer Belt.jpg",
+    "/images/Evening Wear.jpg", "/images/Formal Attire.jpg", "/images/Designer Accessories.jpg",
+    "/images/Luxury Perfume.jpg", "/images/Designer Sunglasses.jpg", "/images/Fashion Jewelry.jpg",
+    "/images/Designer Hat.jpg", "/images/Luxury Handbag.jpg", "/images/Designer Coat.jpg",
+    "/images/MacBook Pro.jpg", "/images/Gaming Console.jpg", "/images/iPhone.jpg",
+    "/images/Samsung Galaxy.jpg", "/images/iPad Pro.jpg", "/images/Dell Laptop.jpg",
+    "/images/HP Pavilion.jpg", "/images/Lenovo ThinkPad.jpg", "/images/ASUS Gaming.jpg",
+    "/images/Microsoft Surface.jpg", "/images/Apple Watch.jpg", "/images/Samsung Watch.jpg",
+    "/images/AirPods.jpg", "/images/Sony Headphones.jpg", "/images/DJI Drone.jpg",
+    "/images/GoPro.jpg", "/images/Nintendo Switch.jpg", "/images/PlayStation.jpg",
+    "/images/Xbox.jpg", "/images/VR Headset.jpg", "/images/Mountain Bike.jpg",
+    "/images/Professional Piano.jpg", "/images/Treadmill.jpg", "/images/Weight Bench.jpg",
+    "/images/Tennis Racket.jpg", "/images/Golf Clubs.jpg", "/images/Swimming Pool.jpg",
+    "/images/Basketball Court.jpg", "/images/Football Equipment.jpg", "/images/Cricket Set.jpg",
+    "/images/Badminton Set.jpg", "/images/Table Tennis.jpg", "/images/Yoga Mat.jpg",
+    "/images/Dumbbell Set.jpg", "/images/Resistance Bands.jpg", "/images/Elliptical.jpg",
+    "/images/Rowing Machine.jpg", "/images/Exercise Bike.jpg", "/images/Boxing Equipment.jpg",
+    "/images/Skateboard.jpg"
   ]
 
   const listings: Listing[] = []
@@ -144,6 +178,14 @@ export const generateMockListings = (): Listing[] => {
       const reviews = Math.floor(Math.random() * 200) + 10
       const createdAt = new Date(2024, 0, Math.floor(Math.random() * 30) + 1)
 
+      // Generate multiple images for each listing (2-5 images)
+      const numImages = Math.floor(Math.random() * 4) + 2 // 2 to 5 images
+      const listingImages = []
+      for (let i = 0; i < numImages; i++) {
+        const imageIndex = (index + i) % images.length
+        listingImages.push(images[imageIndex])
+      }
+
       listings.push({
         id: id.toString(),
         title,
@@ -157,7 +199,7 @@ export const generateMockListings = (): Listing[] => {
         available: true,
         category: category.id,
         owner: { ...owner, avatar: "/placeholder-user.jpg" },
-        images: [image],
+        images: listingImages,
         fullDescription: `Premium ${title.toLowerCase()} with all modern amenities and professional service. Perfect for your specific needs with excellent customer support.`,
         createdAt,
         updatedAt: createdAt

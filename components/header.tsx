@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { Search, Moon, Sun, User, Bell, ChevronDown, Menu, X } from "lucide-react"
+import { Search, Moon, Sun, User, Bell, ChevronDown, Menu, X, MessageCircle } from "lucide-react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { useAuthContext } from "@/lib/auth-context"
 import { auth } from "@/lib/firebase"
@@ -154,6 +154,17 @@ export function Header() {
 
         {/* Right Side Actions */}
         <div className="flex items-center gap-2 sm:gap-3">
+          {/* WhatsApp AI Chat */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => window.open('https://wa.me/254112081866?text=Hi%20Leli%20Rentals%20AI%20Assistant', '_blank')}
+            className="h-8 w-8 sm:h-9 sm:w-9 text-gray-800 dark:text-gray-200 hover:text-green-500 transition-all duration-200 btn-animate"
+            title="Chat with AI Assistant"
+          >
+            <MessageCircle className="h-4 w-4" />
+          </Button>
+
           {/* Theme Toggle */}
           {mounted && (
             <Button
