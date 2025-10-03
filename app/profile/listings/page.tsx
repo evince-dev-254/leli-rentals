@@ -1,5 +1,8 @@
 "use client"
 
+export const runtime = 'edge'
+export const dynamic = 'force-dynamic'
+
 import type React from "react"
 import { useState, useEffect } from "react"
 import { Header } from "@/components/header"
@@ -279,8 +282,8 @@ export default function ListingsPage() {
         available: true,
         owner: {
           id: user.uid,
-          name: user.name || "Unknown User",
-          avatar: user.avatar || "/placeholder.svg",
+          name: user.displayName || "Unknown User",
+          avatar: user.photoURL || "/placeholder.svg",
           rating: 0,
           verified: true
         }

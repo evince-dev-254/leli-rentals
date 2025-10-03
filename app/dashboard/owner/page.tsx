@@ -57,16 +57,16 @@ export default function OwnerDashboard() {
   // Load owner dashboard data from database
   useEffect(() => {
     const loadDashboardData = async () => {
-      if (!user?.id) return
+      if (!user?.uid) return
       
       setIsLoading(true)
       try {
         // Load all dashboard data in parallel
         const [statsData, listingsData, bookingsData, activitiesData] = await Promise.all([
-          ownerDashboardClientService.getOwnerStats(user.id),
-          ownerDashboardClientService.getOwnerListings(user.id),
-          ownerDashboardClientService.getOwnerBookings(user.id),
-          ownerDashboardClientService.getOwnerActivity(user.id, 10)
+          ownerDashboardClientService.getOwnerStats(user.uid),
+          ownerDashboardClientService.getOwnerListings(user.uid),
+          ownerDashboardClientService.getOwnerBookings(user.uid),
+          ownerDashboardClientService.getOwnerActivity(user.uid, 10)
         ])
         
         setStats(statsData)
@@ -87,7 +87,7 @@ export default function OwnerDashboard() {
     }
     
     loadDashboardData()
-  }, [user?.id, toast])
+  }, [user?.uid, toast])
 
   const handleCreateListing = () => {
     const userAccountType = getUserAccountType()

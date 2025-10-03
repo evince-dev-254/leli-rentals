@@ -16,11 +16,7 @@ import { useAuthContext } from "@/lib/auth-context"
 import { getUserAccountType } from "@/lib/account-type-utils"
 
 export default function HomePage() {
-  return (
-    <AuthProvider>
-      <HomePageContent />
-    </AuthProvider>
-  )
+  return <HomePageContent />
 }
 
 function HomePageContent() {

@@ -1,5 +1,8 @@
 "use client"
 
+export const runtime = 'edge'
+export const dynamic = 'force-dynamic'
+
 import type React from "react"
 import { useState, useEffect } from "react"
 import { Header } from "@/components/header"
@@ -61,7 +64,7 @@ export default function BookingsPage() {
       
       setIsLoading(true)
       try {
-        const userBookings = await bookingsService.getUserBookings(user.id)
+        const userBookings = await bookingsService.getUserBookings(user.uid)
         setBookings(userBookings)
       } catch (error) {
         console.error("Error loading bookings:", error)
@@ -84,7 +87,7 @@ export default function BookingsPage() {
       
       setIsLoadingSaved(true)
       try {
-        const userSavedBookings = await hybridSavedBookingsService.getUserSavedBookings(user.id)
+        const userSavedBookings = await hybridSavedBookingsService.getUserSavedBookings(user.uid)
         setSavedBookings(userSavedBookings)
       } catch (error) {
         console.error("Error loading saved bookings:", error)
@@ -249,7 +252,7 @@ For support, contact: support@lelirentals.com
     if (!user) return
     
     try {
-      await hybridSavedBookingsService.removeSavedBooking(user.id, listingId)
+      await hybridSavedBookingsService.removeSavedBooking(user.uid, listingId)
       setSavedBookings(prev => prev.filter(booking => booking.listingId !== listingId))
       
       toast({

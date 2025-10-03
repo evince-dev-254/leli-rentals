@@ -1,5 +1,8 @@
 "use client"
 
+export const runtime = 'edge'
+export const dynamic = 'force-dynamic'
+
 import type React from "react"
 import { useState, useEffect } from "react"
 import { Header } from "@/components/header"
@@ -225,12 +228,12 @@ export default function BillingPage() {
 
   // Handle successful payment
   const handlePaymentSuccess = async (transactionId: string) => {
-    if (!user?.id || !selectedPlanForPayment) return
+    if (!user?.uid || !selectedPlanForPayment) return
     
     try {
       // Create/update subscription
       const subscription = await subscriptionService.createOrUpdateSubscription(
-        user.id,
+        user.uid,
         selectedPlanForPayment.id,
         selectedPlanForPayment.billingCycle || 'monthly',
         'card', // payment method
@@ -238,10 +241,10 @@ export default function BillingPage() {
       )
       
       // Update subscription status to active
-      await subscriptionService.updateSubscriptionStatus(user.id, 'active', transactionId)
+      await subscriptionService.updateSubscriptionStatus(user.uid, 'active', transactionId)
       
       // Refresh subscription data
-      const updatedSubscription = await subscriptionService.getUserSubscription(user.id)
+      const updatedSubscription = await subscriptionService.getUserSubscription(user.uid)
       setUserSubscription(updatedSubscription)
       
       toast({
@@ -261,11 +264,11 @@ export default function BillingPage() {
   // Load user subscription data
   useEffect(() => {
     const loadSubscriptionData = async () => {
-      if (!user?.id) return
+      if (!user?.uid) return
       
       try {
         setIsLoadingSubscription(true)
-        const subscription = await subscriptionService.getUserSubscription(user.id)
+        const subscription = await subscriptionService.getUserSubscription(user.uid)
         setUserSubscription(subscription)
       } catch (error) {
         console.error('Error loading subscription:', error)
@@ -351,13 +354,13 @@ export default function BillingPage() {
 
   const handleSelectPlan = async (planId: string) => {
     const plan = SUBSCRIPTION_PLANS.find(p => p.id === planId)
-    if (!plan || !user?.id) return
+    if (!plan || !user?.uid) return
 
     // If it's a free plan, activate it directly
     if (plan.price.monthly === 0) {
       try {
         const subscription = await subscriptionService.createOrUpdateSubscription(
-          user.id,
+          user.uid,
           planId,
           'monthly'
         )

@@ -7,7 +7,7 @@ if (typeof window === 'undefined') {
   try {
     const pg = require('pg')
     Pool = pg.Pool
-    PoolClient = pg.PoolClient
+    PoolClient = pg.Client
   } catch (error) {
     console.warn('PostgreSQL not available:', error)
   }

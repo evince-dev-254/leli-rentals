@@ -43,10 +43,7 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              // Fix for SSR location object issues
-              if (typeof window !== 'undefined' && !window.location) {
-                window.location = { origin: 'https://leli-rentals.com' };
-              }
+              // Application scripts
             `,
           }}
         />
