@@ -13,12 +13,20 @@ interface ClientLayoutProps {
 }
 
 export function ClientLayout({ children }: ClientLayoutProps) {
+  const [isAIChatOpen, setIsAIChatOpen] = useState(false)
+
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
       <AuthProvider>
         <NotificationProvider>
           {children}
           <Toaster />
+
+          {/* Global AI Chat - Available on all pages */}
+          <ProfessionalAIChat
+            isOpen={isAIChatOpen}
+            onToggle={() => setIsAIChatOpen(!isAIChatOpen)}
+          />
         </NotificationProvider>
       </AuthProvider>
     </ThemeProvider>

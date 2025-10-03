@@ -1,5 +1,5 @@
 import { db } from "./firebase"
-import { collection, addDoc, query, where, getDocs, orderBy, limit, doc, updateDoc, serverTimestamp } from "firebase/firestore"
+import { collection, addDoc, query, where, getDocs, getDoc, orderBy, limit, doc, updateDoc, serverTimestamp } from "firebase/firestore"
 
 // Professional AI Chat Service for Leli Rentals
 // Features inspired by Airbnb, Booking.com, and other professional rental platforms
@@ -366,8 +366,6 @@ class ProfessionalAIChatService {
   // Session management
   async createSession(userId?: string): Promise<string> {
     try {
-      const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-
       const newSession: Omit<ChatSession, 'id'> = {
         userId,
         messages: [],
@@ -390,7 +388,7 @@ class ProfessionalAIChatService {
         updatedAt: serverTimestamp()
       })
 
-      return docRef.id
+      return docRef.id // Return the Firestore document ID directly
     } catch (error) {
       console.error('Error creating chat session:', error)
       throw new Error('Failed to create chat session')
@@ -399,23 +397,19 @@ class ProfessionalAIChatService {
 
   async getSession(sessionId: string): Promise<ChatSession | null> {
     try {
-      const q = query(
-        collection(db, 'ai_chat_sessions'),
-        where('id', '==', sessionId)
-      )
-      const querySnapshot = await getDocs(q)
+      const docRef = doc(db, 'ai_chat_sessions', sessionId)
+      const docSnap = await getDoc(docRef)
 
-      if (querySnapshot.empty) return null
+      if (!docSnap.exists()) return null
 
-      const doc = querySnapshot.docs[0]
-      const data = doc.data()
+      const data = docSnap.data()
 
       return {
-        id: doc.id,
+        id: docSnap.id,
         ...data,
-        createdAt: data.createdAt?.toDate() || new Date(),
-        updatedAt: data.updatedAt?.toDate() || new Date(),
-        messages: data.messages?.map((msg: any) => ({
+        createdAt: data?.createdAt?.toDate() || new Date(),
+        updatedAt: data?.updatedAt?.toDate() || new Date(),
+        messages: data?.messages?.map((msg: any) => ({
           ...msg,
           timestamp: msg.timestamp?.toDate() || new Date()
         })) || []

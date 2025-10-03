@@ -18,7 +18,8 @@ import {
   Loader2,
   Phone,
   Mail,
-  HelpCircle
+  HelpCircle,
+  MessageSquare
 } from "lucide-react"
 import { professionalAIChatService, ChatMessage, ChatSession, AIResponse } from "@/lib/professional-ai-chat-service"
 import { useAuthContext } from "@/lib/auth-context"
@@ -93,7 +94,7 @@ What can I help you with today?`,
       }
 
       setMessages([welcomeMessage])
-      setQuickReplies(['I need booking help', 'Listing questions', 'Payment issues', 'Account support'])
+      setQuickReplies(['I need booking help', 'Listing questions', 'Payment issues', 'Account support', '💬 Chat on WhatsApp'])
     } catch (error) {
       console.error('Error initializing session:', error)
     }
@@ -177,7 +178,11 @@ What can I help you with today?`,
   }
 
   const handleQuickReply = (reply: string) => {
-    handleSendMessage(reply)
+    if (reply === '💬 Chat on WhatsApp') {
+      handleWhatsAppDirect()
+    } else {
+      handleSendMessage(reply)
+    }
     // Track interaction removed - method not implemented
   }
 
@@ -205,6 +210,17 @@ What can I help you with today?`,
     }
 
     // Track interaction removed - method not implemented
+  }
+
+  const handleWhatsAppDirect = () => {
+    // Direct WhatsApp contact for AI assistant
+    const whatsappNumber = "+254112081866"
+    const message = encodeURIComponent(`Hi Leli AI Assistant! I'm contacting you directly via WhatsApp.`)
+    const whatsappUrl = `https://wa.me/${whatsappNumber.replace(/[^0-9]/g, "")}?text=${message}`
+
+    if (typeof window !== 'undefined') {
+      window.open(whatsappUrl, '_blank')
+    }
   }
 
   if (!isOpen) {
@@ -243,15 +259,27 @@ What can I help you with today?`,
               </div>
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-white hover:bg-white/20"
-            onClick={onToggle}
-            aria-label="Close Chat"
-          >
-            <X className="h-4 w-4" />
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-white hover:bg-green-500/20"
+              onClick={handleWhatsAppDirect}
+              aria-label="Chat on WhatsApp"
+              title="Chat with AI Assistant on WhatsApp"
+            >
+              <MessageSquare className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-white hover:bg-white/20"
+              onClick={onToggle}
+              aria-label="Close Chat"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </CardHeader>
 

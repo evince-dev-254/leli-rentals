@@ -14,7 +14,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { useToast } from "@/hooks/use-toast"
-import ProfessionalAIChat from "@/components/professional-ai-chat"
 import {
   Mail,
   Phone,
@@ -42,7 +41,6 @@ export default function ContactPage() {
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
-  const [isChatOpen, setIsChatOpen] = useState(false)
   const { toast } = useToast()
 
   // Handle owner parameter from URL
@@ -118,10 +116,10 @@ export default function ContactPage() {
         }
         break
       case "chat":
-        setIsChatOpen(true)
+        // Chat is now global - just show a message
         toast({
-          title: "🤖 Leli AI Assistant Opened",
-          description: "Our AI assistant is ready to help! She can escalate to human support if needed.",
+          title: "🤖 Leli AI Assistant",
+          description: "Click the message icon in the bottom right corner to chat with our AI assistant!",
         })
         break
       case "emergency":
@@ -494,8 +492,6 @@ export default function ContactPage() {
         </div>
       </section>
 
-      {/* Professional AI Support Chat */}
-      <ProfessionalAIChat isOpen={isChatOpen} onToggle={() => setIsChatOpen(!isChatOpen)} />
     </div>
   )
 }
