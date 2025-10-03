@@ -1,0 +1,25 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Allow authenticated users to upload, download, and delete their own profile images
+    match /profile-images/{userId}/{allPaths=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Allow authenticated users to upload, download, and delete their own listing images
+    match /listing-images/{userId}/{allPaths=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Allow authenticated users to upload, download, and delete their own chat files
+    match /chat-files/{userId}/{allPaths=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Allow public read access to all images (for displaying listings and profiles)
+    match /{allPaths=**} {
+      allow read: if true;
+      allow write: if false; // No public write access
+    }
+  }
+}
