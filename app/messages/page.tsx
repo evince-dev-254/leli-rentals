@@ -94,7 +94,7 @@ export default function MessagesPage() {
       lastMessage: {
         id: "msg1",
         senderId: "owner1",
-        receiverId: user?.id || "user1",
+        receiverId: user?.uid || "user1",
         content: "Hi! I've confirmed your booking for the BMW X5. You can pick it up tomorrow at 9 AM.",
         timestamp: new Date(Date.now() - 1 * 60 * 60 * 1000),
         read: false,
@@ -117,7 +117,7 @@ export default function MessagesPage() {
       updatedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
       lastMessage: {
         id: "msg2",
-        senderId: user?.id || "user1",
+        senderId: user?.uid || "user1",
         receiverId: "owner2",
         content: "Thank you for the great stay! The apartment was perfect.",
         timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
@@ -141,7 +141,7 @@ export default function MessagesPage() {
       lastMessage: {
         id: "msg3",
         senderId: "owner3",
-        receiverId: user?.id || "user1",
+        receiverId: user?.uid || "user1",
         content: "The camera kit is ready for pickup. When would you like to collect it?",
         timestamp: new Date(Date.now() - 30 * 60 * 1000),
         read: false,
@@ -158,14 +158,17 @@ export default function MessagesPage() {
     const ownerParam = searchParams?.get('owner')
     const listingParam = searchParams?.get('listing')
     const bookingParam = searchParams?.get('booking')
-    
-    if (ownerParam) {
+
+    if (ownerParam && chatSessions.length >= 0) { // Wait for chatSessions to be initialized
+      console.log('Processing URL parameters:', { ownerParam, listingParam, bookingParam })
+
       // Find existing chat or create new one
-      const existingChat = chatSessions.find(chat => 
+      const existingChat = chatSessions.find(chat =>
         chat.participantName.toLowerCase().includes(ownerParam.toLowerCase())
       )
-      
+
       if (existingChat) {
+        console.log('Found existing chat:', existingChat.id)
         setActiveChat(existingChat.id)
         setCurrentChat(existingChat)
       } else {
@@ -181,22 +184,24 @@ export default function MessagesPage() {
           unreadCount: 0,
           listingTitle: listingParam || "Rental Inquiry",
           listingImage: "/placeholder.svg",
-          bookingId: bookingParam,
+          bookingId: bookingParam || undefined,
           createdAt: new Date(),
           updatedAt: new Date()
         }
-        
+
+        console.log('Creating new chat:', newChat.id)
         setChatSessions(prev => [newChat, ...prev])
         setActiveChat(newChat.id)
         setCurrentChat(newChat)
-        
+
         toast({
           title: "New conversation started",
           description: `Started a chat with ${ownerParam}`,
+          duration: 3000,
         })
       }
     }
-  }, [searchParams, chatSessions, toast])
+  }, [searchParams, chatSessions.length, toast]) // Depend on chatSessions.length instead of chatSessions array
 
   // Mock messages for active chat
   useEffect(() => {
@@ -205,7 +210,7 @@ export default function MessagesPage() {
         {
           id: "msg1",
           senderId: currentChat.participantId,
-          receiverId: user?.id || "user1",
+          receiverId: user?.uid || "user1",
           content: `Hello! I'm ${currentChat.participantName}. How can I help you with your rental inquiry?`,
           timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
           read: true,
@@ -213,7 +218,7 @@ export default function MessagesPage() {
         },
         {
           id: "msg2",
-          senderId: user?.id || "user1",
+          senderId: user?.uid || "user1",
           receiverId: currentChat.participantId,
           content: "Hi! I'm interested in your listing. Could you tell me more about availability?",
           timestamp: new Date(Date.now() - 1.5 * 60 * 60 * 1000),
@@ -223,7 +228,7 @@ export default function MessagesPage() {
         {
           id: "msg3",
           senderId: currentChat.participantId,
-          receiverId: user?.id || "user1",
+          receiverId: user?.uid || "user1",
           content: "Of course! The item is available for the next 2 weeks. What dates are you looking at?",
           timestamp: new Date(Date.now() - 1 * 60 * 60 * 1000),
           read: true,
@@ -231,7 +236,7 @@ export default function MessagesPage() {
         },
         {
           id: "msg4",
-          senderId: user?.id || "user1",
+          senderId: user?.uid || "user1",
           receiverId: currentChat.participantId,
           content: "I'm thinking about this weekend. What's the pricing like?",
           timestamp: new Date(Date.now() - 30 * 60 * 1000),
@@ -241,7 +246,7 @@ export default function MessagesPage() {
       ]
       setMessages(mockMessages)
     }
-  }, [activeChat, currentChat, user?.id])
+  }, [activeChat, currentChat, user?.uid])
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -256,7 +261,7 @@ export default function MessagesPage() {
     try {
       const newMessage: Message = {
         id: `msg_${Date.now()}`,
-        senderId: user.id,
+        senderId: user.uid,
         receiverId: currentChat.participantId,
         content: messageInput.trim(),
         timestamp: new Date(),
@@ -281,7 +286,7 @@ export default function MessagesPage() {
         const responseMessage: Message = {
           id: `msg_${Date.now() + 1}`,
           senderId: currentChat.participantId,
-          receiverId: user.id,
+          receiverId: user.uid,
           content: "Thanks for your message! I'll get back to you shortly.",
           timestamp: new Date(),
           read: false,
@@ -582,11 +587,11 @@ export default function MessagesPage() {
                   {messages.map((message) => (
                     <div
                       key={message.id}
-                      className={`flex ${message.senderId === user?.id ? 'justify-end' : 'justify-start'}`}
+                      className={`flex ${message.senderId === user?.uid ? 'justify-end' : 'justify-start'}`}
                     >
                       <div
                         className={`max-w-[85%] lg:max-w-[70%] rounded-lg px-3 py-2 lg:px-4 ${
-                          message.senderId === user?.id
+                          message.senderId === user?.uid
                             ? 'bg-blue-600 text-white'
                             : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
                         }`}
@@ -596,7 +601,7 @@ export default function MessagesPage() {
                           <span className="text-xs opacity-70">
                             {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </span>
-                          {message.senderId === user?.id && (
+                          {message.senderId === user?.uid && (
                             <div className="ml-1">
                               {message.read ? (
                                 <CheckCheck className="h-3 w-3 text-blue-300" />

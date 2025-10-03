@@ -204,16 +204,26 @@ export default function ListingDetailsPage() {
   const handleContactOwner = (ownerName: string) => {
     try {
       // Navigate to messages page with owner pre-filled
-      router.push(`/messages?owner=${encodeURIComponent(ownerName)}&listing=${encodeURIComponent(listing?.title || '')}&booking=${id}`)
-      
+      const messagesUrl = `/messages?owner=${encodeURIComponent(ownerName)}&listing=${encodeURIComponent(listing?.title || '')}&booking=${id}`
+      console.log('Navigating to messages:', messagesUrl)
+
+      // Use window.location for more reliable navigation
+      if (typeof window !== 'undefined') {
+        window.location.href = messagesUrl
+      } else {
+        router.push(messagesUrl)
+      }
+
       toast({
-        title: "Opening chat",
-        description: `Starting a conversation with ${ownerName}...`,
+        title: "Opening Messages",
+        description: `Redirecting to chat with ${ownerName}...`,
+        duration: 2000,
       })
     } catch (error) {
+      console.error('Error opening messages:', error)
       toast({
         title: "Error opening chat",
-        description: "Please try again.",
+        description: "Please try again or navigate to Messages manually.",
         variant: "destructive",
       })
     }
