@@ -155,19 +155,18 @@ export function Header() {
         {/* Right Side Actions */}
         <div className="flex items-center gap-2 sm:gap-3">
           {/* WhatsApp AI Chat */}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              window.open('https://wa.me/254112081866?text=Hi%20Leli%20Rentals%20AI%20Assistant', '_blank', 'noopener,noreferrer')
-            }}
-            className="h-8 w-8 sm:h-9 sm:w-9 text-gray-800 dark:text-gray-200 hover:text-green-500 transition-all duration-200 btn-animate cursor-pointer"
+          <a
+            href="https://wa.me/254112081866?text=Hi%20Leli%20Rentals%20AI%20Assistant"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center h-8 w-8 sm:h-9 sm:w-9 rounded-md text-gray-800 dark:text-gray-200 hover:text-green-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 cursor-pointer"
             title="Chat with AI Assistant"
+            onClick={(e) => {
+              console.log('WhatsApp button clicked')
+            }}
           >
             <MessageCircle className="h-4 w-4" />
-          </Button>
+          </a>
 
           {/* Theme Toggle */}
           {mounted && (
@@ -370,18 +369,18 @@ export function Header() {
             
             {/* WhatsApp AI Chat - Mobile */}
             <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-              <Button
-                variant="outline"
+              <a
+                href="https://wa.me/254112081866?text=Hi%20Leli%20Rentals%20AI%20Assistant"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full flex items-center gap-2 px-3 py-2 text-green-600 border border-green-200 rounded-md hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
                 onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  window.open('https://wa.me/254112081866?text=Hi%20Leli%20Rentals%20AI%20Assistant', '_blank', 'noopener,noreferrer')
+                  console.log('Mobile WhatsApp button clicked')
                 }}
-                className="w-full flex items-center gap-2 text-green-600 border-green-200 hover:bg-green-50 dark:hover:bg-green-900/20"
               >
                 <MessageCircle className="h-4 w-4" />
                 Chat with AI Assistant
-              </Button>
+              </a>
             </div>
 
             {/* Mobile Search */}
