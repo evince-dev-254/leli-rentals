@@ -78,12 +78,14 @@ export default function MessagingApp({
     if (!user?.uid) return
 
     try {
-      const sessions = await messagingService.getChatSessions(user.uid)
-      setChatSessions(sessions)
+      const response = await fetch(`/api/messages?action=sessions&userId=${user.uid}`)
+      if (!response.ok) throw new Error('Failed to load sessions')
+      const data = await response.json()
+      setChatSessions(data.sessions)
 
       // Auto-select initial session if provided
       if (initialChatSessionId) {
-        const session = sessions.find(s => s.id === initialChatSessionId)
+        const session = data.sessions.find((s: ChatSession) => s.id === initialChatSessionId)
         if (session) {
           setSelectedSession(session)
         }
@@ -101,12 +103,18 @@ export default function MessagingApp({
   // Load messages for selected session
   const loadMessages = useCallback(async (sessionId: string) => {
     try {
-      const sessionMessages = await messagingService.getMessages(sessionId)
-      setMessages(sessionMessages)
+      const response = await fetch(`/api/messages?action=messages&sessionId=${sessionId}`)
+      if (!response.ok) throw new Error('Failed to load messages')
+      const data = await response.json()
+      setMessages(data.messages)
 
       // Mark messages as read
       if (user?.uid) {
-        await messagingService.markMessagesAsRead(sessionId, user.uid)
+        await fetch('/api/messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'mark-read', sessionId, userId: user.uid })
+        })
         // Update unread count in sessions list
         setChatSessions(prev =>
           prev.map(session =>
@@ -126,24 +134,34 @@ export default function MessagingApp({
     if (!newMessage.trim() || !selectedSession || !user?.uid) return
 
     try {
-      const messageData = {
-        chatSessionId: selectedSession.id,
-        senderId: user.uid,
-        receiverId: selectedSession.participantId,
-        content: newMessage.trim(),
-        type: 'text' as const,
-        bookingId: selectedSession.bookingId,
-        listingId: undefined // Could be added later
-      }
+      const response = await fetch('/api/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'send',
+          chatSessionId: selectedSession.id,
+          receiverId: selectedSession.participantId,
+          content: newMessage.trim(),
+          type: 'text',
+          bookingId: selectedSession.bookingId,
+          userId: user.uid
+        })
+      })
 
-      await messagingService.sendMessage(messageData)
+      if (!response.ok) throw new Error('Failed to send message')
+
+      const data = await response.json()
 
       // Add message to local state
       const newMsg: Message = {
-        id: `temp-${Date.now()}`,
-        ...messageData,
+        id: data.messageId,
+        senderId: user.uid,
+        receiverId: selectedSession.participantId,
+        content: newMessage.trim(),
         timestamp: new Date(),
-        read: false
+        read: false,
+        type: 'text',
+        bookingId: selectedSession.bookingId
       }
 
       setMessages(prev => [...prev, newMsg])
@@ -198,22 +216,31 @@ export default function MessagingApp({
     if (!user?.uid) return
 
     try {
-      const sessionId = await messagingService.getOrCreateChatSession(
-        user.uid,
-        participantId,
-        listingData
-      )
+      const response = await fetch('/api/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'create-session',
+          participantId,
+          listingData,
+          userId: user.uid
+        })
+      })
 
-      // More efficient update: fetch only the new session and add it to the list.
-      // This assumes `getSessionById` exists and is efficient.
-      // If `getOrCreateChatSession` could return the full session object, that would be even better.
+      if (!response.ok) throw new Error('Failed to create session')
+      const data = await response.json()
+      const sessionId = data.sessionId
+
+      // Check if session already exists in our list
       const existingSession = chatSessions.find(s => s.id === sessionId);
       if (existingSession) {
         setSelectedSession(existingSession);
       } else {
-        const newSession = await messagingService.getSessionById(sessionId);
+        // Reload chat sessions to get the new one
+        await loadChatSessions()
+        // Find and select the new session
+        const newSession = chatSessions.find(s => s.id === sessionId);
         if (newSession) {
-          setChatSessions(prev => [newSession, ...prev]);
           setSelectedSession(newSession);
         }
       }
@@ -225,7 +252,7 @@ export default function MessagingApp({
         variant: "destructive"
       })
     }
-  }, [user?.uid, listingData, toast, chatSessions])
+  }, [user?.uid, listingData, toast, chatSessions, loadChatSessions])
 
   // Filter sessions based on search
   const filteredSessions = chatSessions.filter(session =>
