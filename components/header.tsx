@@ -158,8 +158,12 @@ export function Header() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => window.open('https://wa.me/254112081866?text=Hi%20Leli%20Rentals%20AI%20Assistant', '_blank')}
-            className="h-8 w-8 sm:h-9 sm:w-9 text-gray-800 dark:text-gray-200 hover:text-green-500 transition-all duration-200 btn-animate"
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              window.open('https://wa.me/254112081866?text=Hi%20Leli%20Rentals%20AI%20Assistant', '_blank', 'noopener,noreferrer')
+            }}
+            className="h-8 w-8 sm:h-9 sm:w-9 text-gray-800 dark:text-gray-200 hover:text-green-500 transition-all duration-200 btn-animate cursor-pointer"
             title="Chat with AI Assistant"
           >
             <MessageCircle className="h-4 w-4" />
@@ -364,6 +368,22 @@ export function Header() {
               </Link>
             </nav>
             
+            {/* WhatsApp AI Chat - Mobile */}
+            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <Button
+                variant="outline"
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  window.open('https://wa.me/254112081866?text=Hi%20Leli%20Rentals%20AI%20Assistant', '_blank', 'noopener,noreferrer')
+                }}
+                className="w-full flex items-center gap-2 text-green-600 border-green-200 hover:bg-green-50 dark:hover:bg-green-900/20"
+              >
+                <MessageCircle className="h-4 w-4" />
+                Chat with AI Assistant
+              </Button>
+            </div>
+
             {/* Mobile Search */}
             <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
               <div className="relative">
