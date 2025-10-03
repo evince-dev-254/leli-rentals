@@ -57,7 +57,7 @@ export default function FavoritesPage() {
       
       setIsLoading(true)
       try {
-        const userFavorites = await favoritesService.getUserFavorites(user.id)
+        const userFavorites = await favoritesService.getUserFavorites(user.uid)
         setFavorites(userFavorites)
       } catch (error) {
         console.error("Error loading favorites:", error)
@@ -99,7 +99,7 @@ export default function FavoritesPage() {
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000))
-      await favoritesService.removeFromFavorites(user.id, listingId)
+      await favoritesService.removeFromFavorites(user.uid, listingId)
       
       // Update local state
       setFavorites(prev => prev.filter(fav => fav.id !== favoriteId))
@@ -144,9 +144,9 @@ export default function FavoritesPage() {
       if (typeof window !== 'undefined' && navigator.share) {
         await navigator.share({
           title: "Check out this rental on Leli Rentals",
-          url: `${window.location?.origin || 'https://leli-rentals.com'}/items/${listingId}`,
+          url: `${window.location.origin}/items/${listingId}`,
         })
-      } else if (typeof window !== 'undefined' && window.location) {
+      } else if (typeof window !== 'undefined' && navigator.clipboard) {
         // Fallback: copy to clipboard
         await navigator.clipboard.writeText(`${window.location.origin}/items/${listingId}`)
         toast({
