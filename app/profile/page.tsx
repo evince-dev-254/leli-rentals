@@ -32,9 +32,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { 
-  User, Mail, MapPin, Edit, Trash2, Plus, Star, Calendar, DollarSign, Eye, Settings, Camera, 
-  LogOut, Shield, Bell, CreditCard, HelpCircle, ChevronRight, TrendingUp, Users, Award
+import {
+  User, Mail, MapPin, Edit, Trash2, Plus, Star, Calendar, DollarSign, Eye, Settings, Camera,
+  LogOut, Shield, Bell, CreditCard, HelpCircle, ChevronRight, TrendingUp, Users, Award, Crown
 } from "lucide-react"
 import Link from "next/link"
 import { useAuthContext } from "@/lib/auth-context"
@@ -146,7 +146,7 @@ export default function ProfilePage() {
   const [userBookings, setUserBookings] = useState<UserBooking[]>([])
   const [userSubscription, setUserSubscription] = useState<UserSubscription | null>(null)
   const [profileData, setProfileData] = useState({
-    name: user?.name || "",
+    name: user?.displayName || "",
     email: user?.email || "",
     phone: "",
     location: "",
@@ -157,11 +157,11 @@ export default function ProfilePage() {
   // Load user data
   useEffect(() => {
     const loadUserData = async () => {
-      if (!user || !user.id) return
+      if (!user || !user.uid) return
 
       try {
         // Load user profile
-        const profile = await profileService.getUserProfile(user.id)
+        const profile = await profileService.getUserProfile(user.uid)
         if (profile) {
           setUserProfile(profile)
           setProfileData({
@@ -174,17 +174,17 @@ export default function ProfilePage() {
           })
         } else {
           // Create default profile if doesn't exist
-          await profileService.createDefaultProfile(user.id, user.name || "", user.email || "")
-          const newProfile = await profileService.getUserProfile(user.id)
+          await profileService.createDefaultProfile(user.uid, user.displayName || "", user.email || "")
+          const newProfile = await profileService.getUserProfile(user.uid)
           setUserProfile(newProfile)
         }
 
         // Load user reviews, listings, bookings, and subscription
         const [reviews, listings, bookings, subscription] = await Promise.all([
-          profileService.getUserReviews(user.id),
-          profileService.getUserListings(user.id),
-          profileService.getUserBookings(user.id),
-          subscriptionService.getUserSubscription(user.id)
+          profileService.getUserReviews(user.uid),
+          profileService.getUserListings(user.uid),
+          profileService.getUserBookings(user.uid),
+          subscriptionService.getUserSubscription(user.uid)
         ])
 
         setUserReviews(reviews)
@@ -193,7 +193,7 @@ export default function ProfilePage() {
         setUserSubscription(subscription)
 
         // Update stats
-        await profileService.updateUserStats(user.id)
+        await profileService.updateUserStats(user.uid)
       } catch (error) {
         console.error("Error loading user data:", error)
         toast({
@@ -210,7 +210,7 @@ export default function ProfilePage() {
   // Handle image upload
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
-    if (!file || !user || !user.id) return
+    if (!file || !user || !user.uid) return
 
     if (file.size > 5 * 1024 * 1024) { // 5MB limit
       toast({
@@ -232,7 +232,7 @@ export default function ProfilePage() {
 
     setIsUploadingImage(true)
     try {
-      const imageUrl = await profileService.uploadProfileImage(user.id, file)
+      const imageUrl = await profileService.uploadProfileImage(user.uid, file)
       setUserProfile(prev => prev ? { ...prev, avatar: imageUrl } : null)
       toast({
         title: "Image uploaded successfully!",
@@ -306,7 +306,7 @@ export default function ProfilePage() {
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!user || !user.id) {
+    if (!user || !user.uid) {
       toast({
         title: "Error",
         description: "You must be logged in to update your profile.",
@@ -316,7 +316,7 @@ export default function ProfilePage() {
     }
 
     try {
-      await profileService.updateUserProfile(user.id, profileData)
+      await profileService.updateUserProfile(user.uid, profileData)
       
       // Update local state
       setUserProfile(prev => prev ? {
@@ -394,9 +394,9 @@ export default function ProfilePage() {
               <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4 sm:gap-6 md:gap-8">
                 <div className="relative group mx-auto lg:mx-0">
                   <Avatar className="h-24 w-24 sm:h-28 sm:w-28 md:h-32 md:w-32 ring-2 sm:ring-4 ring-white shadow-lg">
-                    <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.name || "User"} />
+                    <AvatarImage src={user.photoURL || "/placeholder.svg"} alt={user.displayName || "User"} />
                     <AvatarFallback className="text-xl sm:text-2xl md:text-3xl bg-gradient-to-br from-blue-500 to-purple-600 text-white">
-                      {user.name?.charAt(0) || "U"}
+                      {user.displayName?.charAt(0) || "U"}
                     </AvatarFallback>
                   </Avatar>
                   <div className="absolute -bottom-1 -right-1 sm:-bottom-2 sm:-right-2">
@@ -430,7 +430,7 @@ export default function ProfilePage() {
                     <div className="space-y-2 sm:space-y-3">
                       <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
                         <h1 className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                          {user.name || "Welcome to Leli Rentals"}
+                          {user.displayName || "Welcome to Leli Rentals"}
                         </h1>
                         <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-200 text-xs sm:text-sm">
                           <Shield className="h-3 w-3 mr-1" />
