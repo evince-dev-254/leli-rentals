@@ -1,0 +1,133 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users collection - users can read/write their own data
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if request.auth != null && resource.data.accountType == 'owner';
+      // Allow creation for new users
+      allow create: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Contact tickets - users can read/write their own tickets
+    match /contactTickets/{ticketId} {
+      allow read, write: if request.auth != null && 
+        (request.auth.uid == resource.data.userId || 
+         request.auth.token.admin == true);
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.userId;
+      // Allow authenticated users to create tickets
+      allow create: if request.auth != null;
+    }
+    
+    // Admin notifications - only admins can read/write
+    match /adminNotifications/{notificationId} {
+      allow read, write: if request.auth != null && 
+        request.auth.token.admin == true;
+    }
+    
+    // Payment methods - users can read/write their own
+    match /paymentMethods/{paymentId} {
+      allow read, write: if request.auth != null && 
+        request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.userId;
+    }
+    
+    // Invoices - users can read/write their own
+    match /invoices/{invoiceId} {
+      allow read, write: if request.auth != null && 
+        request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.userId;
+    }
+    
+    // Billing history - users can read/write their own
+    match /billingHistory/{historyId} {
+      allow read, write: if request.auth != null && 
+        request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.userId;
+    }
+    
+    // Login activity - users can read/write their own
+    match /loginActivity/{activityId} {
+      allow read, write: if request.auth != null && 
+        request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.userId;
+    }
+    
+    // Account switches - users can read/write their own
+    match /accountSwitches/{switchId} {
+      allow read, write: if request.auth != null && 
+        request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.userId;
+    }
+    
+    // Email queue - only admins can read/write
+    match /emailQueue/{emailId} {
+      allow read, write: if request.auth != null && 
+        request.auth.token.admin == true;
+    }
+    
+    // Security logs - users can read/write their own
+    match /securityLogs/{logId} {
+      allow read, write: if request.auth != null && 
+        request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.userId;
+    }
+    
+    // Listings - public read, owners can write their own
+    match /listings/{listingId} {
+      allow read: if true;
+      allow write: if request.auth != null && 
+        (request.auth.uid == resource.data.ownerId || 
+         request.auth.token.admin == true);
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.ownerId;
+    }
+    
+    // Bookings - users can read/write their own
+    match /bookings/{bookingId} {
+      allow read, write: if request.auth != null && 
+        (request.auth.uid == resource.data.userId || 
+         request.auth.uid == resource.data.ownerId ||
+         request.auth.token.admin == true);
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.userId;
+    }
+    
+    // Messages - users can read/write their own conversations
+    match /messages/{messageId} {
+      allow read, write: if request.auth != null && 
+        (request.auth.uid == resource.data.senderId || 
+         request.auth.uid == resource.data.receiverId);
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.senderId;
+    }
+    
+    // Reviews - public read, users can write their own
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow write: if request.auth != null && 
+        request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.userId;
+    }
+    
+    // Categories - public read, admins can write
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if request.auth != null && 
+        request.auth.token.admin == true;
+    }
+    
+    // Allow authenticated users to read/write their own data
+    match /{document=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}
