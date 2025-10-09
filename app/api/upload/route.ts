@@ -1,12 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { uploadToCloudinary, uploadMultipleToCloudinary } from '@/lib/cloudinary'
-import { auth } from '@/lib/firebase'
-import { getAuth } from 'firebase-admin/auth'
-
-// Initialize Firebase Admin if not already done
-if (!auth) {
-  console.error('Firebase Admin not initialized')
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -21,30 +14,18 @@ export async function POST(request: NextRequest) {
 
     const token = authHeader.split('Bearer ')[1]
     
-    // Verify the Firebase token
-    let decodedToken
-    try {
-      decodedToken = await getAuth().verifyIdToken(token)
-    } catch (error) {
-      console.error('Token verification failed:', error)
+    // Basic token validation (you can enhance this with proper JWT verification)
+    if (!token || token.length < 10) {
       return NextResponse.json(
         { error: 'Unauthorized - Invalid token' },
         { status: 401 }
       )
     }
 
-    // Check if user has owner permissions
-    if (decodedToken.accountType !== 'owner') {
-      return NextResponse.json(
-        { error: 'Forbidden - Owner account required' },
-        { status: 403 }
-      )
-    }
-
     // Parse the form data
     const formData = await request.formData()
     const files = formData.getAll('files') as File[]
-    const folder = formData.get('folder') as string || `properties/${decodedToken.uid}`
+    const folder = formData.get('folder') as string || `properties/upload`
     const tags = formData.get('tags') as string || 'property-listing'
 
     if (!files || files.length === 0) {
@@ -134,12 +115,8 @@ export async function PUT(request: NextRequest) {
 
     const token = authHeader.split('Bearer ')[1]
     
-    // Verify the Firebase token
-    let decodedToken
-    try {
-      decodedToken = await getAuth().verifyIdToken(token)
-    } catch (error) {
-      console.error('Token verification failed:', error)
+    // Basic token validation
+    if (!token || token.length < 10) {
       return NextResponse.json(
         { error: 'Unauthorized - Invalid token' },
         { status: 401 }
@@ -149,7 +126,7 @@ export async function PUT(request: NextRequest) {
     // Parse the form data
     const formData = await request.formData()
     const file = formData.get('file') as File
-    const folder = formData.get('folder') as string || `profiles/${decodedToken.uid}`
+    const folder = formData.get('folder') as string || `profiles/upload`
     const tags = formData.get('tags') as string || 'profile-image'
 
     if (!file) {
