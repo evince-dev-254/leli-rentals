@@ -108,12 +108,6 @@ export default function ProfilePage() {
           <CardContent className="p-8">
             <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
               <div className="flex flex-col items-center gap-4">
-                <Avatar className="h-24 w-24">
-                  <AvatarImage src={profilePicture || user?.photoURL || ""} />
-                  <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500 text-white text-2xl">
-                    {user?.displayName?.charAt(0) || user?.email?.charAt(0) || "U"}
-                  </AvatarFallback>
-                </Avatar>
                 <CloudinaryProfileUpload
                   currentImageUrl={profilePicture}
                   userName={user?.displayName || "User"}

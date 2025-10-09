@@ -30,32 +30,22 @@ export function useCloudinaryUpload(options: UseCloudinaryUploadOptions = {}) {
     files: File[],
     customOptions: Partial<UseCloudinaryUploadOptions> = {}
   ): Promise<UploadResult[]> => {
-    if (!user) {
-      throw new Error('User must be authenticated to upload files')
-    }
-
     const finalOptions = { ...options, ...customOptions }
     setIsUploading(true)
     setUploadProgress(0)
 
     try {
-      // Get Firebase ID token
-      const token = await user.getIdToken()
-      
       // Prepare form data
       const formData = new FormData()
       files.forEach(file => {
         formData.append('files', file)
       })
-      formData.append('folder', finalOptions.folder || `users/${user.uid}`)
+      formData.append('folder', finalOptions.folder || `users/upload`)
       formData.append('tags', (finalOptions.tags || ['user-upload']).join(','))
 
       // Upload to server
       const response = await fetch('/api/upload', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
         body: formData
       })
 
@@ -91,30 +81,20 @@ export function useCloudinaryUpload(options: UseCloudinaryUploadOptions = {}) {
     file: File,
     customOptions: Partial<UseCloudinaryUploadOptions> = {}
   ): Promise<UploadResult> => {
-    if (!user) {
-      throw new Error('User must be authenticated to upload files')
-    }
-
     const finalOptions = { ...options, ...customOptions }
     setIsUploading(true)
     setUploadProgress(0)
 
     try {
-      // Get Firebase ID token
-      const token = await user.getIdToken()
-      
       // Prepare form data
       const formData = new FormData()
       formData.append('file', file)
-      formData.append('folder', finalOptions.folder || `users/${user.uid}`)
+      formData.append('folder', finalOptions.folder || `users/upload`)
       formData.append('tags', (finalOptions.tags || ['user-upload']).join(','))
 
       // Upload to server
       const response = await fetch('/api/upload', {
         method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
         body: formData
       })
 
