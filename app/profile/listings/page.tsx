@@ -286,7 +286,8 @@ export default function ListingsPage() {
           avatar: user.photoURL || "/placeholder.svg",
           rating: 0,
           verified: true
-        }
+        },
+        ownerId: user.uid
       }
       
       await listingsService.createListing(listingData)

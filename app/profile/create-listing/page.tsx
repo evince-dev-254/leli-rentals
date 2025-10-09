@@ -331,7 +331,7 @@ export default function CreateListingPage() {
           verified: true,
           phone: formData.contactPhone || undefined,
         },
-        ownerId: user.id,
+        ownerId: user.uid,
       }
       
       // Create listing
