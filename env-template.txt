@@ -35,6 +35,13 @@ RENDER_DB_USER=lelirentals_user
 RENDER_DB_PASSWORD=i2vAf2EJ68fEhhroqZweQ67IhpI5fJbe
 RENDER_DB_PORT=5432
 
+# Cloudinary Configuration
+# Get these from your Cloudinary dashboard: https://cloudinary.com/console
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=drtjczrsl
+CLOUDINARY_API_KEY=746675165345341
+CLOUDINARY_API_SECRET=HoG_jecxLqK8ZaVgwxTTGiq9Nq4
+CLOUDINARY_URL=cloudinary://746675165345341:HoG_jecxLqK8ZaVgwxTTGiq9Nq4@drtjczrsl
+
 # Production settings
 NODE_ENV=production
 NEXT_PUBLIC_APP_URL=https://leli-rentals-67uy.onrender.com
