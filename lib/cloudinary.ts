@@ -37,7 +37,6 @@ export const uploadToCloudinary = async (
       folder: options.folder || 'leli-rentals',
       transformation: options.transformation,
       tags: options.tags,
-      moderation: options.moderation || 'webpurify',
       quality: options.quality || 'auto',
       format: options.format || 'auto',
       resource_type: 'auto' as const

@@ -132,7 +132,6 @@ export async function PUT(request: NextRequest) {
     const uploadResult = await uploadToCloudinary(fileBuffer, {
       folder,
       tags: [tags],
-      moderation: 'webpurify',
       quality: 'auto',
       format: 'auto'
     })
@@ -156,8 +155,8 @@ export async function PUT(request: NextRequest) {
     console.error('Single upload API error:', error)
     return NextResponse.json(
       { 
-        error: 'Upload failed', 
-        details: error instanceof Error ? error.message : 'Unknown error' 
+        error: error instanceof Error ? error.message : 'Upload failed',
+        details: process.env.NODE_ENV === 'development' ? error : undefined
       },
       { status: 500 }
     )
