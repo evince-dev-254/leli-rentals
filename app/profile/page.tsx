@@ -321,7 +321,12 @@ export default function ProfilePage() {
                       <h3 className="font-semibold">Two-Factor Authentication</h3>
                       <p className="text-sm text-gray-600">Add an extra layer of security</p>
                     </div>
-                    <Button variant="outline">Enable 2FA</Button>
+                    <Button 
+                      variant="outline"
+                      onClick={() => window.location.href = '/profile/security'}
+                    >
+                      Enable 2FA
+                    </Button>
                   </div>
 
                   <div className="flex items-center justify-between p-4 border rounded-lg">
@@ -329,7 +334,12 @@ export default function ProfilePage() {
                       <h3 className="font-semibold">Login Activity</h3>
                       <p className="text-sm text-gray-600">View recent login attempts</p>
                     </div>
-                    <Button variant="outline">View Activity</Button>
+                    <Button 
+                      variant="outline"
+                      onClick={() => window.location.href = '/profile/security'}
+                    >
+                      View Activity
+                    </Button>
                   </div>
                 </div>
               </CardContent>
@@ -375,7 +385,13 @@ export default function ProfilePage() {
                         <p className="text-sm text-gray-600">Receive browser notifications</p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm">Configure</Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => window.location.href = '/profile/settings'}
+                    >
+                      Configure
+                    </Button>
                     </div>
                     </div>
                   </CardContent>
@@ -399,7 +415,13 @@ export default function ProfilePage() {
                         <p className="text-sm text-gray-600">Manage your payment options</p>
                       </div>
                               </div>
-                    <Button variant="outline" size="sm">Manage</Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => window.location.href = '/profile/billing'}
+                    >
+                      Manage
+                    </Button>
                           </div>
 
                   <div className="flex items-center justify-between p-4 border rounded-lg">
@@ -410,7 +432,13 @@ export default function ProfilePage() {
                         <p className="text-sm text-gray-600">View your payment history</p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm">View History</Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => window.location.href = '/profile/billing'}
+                    >
+                      View History
+                    </Button>
             </div>
 
                   <div className="flex items-center justify-between p-4 border rounded-lg">
@@ -421,7 +449,13 @@ export default function ProfilePage() {
                         <p className="text-sm text-gray-600">Download your invoices</p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm">Download</Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => window.location.href = '/profile/billing'}
+                    >
+                      Download
+                    </Button>
                   </div>
                   </div>
                 </CardContent>
