@@ -16,10 +16,6 @@ import { Eye, EyeOff, Mail, Lock, User, Chrome, AlertCircle, CheckCircle } from 
 import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
 import { authAPI } from "@/lib/auth"
-<<<<<<< HEAD
-=======
-import { useRouter } from "next/navigation"
->>>>>>> 7510178759955c5c9fc2b25c9aac33343c4b2e2a
 import { fetchSignInMethodsForEmail } from "firebase/auth"
 import { auth } from "@/lib/firebase"
 import { notificationsService } from "@/lib/notifications-service"
