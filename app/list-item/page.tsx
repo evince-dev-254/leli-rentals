@@ -16,6 +16,7 @@ import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useToast } from '@/hooks/use-toast'
 import { useRouter } from 'next/navigation'
+import { useCloudinaryUpload } from '@/hooks/use-cloudinary-upload'
 import { 
   Upload, 
   MapPin, 
@@ -86,6 +87,10 @@ export default function CreateListingPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [activeTab, setActiveTab] = useState('basic')
+  const { uploadFiles, isUploading: isUploadingImages } = useCloudinaryUpload({
+    folder: 'property-listings',
+    tags: ['property', 'listing']
+  })
 
   const [formData, setFormData] = useState<ListingForm>({
     title: '',
@@ -216,12 +221,16 @@ export default function CreateListingPage() {
   }
 
   const uploadImages = async (images: File[]) => {
-    const uploadPromises = images.map(async (image) => {
-      const imageRef = ref(storage, `listings/${user?.uid}/${Date.now()}_${image.name}`)
-      const snapshot = await uploadBytes(imageRef, image)
-      return getDownloadURL(snapshot.ref)
-    })
-    return Promise.all(uploadPromises)
+    try {
+      const results = await uploadFiles(images, {
+        folder: `property-listings/${user?.uid}/${Date.now()}`,
+        tags: ['property-listing', 'owner-upload']
+      })
+      return results.map(result => result.secure_url)
+    } catch (error) {
+      console.error('Error uploading images:', error)
+      throw error
+    }
   }
 
   const handleSubmit = async () => {
@@ -522,8 +531,17 @@ export default function CreateListingPage() {
                           className="hidden"
                         />
                         <div className="text-center">
-                          <Upload className="h-8 w-8 mx-auto mb-2 text-gray-400" />
-                          <p className="text-sm text-gray-600">Add Images</p>
+                          {isUploadingImages ? (
+                            <>
+                              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                              <p className="text-sm text-gray-600">Uploading...</p>
+                            </>
+                          ) : (
+                            <>
+                              <Upload className="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                              <p className="text-sm text-gray-600">Add Images</p>
+                            </>
+                          )}
                         </div>
                       </label>
                     </div>

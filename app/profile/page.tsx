@@ -32,6 +32,7 @@ import {
   FileText
 } from "lucide-react"
 import Link from "next/link"
+import CloudinaryProfileUpload from "@/components/cloudinary-profile-upload"
 
 export default function ProfilePage() {
   const { user, userProfile, isLoading } = useAuthContext()
@@ -48,6 +49,7 @@ export default function ProfilePage() {
     dateJoined: 'January 2024',
     verified: true
   })
+  const [profilePicture, setProfilePicture] = useState(user?.photoURL || "")
 
   // Redirect if not authenticated
   if (!isLoading && !user) {
@@ -84,6 +86,18 @@ export default function ProfilePage() {
     setIsEditing(false)
   }
 
+  const handleProfilePictureChange = (imageUrl: string) => {
+    setProfilePicture(imageUrl)
+    // Here you would typically save to your backend/database
+    console.log('Profile picture updated:', imageUrl)
+  }
+
+  const handleProfilePictureRemove = () => {
+    setProfilePicture("")
+    // Here you would typically remove from your backend/database
+    console.log('Profile picture removed')
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <Header />
@@ -93,12 +107,21 @@ export default function ProfilePage() {
         <Card className="mb-8">
           <CardContent className="p-8">
             <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-              <Avatar className="h-24 w-24">
-                <AvatarImage src={user?.photoURL || ""} />
-                <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500 text-white text-2xl">
-                  {user?.displayName?.charAt(0) || user?.email?.charAt(0) || "U"}
-                    </AvatarFallback>
-                  </Avatar>
+              <div className="flex flex-col items-center gap-4">
+                <Avatar className="h-24 w-24">
+                  <AvatarImage src={profilePicture || user?.photoURL || ""} />
+                  <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500 text-white text-2xl">
+                    {user?.displayName?.charAt(0) || user?.email?.charAt(0) || "U"}
+                  </AvatarFallback>
+                </Avatar>
+                <CloudinaryProfileUpload
+                  currentImageUrl={profilePicture}
+                  userName={user?.displayName || "User"}
+                  onImageChange={handleProfilePictureChange}
+                  onImageRemove={handleProfilePictureRemove}
+                  className="w-full max-w-xs"
+                />
+              </div>
               
               <div className="flex-1">
                 <div className="flex items-center gap-4 mb-2">
