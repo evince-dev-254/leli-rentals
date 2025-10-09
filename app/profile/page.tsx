@@ -38,6 +38,16 @@ export default function ProfilePage() {
   const router = useRouter()
   const [isEditing, setIsEditing] = useState(false)
   const [activeTab, setActiveTab] = useState("personal")
+  const [profileData, setProfileData] = useState({
+    firstName: user?.displayName?.split(' ')[0] || '',
+    lastName: user?.displayName?.split(' ')[1] || '',
+    email: user?.email || '',
+    phone: '+254700000000',
+    location: 'Nairobi, Kenya',
+    bio: 'I love renting items and sharing my own!',
+    dateJoined: 'January 2024',
+    verified: true
+  })
 
   // Redirect if not authenticated
   if (!isLoading && !user) {
@@ -55,17 +65,6 @@ export default function ProfilePage() {
       </div>
     )
   }
-
-  const [profileData, setProfileData] = useState({
-    firstName: user?.displayName?.split(' ')[0] || '',
-    lastName: user?.displayName?.split(' ')[1] || '',
-    email: user?.email || '',
-    phone: '+254700000000',
-    location: 'Nairobi, Kenya',
-    bio: 'I love renting items and sharing my own!',
-    dateJoined: 'January 2024',
-    verified: true
-  })
 
   // Get user account type and verification status
   const userAccountType = userProfile?.accountType || 'renter'
