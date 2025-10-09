@@ -2,7 +2,8 @@
 
 import type React from "react"
 
-import { Search, Moon, Sun, User, Bell, ChevronDown, Menu, X, MessageCircle } from "lucide-react"
+import { Search, Moon, Sun, User, Bell, ChevronDown, Menu, X } from "lucide-react"
+import { WhatsAppIcon } from "@/components/ui/whatsapp-icon"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { useAuthContext } from "@/lib/auth-context"
 import { auth } from "@/lib/firebase"
@@ -165,7 +166,7 @@ export function Header() {
               console.log('WhatsApp button clicked')
             }}
           >
-            <MessageCircle className="h-4 w-4" />
+            <WhatsAppIcon className="h-4 w-4" />
           </a>
 
           {/* Theme Toggle */}
@@ -378,7 +379,7 @@ export function Header() {
                   console.log('Mobile WhatsApp button clicked')
                 }}
               >
-                <MessageCircle className="h-4 w-4" />
+                <WhatsAppIcon className="h-4 w-4" />
                 Chat with AI Assistant
               </a>
             </div>
