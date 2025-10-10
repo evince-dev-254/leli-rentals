@@ -1,6 +1,7 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
+import { DatabaseService } from '@/lib/database-service'
 import { Header } from "@/components/header"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -77,8 +78,9 @@ export default function ProfilePage() {
     rejectionReason: userProfile?.verificationRejectionReason
   }
 
-  const handleSave = () => {
-    // Save profile logic here
+  const handleSave = async () => {
+    // Save profile to database
+    await saveProfileToDatabase()
     setIsEditing(false)
   }
 
@@ -86,10 +88,20 @@ export default function ProfilePage() {
     setIsEditing(false)
   }
 
-  const handleProfilePictureChange = (imageUrl: string) => {
+  const handleProfilePictureChange = async (imageUrl: string) => {
     setProfilePicture(imageUrl)
-    // Here you would typically save to your backend/database
-    console.log('Profile picture updated:', imageUrl)
+    
+    // Auto-save profile picture to database
+    if (user) {
+      try {
+        await DatabaseService.updateUser(user.uid, {
+          avatar: imageUrl
+        })
+        console.log('Profile picture saved to database:', imageUrl)
+      } catch (error) {
+        console.error('Error saving profile picture:', error)
+      }
+    }
   }
 
   const handleProfilePictureRemove = () => {
@@ -97,6 +109,61 @@ export default function ProfilePage() {
     // Here you would typically remove from your backend/database
     console.log('Profile picture removed')
   }
+
+  // Database integration functions
+  const saveProfileToDatabase = async () => {
+    if (!user) return
+    
+    try {
+      const userData = {
+        id: user.uid,
+        email: profileData.email,
+        name: `${profileData.firstName} ${profileData.lastName}`,
+        avatar: profilePicture
+      }
+      
+      const savedUser = await DatabaseService.createUser(userData)
+      console.log('Profile saved to database:', savedUser)
+      
+      // Show success message
+      alert('Profile saved successfully!')
+    } catch (error) {
+      console.error('Error saving profile:', error)
+      alert('Error saving profile. Please try again.')
+    }
+  }
+
+  const loadProfileFromDatabase = async () => {
+    if (!user) return
+    
+    try {
+      const userData = await DatabaseService.getUserById(user.uid)
+      if (userData) {
+        // Update profile data with database values
+        setProfileData(prev => ({
+          ...prev,
+          firstName: userData.name?.split(' ')[0] || prev.firstName,
+          lastName: userData.name?.split(' ')[1] || prev.lastName,
+          email: userData.email || prev.email
+        }))
+        
+        if (userData.avatar) {
+          setProfilePicture(userData.avatar)
+        }
+        
+        console.log('Profile loaded from database:', userData)
+      }
+    } catch (error) {
+      console.error('Error loading profile:', error)
+    }
+  }
+
+  // Load profile data when component mounts
+  useEffect(() => {
+    if (user && !isLoading) {
+      loadProfileFromDatabase()
+    }
+  }, [user, isLoading])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -146,10 +213,20 @@ export default function ProfilePage() {
                     </Button>
                   </>
                 ) : (
-                  <Button onClick={() => setIsEditing(true)}>
-                    <Edit className="h-4 w-4 mr-2" />
-                    Edit Profile
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button onClick={() => setIsEditing(true)}>
+                      <Edit className="h-4 w-4 mr-2" />
+                      Edit Profile
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={saveProfileToDatabase}
+                      className="bg-green-50 hover:bg-green-100 text-green-700 border-green-200"
+                    >
+                      <Save className="h-4 w-4 mr-2" />
+                      Save to Database
+                    </Button>
+                  </div>
                 )}
                         </div>
                       </div>
