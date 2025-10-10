@@ -1,4 +1,5 @@
 import { prisma } from './prisma'
+import { databaseConfig } from './config'
 
 // Database service that can work alongside Firebase
 export class DatabaseService {

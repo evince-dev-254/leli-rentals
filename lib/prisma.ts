@@ -1,16 +1,6 @@
-// Simplified Prisma setup - will be enabled when Prisma is properly configured
-// import { PrismaClient } from '@prisma/client'
-// import { withAccelerate } from '@prisma/extension-accelerate'
+// Mock Prisma implementation - no real database connection
+// This prevents build errors while maintaining the same API
 
-// const globalForPrisma = globalThis as unknown as {
-//   prisma: PrismaClient | undefined
-// }
-
-// export const prisma = globalForPrisma.prisma ?? new PrismaClient().$extends(withAccelerate())
-
-// if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
-
-// Temporary mock for development
 export const prisma = {
   user: {
     create: async (data: any) => {
