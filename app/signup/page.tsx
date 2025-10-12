@@ -55,6 +55,19 @@ export default function SignupPage() {
     }
   }, [user, authLoading, router])
 
+  // Debounced email check
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (formData.email && formData.email.includes('@')) {
+        checkEmailAvailability(formData.email)
+      } else {
+        setEmailStatus('idle')
+      }
+    }, 500) // Wait 500ms after user stops typing
+
+    return () => clearTimeout(timeoutId)
+  }, [formData.email])
+
   // Show loading while checking authentication
   if (isCheckingAuth || authLoading) {
     return (
@@ -106,19 +119,6 @@ export default function SignupPage() {
       setIsCheckingEmail(false)
     }
   }
-
-  // Debounced email check
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (formData.email && formData.email.includes('@')) {
-        checkEmailAvailability(formData.email)
-      } else {
-        setEmailStatus('idle')
-      }
-    }, 500) // Wait 500ms after user stops typing
-
-    return () => clearTimeout(timeoutId)
-  }, [formData.email])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
