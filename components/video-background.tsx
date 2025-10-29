@@ -54,8 +54,7 @@ export function VideoBackground({
     video.addEventListener('canplay', handleCanPlay)
     video.addEventListener('error', handleError)
 
-    // Set video source and try to load
-    video.src = src
+    // Let the source tag handle the src, just trigger load
     video.load()
 
     return () => {
@@ -66,20 +65,6 @@ export function VideoBackground({
 
   // Debug info
   console.log('VideoBackground render:', { showVideo, isVideoLoaded, isMobile, src })
-  
-  // Test video loading
-  useEffect(() => {
-    if (showVideo) {
-      console.log('Testing video access:', src)
-      fetch(src, { method: 'HEAD' })
-        .then(response => {
-          console.log('Video accessible:', response.ok, response.status)
-        })
-        .catch(error => {
-          console.error('Video not accessible:', error)
-        })
-    }
-  }, [showVideo, src])
 
   return (
     <div className={`relative overflow-hidden ${className}`}>

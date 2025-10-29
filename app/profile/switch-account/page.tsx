@@ -1,9 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useAuthContext } from '@/lib/auth-context'
-import { db } from '@/lib/firebase'
-import { doc, getDoc, updateDoc, setDoc } from 'firebase/firestore'
+import { useUser } from '@clerk/nextjs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -42,12 +40,14 @@ interface AccountType {
 }
 
 export default function SwitchAccountPage() {
-  const { user } = useAuthContext()
+  const { user, isLoaded } = useUser()
   const { toast } = useToast()
   const router = useRouter()
   const [currentAccountType, setCurrentAccountType] = useState<'renter' | 'owner'>('renter')
   const [isLoading, setIsLoading] = useState(true)
   const [isSwitching, setIsSwitching] = useState(false)
+  const [showWarning, setShowWarning] = useState(false)
+  const [targetType, setTargetType] = useState<'renter' | 'owner'>('renter')
 
   const accountTypes: AccountType[] = [
     {
@@ -98,11 +98,9 @@ export default function SwitchAccountPage() {
 
     const fetchAccountType = async () => {
       try {
-        const userDoc = await getDoc(doc(db, 'users', user.uid))
-        if (userDoc.exists()) {
-          const userData = userDoc.data()
-          setCurrentAccountType(userData.accountType || 'renter')
-        }
+        // Get account type from Clerk metadata
+        const accountType = (user.publicMetadata?.accountType as string) || 'renter'
+        setCurrentAccountType(accountType as 'renter' | 'owner')
         setIsLoading(false)
       } catch (error) {
         console.error('Error fetching account type:', error)
@@ -129,36 +127,54 @@ export default function SwitchAccountPage() {
       return
     }
 
+    // Show warning modal before switching
+    setTargetType(newAccountType)
+    setShowWarning(true)
+  }
+
+  const confirmSwitch = async () => {
+    setShowWarning(false)
     setIsSwitching(true)
+    
     try {
-      // Update account type in database
-      await updateDoc(doc(db, 'users', user.uid), {
-        accountType: newAccountType,
-        lastAccountSwitch: new Date(),
-        updatedAt: new Date()
-      })
+      // Archive listings if switching from owner to renter
+      if (currentAccountType === 'owner' && targetType === 'renter') {
+        // Archive all listings (mock)
+        console.log('Archiving owner listings...')
+      }
 
-      // Log account switch
-      await setDoc(doc(db, 'accountSwitches', `${user.uid}_${Date.now()}`), {
-        userId: user.uid,
-        fromAccountType: currentAccountType,
-        toAccountType: newAccountType,
-        timestamp: new Date(),
-        ipAddress: 'Unknown', // You might want to get this from request
-        userAgent: navigator.userAgent
+      // Update Clerk metadata
+      await user?.update({
+        publicMetadata: {
+          ...user.publicMetadata,
+          accountType: targetType,
+          previousAccountType: currentAccountType,
+          switchedAt: new Date().toISOString(),
+          // Add verification requirements for owner switch
+          ...(targetType === 'owner' && {
+            needsVerification: true,
+            verificationDeadline: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
+          }),
+        }
       })
-
-      setCurrentAccountType(newAccountType)
+      
+      setCurrentAccountType(targetType)
       
       toast({
-        title: "Success",
-        description: `Switched to ${newAccountType} account successfully`
+        title: "Account Switched!",
+        description: targetType === 'owner' 
+          ? "You'll need to verify your ID within 5 days" 
+          : "Your listings have been archived",
       })
 
-      // Redirect to appropriate dashboard
+      // Redirect based on account type
       setTimeout(() => {
-        router.push('/dashboard')
-      }, 1000)
+        if (targetType === 'owner') {
+          router.push('/dashboard/owner/setup')
+        } else {
+          router.push('/listings')
+        }
+      }, 1500)
     } catch (error) {
       console.error('Error switching account:', error)
       toast({
@@ -175,7 +191,7 @@ export default function SwitchAccountPage() {
     router.push('/verification')
   }
 
-  if (isLoading) {
+  if (!isLoaded) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
@@ -377,6 +393,74 @@ export default function SwitchAccountPage() {
           </div>
         </div>
       </div>
+
+      {/* Warning Modal */}
+      {showWarning && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <Card className="max-w-md w-full">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="h-6 w-6 text-amber-600" />
+                Confirm Account Switch
+              </CardTitle>
+              <CardDescription>
+                {targetType === 'owner' 
+                  ? "Switching to an owner account requires ID verification"
+                  : "Your active listings will be archived"}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {targetType === 'owner' ? (
+                <div className="space-y-2 text-sm">
+                  <p className="font-semibold">Before you continue:</p>
+                  <ul className="list-disc list-inside space-y-1 text-gray-600 dark:text-gray-400">
+                    <li>You'll need to verify your ID within 5 days</li>
+                    <li>Complete owner setup (business info, payout details)</li>
+                    <li>Choose a billing package</li>
+                    <li>Upload ID or passport documents</li>
+                  </ul>
+                </div>
+              ) : (
+                <div className="space-y-2 text-sm">
+                  <p className="font-semibold">What happens:</p>
+                  <ul className="list-disc list-inside space-y-1 text-gray-600 dark:text-gray-400">
+                    <li>All your listings will be archived</li>
+                    <li>You can browse and book rentals</li>
+                    <li>Your owner data will be preserved</li>
+                    <li>You can switch back anytime</li>
+                  </ul>
+                </div>
+              )}
+              
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setShowWarning(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                  onClick={confirmSwitch}
+                  disabled={isSwitching}
+                >
+                  {isSwitching ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Switching...
+                    </>
+                  ) : (
+                    'Confirm Switch'
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   )
 }
+
+

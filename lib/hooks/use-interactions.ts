@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useAuthContext } from '@/lib/auth-context'
+import { useUser } from '@clerk/nextjs'
 import { simpleInteractionsService } from '@/lib/simple-interactions-service'
 
 interface InteractionState {
@@ -20,7 +20,7 @@ interface UseInteractionsReturn {
 }
 
 export function useInteractions(): UseInteractionsReturn {
-  const { user } = useAuthContext()
+  const { user } = useUser()
   const [interactions, setInteractions] = useState<Record<string, InteractionState>>({})
   const [isLoading, setIsLoading] = useState(false)
 

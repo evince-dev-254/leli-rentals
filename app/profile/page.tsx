@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useAuthContext } from "@/lib/auth-context"
+import { useUser } from "@clerk/nextjs"
 import { useRouter } from "next/navigation"
 import { 
   User, 
@@ -30,35 +30,131 @@ import {
   AlertTriangle,
   CheckCircle,
   Upload,
-  FileText
+  FileText,
+  Star,
+  Activity,
+  TrendingUp,
+  Package,
+  Heart,
+  MessageSquare,
+  Globe,
+  Twitter,
+  Facebook,
+  Instagram,
+  Linkedin,
+  Crown,
+  ArrowLeft
 } from "lucide-react"
 import Link from "next/link"
 import CloudinaryProfileUpload from "@/components/cloudinary-profile-upload"
 
 export default function ProfilePage() {
-  const { user, userProfile, isLoading } = useAuthContext()
+  const { user, isLoaded } = useUser()
   const router = useRouter()
   const [isEditing, setIsEditing] = useState(false)
   const [activeTab, setActiveTab] = useState("personal")
   const [profileData, setProfileData] = useState({
-    firstName: user?.displayName?.split(' ')[0] || '',
-    lastName: user?.displayName?.split(' ')[1] || '',
-    email: user?.email || '',
+    firstName: '',
+    lastName: '',
+    email: '',
     phone: '+254700000000',
     location: 'Nairobi, Kenya',
     bio: 'I love renting items and sharing my own!',
-    dateJoined: 'January 2024',
-    verified: true
+    dateJoined: '',
+    verified: true,
+    website: '',
+    twitter: '',
+    facebook: '',
+    instagram: '',
+    linkedin: '',
+    accountType: 'renter',
+    subscriptionStatus: 'free',
+    rating: 4.8,
+    totalReviews: 24,
+    totalBookings: 15,
+    totalListings: 0
   })
-  const [profilePicture, setProfilePicture] = useState(user?.photoURL || "")
+  const [profilePicture, setProfilePicture] = useState("")
 
-  // Redirect if not authenticated
-  if (!isLoading && !user) {
-    router.push("/login")
-    return null
+  // Calculate membership duration
+  const getMembershipDuration = (createdAt: number) => {
+    const now = new Date()
+    const created = new Date(createdAt)
+    const diffTime = Math.abs(now.getTime() - created.getTime())
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    const diffMonths = Math.floor(diffDays / 30)
+    const diffYears = Math.floor(diffDays / 365)
+
+    if (diffDays < 1) return 'Today'
+    if (diffDays === 1) return '1 day'
+    if (diffDays < 30) return `${diffDays} days`
+    if (diffMonths === 1) return '1 month'
+    if (diffMonths < 12) return `${diffMonths} months`
+    if (diffYears === 1) return '1 year'
+    return `${diffYears} years`
   }
 
-  if (isLoading) {
+  const getJoinDate = (createdAt: number) => {
+    const date = new Date(createdAt)
+    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+  }
+
+  // Update profile data when user loads
+  useEffect(() => {
+    if (user) {
+      setProfileData(prev => ({
+        ...prev,
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+        email: user.emailAddresses?.[0]?.emailAddress || '',
+        dateJoined: getJoinDate(user.createdAt),
+        accountType: (user.unsafeMetadata?.accountType as string) || 
+                    (user.publicMetadata?.accountType as string) || 
+                    'renter',
+        subscriptionStatus: (user.unsafeMetadata?.subscriptionStatus as string) || 
+                           (user.publicMetadata?.subscriptionStatus as string) || 
+                           'free',
+        verified: (user.unsafeMetadata?.isVerified as boolean) || 
+                 (user.publicMetadata?.isVerified as boolean) ||
+                 (user.unsafeMetadata?.verificationStatus as string) === 'approved' ||
+                 (user.publicMetadata?.verificationStatus as string) === 'approved' ||
+                 false,
+      }))
+      setProfilePicture(user.imageUrl || '')
+    }
+  }, [user])
+
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (isLoaded && !user) {
+      router.push("/sign-in")
+    }
+  }, [isLoaded, user, router])
+
+  // Get user account type and verification status from user metadata or cookies
+  // Check both unsafeMetadata and publicMetadata for account type
+  const userAccountType = (user?.unsafeMetadata?.accountType as string) || 
+                          (user?.publicMetadata?.accountType as string) || 
+                          'renter'
+  
+  const subscriptionStatus = (user?.unsafeMetadata?.subscriptionStatus as string) || 
+                             (user?.publicMetadata?.subscriptionStatus as string) || 
+                             'free'
+  
+  const verificationStatus = {
+    isVerified: (user?.unsafeMetadata?.isVerified as boolean) || 
+                (user?.publicMetadata?.isVerified as boolean) || 
+                false,
+    documentsSubmitted: (user?.unsafeMetadata?.verificationStatus as string) === 'submitted' ||
+                       (user?.publicMetadata?.verificationStatus as string) === 'submitted',
+    pendingReview: (user?.unsafeMetadata?.verificationStatus as string) === 'pending' ||
+                   (user?.publicMetadata?.verificationStatus as string) === 'pending',
+    rejectionReason: (user?.unsafeMetadata?.verificationRejectionReason as string) ||
+                    (user?.publicMetadata?.verificationRejectionReason as string)
+  }
+
+  // Show loading state
+  if (!isLoaded) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
         <div className="text-center">
@@ -69,13 +165,16 @@ export default function ProfilePage() {
     )
   }
 
-  // Get user account type and verification status
-  const userAccountType = userProfile?.accountType || 'renter'
-  const verificationStatus = {
-    isVerified: userProfile?.isVerified || false,
-    documentsSubmitted: userProfile?.verificationStatus === 'submitted',
-    pendingReview: userProfile?.verificationStatus === 'pending',
-    rejectionReason: userProfile?.verificationRejectionReason
+  // Show loading while redirecting
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Redirecting...</p>
+        </div>
+      </div>
+    )
   }
 
   const handleSave = async () => {
@@ -94,7 +193,7 @@ export default function ProfilePage() {
     // Auto-save profile picture to database
     if (user) {
       try {
-        await DatabaseService.updateUser(user.uid, {
+        await DatabaseService.updateUser(user.id, {
           avatar: imageUrl
         })
         console.log('Profile picture saved to database:', imageUrl)
@@ -116,7 +215,7 @@ export default function ProfilePage() {
     
     try {
       const userData = {
-        id: user.uid,
+        id: user.id,
         email: profileData.email,
         name: `${profileData.firstName} ${profileData.lastName}`,
         avatar: profilePicture
@@ -137,7 +236,7 @@ export default function ProfilePage() {
     if (!user) return
     
     try {
-      const userData = await DatabaseService.getUserById(user.uid)
+      const userData = await DatabaseService.getUserById(user.id)
       if (userData) {
         // Update profile data with database values
         setProfileData(prev => ({
@@ -160,16 +259,27 @@ export default function ProfilePage() {
 
   // Load profile data when component mounts
   useEffect(() => {
-    if (user && !isLoading) {
+    if (user && isLoaded) {
       loadProfileFromDatabase()
     }
-  }, [user, isLoading])
+  }, [user, isLoaded])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <Header />
 
       <div className="container mx-auto px-4 py-8 max-w-6xl">
+        {/* Back Button */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => router.back()}
+          className="mb-4 hover:bg-purple-100 dark:hover:bg-purple-900"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back
+        </Button>
+
         {/* Profile Header */}
         <Card className="mb-8">
           <CardContent className="p-8">
@@ -182,22 +292,75 @@ export default function ProfilePage() {
                   onImageRemove={handleProfilePictureRemove}
                   className="w-full max-w-xs"
                 />
+                <Link href="/profile/avatar">
+                  <Button variant="outline" size="sm" className="w-full">
+                    <Camera className="h-4 w-4 mr-2" />
+                    Manage Avatar
+                  </Button>
+                </Link>
               </div>
               
               <div className="flex-1">
-                <div className="flex items-center gap-4 mb-2">
+                <div className="flex flex-wrap items-center gap-3 mb-3">
                   <h1 className="text-3xl font-bold text-gray-900">
                     {profileData.firstName} {profileData.lastName}
                         </h1>
                   {profileData.verified && (
                     <Badge className="bg-green-100 text-green-800">
-                          <Shield className="h-3 w-3 mr-1" />
+                      <CheckCircle className="h-3 w-3 mr-1" />
                           Verified
                         </Badge>
                   )}
+                  <Badge variant="outline" className="capitalize">
+                    {userAccountType}
+                  </Badge>
+                  {subscriptionStatus !== 'free' && (
+                    <Badge className="bg-purple-500 text-white">
+                      <Crown className="h-3 w-3 mr-1" />
+                      {subscriptionStatus.charAt(0).toUpperCase() + subscriptionStatus.slice(1)}
+                    </Badge>
+                  )}
                 </div>
-                <p className="text-gray-600 mb-2">{profileData.email}</p>
-                <p className="text-sm text-gray-500">Member since {profileData.dateJoined}</p>
+                
+                <div className="space-y-2 mb-4">
+                  <p className="text-gray-600 flex items-center gap-2">
+                    <Mail className="h-4 w-4" />
+                    {profileData.email}
+                  </p>
+                  <p className="text-gray-600 flex items-center gap-2">
+                    <MapPin className="h-4 w-4" />
+                    {profileData.location}
+                  </p>
+                  <p className="text-sm text-gray-500 flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    {user && profileData.dateJoined && (
+                      <>
+                        Member for {getMembershipDuration(user.createdAt)} · Joined {profileData.dateJoined}
+                      </>
+                    )}
+                    {user && !profileData.dateJoined && (
+                      <>Loading...</>
+                    )}
+                    {!user && profileData.dateJoined && `Member since ${profileData.dateJoined}`}
+                  </p>
+                </div>
+
+                {/* Stats */}
+                <div className="flex flex-wrap gap-4">
+                  <div className="flex items-center gap-2">
+                    <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                    <span className="font-semibold">{profileData.rating}</span>
+                    <span className="text-gray-600 text-sm">({profileData.totalReviews} reviews)</span>
+                  </div>
+                  <div className="text-gray-600 text-sm">
+                    • {profileData.totalBookings} bookings
+                  </div>
+                  {userAccountType === 'owner' && (
+                    <div className="text-gray-600 text-sm">
+                      • {profileData.totalListings} listings
+                    </div>
+                  )}
+                </div>
                       </div>
                       
               <div className="flex gap-2">
@@ -213,37 +376,18 @@ export default function ProfilePage() {
                     </Button>
                   </>
                 ) : (
-                  <div className="flex gap-2">
                     <Button onClick={() => setIsEditing(true)}>
                       <Edit className="h-4 w-4 mr-2" />
                       Edit Profile
                     </Button>
-                    <Button 
-                      variant="outline" 
-                      onClick={saveProfileToDatabase}
-                      className="bg-green-50 hover:bg-green-100 text-green-700 border-green-200"
-                    >
-                      <Save className="h-4 w-4 mr-2" />
-                      Save to Database
-                    </Button>
-                  </div>
                 )}
                         </div>
                       </div>
           </CardContent>
         </Card>
 
-        {/* Profile Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="personal">Personal Info</TabsTrigger>
-            <TabsTrigger value="security">Security</TabsTrigger>
-            <TabsTrigger value="notifications">Notifications</TabsTrigger>
-            <TabsTrigger value="billing">Billing</TabsTrigger>
-          </TabsList>
-
-          {/* Personal Information Tab */}
-          <TabsContent value="personal" className="space-y-6">
+        {/* Profile Information */}
+        <div className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Personal Information</CardTitle>
@@ -314,248 +458,194 @@ export default function ProfilePage() {
                                 placeholder="Tell us about yourself..."
                               />
               </div>
-            </CardContent>
-          </Card>
-          </TabsContent>
 
-          {/* Security Tab */}
-          <TabsContent value="security" className="space-y-6">
-            {/* Identity Verification Section for Owner Accounts */}
-            {userAccountType === "owner" && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Shield className="h-5 w-5 text-orange-600" />
-                    Identity Verification
-                  </CardTitle>
-                  <CardDescription>Required for owner accounts to list items for rent</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {!verificationStatus.isVerified ? (
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 bg-orange-100 rounded-lg flex items-center justify-center">
-                            <AlertTriangle className="h-5 w-5 text-orange-600" />
-                      </div>
-                          <div>
-                            <h3 className="font-semibold">Verification Required</h3>
-                            <p className="text-sm text-gray-600">
-                              {verificationStatus.pendingReview 
-                                ? "Your documents are under review" 
-                                : "Upload your ID or passport to verify your identity"
-                              }
-                            </p>
-                      </div>
+                {/* Social Media Links */}
+                <div className="space-y-4 pt-4 border-t">
+                  <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                    <Globe className="h-5 w-5" />
+                    Social Media & Website
+                  </h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="website" className="flex items-center gap-2">
+                        <Globe className="h-4 w-4" />
+                        Website
+                      </Label>
+                      <Input
+                        id="website"
+                        value={profileData.website}
+                        onChange={(e) => setProfileData(prev => ({ ...prev, website: e.target.value }))}
+                        disabled={!isEditing}
+                        placeholder="https://yourwebsite.com"
+                      />
                     </div>
-                        <Button asChild className="bg-orange-600 hover:bg-orange-700">
-                          <Link href="/verification">
-                            <Upload className="h-4 w-4 mr-2" />
-                            {verificationStatus.documentsSubmitted ? "Update Documents" : "Verify Identity"}
-                          </Link>
-                        </Button>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="twitter" className="flex items-center gap-2">
+                        <Twitter className="h-4 w-4" />
+                        Twitter
+                      </Label>
+                      <Input
+                        id="twitter"
+                        value={profileData.twitter}
+                        onChange={(e) => setProfileData(prev => ({ ...prev, twitter: e.target.value }))}
+                        disabled={!isEditing}
+                        placeholder="@yourusername"
+                      />
                       </div>
 
-                      {verificationStatus.rejectionReason && (
-                        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                          <div className="flex items-start gap-2">
-                            <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5" />
-                            <div>
-                              <h4 className="font-semibold text-red-900 mb-1">Verification Rejected</h4>
-                              <p className="text-sm text-red-800">{verificationStatus.rejectionReason}</p>
-                            </div>
-                          </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="facebook" className="flex items-center gap-2">
+                        <Facebook className="h-4 w-4" />
+                        Facebook
+                      </Label>
+                      <Input
+                        id="facebook"
+                        value={profileData.facebook}
+                        onChange={(e) => setProfileData(prev => ({ ...prev, facebook: e.target.value }))}
+                        disabled={!isEditing}
+                        placeholder="facebook.com/yourprofile"
+                      />
                         </div>
-                      )}
 
-                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                        <h4 className="font-semibold text-blue-900 mb-2">Required Documents:</h4>
-                        <ul className="text-sm text-blue-800 space-y-1">
-                          <li>• Valid National ID or Passport</li>
-                          <li>• Clear photos of document (front and back)</li>
-                          <li>• Selfie holding the document</li>
-                        </ul>
-                      </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="instagram" className="flex items-center gap-2">
+                        <Instagram className="h-4 w-4" />
+                        Instagram
+                      </Label>
+                      <Input
+                        id="instagram"
+                        value={profileData.instagram}
+                        onChange={(e) => setProfileData(prev => ({ ...prev, instagram: e.target.value }))}
+                        disabled={!isEditing}
+                        placeholder="@yourusername"
+                      />
                     </div>
-                  ) : (
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                      <div className="flex items-center gap-2">
-                        <CheckCircle className="h-5 w-5 text-green-600" />
-                        <div>
-                          <h4 className="font-semibold text-green-900">Identity Verified</h4>
-                          <p className="text-sm text-green-800">
-                            Your identity has been verified. You can now list items for rent.
-                          </p>
-                        </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="linkedin" className="flex items-center gap-2">
+                        <Linkedin className="h-4 w-4" />
+                        LinkedIn
+                      </Label>
+                      <Input
+                        id="linkedin"
+                        value={profileData.linkedin}
+                        onChange={(e) => setProfileData(prev => ({ ...prev, linkedin: e.target.value }))}
+                        disabled={!isEditing}
+                        placeholder="linkedin.com/in/yourprofile"
+                      />
                     </div>
                   </div>
-                  )}
+                </div>
+
+                {/* Activity Summary */}
+                <div className="space-y-4 pt-4 border-t">
+                  <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                    <Activity className="h-5 w-5" />
+                    Activity Summary
+                  </h3>
+                  
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <Card>
+                      <CardContent className="p-4 text-center">
+                        <Package className="h-8 w-8 text-blue-600 mx-auto mb-2" />
+                        <div className="text-2xl font-bold">{profileData.totalBookings}</div>
+                        <div className="text-sm text-gray-600">Total Bookings</div>
                 </CardContent>
               </Card>
-            )}
 
             <Card>
-                <CardHeader>
-                <CardTitle>Security Settings</CardTitle>
-                <CardDescription>Manage your account security and privacy</CardDescription>
-                </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <h3 className="font-semibold">Password</h3>
-                      <p className="text-sm text-gray-600">Last changed 3 months ago</p>
-                    </div>
-                    <Button variant="outline">Change Password</Button>
-                  </div>
+                      <CardContent className="p-4 text-center">
+                        <Heart className="h-8 w-8 text-red-600 mx-auto mb-2" />
+                        <div className="text-2xl font-bold">32</div>
+                        <div className="text-sm text-gray-600">Favorites</div>
+                      </CardContent>
+                    </Card>
 
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <h3 className="font-semibold">Two-Factor Authentication</h3>
-                      <p className="text-sm text-gray-600">Add an extra layer of security</p>
-                    </div>
-                    <Button 
-                      variant="outline"
-                      onClick={() => window.location.href = '/profile/security'}
-                    >
-                      Enable 2FA
-                    </Button>
-                  </div>
+                    <Card>
+                      <CardContent className="p-4 text-center">
+                        <MessageSquare className="h-8 w-8 text-green-600 mx-auto mb-2" />
+                        <div className="text-2xl font-bold">{profileData.totalReviews}</div>
+                        <div className="text-sm text-gray-600">Reviews</div>
+                      </CardContent>
+                    </Card>
 
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <h3 className="font-semibold">Login Activity</h3>
-                      <p className="text-sm text-gray-600">View recent login attempts</p>
-                    </div>
-                    <Button 
-                      variant="outline"
-                      onClick={() => window.location.href = '/profile/security'}
-                    >
-                      View Activity
-                    </Button>
+                    <Card>
+                      <CardContent className="p-4 text-center">
+                        <TrendingUp className="h-8 w-8 text-purple-600 mx-auto mb-2" />
+                        <div className="text-2xl font-bold">{profileData.totalListings}</div>
+                        <div className="text-sm text-gray-600">Listings</div>
+                      </CardContent>
+                    </Card>
                   </div>
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
 
-          {/* Notifications Tab */}
-          <TabsContent value="notifications" className="space-y-6">
+            {/* Quick Links to Settings */}
             <Card>
               <CardHeader>
-                <CardTitle>Notification Preferences</CardTitle>
-                <CardDescription>Choose how you want to be notified</CardDescription>
+                <CardTitle>Account Management</CardTitle>
+                <CardDescription>Manage your account settings and preferences</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Button
+                    variant="outline"
+                    className="justify-start h-auto p-4"
+                    onClick={() => router.push('/profile/settings')}
+                  >
                     <div className="flex items-center gap-3">
-                      <Bell className="h-5 w-5 text-blue-600" />
-                      <div>
-                        <h3 className="font-semibold">Email Notifications</h3>
-                        <p className="text-sm text-gray-600">Receive updates via email</p>
-            </div>
-                  </div>
-                    <Button variant="outline" size="sm">Configure</Button>
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <Phone className="h-5 w-5 text-green-600" />
-                      <div>
-                        <h3 className="font-semibold">SMS Notifications</h3>
-                        <p className="text-sm text-gray-600">Receive updates via SMS</p>
+                      <div className="bg-purple-100 dark:bg-purple-900 p-2 rounded-lg">
+                        <Shield className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                      </div>
+                      <div className="text-left">
+                        <div className="font-medium">Account Settings</div>
+                        <div className="text-xs text-muted-foreground">Security, Privacy & More</div>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm">Configure</Button>
-                      </div>
+                  </Button>
 
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <Bell className="h-5 w-5 text-purple-600" />
-                      <div>
-                        <h3 className="font-semibold">Push Notifications</h3>
-                        <p className="text-sm text-gray-600">Receive browser notifications</p>
-                      </div>
-                    </div>
                     <Button 
                       variant="outline" 
-                      size="sm"
-                      onClick={() => window.location.href = '/profile/settings'}
-                    >
-                      Configure
-                    </Button>
-                    </div>
-                    </div>
-                  </CardContent>
-                </Card>
-          </TabsContent>
-
-          {/* Billing Tab */}
-          <TabsContent value="billing" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Billing & Payments</CardTitle>
-                <CardDescription>Manage your payment methods and billing history</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-            <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
+                    className="justify-start h-auto p-4"
+                    onClick={() => router.push('/profile/billing')}
+                  >
                     <div className="flex items-center gap-3">
-                      <CreditCard className="h-5 w-5 text-blue-600" />
-                      <div>
-                        <h3 className="font-semibold">Payment Methods</h3>
-                        <p className="text-sm text-gray-600">Manage your payment options</p>
+                      <div className="bg-green-100 dark:bg-green-900 p-2 rounded-lg">
+                        <CreditCard className="h-5 w-5 text-green-600 dark:text-green-400" />
                       </div>
-                              </div>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => window.location.href = '/profile/billing'}
-                    >
-                      Manage
-                    </Button>
-                          </div>
-
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                          <div className="flex items-center gap-3">
-                      <Calendar className="h-5 w-5 text-green-600" />
-                      <div>
-                        <h3 className="font-semibold">Billing History</h3>
-                        <p className="text-sm text-gray-600">View your payment history</p>
+                      <div className="text-left">
+                        <div className="font-medium">Billing & Plans</div>
+                        <div className="text-xs text-muted-foreground">Manage subscription</div>
                       </div>
                     </div>
+                  </Button>
+
                     <Button 
                       variant="outline" 
-                      size="sm"
-                      onClick={() => window.location.href = '/profile/billing'}
+                    className="justify-start h-auto p-4"
+                    onClick={() => router.push('/profile/settings?tab=notifications')}
                     >
-                      View History
-                    </Button>
-            </div>
-
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
                     <div className="flex items-center gap-3">
-                      <Shield className="h-5 w-5 text-purple-600" />
-                      <div>
-                        <h3 className="font-semibold">Invoices</h3>
-                        <p className="text-sm text-gray-600">Download your invoices</p>
+                      <div className="bg-blue-100 dark:bg-blue-900 p-2 rounded-lg">
+                        <Bell className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                      </div>
+                      <div className="text-left">
+                        <div className="font-medium">Notifications</div>
+                        <div className="text-xs text-muted-foreground">Configure alerts</div>
                       </div>
                     </div>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => window.location.href = '/profile/billing'}
-                    >
-                      Download
                     </Button>
-                  </div>
                   </div>
                 </CardContent>
               </Card>
-          </TabsContent>
-        </Tabs>
+          </div>
+
       </div>
     </div>
   )
 }
+
+

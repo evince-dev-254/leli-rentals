@@ -25,7 +25,7 @@ import {
   CreditCard, Truck, Star, MessageSquare, Send, 
   ThumbsUp, ThumbsDown, FileText, Download
 } from "lucide-react"
-import { useAuthContext } from "@/lib/auth-context"
+import { useUser } from '@clerk/nextjs'
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import ProfessionalAIChat from "@/components/professional-ai-chat"
@@ -146,7 +146,7 @@ const mockTickets = [
 ]
 
 export default function HelpPage() {
-  const { user } = useAuthContext()
+  const { user, isLoaded } = useUser()
   const router = useRouter()
   const { toast } = useToast()
   
@@ -645,3 +645,4 @@ export default function HelpPage() {
     </div>
   )
 }
+

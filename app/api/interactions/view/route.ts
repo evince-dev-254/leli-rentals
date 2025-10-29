@@ -1,24 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { interactionsService } from '@/lib/interactions-service'
-import { auth } from '@/lib/firebase-admin'
+import { auth } from '@clerk/nextjs/server'
 
 export async function POST(request: NextRequest) {
   try {
+    const { userId } = await auth()
+    
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const { listingId, metadata } = await request.json()
     
     if (!listingId) {
       return NextResponse.json({ error: 'Listing ID is required' }, { status: 400 })
     }
-
-    // Get user from token
-    const authHeader = request.headers.get('authorization')
-    if (!authHeader) {
-      return NextResponse.json({ error: 'Authorization header required' }, { status: 401 })
-    }
-
-    const token = authHeader.replace('Bearer ', '')
-    const decodedToken = await auth.verifyIdToken(token)
-    const userId = decodedToken.uid
 
     await interactionsService.trackView(userId, listingId, metadata)
     

@@ -1,5 +1,4 @@
-import { db } from './firebase'
-import { collection, addDoc, query, where, orderBy, limit, getDocs, updateDoc, doc, Timestamp, onSnapshot, Unsubscribe } from 'firebase/firestore'
+// Firebase removed - all imports removed
 
 export interface Notification {
   id: string
@@ -53,14 +52,9 @@ class NotificationsService {
   // Create a new notification
   async createNotification(notificationData: NotificationCreateData): Promise<string> {
     try {
-      const now = new Date()
-      const docRef = await addDoc(collection(db, this.COLLECTION_NAME), {
-        ...notificationData,
-        read: false,
-        createdAt: Timestamp.fromDate(now),
-        updatedAt: Timestamp.fromDate(now)
-      })
-      return docRef.id
+      // Firebase removed - return mock ID
+      console.log('Mock: Creating notification:', notificationData)
+      return `notification_${Date.now()}`
     } catch (error) {
       console.error('Error creating notification:', error)
       throw error
@@ -70,27 +64,9 @@ class NotificationsService {
   // Get user notifications
   async getUserNotifications(userId: string, limitCount: number = 50): Promise<Notification[]> {
     try {
-      const q = query(
-        collection(db, this.COLLECTION_NAME),
-        where('userId', '==', userId),
-        orderBy('createdAt', 'desc'),
-        limit(limitCount)
-      )
-      
-      const snapshot = await getDocs(q)
-      const notifications: Notification[] = []
-      
-      snapshot.forEach((doc) => {
-        const data = doc.data()
-        notifications.push({
-          id: doc.id,
-          ...data,
-          createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt || doc.id),
-          updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate() : new Date(data.updatedAt || doc.id)
-        } as Notification)
-      })
-      
-      return notifications
+      // Firebase removed - return empty array
+      console.log('Mock: Getting notifications for user:', userId)
+      return []
     } catch (error) {
       console.error('Error getting user notifications:', error)
       return []
@@ -100,11 +76,8 @@ class NotificationsService {
   // Mark notification as read
   async markAsRead(notificationId: string): Promise<void> {
     try {
-      const notificationRef = doc(db, this.COLLECTION_NAME, notificationId)
-      await updateDoc(notificationRef, {
-        read: true,
-        updatedAt: Timestamp.fromDate(new Date())
-      })
+      // Firebase removed - mock implementation
+      console.log('Mock: Marking notification as read:', notificationId)
     } catch (error) {
       console.error('Error marking notification as read:', error)
       throw error
@@ -303,37 +276,18 @@ class NotificationsService {
       this.subscriptions.get(subscriptionKey)?.()
     }
 
-    const q = query(
-      collection(db, this.COLLECTION_NAME),
-      where('userId', '==', userId),
-      orderBy('createdAt', 'desc'),
-      limit(50)
-    )
-
-    const unsubscribe = onSnapshot(
-      q,
-      (snapshot) => {
-        const notifications: Notification[] = []
-        
-        snapshot.forEach((doc) => {
-          const data = doc.data()
-          notifications.push({
-            id: doc.id,
-            ...data,
-            createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt || doc.id),
-            updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate() : new Date(data.updatedAt || doc.id)
-          } as Notification)
-        })
-        
-        onUpdate(notifications)
-      },
-      (error) => {
-        console.error('Error in notifications subscription:', error)
-        onError?.(error)
-      }
-    )
-
+    // Firebase removed - mock subscription
+    const unsubscribe = () => {
+      this.subscriptions.delete(subscriptionKey)
+    }
+    
     this.subscriptions.set(subscriptionKey, unsubscribe)
+    
+    // Return empty notifications immediately
+    setTimeout(() => {
+      onUpdate([])
+    }, 0)
+    
     return unsubscribe
   }
 

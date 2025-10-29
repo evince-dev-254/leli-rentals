@@ -1,23 +1,8 @@
-import { 
-  collection, 
-  doc, 
-  getDocs, 
-  getDoc, 
-  addDoc, 
-  updateDoc, 
-  deleteDoc, 
-  query, 
-  where, 
-  orderBy, 
-  limit,
-  Timestamp
-} from "firebase/firestore"
-import { db } from "./firebase"
 import { notificationsService } from "./notifications-service"
 
-// Check if Firebase is properly initialized
+// Firebase has been removed - using mock implementation
 const isFirebaseInitialized = () => {
-  return !!db
+  return false
 }
 
 export interface Booking {

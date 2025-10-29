@@ -14,12 +14,18 @@ interface VerificationBannerProps {
     documentsSubmitted: boolean
     pendingReview: boolean
     rejectionReason?: string
+    submittedAt?: string
   }
 }
 
 export function VerificationBanner({ accountType, verificationStatus }: VerificationBannerProps) {
   // Only show for owner account types
   if (accountType !== "owner") {
+    return null
+  }
+
+  // Don't show banner if user is already verified
+  if (verificationStatus.isVerified) {
     return null
   }
 
@@ -58,15 +64,19 @@ export function VerificationBanner({ accountType, verificationStatus }: Verifica
           
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
-              <h3 className="text-lg font-semibold text-gray-900">Identity Verification Required</h3>
+              <h3 className="text-lg font-semibold text-gray-900">
+                {verificationStatus.pendingReview ? "Verification Under Review" : "Identity Verification Required"}
+              </h3>
               <Badge className={getStatusColor()}>
                 {getStatusText()}
               </Badge>
             </div>
             
             <p className="text-gray-600 mb-4">
-              As an owner account, you must verify your identity with a valid ID or passport to list items for rent. 
-              This helps ensure the safety and trust of our rental community.
+              {verificationStatus.pendingReview 
+                ? "Your verification documents have been submitted and are currently being reviewed. This usually takes 1-2 business days."
+                : "As an owner account, you must verify your identity with a valid ID or passport to list items for rent. This helps ensure the safety and trust of our rental community."
+              }
             </p>
 
             {verificationStatus.rejectionReason && (
@@ -81,7 +91,24 @@ export function VerificationBanner({ accountType, verificationStatus }: Verifica
               </div>
             )}
 
-            {!verificationStatus.isVerified && (
+            {verificationStatus.pendingReview && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <div className="flex items-start gap-2">
+                  <Clock className="h-5 w-5 text-yellow-600 mt-0.5" />
+                  <div>
+                    <h4 className="font-semibold text-yellow-900 mb-1">Documents Under Review</h4>
+                    <p className="text-sm text-yellow-800 mb-3">
+                      We're currently reviewing your verification documents. You'll receive an email notification once the review is complete.
+                    </p>
+                    <p className="text-xs text-yellow-700">
+                      Submitted: {new Date(verificationStatus.submittedAt || Date.now()).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {!verificationStatus.isVerified && !verificationStatus.pendingReview && (
               <div className="space-y-3">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -107,7 +134,7 @@ export function VerificationBanner({ accountType, verificationStatus }: Verifica
                   <Button asChild className="bg-orange-600 hover:bg-orange-700">
                     <Link href="/verification">
                       <Upload className="h-4 w-4 mr-2" />
-                      {verificationStatus.documentsSubmitted ? "Update Documents" : "Submit Documents"}
+                      Submit Documents
                     </Link>
                   </Button>
                   

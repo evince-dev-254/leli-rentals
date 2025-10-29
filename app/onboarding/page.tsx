@@ -19,7 +19,7 @@ import {
   ArrowRight, ArrowLeft, Star, Users, TrendingUp, Award,
   Building2, CreditCard, FileText, Camera as CameraIcon
 } from "lucide-react"
-import { useAuthContext } from "@/lib/auth-context"
+import { useUser } from '@clerk/nextjs'
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { useNotifications } from "@/lib/notification-context"
@@ -95,7 +95,7 @@ const locations = [
 ]
 
 export default function OnboardingPage() {
-  const { user } = useAuthContext()
+  const { user, isLoaded } = useUser()
   const router = useRouter()
   const { toast } = useToast()
   const { addNotification } = useNotifications()
@@ -108,7 +108,7 @@ export default function OnboardingPage() {
   const [bio, setBio] = useState("")
   const [verificationMethod, setVerificationMethod] = useState("")
   const [agreedToTerms, setAgreedToTerms] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const [!isLoaded, setIsLoading] = useState(false)
 
   const totalSteps = 5
   const progress = (currentStep / totalSteps) * 100
@@ -125,7 +125,7 @@ export default function OnboardingPage() {
     if (!user) return
 
     try {
-      const response = await fetch(`/api/onboarding?userId=${user.uid}`)
+      const response = await fetch(`/api/onboarding?userId=${user.id}`)
       if (response.ok) {
         const data = await response.json()
         
@@ -162,7 +162,7 @@ export default function OnboardingPage() {
 
     try {
       const stepData: any = {
-        userId: user.uid,
+        userId: user.id,
         step: currentStep
       }
 
@@ -240,7 +240,7 @@ export default function OnboardingPage() {
     try {
       // Save final onboarding data
       const finalData = {
-        userId: user.uid,
+        userId: user.id,
         userType,
         interests,
         location,
@@ -266,7 +266,7 @@ export default function OnboardingPage() {
 
       // Save user preferences
       const preferencesData = {
-        userId: user.uid,
+        userId: user.id,
         preferredCategories: interests,
         notificationSettings: {
           email: true,
@@ -291,7 +291,7 @@ export default function OnboardingPage() {
 
       // Add a welcome notification
       addNotification({
-        userId: user.uid,
+        userId: user.id,
         type: 'system',
         title: '🎉 Welcome to Leli Rentals!',
         message: 'Your profile is all set up. Start exploring listings or create your own!',
@@ -670,10 +670,10 @@ export default function OnboardingPage() {
           ) : (
             <Button 
               onClick={handleComplete}
-              disabled={!canProceed() || isLoading}
+              disabled={!canProceed() || !isLoaded}
               className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
             >
-              {isLoading ? (
+              {!isLoaded ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                   Setting up...
@@ -691,3 +691,7 @@ export default function OnboardingPage() {
     </div>
   )
 }
+
+
+
+

@@ -24,22 +24,22 @@ export function NotificationDemo() {
   const handleTestNotification = async (type: string) => {
     switch (type) {
       case 'booking_request':
-        await triggerBookingRequest(user.uid, 'Test Listing - Luxury Apartment')
+        await triggerBookingRequest(user.id, 'Test Listing - Luxury Apartment')
         break
       case 'booking_confirmed':
-        await triggerBookingConfirmed(user.uid, 'Test Listing - Luxury Apartment')
+        await triggerBookingConfirmed(user.id, 'Test Listing - Luxury Apartment')
         break
       case 'new_review':
-        await triggerNewReview(user.uid, 'Test Listing - Luxury Apartment', 5)
+        await triggerNewReview(user.id, 'Test Listing - Luxury Apartment', 5)
         break
       case 'message_received':
-        await triggerMessageReceived(user.uid, 'Test Listing - Luxury Apartment')
+        await triggerMessageReceived(user.id, 'Test Listing - Luxury Apartment')
         break
       case 'payment_received':
-        await triggerPaymentReceived(user.uid, 150, 'Test Listing - Luxury Apartment')
+        await triggerPaymentReceived(user.id, 150, 'Test Listing - Luxury Apartment')
         break
       case 'system_announcement':
-        await triggerSystemAnnouncement(user.uid, 'System Update', 'New features have been added to the platform!')
+        await triggerSystemAnnouncement(user.id, 'System Update', 'New features have been added to the platform!')
         break
     }
   }
@@ -124,3 +124,4 @@ export function NotificationDemo() {
     </Card>
   )
 }
+

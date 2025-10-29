@@ -50,10 +50,10 @@ import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { Listing } from "@/lib/listings-service"
 import { mockListings } from "@/lib/mock-listings-data"
-import { useAuthContext } from "@/lib/auth-context"
+import { useUser } from "@clerk/nextjs"
 import { useInteractions } from "@/lib/hooks/use-interactions"
 import { useToast } from "@/hooks/use-toast"
-import { bookingsService } from "@/lib/bookings-service"
+import { bookingsDB } from "@/lib/interactions-database-service"
 import { paystackService } from "@/lib/paystack-service"
 import { notificationService } from "@/lib/notification-service"
 
@@ -61,7 +61,7 @@ export default function ListingDetailsPage() {
   const params = useParams()
   const id = params?.id as string
   const router = useRouter()
-  const { user } = useAuthContext()
+  const { user, isLoaded } = useUser()
   const { toast } = useToast()
   const { interactions, toggleLike, toggleSave, trackView, trackShare } = useInteractions()
   const [listing, setListing] = useState<Listing | null>(null)
@@ -295,35 +295,24 @@ export default function ListingDetailsPage() {
           if (response.status === 'success') {
             try {
               const bookingData = {
-                userId: user.id,
-                ownerId: listing.owner?.id || 'unknown',
-                listingId: id,
-                listingTitle: listing.title,
-                listingImage: listing.image,
-                ownerName: listing.owner?.name || 'Unknown Owner',
-                ownerAvatar: listing.owner?.avatar || '/placeholder.svg',
-                ownerRating: listing.owner?.rating || 0,
-                dates: {
-                  start: today,
-                  end: tomorrow,
-                  duration: duration
-                },
-                totalPrice: totalAmount,
+                user_id: user.id,
+                listing_id: id,
+                owner_id: listing.owner?.id || 'unknown',
+                start_date: today.toISOString(),
+                end_date: tomorrow.toISOString(),
+                total_price: totalAmount,
                 status: 'confirmed' as const,
-                paymentStatus: 'paid' as const,
-                category: listing.category,
-                location: listing.location,
-                specialRequests: '',
-                cancellationPolicy: 'Free cancellation up to 24 hours before rental start time.',
-                paymentMethod: 'paystack',
-                paymentDetails: {
-                  ...paymentDetails,
-                  transactionReference: response.reference,
-                  transactionId: response.transaction
-                }
+                payment_status: 'paid' as const,
+                payment_id: response.reference,
+                notes: `Booked via Paystack. Transaction: ${response.transaction}`
               }
 
-              await bookingsService.createBooking(bookingData)
+              const renterName = user.fullName || user.firstName || 'User'
+              const result = await bookingsDB.createBooking(bookingData, renterName, listing.title)
+              
+              if (!result.success) {
+                throw new Error('Failed to create booking in database')
+              }
               
               toast({
                 title: "🎉 Payment Successful!",
@@ -389,31 +378,23 @@ export default function ListingDetailsPage() {
       const duration = Math.ceil((tomorrow.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
 
       const bookingData = {
-        userId: user.id,
-        ownerId: listing.owner?.id || 'unknown',
-        listingId: id,
-        listingTitle: listing.title,
-        listingImage: listing.image,
-        ownerName: listing.owner?.name || 'Unknown Owner',
-        ownerAvatar: listing.owner?.avatar || '/placeholder.svg',
-        ownerRating: listing.owner?.rating || 0,
-        dates: {
-          start: today,
-          end: tomorrow,
-          duration: duration
-        },
-        totalPrice: listing.price * duration,
+        user_id: user.id,
+        listing_id: id,
+        owner_id: listing.owner?.id || 'unknown',
+        start_date: today.toISOString(),
+        end_date: tomorrow.toISOString(),
+        total_price: listing.price * duration,
         status: 'confirmed' as const,
-        paymentStatus: 'paid' as const,
-        category: listing.category,
-        location: listing.location,
-        specialRequests: '',
-        cancellationPolicy: 'Free cancellation up to 24 hours before rental start time.',
-        paymentMethod: selectedPaymentMethod,
-        paymentDetails: paymentDetails
+        payment_status: 'paid' as const,
+        notes: `Booked via ${selectedPaymentMethod}`
       }
 
-      await bookingsService.createBooking(bookingData)
+      const renterName = user.fullName || user.firstName || 'User'
+      const result = await bookingsDB.createBooking(bookingData, renterName, listing.title)
+      
+      if (!result.success) {
+        throw new Error('Failed to create booking in database')
+      }
       
       // Enhanced success notification
       toast({

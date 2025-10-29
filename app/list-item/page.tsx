@@ -1,11 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useAuthContext } from '@/lib/auth-context'
-import { db } from '@/lib/firebase'
-import { collection, addDoc } from 'firebase/firestore'
-import { uploadBytes, getDownloadURL, ref } from 'firebase/storage'
-import { storage } from '@/lib/firebase'
+import { useState, useEffect, useCallback } from 'react'
+import { useUser } from '@clerk/nextjs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -15,8 +11,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useToast } from '@/hooks/use-toast'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useCloudinaryUpload } from '@/hooks/use-cloudinary-upload'
+import { listingsServiceSupabase, ListingData } from '@/lib/listings-service-supabase'
+import { isSupabaseConfigured } from '@/lib/supabase'
+import { notificationTriggers } from '@/lib/notification-triggers'
+import { ListingPreviewModal } from '@/components/listing-preview-modal'
 import { 
   Upload, 
   MapPin, 
@@ -35,13 +35,19 @@ import {
   Shirt,
   Music,
   Camera as CameraIcon,
-  Star,
-  Shield,
+  Eye,
+  FileText,
+  CheckCircle2,
   Clock,
-  Users
+  AlertTriangle,
+  User,
+  Shield
 } from 'lucide-react'
+import Link from 'next/link'
+import GoogleMapsAutocomplete from '@/components/google-maps-autocomplete'
 
 interface ListingForm {
+  id?: string
   title: string
   description: string
   category: string
@@ -56,12 +62,22 @@ interface ListingForm {
   }
   features: string[]
   images: File[]
+  imageUrls: string[]
   rules: string[]
   contactInfo: {
     phone: string
     email: string
     preferredContact: 'phone' | 'email' | 'both'
   }
+  ownerDetails: {
+    name: string
+    phone: string
+    email: string
+    responseTime: string
+    verified: boolean
+  }
+  returnPolicy: 'flexible' | 'moderate' | 'strict'
+  status?: 'draft' | 'published' | 'archived'
 }
 
 const categories = [
@@ -81,12 +97,42 @@ const priceTypes = [
   { value: 'per_month', label: 'Per Month' }
 ]
 
+const returnPolicies = [
+  {
+    value: 'flexible',
+    label: 'Flexible',
+    description: 'Full refund if canceled 24 hours before rental. 50% refund if canceled within 24 hours.',
+    icon: '😊'
+  },
+  {
+    value: 'moderate',
+    label: 'Moderate',
+    description: 'Full refund if canceled 48 hours before rental. No refund if canceled within 48 hours.',
+    icon: '⚖️'
+  },
+  {
+    value: 'strict',
+    label: 'Strict',
+    description: 'Full refund if canceled 7 days before rental. 50% refund if canceled within 7 days. No refund within 24 hours.',
+    icon: '🔒'
+  }
+]
+
 export default function CreateListingPage() {
-  const { user, userProfile } = useAuthContext()
+  const { user, isLoaded } = useUser()
   const { toast } = useToast()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const draftId = searchParams.get('draft')
+  
   const [isLoading, setIsLoading] = useState(false)
+  const [isSavingDraft, setIsSavingDraft] = useState(false)
+  const [isPublishing, setIsPublishing] = useState(false)
   const [activeTab, setActiveTab] = useState('basic')
+  const [lastSaved, setLastSaved] = useState<Date | null>(null)
+  const [showPreview, setShowPreview] = useState(false)
+  const [previewData, setPreviewData] = useState<ListingData | null>(null)
+  
   const { uploadFiles, isUploading: isUploadingImages } = useCloudinaryUpload({
     folder: 'property-listings',
     tags: ['property', 'listing']
@@ -107,29 +153,98 @@ export default function CreateListingPage() {
     },
     features: [],
     images: [],
+    imageUrls: [],
     rules: [],
     contactInfo: {
       phone: '',
-      email: user?.email || '',
+      email: user?.primaryEmailAddress?.emailAddress || '',
       preferredContact: 'both'
-    }
+    },
+    ownerDetails: {
+      name: user?.fullName || `${user?.firstName || ''} ${user?.lastName || ''}`.trim(),
+      phone: user?.phoneNumbers?.[0]?.phoneNumber || '',
+      email: user?.primaryEmailAddress?.emailAddress || '',
+      responseTime: '< 1 hour',
+      verified: (user?.unsafeMetadata?.verificationStatus as string) === 'approved' || false
+    },
+    returnPolicy: 'flexible',
+    status: 'draft'
   })
 
   const [newFeature, setNewFeature] = useState('')
   const [newRule, setNewRule] = useState('')
   const [newTimeSlot, setNewTimeSlot] = useState('')
 
-  // Redirect if not authenticated or not owner
+  // Load draft if editing
   useEffect(() => {
-    if (!user) {
-      router.push('/login')
-      return
+    if (draftId && user) {
+      loadDraft(draftId)
     }
-    if (userProfile?.accountType !== 'owner') {
-      router.push('/profile/switch-account')
-      return
+  }, [draftId, user])
+
+  // Auto-save every 30 seconds
+  useEffect(() => {
+    if (!user || !formData.title) return
+
+    const autoSaveInterval = setInterval(() => {
+      handleSaveDraft(true)
+    }, 30000) // 30 seconds
+
+    return () => clearInterval(autoSaveInterval)
+  }, [user, formData])
+
+  const loadDraft = async (id: string) => {
+    if (!user) return
+    
+    setIsLoading(true)
+    try {
+      const draft = await listingsServiceSupabase.getListingPreview(id, user.id)
+      if (draft) {
+        setFormData({
+          id: draft.id,
+          title: draft.title,
+          description: draft.description || '',
+          category: draft.category || '',
+          subcategory: draft.subcategory || '',
+          price: draft.price?.toString() || '',
+          priceType: (draft.priceType as any) || 'per_day',
+          location: draft.location || '',
+          availability: draft.availability || { startDate: '', endDate: '', timeSlots: [] },
+          features: draft.features || [],
+          images: [],
+          imageUrls: draft.images || [],
+          rules: draft.rules || [],
+          contactInfo: draft.contactInfo || {
+            phone: '',
+            email: user?.primaryEmailAddress?.emailAddress || '',
+            preferredContact: 'both'
+          },
+          ownerDetails: {
+            name: user?.fullName || `${user?.firstName || ''} ${user?.lastName || ''}`.trim(),
+            phone: user?.phoneNumbers?.[0]?.phoneNumber || '',
+            email: user?.primaryEmailAddress?.emailAddress || '',
+            responseTime: 'Within hours',
+            verified: (user?.unsafeMetadata?.verificationStatus as string) === 'approved' || false
+          },
+          returnPolicy: 'flexible',
+          status: draft.status
+        })
+        toast({
+          title: "Draft loaded",
+          description: "Continue editing your listing"
+        })
+      }
+    } catch (error) {
+      console.error('Error loading draft:', error)
+      toast({
+        title: "Error",
+        description: "Failed to load draft",
+        variant: "destructive"
+      })
+    } finally {
+      setIsLoading(false)
     }
-  }, [user, userProfile, router])
+  }
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({
@@ -142,7 +257,7 @@ export default function CreateListingPage() {
     setFormData(prev => ({
       ...prev,
       [parent]: {
-        ...prev[parent as keyof ListingForm],
+        ...(prev[parent as keyof ListingForm] as any),
         [field]: value
       }
     }))
@@ -160,6 +275,13 @@ export default function CreateListingPage() {
     setFormData(prev => ({
       ...prev,
       images: prev.images.filter((_, i) => i !== index)
+    }))
+  }
+
+  const removeImageUrl = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      imageUrls: prev.imageUrls.filter((_, i) => i !== index)
     }))
   }
 
@@ -221,9 +343,11 @@ export default function CreateListingPage() {
   }
 
   const uploadImages = async (images: File[]) => {
+    if (images.length === 0) return []
+    
     try {
       const results = await uploadFiles(images, {
-        folder: `property-listings/${user?.uid}/${Date.now()}`,
+        folder: `property-listings/${user?.id}/${Date.now()}`,
         tags: ['property-listing', 'owner-upload']
       })
       return results.map(result => result.secure_url)
@@ -233,64 +357,123 @@ export default function CreateListingPage() {
     }
   }
 
-  const handleSubmit = async () => {
+  const handleSaveDraft = async (isAutoSave = false) => {
     if (!user) return
 
-    setIsLoading(true)
+    setIsSavingDraft(true)
     try {
-      // Upload images
-      const imageUrls = await uploadImages(formData.images)
+      // Upload new images if any
+      let newImageUrls: string[] = []
+      if (formData.images.length > 0) {
+        newImageUrls = await uploadImages(formData.images)
+      }
 
-      // Create listing data
-      const listingData = {
+      const allImageUrls = [...formData.imageUrls, ...newImageUrls]
+
+      const listingData: Partial<ListingData> = {
+        id: formData.id,
+        user_id: user.id,
         title: formData.title,
         description: formData.description,
         category: formData.category,
         subcategory: formData.subcategory,
-        price: parseFloat(formData.price),
+        price: parseFloat(formData.price) || 0,
         priceType: formData.priceType,
         location: formData.location,
         availability: formData.availability,
         features: formData.features,
-        images: imageUrls,
+        images: allImageUrls,
         rules: formData.rules,
         contactInfo: formData.contactInfo,
-        ownerId: user.uid,
-        ownerName: user.displayName || 'User',
-        ownerEmail: user.email,
-        status: 'active',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        views: 0,
-        bookings: 0,
-        rating: 0,
-        reviews: 0
       }
 
-      // Save to Firestore
-      await addDoc(collection(db, 'listings'), listingData)
+      const { id } = await listingsServiceSupabase.saveDraft(user.id, listingData)
+      
+      setFormData(prev => ({ ...prev, id, images: [], imageUrls: allImageUrls }))
+      setLastSaved(new Date())
 
+      if (!isAutoSave) {
       toast({
-        title: "Success",
-        description: "Your listing has been created successfully!"
-      })
+          title: "Draft saved",
+          description: "Your listing has been saved as a draft"
+        })
+      }
+    } catch (error: any) {
+      console.error('Error saving draft:', error)
+      if (!isAutoSave) {
+        const errorMessage = error?.message || "Failed to save draft"
+        const isDatabaseError = errorMessage.includes('Database not configured') || errorMessage.includes('Supabase')
+        
+        toast({
+          title: isDatabaseError ? "⚠️ Database Not Configured" : "❌ Error",
+          description: isDatabaseError 
+            ? "Supabase is not set up. Please configure your database credentials to save drafts." 
+            : errorMessage,
+          variant: "destructive"
+        })
+      }
+    } finally {
+      setIsSavingDraft(false)
+    }
+  }
 
-      router.push('/profile/listings')
+  const handlePreview = async () => {
+    if (!user || !formData.id) {
+      // Save as draft first if not saved
+      await handleSaveDraft()
+      return
+    }
+
+    try {
+      const listing = await listingsServiceSupabase.getListingPreview(formData.id, user.id)
+      setPreviewData(listing)
+      setShowPreview(true)
     } catch (error) {
-      console.error('Error creating listing:', error)
+      console.error('Error loading preview:', error)
       toast({
         title: "Error",
-        description: "Failed to create listing. Please try again.",
+        description: "Failed to load preview",
+        variant: "destructive"
+      })
+    }
+  }
+
+  const handlePublish = async () => {
+    if (!user || !formData.id) return
+
+    setIsPublishing(true)
+    try {
+      await listingsServiceSupabase.publishListing(formData.id, user.id, formData.title)
+      
+      // Old notification trigger (now replaced by automatic notification in publishListing)
+      // await notificationTriggers.triggerListingStatusNotification(
+      //   user.id,
+      //   formData.title,
+      //   'published'
+      // )
+
+      toast({
+        title: "Success!",
+        description: "Your listing is now live and visible to renters"
+      })
+
+      setShowPreview(false)
+      router.push('/dashboard/owner')
+    } catch (error) {
+      console.error('Error publishing listing:', error)
+      toast({
+        title: "Error",
+        description: "Failed to publish listing",
         variant: "destructive"
       })
     } finally {
-      setIsLoading(false)
+      setIsPublishing(false)
     }
   }
 
   const selectedCategory = categories.find(cat => cat.value === formData.category)
 
-  if (!user || userProfile?.accountType !== 'owner') {
+  if (!isLoaded || isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
@@ -301,24 +484,91 @@ export default function CreateListingPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
+        {/* Database Configuration Warning */}
+        {!isSupabaseConfigured && (
+          <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-sm font-semibold text-yellow-800 mb-1">⚠️ Database Not Configured</h3>
+                <p className="text-sm text-yellow-700">
+                  Supabase is not set up. You can still create your listing, but draft saving and publishing features won't work. 
+                  Please configure your database credentials in <code className="bg-yellow-100 px-1 rounded">.env.local</code> to enable all features.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center gap-4 mb-4">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-4">
             <Button variant="outline" onClick={() => router.back()}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back
             </Button>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Create New Listing</h1>
+                <div className="flex items-center gap-3">
+                  <h1 className="text-3xl font-bold text-gray-900">
+                    {formData.id ? 'Edit Listing' : 'Create New Listing'}
+                  </h1>
+                  {formData.status === 'draft' && (
+                    <Badge variant="outline" className="bg-yellow-50 text-yellow-700">
+                      <FileText className="h-3 w-3 mr-1" />
+                      Draft
+                    </Badge>
+                  )}
+                </div>
               <p className="text-gray-600">List your item for rent and start earning</p>
+                {lastSaved && (
+                  <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
+                    <Clock className="h-3 w-3" />
+                    Last saved: {lastSaved.toLocaleTimeString()}
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => handleSaveDraft(false)}
+                disabled={isSavingDraft || !formData.title}
+              >
+                {isSavingDraft ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600 mr-2"></div>
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4 mr-2" />
+                    Save Draft
+                  </>
+                )}
+              </Button>
+              <Button
+                onClick={handlePreview}
+                disabled={!formData.title || !formData.description}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                <Eye className="h-4 w-4 mr-2" />
+                Preview & Publish
+              </Button>
             </div>
           </div>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
             <TabsTrigger value="basic">Basic Info</TabsTrigger>
             <TabsTrigger value="details">Details</TabsTrigger>
+            <TabsTrigger value="owner">Owner Info</TabsTrigger>
+            <TabsTrigger value="policy">Return Policy</TabsTrigger>
             <TabsTrigger value="availability">Availability</TabsTrigger>
             <TabsTrigger value="review">Review</TabsTrigger>
           </TabsList>
@@ -377,7 +627,7 @@ export default function CreateListingPage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="subcategory">Subcategory</Label>
-                    <Select value={formData.subcategory} onValueChange={(value) => handleInputChange('subcategory', value)}>
+                    <Select value={formData.subcategory} onValueChange={(value) => handleInputChange('subcategory', value)} disabled={!formData.category}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select subcategory" />
                       </SelectTrigger>
@@ -422,12 +672,16 @@ export default function CreateListingPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="location">Location *</Label>
-                  <Input
-                    id="location"
-                    value={formData.location}
-                    onChange={(e) => handleInputChange('location', e.target.value)}
-                    placeholder="e.g., Nairobi, Kenya"
+                  <GoogleMapsAutocomplete
+                    label="Property Location *"
+                    placeholder="Enter property address (e.g., Nairobi, Kenya)"
+                    defaultValue={formData.location}
+                    onPlaceSelect={(place) => {
+                      handleInputChange('location', place.formatted_address)
+                      // Optionally store coordinates for future map display
+                      console.log('Coordinates:', place.geometry.location.lat, place.geometry.location.lng)
+                    }}
+                    required
                   />
                 </div>
               </CardContent>
@@ -464,6 +718,7 @@ export default function CreateListingPage() {
                       value={newFeature}
                       onChange={(e) => setNewFeature(e.target.value)}
                       placeholder="Add a feature..."
+                      onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addFeature())}
                     />
                     <Button onClick={addFeature}>
                       <Plus className="h-4 w-4" />
@@ -493,6 +748,7 @@ export default function CreateListingPage() {
                       value={newRule}
                       onChange={(e) => setNewRule(e.target.value)}
                       placeholder="Add a rule..."
+                      onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addRule())}
                     />
                     <Button onClick={addRule}>
                       <Plus className="h-4 w-4" />
@@ -504,8 +760,25 @@ export default function CreateListingPage() {
                 <div className="space-y-4">
                   <Label>Images</Label>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {formData.imageUrls.map((url, index) => (
+                      <div key={`url-${index}`} className="relative">
+                        <img
+                          src={url}
+                          alt={`Uploaded ${index + 1}`}
+                          className="w-full h-32 object-cover rounded-lg"
+                        />
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          className="absolute top-2 right-2"
+                          onClick={() => removeImageUrl(index)}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ))}
                     {formData.images.map((image, index) => (
-                      <div key={index} className="relative">
+                      <div key={`file-${index}`} className="relative">
                         <img
                           src={URL.createObjectURL(image)}
                           alt={`Preview ${index + 1}`}
@@ -594,6 +867,166 @@ export default function CreateListingPage() {
             </Card>
           </TabsContent>
 
+          {/* Owner Details Tab */}
+          <TabsContent value="owner" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <User className="h-5 w-5 text-blue-600" />
+                  Owner Information
+                </CardTitle>
+                <CardDescription>Your contact details will be shared with renters</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="ownerName">Full Name *</Label>
+                    <Input
+                      id="ownerName"
+                      value={formData.ownerDetails.name}
+                      onChange={(e) => handleNestedInputChange('ownerDetails', 'name', e.target.value)}
+                      placeholder="John Doe"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="ownerPhone">Phone Number *</Label>
+                    <Input
+                      id="ownerPhone"
+                      value={formData.ownerDetails.phone}
+                      onChange={(e) => handleNestedInputChange('ownerDetails', 'phone', e.target.value)}
+                      placeholder="+254 700 000 000"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="ownerEmail">Email Address *</Label>
+                  <Input
+                    id="ownerEmail"
+                    type="email"
+                    value={formData.ownerDetails.email}
+                    disabled
+                    className="bg-gray-50 dark:bg-gray-800"
+                  />
+                  <p className="text-xs text-gray-500">Email is automatically set from your account</p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="responseTime">Typical Response Time</Label>
+                  <Select 
+                    value={formData.ownerDetails.responseTime} 
+                    onValueChange={(value) => handleNestedInputChange('ownerDetails', 'responseTime', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="< 1 hour">Within 1 hour</SelectItem>
+                      <SelectItem value="< 3 hours">Within 3 hours</SelectItem>
+                      <SelectItem value="< 24 hours">Within 24 hours</SelectItem>
+                      <SelectItem value="1-2 days">1-2 days</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {formData.ownerDetails.verified && (
+                  <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                    <Shield className="h-5 w-5 text-green-600 dark:text-green-400" />
+                    <div>
+                      <p className="text-sm font-semibold text-green-900 dark:text-green-100">Verified Owner</p>
+                      <p className="text-xs text-green-700 dark:text-green-300">Your identity has been verified</p>
+                    </div>
+                  </div>
+                )}
+
+                {!formData.ownerDetails.verified && (
+                  <div className="flex items-center gap-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                    <AlertTriangle className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+                    <div>
+                      <p className="text-sm font-semibold text-yellow-900 dark:text-yellow-100">Complete Verification</p>
+                      <p className="text-xs text-yellow-700 dark:text-yellow-300">
+                        Verified owners get 3x more bookings. 
+                        <Link href="/verification" className="underline ml-1">Verify now</Link>
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Return Policy Tab */}
+          <TabsContent value="policy" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-blue-600" />
+                  Return & Cancellation Policy
+                </CardTitle>
+                <CardDescription>Choose a policy that works for you and your renters</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-4">
+                  {returnPolicies.map((policy) => (
+                    <Card
+                      key={policy.value}
+                      className={`cursor-pointer transition-all duration-200 hover:shadow-md ${
+                        formData.returnPolicy === policy.value
+                          ? 'ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                          : 'hover:bg-gray-50 dark:hover:bg-gray-800'
+                      }`}
+                      onClick={() => setFormData({ ...formData, returnPolicy: policy.value as any })}
+                    >
+                      <CardContent className="p-4">
+                        <div className="flex items-start gap-4">
+                          <div className="text-4xl">{policy.icon}</div>
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between mb-2">
+                              <h4 className="font-semibold text-lg">{policy.label}</h4>
+                              {formData.returnPolicy === policy.value && (
+                                <Badge variant="default" className="bg-blue-600">
+                                  <CheckCircle2 className="h-3 w-3 mr-1" />
+                                  Selected
+                                </Badge>
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                              {policy.description}
+                            </p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+
+                <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <h5 className="font-semibold mb-2 flex items-center gap-2">
+                    <Clock className="h-4 w-4" />
+                    Current Selection: {returnPolicies.find(p => p.value === formData.returnPolicy)?.label}
+                  </h5>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {returnPolicies.find(p => p.value === formData.returnPolicy)?.description}
+                  </p>
+                </div>
+
+                <div className="flex items-start gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                  <AlertTriangle className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                  <div className="text-sm">
+                    <p className="font-semibold text-blue-900 dark:text-blue-100 mb-1">Policy Tips:</p>
+                    <ul className="text-blue-700 dark:text-blue-300 space-y-1 list-disc list-inside">
+                      <li><strong>Flexible</strong> policies attract 40% more renters</li>
+                      <li><strong>Moderate</strong> policies balance protection and bookings</li>
+                      <li><strong>Strict</strong> policies protect against last-minute cancellations</li>
+                    </ul>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
           {/* Availability Tab */}
           <TabsContent value="availability" className="space-y-6">
             <Card>
@@ -644,6 +1077,7 @@ export default function CreateListingPage() {
                       value={newTimeSlot}
                       onChange={(e) => setNewTimeSlot(e.target.value)}
                       placeholder="e.g., 9:00 AM - 5:00 PM"
+                      onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTimeSlot())}
                     />
                     <Button onClick={addTimeSlot}>
                       <Plus className="h-4 w-4" />
@@ -659,27 +1093,29 @@ export default function CreateListingPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Review Your Listing</CardTitle>
-                <CardDescription>Make sure everything looks good before publishing</CardDescription>
+                <CardDescription>Make sure everything looks good before saving</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-4">
                   <div>
-                    <h3 className="font-semibold text-lg">{formData.title}</h3>
-                    <p className="text-gray-600">{formData.description}</p>
+                    <h3 className="font-semibold text-lg">{formData.title || 'No title'}</h3>
+                    <p className="text-gray-600">{formData.description || 'No description'}</p>
                   </div>
 
                   <div className="flex items-center gap-4">
-                    <Badge variant="outline">{selectedCategory?.label}</Badge>
-                    <Badge variant="outline">{formData.subcategory}</Badge>
+                    {selectedCategory && <Badge variant="outline">{selectedCategory.label}</Badge>}
+                    {formData.subcategory && <Badge variant="outline">{formData.subcategory}</Badge>}
                     <span className="text-lg font-semibold">
-                      ${formData.price} {formData.priceType.replace('_', ' ')}
+                      ${formData.price || '0.00'} {formData.priceType.replace('_', ' ')}
                     </span>
                   </div>
 
+                  {formData.location && (
                   <div className="flex items-center gap-2">
                     <MapPin className="h-4 w-4 text-gray-500" />
                     <span>{formData.location}</span>
                   </div>
+                  )}
 
                   {formData.features.length > 0 && (
                     <div>
@@ -704,44 +1140,48 @@ export default function CreateListingPage() {
                   )}
 
                   <div>
-                    <h4 className="font-semibold mb-2">Images ({formData.images.length}):</h4>
+                    <h4 className="font-semibold mb-2">
+                      Images ({formData.images.length + formData.imageUrls.length}):
+                    </h4>
+                    {(formData.images.length + formData.imageUrls.length) > 0 ? (
                     <div className="grid grid-cols-3 gap-2">
+                        {formData.imageUrls.map((url, index) => (
+                          <img
+                            key={`url-${index}`}
+                            src={url}
+                            alt={`Preview ${index + 1}`}
+                            className="w-full h-20 object-cover rounded"
+                          />
+                        ))}
                       {formData.images.map((image, index) => (
                         <img
-                          key={index}
+                            key={`file-${index}`}
                           src={URL.createObjectURL(image)}
                           alt={`Preview ${index + 1}`}
                           className="w-full h-20 object-cover rounded"
                         />
                       ))}
                     </div>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <Button
-                    onClick={handleSubmit}
-                    disabled={isLoading || !formData.title || !formData.description || !formData.price}
-                    className="flex-1"
-                  >
-                    {isLoading ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                        Creating...
-                      </>
                     ) : (
-                      <>
-                        <Save className="h-4 w-4 mr-2" />
-                        Create Listing
-                      </>
+                      <p className="text-sm text-gray-500">No images added</p>
                     )}
-                  </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Preview Modal */}
+      <ListingPreviewModal
+        isOpen={showPreview}
+        onClose={() => setShowPreview(false)}
+        listing={previewData}
+        onPublish={handlePublish}
+        onContinueEditing={() => setShowPreview(false)}
+        isPublishing={isPublishing}
+      />
     </div>
   )
 }

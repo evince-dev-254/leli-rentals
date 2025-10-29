@@ -1,20 +1,4 @@
-import { db } from './firebase'
-import {
-  collection,
-  doc,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  getDocs,
-  getDoc,
-  query,
-  where,
-  orderBy,
-  limit,
-  onSnapshot,
-  serverTimestamp,
-  Timestamp
-} from 'firebase/firestore'
+// Firebase removed - all imports removed
 import { query as dbQuery, transaction } from './database'
 
 export interface Message {

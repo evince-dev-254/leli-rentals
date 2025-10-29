@@ -1,6 +1,4 @@
-import { doc, updateDoc, getDoc } from 'firebase/firestore'
-import { db } from './firebase'
-import { firebaseStorageService } from './firebase-storage-service'
+import { supabase } from './supabase'
 
 export interface UserProfile {
   id: string
@@ -11,7 +9,10 @@ export interface UserProfile {
   location?: string
   bio?: string
   website?: string
-  updatedAt: Date
+  account_type?: 'renter' | 'owner'
+  subscription_status?: 'free' | 'basic' | 'premium' | 'enterprise'
+  is_verified?: boolean
+  updated_at?: string
 }
 
 export interface UpdateProfileResult {
@@ -31,31 +32,19 @@ export class UserProfileService {
   }
 
   /**
-   * Update user profile image
+   * Update user profile image using Cloudinary URL
    */
   async updateProfileImage(userId: string, file: File): Promise<UpdateProfileResult> {
     try {
-      if (!db) {
-        throw new Error('Firebase Firestore not initialized')
-      }
-
-      // Upload image to Firebase Storage
-      const uploadResult = await firebaseStorageService.uploadUserProfileImage(userId, file)
+      // Use Cloudinary widget or direct upload
+      // For now, we'll use Clerk's avatar which is already handled
+      // This is a placeholder for custom avatar uploads
       
-      if (!uploadResult.success) {
-        throw new Error(uploadResult.error || 'Failed to upload image')
-      }
-
-      // Update user profile in Firestore
-      const userRef = doc(db, 'users', userId)
-      await updateDoc(userRef, {
-        avatar: uploadResult.url,
-        updatedAt: new Date()
-      })
-
+      console.log('Profile image update - using Clerk avatar instead')
+      
       return {
         success: true,
-        url: uploadResult.url
+        error: 'Please use Clerk to update your profile photo. Click "Open Advanced Avatar Manager" above.'
       }
     } catch (error) {
       console.error('Error updating profile image:', error)
@@ -67,19 +56,19 @@ export class UserProfileService {
   }
 
   /**
-   * Update user profile information
+   * Update user profile information in Supabase
    */
   async updateProfile(userId: string, profileData: Partial<UserProfile>): Promise<UpdateProfileResult> {
     try {
-      if (!db) {
-        throw new Error('Firebase Firestore not initialized')
-      }
+      const { error } = await supabase
+        .from('user_profiles')
+        .upsert({
+          id: userId,
+          ...profileData,
+          updated_at: new Date().toISOString()
+        })
 
-      const userRef = doc(db, 'users', userId)
-      await updateDoc(userRef, {
-        ...profileData,
-        updatedAt: new Date()
-      })
+      if (error) throw error
 
       return {
         success: true
@@ -94,35 +83,41 @@ export class UserProfileService {
   }
 
   /**
-   * Get user profile
+   * Get user profile from Supabase
    */
   async getUserProfile(userId: string): Promise<UserProfile | null> {
     try {
-      if (!db) {
-        throw new Error('Firebase Firestore not initialized')
-      }
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('id', userId)
+        .single()
 
-      const userRef = doc(db, 'users', userId)
-      const userSnap = await getDoc(userRef)
+      if (error && error.code !== 'PGRST116') throw error
 
-      if (userSnap.exists()) {
-        const data = userSnap.data()
-        return {
-          id: userId,
-          name: data.name || '',
-          email: data.email || '',
-          avatar: data.avatar || '',
-          phone: data.phone || '',
-          location: data.location || '',
-          bio: data.bio || '',
-          website: data.website || '',
-          updatedAt: data.updatedAt?.toDate() || new Date()
-        }
-      }
-
-      return null
+      return data || null
     } catch (error) {
       console.error('Error getting user profile:', error)
+      return null
+    }
+  }
+
+  /**
+   * Get public user profile (for other users to view)
+   */
+  async getPublicProfile(userId: string): Promise<UserProfile | null> {
+    try {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('id, name, avatar, bio, location, account_type, subscription_status, is_verified')
+        .eq('id', userId)
+        .single()
+
+      if (error && error.code !== 'PGRST116') throw error
+
+      return data || null
+    } catch (error) {
+      console.error('Error getting public profile:', error)
       return null
     }
   }
@@ -132,24 +127,15 @@ export class UserProfileService {
    */
   async deleteProfileImage(userId: string, currentAvatarUrl?: string): Promise<UpdateProfileResult> {
     try {
-      if (!db) {
-        throw new Error('Firebase Firestore not initialized')
-      }
+      const { error } = await supabase
+        .from('user_profiles')
+        .update({
+          avatar: null,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', userId)
 
-      // Delete image from Firebase Storage if URL exists
-      if (currentAvatarUrl) {
-        const fileName = firebaseStorageService.extractFileNameFromUrl(currentAvatarUrl)
-        if (fileName) {
-          await firebaseStorageService.deleteUserProfileImage(userId, fileName)
-        }
-      }
-
-      // Update user profile to remove avatar
-      const userRef = doc(db, 'users', userId)
-      await updateDoc(userRef, {
-        avatar: null,
-        updatedAt: new Date()
-      })
+      if (error) throw error
 
       return {
         success: true

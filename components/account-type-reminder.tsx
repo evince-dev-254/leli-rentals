@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { X, User, Building2, ArrowRight, Clock, Star } from "lucide-react"
-import { useAuthContext } from "@/lib/auth-context"
+import { useUser } from "@clerk/nextjs"
 import { getUserAccountType, setUserAccountType } from "@/lib/account-type-utils"
 import { useToast } from "@/hooks/use-toast"
 
@@ -16,7 +16,7 @@ interface AccountTypeReminderProps {
 }
 
 export function AccountTypeReminder({ variant = 'banner', onDismiss }: AccountTypeReminderProps) {
-  const { user } = useAuthContext()
+  const { user, isLoaded } = useUser()
   const router = useRouter()
   const { toast } = useToast()
   const [isVisible, setIsVisible] = useState(false)
@@ -28,8 +28,8 @@ export function AccountTypeReminder({ variant = 'banner', onDismiss }: AccountTy
     if (!user) return
 
     const accountType = getUserAccountType()
-    const dismissedKey = `accountTypeReminder_dismissed_${user.uid}`
-    const lastReminderKey = `accountTypeReminder_last_${user.uid || 'unknown'}`
+    const dismissedKey = `accountTypeReminder_dismissed_${user.id}`
+    const lastReminderKey = `accountTypeReminder_last_${user.id || 'unknown'}`
     
     // Check if user has dismissed the reminder permanently
     const dismissed = localStorage.getItem(dismissedKey)
@@ -38,8 +38,8 @@ export function AccountTypeReminder({ variant = 'banner', onDismiss }: AccountTy
       return
     }
 
-    // Check if user needs account type selection
-    if (!accountType) {
+    // Check if user needs account type selection or skipped it
+    if (!accountType || accountType === 'not_selected') {
       const lastReminder = localStorage.getItem(lastReminderKey)
       const now = Date.now()
       const reminderInterval = 24 * 60 * 60 * 1000 // 24 hours
@@ -77,14 +77,14 @@ export function AccountTypeReminder({ variant = 'banner', onDismiss }: AccountTy
     setIsVisible(false)
     
     if (permanent && user?.uid) {
-      const dismissedKey = `accountTypeReminder_dismissed_${user.uid}`
+      const dismissedKey = `accountTypeReminder_dismissed_${user.id}`
       localStorage.setItem(dismissedKey, 'true')
       setIsDismissed(true)
     }
 
     // Update last reminder time
     if (user?.uid) {
-      const lastReminderKey = `accountTypeReminder_last_${user.uid}`
+      const lastReminderKey = `accountTypeReminder_last_${user.id}`
       localStorage.setItem(lastReminderKey, Date.now().toString())
     }
 
@@ -230,3 +230,4 @@ export function AccountTypeReminder({ variant = 'banner', onDismiss }: AccountTy
 }
 
 export default AccountTypeReminder
+

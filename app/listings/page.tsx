@@ -31,12 +31,15 @@ import { useState, useEffect } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { Listing } from "@/lib/listings-service"
 import { mockListings } from "@/lib/mock-listings-data"
-import { useAuthContext } from "@/lib/auth-context"
+import { useUser } from '@clerk/nextjs'
 import { useInteractions } from "@/lib/hooks/use-interactions"
 import { useToast } from "@/hooks/use-toast"
-import { bookingsService } from "@/lib/bookings-service"
+import { bookingsDB } from "@/lib/interactions-database-service"
 import { notificationService } from "@/lib/notification-service"
 import { useNotifications } from "@/lib/notification-context"
+import GoogleMapsAutocomplete from '@/components/google-maps-autocomplete'
+import { supabase } from "@/lib/supabase"
+import { NotificationType } from "@/lib/types/notification"
 
 // Mock listings are now imported from lib/mock-listings-data.ts
 
@@ -52,7 +55,7 @@ const mockCategories = [
 ]
 
 export default function ListingsPage() {
-  const { user } = useAuthContext()
+  const { user, isLoaded } = useUser()
   const searchParams = useSearchParams()
   const router = useRouter()
   const { toast } = useToast()
@@ -74,11 +77,85 @@ export default function ListingsPage() {
   const [ratingFilter, setRatingFilter] = useState("any")
   const [locationFilter, setLocationFilter] = useState("")
 
+  // Fetch listings from Supabase
+  const fetchListings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('listings')
+        .select('*')
+        .eq('status', 'published')
+        .order('created_at', { ascending: false })
+
+      if (error) {
+        console.error('Error fetching listings:', error)
+        // Fallback to mock data if Supabase fails
+        setListings(mockListings)
+        setCategories(mockCategories)
+        return
+      }
+
+      if (data && data.length > 0) {
+        // Transform Supabase data to Listing format
+        const transformedListings: Listing[] = data.map((item: any) => ({
+          id: item.id,
+          title: item.title,
+          description: item.description || '',
+          fullDescription: item.description || '',
+          price: item.price,
+          location: item.location || '',
+          rating: 4.5, // Default rating
+          reviews: Math.floor(Math.random() * 200) + 10,
+          image: item.images?.[0] || '/placeholder.jpg',
+          images: item.images || ['/placeholder.jpg'],
+          amenities: item.features || [],
+          available: true,
+          category: item.category,
+          owner: {
+            id: item.user_id,
+            name: item.contact_info?.name || 'Owner',
+            rating: 4.8,
+            verified: true,
+            phone: item.contact_info?.phone || ''
+          },
+          createdAt: new Date(item.created_at),
+          updatedAt: new Date(item.updated_at || item.created_at)
+        }))
+
+        setListings(transformedListings)
+
+        // Update categories with actual counts
+        const categoryCount: Record<string, number> = {}
+        transformedListings.forEach(l => {
+          categoryCount[l.category] = (categoryCount[l.category] || 0) + 1
+        })
+
+        setCategories([
+          { id: "all", name: "All Categories", count: transformedListings.length },
+          { id: "vehicles", name: "Vehicles", count: categoryCount['vehicles'] || 0 },
+          { id: "homes", name: "Homes & Apartments", count: categoryCount['homes'] || 0 },
+          { id: "equipment", name: "Equipment & Tools", count: categoryCount['equipment'] || 0 },
+          { id: "events", name: "Event Spaces & Venues", count: categoryCount['events'] || 0 },
+          { id: "fashion", name: "Fashion & Lifestyle", count: categoryCount['fashion'] || 0 },
+          { id: "tech", name: "Tech & Gadgets", count: categoryCount['tech'] || 0 },
+          { id: "sports", name: "Sports & Recreation", count: categoryCount['sports'] || 0 },
+        ])
+      } else {
+        // No data from Supabase, use mock data
+        setListings(mockListings)
+        setCategories(mockCategories)
+      }
+    } catch (error) {
+      console.error('Failed to fetch listings:', error)
+      // Fallback to mock data
+      setListings(mockListings)
+      setCategories(mockCategories)
+    }
+  }
+
   // Fix hydration issues
   useEffect(() => {
     setMounted(true)
-    setCategories(mockCategories)
-    setListings(mockListings)
+    fetchListings()
   }, [])
 
   useEffect(() => {
@@ -176,7 +253,7 @@ export default function ListingsPage() {
     if (!listingId) return
     
     // Use a demo user ID if not signed in
-    const userId = user?.uid || 'demo_user'
+    const userId = user?.id || 'demo_user'
     
     try {
       await toggleLike(listingId)
@@ -219,11 +296,12 @@ export default function ListingsPage() {
       // Create a persistent notification only when saving, not unsaving
       if (!wasSaved && listing) {
         addNotification({
-          userId: user.uid,
-          type: 'listing',
+          userId: user.id,
+          type: NotificationType.SYSTEM_ANNOUNCEMENT,
           title: 'Item Saved!',
           message: `You saved the listing: "${listing.title}".`,
-          link: `/profile/favorites`
+          link: `/profile/favorites`,
+          isRead: false
         })
       }
     } catch (error) {
@@ -239,7 +317,7 @@ export default function ListingsPage() {
     if (!listingId || !title) return
 
     // Use a demo user ID if not signed in
-    const userId = user?.uid || 'demo_user'
+    const userId = user?.id || 'demo_user'
 
     try {
       if (typeof window !== 'undefined' && navigator.share) {
@@ -308,37 +386,54 @@ export default function ListingsPage() {
       const duration = Math.ceil((tomorrow.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
 
       const bookingData = {
-        userId: user.uid,
-        ownerId: listing.owner?.id || 'unknown',
-        listingId: listing.id,
-        listingTitle: listing.title,
-        listingImage: listing.image,
-        ownerName: listing.owner?.name || 'Unknown Owner',
-        ownerAvatar: listing.owner?.avatar || '/placeholder.svg',
-        ownerRating: listing.owner?.rating || 0,
-        dates: {
-          start: today,
-          end: tomorrow,
-          duration: duration
-        },
-        totalPrice: listing.price * duration,
+        user_id: user.id,
+        owner_id: listing.owner?.id || 'unknown',
+        listing_id: listing.id,
+        start_date: today.toISOString(),
+        end_date: tomorrow.toISOString(),
+        total_price: listing.price * duration,
         status: 'pending' as const,
-        paymentStatus: 'pending' as const,
-        category: listing.category,
-        location: listing.location,
-        specialRequests: '',
-        cancellationPolicy: 'Free cancellation up to 24 hours before rental start time.'
+        payment_status: 'pending' as const,
+        notes: `Booking for ${listing.title}. Location: ${listing.location}. Category: ${listing.category}.`
       }
 
-      const bookingId = await bookingsService.createBooking(bookingData)
+      const renterName = user.fullName || user.firstName || 'User'
+      const result = await bookingsDB.createBooking(bookingData, renterName, listing.title)
+      
+      if (!result.success) {
+        throw new Error('Failed to create booking in database')
+      }
+      
+      const bookingId = result.id
+
+      // Send booking confirmation email
+      fetch('/api/emails/booking', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userEmail: user.emailAddresses[0]?.emailAddress,
+          userName: user.firstName || 'there',
+          booking: {
+            id: bookingId || 'pending',
+            itemName: listing.title,
+            itemImage: listing.image,
+            startDate: today.toISOString(),
+            endDate: tomorrow.toISOString(),
+            totalPrice: listing.price * duration,
+            ownerName: listing.owner?.name || 'Owner',
+            ownerEmail: 'owner@example.com'
+          }
+        })
+      }).catch(err => console.error('Booking email error:', err))
 
       // Add a persistent notification for the booking
       addNotification({
-        userId: user.uid,
-        type: 'booking',
+        userId: user.id,
+        type: NotificationType.BOOKING_REQUEST,
         title: 'Booking Request Sent!',
         message: `Your booking request for "${listing.title}" has been sent to the owner.`,
-        link: `/profile/bookings`
+        link: `/profile/bookings`,
+        isRead: false
       })
 
       console.log('Booking created successfully with ID:', bookingId)
@@ -579,12 +674,13 @@ export default function ListingsPage() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold mb-3 text-gray-900 dark:text-gray-100">Location</label>
-                  <Input
-                    placeholder="Enter city or area..."
-                    value={locationFilter}
-                    onChange={(e) => setLocationFilter(e.target.value)}
-                    className="h-12 px-4 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:border-blue-500 focus:ring-blue-500/20"
+                  <GoogleMapsAutocomplete
+                    label="Location"
+                    placeholder="Search for city or area..."
+                    defaultValue={locationFilter}
+                    onPlaceSelect={(place) => {
+                      setLocationFilter(place.formatted_address)
+                    }}
                   />
                 </div>
                 <div>
@@ -857,3 +953,7 @@ export default function ListingsPage() {
     </div>
   )
 }
+
+
+
+

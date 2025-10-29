@@ -1,20 +1,8 @@
-import { 
-  collection, 
-  doc, 
-  getDocs, 
-  getDoc, 
-  addDoc, 
-  deleteDoc, 
-  updateDoc,
-  query, 
-  where, 
-  orderBy
-} from "firebase/firestore"
-import { db } from "./firebase"
+// Firebase removed - all imports removed
 
 // Check if Firebase is properly initialized
 const isFirebaseInitialized = () => {
-  return !!db
+  return false
 }
 
 export interface Favorite {
@@ -203,3 +191,5 @@ export const favoritesService = {
     }
   }
 }
+
+

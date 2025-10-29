@@ -1,24 +1,9 @@
-import { 
-  collection, 
-  doc, 
-  getDocs, 
-  getDoc, 
-  addDoc, 
-  updateDoc, 
-  deleteDoc, 
-  query, 
-  where, 
-  orderBy, 
-  limit,
-  startAfter,
-  DocumentSnapshot,
-  QueryDocumentSnapshot
-} from "firebase/firestore"
-import { db } from "./firebase"
+// Firebase has been removed - using mock implementation
+type DocumentSnapshot = any
+type QueryDocumentSnapshot = any
 
-// Check if Firebase is properly initialized
 const isFirebaseInitialized = () => {
-  return !!db
+  return false
 }
 
 export interface Listing {

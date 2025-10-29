@@ -27,7 +27,7 @@ import {
   Eye, Trash2, Share2, MessageCircle, Clock, CheckCircle,
   TrendingUp, Users, Award, ShoppingCart
 } from "lucide-react"
-import { useAuthContext } from "@/lib/auth-context"
+import { useUser } from '@clerk/nextjs'
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { favoritesService, Favorite } from "@/lib/favorites-service"
@@ -42,7 +42,7 @@ const categories = [
 ]
 
 export default function FavoritesPage() {
-  const { user } = useAuthContext()
+  const { user, isLoaded } = useUser()
   const router = useRouter()
   const { toast } = useToast()
   
@@ -53,6 +53,13 @@ export default function FavoritesPage() {
   const [favorites, setFavorites] = useState<Favorite[]>([])
   const [isLoading, setIsLoading] = useState(false)
 
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (isLoaded && !user) {
+      router.push('/login')
+    }
+  }, [isLoaded, user, router])
+
   // Load user favorites
   useEffect(() => {
     const loadFavorites = async () => {
@@ -60,7 +67,7 @@ export default function FavoritesPage() {
       
       setIsLoading(true)
       try {
-        const userFavorites = await favoritesService.getUserFavorites(user.uid)
+        const userFavorites = await favoritesService.getUserFavorites(user.id)
         setFavorites(userFavorites)
       } catch (error) {
         console.error("Error loading favorites:", error)
@@ -102,7 +109,7 @@ export default function FavoritesPage() {
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000))
-      await favoritesService.removeFromFavorites(user.uid, listingId)
+      await favoritesService.removeFromFavorites(user.id, listingId)
       
       // Update local state
       setFavorites(prev => prev.filter(fav => fav.id !== favoriteId))
@@ -188,9 +195,28 @@ export default function FavoritesPage() {
     return categoryObj?.label || category
   }
 
+  // Show loading state while checking authentication
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Show loading while redirecting
   if (!user) {
-    router.push('/login')
-    return null
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Redirecting...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -468,3 +494,7 @@ export default function FavoritesPage() {
     </div>
   )
 }
+
+
+
+

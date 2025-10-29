@@ -1,0 +1,25 @@
+# ============================================
+# Copy this entire file content
+# Create a new file called ".env.local" in the root folder
+# Paste this content and replace the values
+# ============================================
+
+# SUPABASE DATABASE (REQUIRED for drafts, listings, favorites)
+NEXT_PUBLIC_SUPABASE_URL=https://xxxxxxxxxxxxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+# CLERK (You already have these)
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+CLERK_SECRET_KEY=sk_test_...
+
+# GOOGLE MAPS (Optional)
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_google_maps_key
+
+# CLOUDINARY (Optional)
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your_cloud_name
+NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET=your_preset
+
+# RESEND (Optional)
+RESEND_API_KEY=re_...
+RESEND_FROM_EMAIL=hello@updates.leli.rentals
+

@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { Header } from "@/components/header"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -9,8 +9,9 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { useAuthContext } from "@/lib/auth-context"
+import { useUser } from '@clerk/nextjs'
 import { useRouter } from "next/navigation"
+import { useToast } from "@/hooks/use-toast"
 import { 
   Shield, 
   Upload, 
@@ -26,27 +27,17 @@ import {
 import Link from "next/link"
 
 export default function VerificationPage() {
-  const { user, isLoading } = useAuthContext()
+  const { user, isLoaded } = useUser()
   const router = useRouter()
+  const { toast } = useToast()
+  
+  // All state declarations MUST come before any conditional returns
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [currentStep, setCurrentStep] = useState(1)
-
-  // Redirect if not authenticated
-  if (!isLoading && !user) {
-    router.push("/login")
-    return null
-  }
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    )
-  }
+  const [showCamera, setShowCamera] = useState(false)
+  const [stream, setStream] = useState<MediaStream | null>(null)
+  const videoRef = React.useRef<HTMLVideoElement>(null)
+  const canvasRef = React.useRef<HTMLCanvasElement>(null)
 
   const [formData, setFormData] = useState({
     documentType: "",
@@ -69,6 +60,52 @@ export default function VerificationPage() {
     agreeToTerms: false
   })
 
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (isLoaded && !user) {
+      router.push("/login")
+    }
+  }, [isLoaded, user, router])
+
+  // Redirect to dashboard or intended destination if already verified or verification pending
+  useEffect(() => {
+    if (isLoaded && user) {
+      const verificationStatus = user.unsafeMetadata?.verificationStatus as string
+      if (verificationStatus === 'pending' || verificationStatus === 'approved') {
+        // Check if there's a redirect parameter in the URL
+        const searchParams = new URLSearchParams(window.location.search)
+        const redirectTo = searchParams.get('redirect')
+        
+        // Redirect to the intended page or dashboard
+        router.push(redirectTo || '/dashboard')
+      }
+    }
+  }, [isLoaded, user, router])
+
+  // Cleanup camera on unmount
+  React.useEffect(() => {
+    return () => {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop())
+      }
+    }
+  }, [stream])
+
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return null
+  }
+
   const documentTypes = [
     "National ID",
     "Passport",
@@ -76,12 +113,26 @@ export default function VerificationPage() {
   ]
 
   const nationalities = [
-    "Kenyan",
-    "Ugandan", 
-    "Tanzanian",
-    "Rwandan",
-    "Burundian",
-    "Other"
+    "Afghan", "Albanian", "Algerian", "American", "Andorran", "Angolan", "Antiguans", "Argentinean", "Armenian", "Australian",
+    "Austrian", "Azerbaijani", "Bahamian", "Bahraini", "Bangladeshi", "Barbadian", "Barbudans", "Batswana", "Belarusian", "Belgian",
+    "Belizean", "Beninese", "Bhutanese", "Bolivian", "Bosnian", "Brazilian", "British", "Bruneian", "Bulgarian", "Burkinabe",
+    "Burmese", "Burundian", "Cambodian", "Cameroonian", "Canadian", "Cape Verdean", "Central African", "Chadian", "Chilean", "Chinese",
+    "Colombian", "Comoran", "Congolese", "Costa Rican", "Croatian", "Cuban", "Cypriot", "Czech", "Danish", "Djibouti",
+    "Dominican", "Dutch", "East Timorese", "Ecuadorean", "Egyptian", "Emirian", "Equatorial Guinean", "Eritrean", "Estonian", "Ethiopian",
+    "Fijian", "Filipino", "Finnish", "French", "Gabonese", "Gambian", "Georgian", "German", "Ghanaian", "Greek",
+    "Grenadian", "Guatemalan", "Guinea-Bissauan", "Guinean", "Guyanese", "Haitian", "Herzegovinian", "Honduran", "Hungarian", "Icelander",
+    "Indian", "Indonesian", "Iranian", "Iraqi", "Irish", "Israeli", "Italian", "Ivorian", "Jamaican", "Japanese",
+    "Jordanian", "Kazakhstani", "Kenyan", "Kittian and Nevisian", "Kuwaiti", "Kyrgyz", "Laotian", "Latvian", "Lebanese", "Liberian",
+    "Libyan", "Liechtensteiner", "Lithuanian", "Luxembourger", "Macedonian", "Malagasy", "Malawian", "Malaysian", "Maldivan", "Malian",
+    "Maltese", "Marshallese", "Mauritanian", "Mauritian", "Mexican", "Micronesian", "Moldovan", "Monacan", "Mongolian", "Moroccan",
+    "Mosotho", "Motswana", "Mozambican", "Namibian", "Nauruan", "Nepalese", "New Zealander", "Nicaraguan", "Nigerian", "Nigerien",
+    "North Korean", "Northern Irish", "Norwegian", "Omani", "Pakistani", "Palauan", "Panamanian", "Papua New Guinean", "Paraguayan", "Peruvian",
+    "Polish", "Portuguese", "Qatari", "Romanian", "Russian", "Rwandan", "Saint Lucian", "Salvadoran", "Samoan", "San Marinese",
+    "Sao Tomean", "Saudi", "Scottish", "Senegalese", "Serbian", "Seychellois", "Sierra Leonean", "Singaporean", "Slovakian", "Slovenian",
+    "Solomon Islander", "Somali", "South African", "South Korean", "Spanish", "Sri Lankan", "Sudanese", "Surinamer", "Swazi", "Swedish",
+    "Swiss", "Syrian", "Taiwanese", "Tajik", "Tanzanian", "Thai", "Togolese", "Tongan", "Trinidadian or Tobagonian", "Tunisian",
+    "Turkish", "Tuvaluan", "Ugandan", "Ukrainian", "Uruguayan", "Uzbekistani", "Venezuelan", "Vietnamese", "Welsh", "Yemenite",
+    "Zambian", "Zimbabwean"
   ]
 
   const handleInputChange = (field: string, value: string | boolean) => {
@@ -92,17 +143,138 @@ export default function VerificationPage() {
     setFormData(prev => ({ ...prev, [field]: file }))
   }
 
-  const handleSubmit = async () => {
-    setIsSubmitting(true)
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    setIsSubmitting(false)
-    router.push("/dashboard")
+  // Get image preview URL
+  const getImagePreview = (file: File | null) => {
+    if (!file) return null
+    return URL.createObjectURL(file)
   }
 
-  const isFormValid = formData.documentType && formData.documentNumber && formData.fullName && 
-                     formData.dateOfBirth && formData.nationality && formData.documentFront && 
-                     formData.documentBack && formData.selfieWithDocument && formData.agreeToTerms
+  // Open camera for selfie
+  const openCamera = async () => {
+    // Check if browser supports camera access
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      alert('Camera access is not supported in your browser. Please use "Upload Photo" instead.')
+      return
+    }
+
+    try {
+      const mediaStream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: 'user' },
+        audio: false 
+      })
+      setStream(mediaStream)
+      setShowCamera(true)
+      
+      // Wait for video element to be ready
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = mediaStream
+        }
+      }, 100)
+    } catch (error) {
+      console.error('Error accessing camera:', error)
+      alert('Could not access camera. Please check permissions or use "Upload Photo" instead.')
+    }
+  }
+
+  // Close camera
+  const closeCamera = () => {
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop())
+      setStream(null)
+    }
+    setShowCamera(false)
+  }
+
+  // Capture photo from camera
+  const capturePhoto = () => {
+    if (videoRef.current && canvasRef.current) {
+      const video = videoRef.current
+      const canvas = canvasRef.current
+      
+      canvas.width = video.videoWidth
+      canvas.height = video.videoHeight
+      
+      const context = canvas.getContext('2d')
+      if (context) {
+        context.drawImage(video, 0, 0, canvas.width, canvas.height)
+        
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const file = new File([blob], 'selfie.jpg', { type: 'image/jpeg' })
+            handleFileUpload('selfieWithDocument', file)
+            closeCamera()
+          }
+        }, 'image/jpeg', 0.9)
+      }
+    }
+  }
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true)
+    
+    try {
+      // Update Clerk user metadata to mark verification as submitted
+      await user?.update({
+        unsafeMetadata: {
+          ...user.unsafeMetadata,
+          verificationStatus: 'pending',
+          verificationSubmittedAt: new Date().toISOString(),
+        }
+      })
+
+      // Send verification confirmation email
+      fetch('/api/emails/verification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userEmail: user?.emailAddresses[0]?.emailAddress,
+          userName: user?.firstName || 'there',
+          status: 'submitted'
+        })
+      }).catch(err => console.error('Email error:', err))
+
+      // TODO: Upload documents to Supabase storage and save verification data
+      // For now, we'll just update the metadata
+      
+      toast({
+        title: "✅ Verification Submitted!",
+        description: "Your verification is under review. Redirecting...",
+        duration: 3000,
+      })
+
+      // Wait a bit for Clerk to update the session, then reload and redirect
+      await user?.reload() // Refresh the user session
+      
+      // Get redirect parameter if it exists
+      const searchParams = new URLSearchParams(window.location.search)
+      const redirectTo = searchParams.get('redirect')
+      
+      setTimeout(() => {
+        router.push(redirectTo || "/dashboard")
+      }, 1000)
+      
+    } catch (error) {
+      console.error('Error submitting verification:', error)
+      toast({
+        title: "Error",
+        description: "Failed to submit verification. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+    setIsSubmitting(false)
+    }
+  }
+
+  // Validation for each step
+  const isStep1Valid = formData.documentType && formData.documentNumber && formData.fullName && 
+                       formData.dateOfBirth && formData.nationality && formData.address && formData.phoneNumber
+
+  const isStep2Valid = formData.documentFront && formData.documentBack && formData.selfieWithDocument
+
+  const isStep3Valid = formData.agreeToTerms
+
+  const isFormValid = isStep1Valid && isStep2Valid && isStep3Valid
 
   const steps = [
     { id: 1, title: "Personal Info", description: "Basic information" },
@@ -287,6 +459,30 @@ export default function VerificationPage() {
                 {/* Document Front */}
                 <div className="space-y-4">
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                    {formData.documentFront ? (
+                      <div className="space-y-4">
+                        <div className="relative w-full h-48 bg-gray-100 rounded-lg overflow-hidden">
+                          <img
+                            src={getImagePreview(formData.documentFront) || ''}
+                            alt="Document Front"
+                            className="w-full h-full object-contain"
+                          />
+                        </div>
+                        <div className="flex items-center justify-center gap-2 text-sm text-green-600">
+                          <CheckCircle className="h-4 w-4" />
+                          {formData.documentFront.name}
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleFileUpload("documentFront", null)}
+                        >
+                          <X className="h-4 w-4 mr-2" />
+                          Remove
+                        </Button>
+                      </div>
+                    ) : (
+                      <>
                     <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">Document Front</h3>
                     <p className="text-gray-600 mb-4">Upload the front side of your document</p>
@@ -303,13 +499,7 @@ export default function VerificationPage() {
                         Upload Front
                       </label>
                     </Button>
-                    {formData.documentFront && (
-                      <div className="mt-4">
-                        <div className="flex items-center gap-2 text-sm text-green-600">
-                          <CheckCircle className="h-4 w-4" />
-                          {formData.documentFront.name}
-                        </div>
-                      </div>
+                      </>
                     )}
                   </div>
                 </div>
@@ -317,6 +507,30 @@ export default function VerificationPage() {
                 {/* Document Back */}
                 <div className="space-y-4">
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                    {formData.documentBack ? (
+                      <div className="space-y-4">
+                        <div className="relative w-full h-48 bg-gray-100 rounded-lg overflow-hidden">
+                          <img
+                            src={getImagePreview(formData.documentBack) || ''}
+                            alt="Document Back"
+                            className="w-full h-full object-contain"
+                          />
+                        </div>
+                        <div className="flex items-center justify-center gap-2 text-sm text-green-600">
+                          <CheckCircle className="h-4 w-4" />
+                          {formData.documentBack.name}
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleFileUpload("documentBack", null)}
+                        >
+                          <X className="h-4 w-4 mr-2" />
+                          Remove
+                        </Button>
+                      </div>
+                    ) : (
+                      <>
                     <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">Document Back</h3>
                     <p className="text-gray-600 mb-4">Upload the back side of your document</p>
@@ -333,13 +547,7 @@ export default function VerificationPage() {
                         Upload Back
                       </label>
                     </Button>
-                    {formData.documentBack && (
-                      <div className="mt-4">
-                        <div className="flex items-center gap-2 text-sm text-green-600">
-                          <CheckCircle className="h-4 w-4" />
-                          {formData.documentBack.name}
-                        </div>
-                      </div>
+                      </>
                     )}
                   </div>
                 </div>
@@ -348,29 +556,53 @@ export default function VerificationPage() {
               {/* Selfie with Document */}
               <div className="space-y-4">
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                  <Camera className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Selfie with Document</h3>
-                  <p className="text-gray-600 mb-4">Take a selfie holding your document next to your face</p>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => handleFileUpload("selfieWithDocument", e.target.files?.[0] || null)}
-                    className="hidden"
-                    id="selfie-document"
-                  />
-                  <Button asChild>
-                    <label htmlFor="selfie-document" className="cursor-pointer">
-                      <Camera className="h-4 w-4 mr-2" />
-                      Take Selfie
-                    </label>
-                  </Button>
-                  {formData.selfieWithDocument && (
-                    <div className="mt-4">
-                      <div className="flex items-center gap-2 text-sm text-green-600">
+                  {formData.selfieWithDocument ? (
+                    <div className="space-y-4">
+                      <div className="relative w-full max-w-md mx-auto h-64 bg-gray-100 rounded-lg overflow-hidden">
+                        <img
+                          src={getImagePreview(formData.selfieWithDocument) || ''}
+                          alt="Selfie with Document"
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
+                      <div className="flex items-center justify-center gap-2 text-sm text-green-600">
                         <CheckCircle className="h-4 w-4" />
                         {formData.selfieWithDocument.name}
                       </div>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleFileUpload("selfieWithDocument", null)}
+                      >
+                        <X className="h-4 w-4 mr-2" />
+                        Remove
+                      </Button>
                     </div>
+                  ) : (
+                    <>
+                      <Camera className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">Selfie with Document</h3>
+                      <p className="text-gray-600 mb-4">Take a selfie holding your document next to your face</p>
+                      <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                        <Button onClick={openCamera}>
+                          <Camera className="h-4 w-4 mr-2" />
+                          Take Selfie
+                        </Button>
+                        <Button variant="outline" asChild>
+                          <label htmlFor="selfie-document-upload" className="cursor-pointer">
+                            <Upload className="h-4 w-4 mr-2" />
+                            Upload Photo
+                          </label>
+                        </Button>
+                      </div>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleFileUpload("selfieWithDocument", e.target.files?.[0] || null)}
+                        className="hidden"
+                        id="selfie-document-upload"
+                      />
+                    </>
                   )}
                 </div>
               </div>
@@ -470,7 +702,10 @@ export default function VerificationPage() {
               if (currentStep > 1) {
                 setCurrentStep(currentStep - 1)
               } else {
-                router.push("/dashboard")
+                // Get redirect parameter if it exists
+                const searchParams = new URLSearchParams(window.location.search)
+                const redirectTo = searchParams.get('redirect')
+                router.push(redirectTo || "/dashboard")
               }
             }}
           >
@@ -481,7 +716,10 @@ export default function VerificationPage() {
             {currentStep < 3 ? (
               <Button 
                 onClick={() => setCurrentStep(currentStep + 1)}
-                disabled={!isFormValid}
+                disabled={
+                  (currentStep === 1 && !isStep1Valid) ||
+                  (currentStep === 2 && !isStep2Valid)
+                }
               >
                 Next
               </Button>
@@ -507,6 +745,51 @@ export default function VerificationPage() {
           </div>
         </div>
       </div>
+
+      {/* Camera Modal */}
+      {showCamera && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg max-w-2xl w-full p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xl font-semibold">Take Selfie</h3>
+              <Button variant="ghost" size="sm" onClick={closeCamera}>
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+            
+            <div className="relative bg-black rounded-lg overflow-hidden aspect-video">
+              <video 
+                ref={videoRef}
+                autoPlay 
+                playsInline
+                className="w-full h-full object-cover"
+              />
+            </div>
+
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <p className="text-sm text-blue-800">
+                📸 Hold your ID document next to your face and make sure both are clearly visible
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <Button onClick={capturePhoto} className="flex-1">
+                <Camera className="h-4 w-4 mr-2" />
+                Capture Photo
+              </Button>
+              <Button variant="outline" onClick={closeCamera}>
+                Cancel
+              </Button>
+            </div>
+
+            {/* Hidden canvas for capturing photo */}
+            <canvas ref={canvasRef} className="hidden" />
+          </div>
+        </div>
+      )}
     </div>
   )
 }
+
+
+

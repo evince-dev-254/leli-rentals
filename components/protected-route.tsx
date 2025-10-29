@@ -1,6 +1,6 @@
 "use client"
 
-import { useAuthContext } from '@/lib/auth-context'
+import { useUser } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 
@@ -9,17 +9,17 @@ interface ProtectedRouteProps {
   redirectTo?: string
 }
 
-export function ProtectedRoute({ children, redirectTo = '/login' }: ProtectedRouteProps) {
-  const { user, isLoading } = useAuthContext()
+export function ProtectedRoute({ children, redirectTo = '/get-started' }: ProtectedRouteProps) {
+  const { user, isLoaded } = useUser()
   const router = useRouter()
 
   useEffect(() => {
-    if (!isLoading && !user) {
+    if (isLoaded && !user) {
       router.push(redirectTo)
     }
-  }, [user, isLoading, router, redirectTo])
+  }, [user, isLoaded, router, redirectTo])
 
-  if (isLoading) {
+  if (!isLoaded) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>

@@ -10,7 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { useToast } from "@/hooks/use-toast"
-import { useAuthContext } from "@/lib/auth-context"
+import { useUser } from '@clerk/nextjs'
 import {
   MessageCircle,
   Send,
@@ -65,7 +65,7 @@ interface ChatSession {
 export default function MessagesPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const { user } = useAuthContext()
+  const { user, isLoaded } = useUser()
   const { toast } = useToast()
   const messagesEndRef = useRef<HTMLDivElement>(null)
   
@@ -94,7 +94,7 @@ export default function MessagesPage() {
       lastMessage: {
         id: "msg1",
         senderId: "owner1",
-        receiverId: user?.uid || "user1",
+        receiverId: user?.id || "user1",
         content: "Hi! I've confirmed your booking for the BMW X5. You can pick it up tomorrow at 9 AM.",
         timestamp: new Date(Date.now() - 1 * 60 * 60 * 1000),
         read: false,
@@ -117,7 +117,7 @@ export default function MessagesPage() {
       updatedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
       lastMessage: {
         id: "msg2",
-        senderId: user?.uid || "user1",
+        senderId: user?.id || "user1",
         receiverId: "owner2",
         content: "Thank you for the great stay! The apartment was perfect.",
         timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
@@ -141,7 +141,7 @@ export default function MessagesPage() {
       lastMessage: {
         id: "msg3",
         senderId: "owner3",
-        receiverId: user?.uid || "user1",
+        receiverId: user?.id || "user1",
         content: "The camera kit is ready for pickup. When would you like to collect it?",
         timestamp: new Date(Date.now() - 30 * 60 * 1000),
         read: false,
@@ -210,7 +210,7 @@ export default function MessagesPage() {
         {
           id: "msg1",
           senderId: currentChat.participantId,
-          receiverId: user?.uid || "user1",
+          receiverId: user?.id || "user1",
           content: `Hello! I'm ${currentChat.participantName}. How can I help you with your rental inquiry?`,
           timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
           read: true,
@@ -218,7 +218,7 @@ export default function MessagesPage() {
         },
         {
           id: "msg2",
-          senderId: user?.uid || "user1",
+          senderId: user?.id || "user1",
           receiverId: currentChat.participantId,
           content: "Hi! I'm interested in your listing. Could you tell me more about availability?",
           timestamp: new Date(Date.now() - 1.5 * 60 * 60 * 1000),
@@ -228,7 +228,7 @@ export default function MessagesPage() {
         {
           id: "msg3",
           senderId: currentChat.participantId,
-          receiverId: user?.uid || "user1",
+          receiverId: user?.id || "user1",
           content: "Of course! The item is available for the next 2 weeks. What dates are you looking at?",
           timestamp: new Date(Date.now() - 1 * 60 * 60 * 1000),
           read: true,
@@ -236,7 +236,7 @@ export default function MessagesPage() {
         },
         {
           id: "msg4",
-          senderId: user?.uid || "user1",
+          senderId: user?.id || "user1",
           receiverId: currentChat.participantId,
           content: "I'm thinking about this weekend. What's the pricing like?",
           timestamp: new Date(Date.now() - 30 * 60 * 1000),
@@ -246,7 +246,7 @@ export default function MessagesPage() {
       ]
       setMessages(mockMessages)
     }
-  }, [activeChat, currentChat, user?.uid])
+  }, [activeChat, currentChat, user?.id])
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -261,7 +261,7 @@ export default function MessagesPage() {
     try {
       const newMessage: Message = {
         id: `msg_${Date.now()}`,
-        senderId: user.uid,
+        senderId: user.id,
         receiverId: currentChat.participantId,
         content: messageInput.trim(),
         timestamp: new Date(),
@@ -286,7 +286,7 @@ export default function MessagesPage() {
         const responseMessage: Message = {
           id: `msg_${Date.now() + 1}`,
           senderId: currentChat.participantId,
-          receiverId: user.uid,
+          receiverId: user.id,
           content: "Thanks for your message! I'll get back to you shortly.",
           timestamp: new Date(),
           read: false,
@@ -587,11 +587,11 @@ export default function MessagesPage() {
                   {messages.map((message) => (
                     <div
                       key={message.id}
-                      className={`flex ${message.senderId === user?.uid ? 'justify-end' : 'justify-start'}`}
+                      className={`flex ${message.senderId === user?.id ? 'justify-end' : 'justify-start'}`}
                     >
                       <div
                         className={`max-w-[85%] lg:max-w-[70%] rounded-lg px-3 py-2 lg:px-4 ${
-                          message.senderId === user?.uid
+                          message.senderId === user?.id
                             ? 'bg-blue-600 text-white'
                             : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
                         }`}
@@ -601,7 +601,7 @@ export default function MessagesPage() {
                           <span className="text-xs opacity-70">
                             {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </span>
-                          {message.senderId === user?.uid && (
+                          {message.senderId === user?.id && (
                             <div className="ml-1">
                               {message.read ? (
                                 <CheckCheck className="h-3 w-3 text-blue-300" />
@@ -661,3 +661,6 @@ export default function MessagesPage() {
     </div>
   )
 }
+
+
+

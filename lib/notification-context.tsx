@@ -1,7 +1,7 @@
 'use client'
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react'
-import { useAuthContext } from './auth-context'
+import { useUser } from '@clerk/nextjs'
 import { Notification, NotificationContextType } from './types/notification'
 import { notificationsService, Notification as ServiceNotification } from './notifications-service'
 import { useBrowserNotifications } from '../hooks/use-browser-notifications'
@@ -9,7 +9,7 @@ import { useBrowserNotifications } from '../hooks/use-browser-notifications'
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined)
 
 export function NotificationProvider({ children }: { children: React.ReactNode }) {
-  const { user } = useAuthContext()
+  const { user } = useUser()
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
@@ -28,7 +28,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
     // Set up real-time subscription
     const unsubscribe = notificationsService.subscribeToNotifications(
-      user.uid,
+      user.id,
       (userNotifications) => {
         // Convert ServiceNotification to Notification type
         const convertedNotifications: Notification[] = userNotifications.map(serviceNotif => ({
@@ -100,7 +100,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     if (!user) return
     
     try {
-      await notificationsService.markAllAsRead(user.uid)
+      await notificationsService.markAllAsRead(user.id)
       // Update local state immediately
       setNotifications(prev => 
         prev.map(notification => ({ ...notification, isRead: true }))
@@ -132,8 +132,8 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     
     setIsLoading(true)
     try {
-      console.log('Loading notifications for user:', user.uid)
-      const userNotifications = await notificationsService.getUserNotifications(user.uid)
+      console.log('Loading notifications for user:', user.id)
+      const userNotifications = await notificationsService.getUserNotifications(user.id)
       console.log('Raw notifications from service:', userNotifications)
       
       // Convert ServiceNotification to Notification type

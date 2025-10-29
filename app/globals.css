@@ -47,39 +47,39 @@
 }
 
 .dark {
-  /* Updated dark theme colors for modern tech aesthetic */
-  --background: #1f2937; /* Dark theme background */
-  --foreground: #f9fafb; /* Dark theme text color */
-  --card: #374151; /* Dark card background */
-  --card-foreground: #f9fafb; /* Text on dark cards */
-  --popover: #374151; /* Dark popover background */
-  --popover-foreground: #f9fafb; /* Dark popover text */
-  --primary: #f59e0b; /* Brighter amber for dark mode */
-  --primary-foreground: #1f2937; /* Dark text on primary */
-  --secondary: #4b5563; /* Dark secondary elements */
-  --secondary-foreground: #f9fafb; /* Light text on secondary */
-  --muted: #374151; /* Dark muted backgrounds */
-  --muted-foreground: #9ca3af; /* Muted text in dark mode */
-  --accent: #f59e0b; /* Bright accent for dark mode */
-  --accent-foreground: #1f2937; /* Dark text on accent */
-  --destructive: #ef4444; /* Brighter red for dark mode */
-  --destructive-foreground: #f9fafb; /* Light text on destructive */
-  --border: #4b5563; /* Dark border color */
-  --input: #374151; /* Dark input background */
-  --ring: rgba(245, 158, 11, 0.5); /* Bright amber ring for dark mode */
-  --chart-1: #f59e0b;
-  --chart-2: #374151;
-  --chart-3: #f9fafb;
-  --chart-4: #ef4444;
-  --chart-5: #06b6d4;
-  --sidebar: #374151;
-  --sidebar-foreground: #f9fafb;
-  --sidebar-primary: #f59e0b;
-  --sidebar-primary-foreground: #1f2937;
-  --sidebar-accent: #d97706;
-  --sidebar-accent-foreground: #f9fafb;
-  --sidebar-border: #4b5563;
-  --sidebar-ring: rgba(245, 158, 11, 0.5);
+  /* Professional Dark Theme - Inspired by Dimension/Modern Collaboration Tools */
+  --background: #0f1419; /* Rich dark navy-gray background */
+  --foreground: #ffffff; /* Pure white for main text (like images) */
+  --card: #1a1f2e; /* Slightly lighter navy card background */
+  --card-foreground: #ffffff; /* Pure white text on cards */
+  --popover: #1e2330; /* Dark popover background */
+  --popover-foreground: #ffffff; /* White popover text */
+  --primary: #a855f7; /* Purple primary (like "standard" in image) */
+  --primary-foreground: #ffffff; /* White text on primary */
+  --secondary: #2d3748; /* Dark gray secondary */
+  --secondary-foreground: #f0f2f5; /* Light text on secondary */
+  --muted: #1e293b; /* Muted dark background */
+  --muted-foreground: #94a3b8; /* Medium gray for subtitles (like "Chat, code, cloud...") */
+  --accent: #f97316; /* Orange accent (like "collaboration" in image) */
+  --accent-foreground: #ffffff; /* White text on accent */
+  --destructive: #ef4444; /* Red for errors */
+  --destructive-foreground: #ffffff; /* White text on destructive */
+  --border: #2d3748; /* Subtle dark border */
+  --input: #1e293b; /* Dark input background */
+  --ring: rgba(168, 85, 247, 0.5); /* Purple ring glow */
+  --chart-1: #a855f7; /* Purple */
+  --chart-2: #ec4899; /* Pink */
+  --chart-3: #f97316; /* Orange */
+  --chart-4: #06b6d4; /* Cyan */
+  --chart-5: #10b981; /* Green */
+  --sidebar: #1a1f2e;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #a855f7;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f97316;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #2d3748;
+  --sidebar-ring: rgba(168, 85, 247, 0.5);
 }
 
 @theme inline {
@@ -207,7 +207,23 @@
   }
   
   .gradient-text-dark {
-    @apply bg-gradient-to-r from-blue-400 via-purple-400 to-blue-600 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-purple-400 via-pink-400 to-orange-400 bg-clip-text text-transparent;
+  }
+  
+  /* Dimension-inspired gradient text (purple to orange) */
+  .gradient-dimension {
+    background: linear-gradient(to right, #a855f7, #ec4899, #f97316);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  /* For dark mode headings with gradient */
+  .dark .hero-gradient {
+    background: linear-gradient(to right, #ffffff 0%, #a855f7 30%, #ec4899 60%, #f97316 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
   
   /* Enhanced shadows with theme awareness */
@@ -507,6 +523,178 @@
   .message-bubble {
     max-width: 95% !important;
     padding: 10px 14px !important;
+  }
+}
+
+/* Enhanced Mobile Visibility */
+@media (max-width: 768px) {
+  /* Improve text contrast on mobile */
+  body {
+    font-size: 16px;
+    line-height: 1.6;
+  }
+  
+  /* Ensure buttons are always visible */
+  button:not(:disabled) {
+    opacity: 1 !important;
+  }
+  
+  /* Better touch targets for links */
+  a {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 0;
+  }
+  
+  /* Improve card visibility on mobile */
+  .card, [class*="Card"] {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .dark .card, .dark [class*="Card"] {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  }
+  
+  /* Better mobile menu visibility */
+  .mobile-menu {
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(10px);
+  }
+  
+  .dark .mobile-menu {
+    background: rgba(10, 46, 42, 0.98);
+    backdrop-filter: blur(10px);
+  }
+  
+  /* Improve button visibility */
+  button, .btn, [role="button"] {
+    font-weight: 600;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  
+  .dark button, .dark .btn, .dark [role="button"] {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  }
+  
+  /* Better input field visibility */
+  input, textarea, select {
+    background-color: #ffffff;
+    border: 2px solid #e5e7eb;
+  }
+  
+  .dark input, .dark textarea, .dark select {
+    background-color: #1e293b;
+    border: 2px solid #475569;
+    color: #ffffff;
+  }
+  
+  .dark input::placeholder,
+  .dark textarea::placeholder {
+    color: #94a3b8;
+  }
+  
+  /* Improve text readability in dark mode - Pure white like Dimension */
+  .dark {
+    --foreground: #ffffff;
+  }
+  
+  .dark p, .dark span, .dark div {
+    color: inherit;
+  }
+  
+  .dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
+    color: #ffffff;
+    font-weight: 700;
+  }
+  
+  /* Muted text for descriptions (like "Chat, code, cloud..." in images) */
+  .dark .text-muted-foreground,
+  .dark [class*="description"],
+  .dark [class*="subtitle"] {
+    color: #94a3b8;
+  }
+  
+  /* Better dropdown visibility */
+  [role="menu"], [role="listbox"] {
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    border: 1px solid #e5e7eb;
+  }
+  
+  .dark [role="menu"], .dark [role="listbox"] {
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.9);
+    border: 1px solid #475569;
+    background-color: #1a1f2e;
+    color: #ffffff;
+  }
+  
+  /* Improve modal visibility */
+  [role="dialog"] {
+    max-width: 95vw;
+    max-height: 90vh;
+  }
+  
+  /* Better badge visibility */
+  .badge, [class*="Badge"] {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 6px;
+  }
+  
+  /* Improve notification visibility */
+  .notification, [class*="toast"] {
+    font-size: 14px;
+    padding: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  
+  .dark .notification, .dark [class*="toast"] {
+    background-color: #1a1f2e;
+    border: 1px solid #475569;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.7);
+  }
+  
+  .dark .notification [class*="title"],
+  .dark [class*="toast"] [class*="title"] {
+    color: #ffffff;
+    font-weight: 600;
+  }
+  
+  .dark .notification [class*="description"],
+  .dark [class*="toast"] [class*="description"] {
+    color: #94a3b8;
+  }
+}
+
+/* Tablet/Medium devices visibility */
+@media (min-width: 769px) and (max-width: 1024px) {
+  body {
+    font-size: 15px;
+  }
+  
+  .container {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+  
+  h1 { font-size: 2rem; }
+  h2 { font-size: 1.75rem; }
+  h3 { font-size: 1.5rem; }
+}
+
+/* High DPI screens (Retina) */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  /* Sharper borders on high DPI */
+  *, *::before, *::after {
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
   }
 }
 

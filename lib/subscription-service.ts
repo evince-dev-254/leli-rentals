@@ -1,15 +1,4 @@
-import { 
-  doc, 
-  getDoc, 
-  setDoc, 
-  updateDoc,
-  collection,
-  query,
-  where,
-  getDocs,
-  serverTimestamp
-} from "firebase/firestore"
-import { db } from "./firebase"
+// Firebase removed - all imports removed
 
 export interface SubscriptionPlan {
   id: string
@@ -414,3 +403,5 @@ class SubscriptionService {
 }
 
 export const subscriptionService = new SubscriptionService()
+
+

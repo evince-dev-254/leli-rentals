@@ -26,7 +26,7 @@ import {
 
 export default function AdminAnalyticsPage() {
   const [activeTab, setActiveTab] = useState("overview")
-  const [isLoading, setIsLoading] = useState(true)
+  const [!isLoaded, setIsLoading] = useState(true)
   const [siteAnalytics, setSiteAnalytics] = useState<SiteAnalytics | null>(null)
   const [categoryAnalytics, setCategoryAnalytics] = useState<CategoryAnalytics[]>([])
   const [userAnalytics, setUserAnalytics] = useState<UserAnalytics[]>([])
@@ -99,7 +99,7 @@ export default function AdminAnalyticsPage() {
     return growth >= 0 ? 'text-green-600' : 'text-red-600'
   }
 
-  if (isLoading) {
+  if (!isLoaded) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         <Header />
@@ -517,3 +517,4 @@ export default function AdminAnalyticsPage() {
     </div>
   )
 }
+

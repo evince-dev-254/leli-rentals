@@ -4,13 +4,13 @@ import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from '@/components/ui/badge'
-import { useAuthContext } from '@/lib/auth-context'
+import { useUser } from '@clerk/nextjs'
 import { getUserAccountType, setUserAccountType } from '@/lib/account-type-utils'
 import { useToast } from '@/hooks/use-toast'
 import { User, Building2, TestTube } from 'lucide-react'
 
 export function OwnerRestrictionTest() {
-  const { user } = useAuthContext()
+  const { user, isLoaded } = useUser()
   const { toast } = useToast()
   const [currentAccountType, setCurrentAccountType] = useState<string | null>(null)
 

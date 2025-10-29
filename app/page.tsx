@@ -11,8 +11,9 @@ import { Search, ArrowRight, User, Car, Home, Wrench, Laptop, Shirt, Music, Came
 import { Card, CardContent } from "@/components/ui/card"
 import Link from "next/link" 
 import { useState, useEffect } from "react"
-import { useAuthContext } from "@/lib/auth-context"
+import { useUser } from '@clerk/nextjs'
 import { useRouter } from "next/navigation"
+import { createWelcomeNotification } from "@/lib/welcome-notification"
 
 export default function HomePage() {
   return <HomePageContent />
@@ -20,37 +21,42 @@ export default function HomePage() {
 
 function HomePageContent() {
   const [searchQuery, setSearchQuery] = useState("")
-  const { user, isNewUser, userProfile, isLoading } = useAuthContext()
+  const { user, isLoaded } = useUser()
   const router = useRouter()
   
-  // Handle redirects based on authentication state
+  // Create welcome notification for new sign-ins
   useEffect(() => {
-    if (!isLoading) {
-      if (user && isNewUser) {
-        // New user - redirect to account type selection
-        router.push('/onboarding/account-type')
-      } else if (user && userProfile?.accountType) {
-        // Existing user with account type - redirect based on type
-        if (userProfile.accountType === 'owner') {
-          router.push('/dashboard')
-        } else {
-          router.push('/listings')
-        }
+    if (user && isLoaded) {
+      // Check if this is a new sign-in (hasn't seen welcome notification)
+      const hasSeenWelcome = localStorage.getItem(`welcome_${user.id}`)
+      
+      if (!hasSeenWelcome) {
+        const accountType = (user.publicMetadata?.accountType as string) || 'renter'
+        const userName = user.fullName || user.firstName || 'User'
+        
+        // Create welcome notification
+        createWelcomeNotification(user.id, userName, accountType as 'renter' | 'owner')
+        
+        // Mark as seen
+        localStorage.setItem(`welcome_${user.id}`, 'true')
       }
     }
-  }, [user, isNewUser, userProfile, isLoading, router])
+  }, [user, isLoaded])
   
-  const shouldShowGetStarted = !user || !userProfile?.accountType
+  // No automatic redirects - let users choose their path
+  // They can click "Get Started" to begin onboarding
+  
+  const shouldShowGetStarted = !user
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
-      if (typeof window !== 'undefined') {
-        window.location.href = `/listings?search=${encodeURIComponent(searchQuery.trim())}`
-      }
+      router.push(`/listings?search=${encodeURIComponent(searchQuery.trim())}`)
+    } else {
+      router.push('/listings')
     }
   }
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       handleSearch()
     }
@@ -86,7 +92,7 @@ function HomePageContent() {
                   className="pl-10 h-10 text-sm border-2 border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 focus-enhanced rounded-lg"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyPress={handleKeyPress}
+                  onKeyDown={handleKeyDown}
                 />
               </div>
               <Button
@@ -458,7 +464,7 @@ function HomePageContent() {
                     <p className="text-sm opacity-90 mb-4">
                       Choose your path and set up your profile in minutes
                     </p>
-                    <Button variant="outline" className="get-started-button px-6 py-3 border-2 border-white text-white hover:bg-white hover:text-blue-600 transition-all duration-300 font-semibold shadow-lg hover:shadow-xl">
+                    <Button variant="outline" className="get-started-button px-6 py-3 border-2 border-white bg-transparent text-white hover:bg-white hover:text-blue-600 transition-all duration-300 font-semibold shadow-lg hover:shadow-xl">
                       Start Your Journey
                       <ArrowRight className="h-4 w-4 ml-2" />
                     </Button>
@@ -476,7 +482,7 @@ function HomePageContent() {
                     <p className="text-sm opacity-90 mb-4">
                       Explore thousands of items across all categories
                     </p>
-                    <Button variant="outline" className="get-started-button px-6 py-3 border-2 border-white text-white hover:bg-white hover:text-purple-600 transition-all duration-300 font-semibold shadow-lg hover:shadow-xl">
+                    <Button variant="outline" className="get-started-button px-6 py-3 border-2 border-white bg-transparent text-white hover:bg-white hover:text-purple-600 transition-all duration-300 font-semibold shadow-lg hover:shadow-xl">
                       Explore Now
                       <ArrowRight className="h-4 w-4 ml-2" />
                     </Button>
@@ -492,3 +498,5 @@ function HomePageContent() {
     </div>
   )
 }
+
+

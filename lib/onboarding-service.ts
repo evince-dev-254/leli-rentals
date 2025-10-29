@@ -1,21 +1,10 @@
 "use client"
 
-import { 
-  doc, 
-  setDoc, 
-  getDoc, 
-  updateDoc, 
-  serverTimestamp,
-  collection,
-  query,
-  where,
-  getDocs
-} from 'firebase/firestore'
-import { db } from './firebase'
+// Firebase removed - all imports removed
 
 // Check if Firebase is properly initialized
 const isFirebaseInitialized = () => {
-  return !!db
+  return false
 }
 
 // User onboarding data interface

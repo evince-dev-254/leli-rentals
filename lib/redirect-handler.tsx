@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
-import { useAuthContext } from '@/lib/auth-context'
+import { useUser } from '@clerk/nextjs'
 import { getRedirectUrl, getUserAccountType } from '@/lib/account-type-utils'
 
 export function RedirectHandler({ children }: { children: React.ReactNode }) {
-  const { user, isLoading } = useAuthContext()
+  const { user, isLoaded } = useUser()
+  const isLoading = !isLoaded
   const router = useRouter()
   const pathname = usePathname()
   const [hasRedirected, setHasRedirected] = useState(false)

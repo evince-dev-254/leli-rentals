@@ -1,14 +1,14 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Bell, X, Check, Trash2, Clock, AlertCircle, MessageCircle, CreditCard, Star, Home, Settings, Calendar, RefreshCw, Gift, AlertTriangle } from 'lucide-react'
+import { Bell, X, Check, Trash2, Clock, AlertCircle, MessageCircle, CreditCard, Star, Home, Settings, Calendar, RefreshCw, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { notificationsService, Notification } from '@/lib/notifications-service'
-import { useAuthContext } from '@/lib/auth-context'
+import { useUser } from '@clerk/nextjs'
 import { useNotifications } from '@/lib/notification-context'
 import { formatDistanceToNow } from 'date-fns'
 import Link from 'next/link'
@@ -82,20 +82,20 @@ const getPriorityColor = (priority?: string) => {
 }
 
 export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
-  const { user } = useAuthContext()
+  const { user, isLoaded } = useUser()
   const { notifications, unreadCount, isLoading, refreshNotifications, requestPermission, isGranted } = useNotifications()
   const [selectedNotification, setSelectedNotification] = useState<string | null>(null)
   const { toast } = useToast()
 
   // Load notifications when panel opens
   React.useEffect(() => {
-    if (isOpen && user?.uid) {
+    if (isOpen && user?.id) {
       refreshNotifications()
     }
-  }, [isOpen, user?.uid, refreshNotifications])
+  }, [isOpen, user?.id, refreshNotifications])
 
   const loadNotifications = async () => {
-    if (!user?.uid) return
+    if (!user?.id) return
     refreshNotifications()
   }
 
@@ -119,29 +119,10 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
 
   const handleMarkAllAsRead = async () => {
     if (!user?.uid) return
-    await notificationsService.markAllAsRead(user.uid)
+    await notificationsService.markAllAsRead(user.id)
     refreshNotifications() // Refresh to get updated state
   }
 
-  const handleCreateSampleNotifications = async () => {
-    if (!user?.uid) return
-    
-    try {
-      await notificationsService.createSampleNotifications(user.uid)
-      toast({
-        title: "Sample Notifications Created",
-        description: "5 sample notifications have been added to your account.",
-      })
-      refreshNotifications()
-    } catch (error) {
-      console.error('Error creating sample notifications:', error)
-      toast({
-        title: "Error",
-        description: "Failed to create sample notifications.",
-        variant: "destructive"
-      })
-    }
-  }
 
   const handleNotificationAction = (action: any, notification: any) => {
     if (action.link) {
@@ -231,8 +212,15 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
               ) : notifications.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
                   <Bell className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>No notifications yet</p>
-                  <p className="text-sm">We'll notify you when something important happens</p>
+                  <p className="font-medium">No notifications yet</p>
+                  <p className="text-sm mt-2">We'll notify you when:</p>
+                  <ul className="text-xs mt-3 space-y-1 text-left max-w-xs mx-auto">
+                    <li>• You favorite a listing</li>
+                    <li>• You book a listing</li>
+                    <li>• Your listing is published</li>
+                    <li>• Your account is verified</li>
+                    <li>• You receive a message</li>
+                  </ul>
                   <div className="flex flex-col gap-2 mt-4">
                     <Button
                       variant="outline"
@@ -242,18 +230,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
                       disabled={isLoading}
                     >
                       <RefreshCw className={`h-3 w-3 mr-1 sm:mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-                      <span className="hidden sm:inline">Check for notifications</span>
-                      <span className="sm:hidden">Check</span>
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={handleCreateSampleNotifications}
-                      className="text-xs sm:text-sm px-3 sm:px-4"
-                    >
-                      <Gift className="h-3 w-3 mr-1 sm:mr-2" />
-                      <span className="hidden sm:inline">Create Sample Notifications</span>
-                      <span className="sm:hidden">Sample</span>
+                      Refresh
                     </Button>
                   </div>
                 </div>
@@ -378,3 +355,4 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
     </div>
   )
 }
+

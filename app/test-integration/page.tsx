@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useAuthContext } from '@/lib/auth-context'
+import { useUser } from '@clerk/nextjs'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -19,7 +19,7 @@ import {
 } from 'lucide-react'
 
 export default function TestIntegrationPage() {
-  const { user, isLoading: authLoading } = useAuthContext()
+  const { user, isLoaded } = useUser()
   const [testResults, setTestResults] = useState<{
     auth: boolean
     firebase: boolean
@@ -103,10 +103,10 @@ export default function TestIntegrationPage() {
               <div className="space-y-2">
                 <p className="text-sm text-green-600">✅ User authenticated</p>
                 <p className="text-sm text-muted-foreground">
-                  Email: {user.email}
+                  Email: {user.emailAddresses[0]?.emailAddress}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  UID: {user.uid}
+                  UID: {user.id}
                 </p>
               </div>
             ) : (
@@ -146,3 +146,5 @@ export default function TestIntegrationPage() {
     </div>
   )
 }
+
+

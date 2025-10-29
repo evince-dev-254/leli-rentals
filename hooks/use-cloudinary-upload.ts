@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useCallback } from 'react'
-import { useAuthContext } from '@/lib/auth-context'
+import { useUser } from '@clerk/nextjs'
 import { useToast } from '@/hooks/use-toast'
 
 interface UploadResult {
@@ -23,7 +23,7 @@ interface UseCloudinaryUploadOptions {
 export function useCloudinaryUpload(options: UseCloudinaryUploadOptions = {}) {
   const [isUploading, setIsUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
-  const { user } = useAuthContext()
+  const { user } = useUser()
   const { toast } = useToast()
 
   const uploadFiles = useCallback(async (
@@ -58,8 +58,8 @@ export function useCloudinaryUpload(options: UseCloudinaryUploadOptions = {}) {
       setUploadProgress(100)
       
       toast({
-        title: "Upload successful!",
-        description: `${result.count} file(s) uploaded successfully.`
+        title: "✅ Upload Successful!",
+        description: result.message || `${result.count} file(s) uploaded to Cloudinary.`
       })
 
       return result.uploads
@@ -107,8 +107,8 @@ export function useCloudinaryUpload(options: UseCloudinaryUploadOptions = {}) {
       setUploadProgress(100)
       
       toast({
-        title: "Upload successful!",
-        description: "File uploaded successfully."
+        title: "✅ Upload Successful!",
+        description: result.message || "Image uploaded to Cloudinary successfully."
       })
 
       return result.upload
@@ -132,12 +132,10 @@ export function useCloudinaryUpload(options: UseCloudinaryUploadOptions = {}) {
     }
 
     try {
-      const token = await user.getIdToken()
-      
+      // Clerk authentication - no need for manual token
       const response = await fetch('/api/upload', {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({ publicId })

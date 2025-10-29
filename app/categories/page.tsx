@@ -14,7 +14,7 @@ import {
   ArrowRight, Sparkles, Zap, Award, CheckCircle
 } from "lucide-react"
 import Link from "next/link"
-import { useAuthContext } from "@/lib/auth-context"
+import { useUser } from '@clerk/nextjs'
 import { useRouter } from "next/navigation"
 
 // Comprehensive category data for Leli Rentals with images
@@ -137,7 +137,7 @@ const popularCategories = categories.filter(cat => cat.popular)
 const otherCategories = categories.filter(cat => !cat.popular)
 
 export default function CategoriesPage() {
-  const { user } = useAuthContext()
+  const { user, isLoaded } = useUser()
   const router = useRouter()
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
@@ -370,7 +370,7 @@ export default function CategoriesPage() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="border-white text-white hover:bg-white hover:text-blue-600 text-lg px-8 py-6 font-semibold"
+                  className="border-2 border-white bg-transparent text-white hover:bg-white hover:text-blue-600 text-lg px-8 py-6 font-semibold transition-all duration-200"
                   onClick={() => router.push('/about')}
                 >
                   Learn More
@@ -383,3 +383,5 @@ export default function CategoriesPage() {
     </div>
   )
 }
+
+

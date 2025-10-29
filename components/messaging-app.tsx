@@ -37,7 +37,7 @@ import {
   User
 } from "lucide-react"
 import { messagingService, Message, ChatSession } from "@/lib/messaging-service"
-import { useAuthContext } from "@/lib/auth-context"
+import { useUser } from "@clerk/nextjs"
 import { useToast } from "@/hooks/use-toast"
 import { useNotifications } from '@/lib/notification-context'
 
@@ -60,7 +60,7 @@ export default function MessagingApp({
   initialParticipantId,
   listingData
 }: MessagingAppProps) {
-  const { user } = useAuthContext()
+  const { user, isLoaded } = useUser()
   const { toast } = useToast()
   const { addNotification } = useNotifications()
   const [chatSessions, setChatSessions] = useState<ChatSession[]>([])
@@ -78,7 +78,7 @@ export default function MessagingApp({
     if (!user?.uid) return
 
     try {
-      const response = await fetch(`/api/messages?action=sessions&userId=${user.uid}`)
+      const response = await fetch(`/api/messages?action=sessions&userId=${user.id}`)
       if (!response.ok) throw new Error('Failed to load sessions')
       const data = await response.json()
       setChatSessions(data.sessions)
@@ -113,7 +113,7 @@ export default function MessagingApp({
         await fetch('/api/messages', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'mark-read', sessionId, userId: user.uid })
+          body: JSON.stringify({ action: 'mark-read', sessionId, userId: user.id })
         })
         // Update unread count in sessions list
         setChatSessions(prev =>
@@ -144,7 +144,7 @@ export default function MessagingApp({
           content: newMessage.trim(),
           type: 'text',
           bookingId: selectedSession.bookingId,
-          userId: user.uid
+          userId: user.id
         })
       })
 
@@ -155,7 +155,7 @@ export default function MessagingApp({
       // Add message to local state
       const newMsg: Message = {
         id: data.messageId,
-        senderId: user.uid,
+        senderId: user.id,
         receiverId: selectedSession.participantId,
         content: newMessage.trim(),
         timestamp: new Date(),
@@ -184,7 +184,7 @@ export default function MessagingApp({
       addNotification({
         userId: selectedSession.participantId,
         type: 'message',
-        title: `New message from ${user.displayName || 'a user'}`,
+        title: `New message from ${user.fullName || 'a user'}`,
         message: newMessage.trim(),
         link: `/messages?session=${selectedSession.id}`
       })
@@ -223,7 +223,7 @@ export default function MessagingApp({
           action: 'create-session',
           participantId,
           listingData,
-          userId: user.uid
+          userId: user.id
         })
       })
 
@@ -489,7 +489,7 @@ export default function MessagingApp({
                       {message.senderId === user?.uid && (
                         <Avatar className="h-8 w-8 mt-1">
                           <AvatarFallback className="bg-blue-600 text-white">
-                            {user.displayName?.charAt(0).toUpperCase() || 'U'}
+                            {user.fullName?.charAt(0).toUpperCase() || 'U'}
                           </AvatarFallback>
                         </Avatar>
                       )}
@@ -550,6 +550,7 @@ export default function MessagingApp({
                 className="hidden"
                 onChange={handleFileUpload}
                 accept="image/*,.pdf,.doc,.docx"
+                aria-label="Upload file"
               />
             </div>
           </div>

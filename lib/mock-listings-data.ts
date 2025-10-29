@@ -1,5 +1,6 @@
 import { Listing } from "./listings-service"
 import { Car, Home, Wrench, Music, Shirt, Laptop, Dumbbell } from "lucide-react"
+import { generateUUID } from "./uuid"
 
 // Generate comprehensive listings with 20+ items per category
 export const generateMockListings = (): Listing[] => {
@@ -73,14 +74,14 @@ export const generateMockListings = (): Listing[] => {
 
   const locations = ["Nairobi, Kenya", "Mombasa, Kenya", "Kisumu, Kenya", "Nakuru, Kenya", "Eldoret, Kenya"]
   const owners = [
-    { id: "owner1", name: "John Mwangi", rating: 4.9, verified: true, phone: "+254700123456" },
-    { id: "owner2", name: "Sarah Kimani", rating: 4.8, verified: true, phone: "+254700234567" },
-    { id: "owner3", name: "David Ochieng", rating: 4.7, verified: true, phone: "+254700345678" },
-    { id: "owner4", name: "Mary Njeri", rating: 4.9, verified: true, phone: "+254700456789" },
-    { id: "owner5", name: "Peter Kamau", rating: 4.6, verified: true, phone: "+254700567890" },
-    { id: "owner6", name: "Grace Wanjiku", rating: 4.8, verified: true, phone: "+254700678901" },
-    { id: "owner7", name: "Kevin Otieno", rating: 4.7, verified: true, phone: "+254700789012" },
-    { id: "owner8", name: "James Mutua", rating: 4.9, verified: true, phone: "+254700890123" }
+    { id: generateUUID(), name: "John Mwangi", rating: 4.9, verified: true, phone: "+254700123456" },
+    { id: generateUUID(), name: "Sarah Kimani", rating: 4.8, verified: true, phone: "+254700234567" },
+    { id: generateUUID(), name: "David Ochieng", rating: 4.7, verified: true, phone: "+254700345678" },
+    { id: generateUUID(), name: "Mary Njeri", rating: 4.9, verified: true, phone: "+254700456789" },
+    { id: generateUUID(), name: "Peter Kamau", rating: 4.6, verified: true, phone: "+254700567890" },
+    { id: generateUUID(), name: "Grace Wanjiku", rating: 4.8, verified: true, phone: "+254700678901" },
+    { id: generateUUID(), name: "Kevin Otieno", rating: 4.7, verified: true, phone: "+254700789012" },
+    { id: generateUUID(), name: "James Mutua", rating: 4.9, verified: true, phone: "+254700890123" }
   ]
 
   const images = [
@@ -125,7 +126,6 @@ export const generateMockListings = (): Listing[] => {
   ]
 
   const listings: Listing[] = []
-  let id = 1
 
   categories.forEach(category => {
     let titles: string[] = []
@@ -187,7 +187,7 @@ export const generateMockListings = (): Listing[] => {
       }
 
       listings.push({
-        id: id.toString(),
+        id: generateUUID(),
         title,
         description: `High-quality ${category.name.toLowerCase()} perfect for your needs`,
         price: Math.round(price),
@@ -204,7 +204,6 @@ export const generateMockListings = (): Listing[] => {
         createdAt,
         updatedAt: createdAt
       })
-      id++
     })
   })
 

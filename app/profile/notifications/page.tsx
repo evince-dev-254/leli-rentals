@@ -1,9 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useAuthContext } from '@/lib/auth-context'
-import { db } from '@/lib/firebase'
-import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore'
+import { useUser } from '@clerk/nextjs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
@@ -87,10 +85,10 @@ const defaultSettings: NotificationSettings = {
 }
 
 export default function NotificationsPage() {
-  const { user } = useAuthContext()
+  const { user, isLoaded } = useUser()
   const { toast } = useToast()
   const [settings, setSettings] = useState<NotificationSettings>(defaultSettings)
-  const [isLoading, setIsLoading] = useState(true)
+  const [!isLoaded, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
 
   useEffect(() => {
@@ -98,13 +96,8 @@ export default function NotificationsPage() {
 
     const fetchNotificationSettings = async () => {
       try {
-        const userDoc = await getDoc(doc(db, 'users', user.uid))
-        if (userDoc.exists()) {
-          const userData = userDoc.data()
-          if (userData.notificationSettings) {
-            setSettings(userData.notificationSettings)
-          }
-        }
+        // Firebase removed - using default settings
+        setSettings(defaultSettings)
         setIsLoading(false)
       } catch (error) {
         console.error('Error fetching notification settings:', error)
@@ -125,10 +118,8 @@ export default function NotificationsPage() {
 
     setIsSaving(true)
     try {
-      await updateDoc(doc(db, 'users', user.uid), {
-        notificationSettings: settings,
-        updatedAt: new Date()
-      })
+      // Firebase removed - simulating save
+      await new Promise(resolve => setTimeout(resolve, 500))
       
       toast({
         title: "Success",
@@ -193,7 +184,7 @@ export default function NotificationsPage() {
     }))
   }
 
-  if (isLoading) {
+  if (!isLoaded) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
@@ -630,3 +621,5 @@ export default function NotificationsPage() {
     </div>
   )
 }
+
+

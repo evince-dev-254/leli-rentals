@@ -59,9 +59,12 @@ export async function POST(request: NextRequest) {
       }
     )
 
+    console.log(`✅ Successfully uploaded ${uploadResults.length} file(s) to Cloudinary`)
+
     // Return the results
     return NextResponse.json({
       success: true,
+      message: `Successfully uploaded ${uploadResults.length} image${uploadResults.length > 1 ? 's' : ''} to Cloudinary`,
       uploads: uploadResults.map(result => ({
         public_id: result.public_id,
         secure_url: result.secure_url,
@@ -136,11 +139,12 @@ export async function PUT(request: NextRequest) {
       format: 'auto'
     })
 
-    console.log('Upload successful:', uploadResult)
+    console.log('✅ Single file upload successful:', uploadResult.public_id)
 
     // Return the result
     return NextResponse.json({
       success: true,
+      message: 'Image successfully uploaded to Cloudinary',
       upload: {
         public_id: uploadResult.public_id,
         secure_url: uploadResult.secure_url,

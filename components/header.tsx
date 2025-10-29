@@ -2,22 +2,26 @@
 
 import type React from "react"
 
-import { Search, Moon, Sun, User, Bell, ChevronDown, Menu, X } from "lucide-react"
+import { Search, Moon, Sun, User, Bell, ChevronDown, Menu, X, Shield, LogOut } from "lucide-react"
 import { WhatsAppIcon } from "@/components/ui/whatsapp-icon"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
-import { useAuthContext } from "@/lib/auth-context"
-import { auth } from "@/lib/firebase"
+import { useUser, SignInButton, SignUpButton, SignedIn, SignedOut, useClerk } from '@clerk/nextjs'
 import { useNotifications } from "@/lib/notification-context"
+import { notificationsServiceRealtime } from "@/lib/notifications-service-realtime"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useTheme } from "next-themes"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
+import { useToast } from "@/hooks/use-toast"
+import type { RealtimeChannel } from '@supabase/supabase-js'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
@@ -25,40 +29,133 @@ import { NotificationPanel } from "@/components/notification-panel"
 
 export function Header() {
   const { theme, setTheme } = useTheme()
+  const router = useRouter()
+  const { toast } = useToast()
+  const { signOut } = useClerk()
   const [searchQuery, setSearchQuery] = useState("")
   const [mounted, setMounted] = useState(false)
   const [isNotificationPanelOpen, setIsNotificationPanelOpen] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const { user } = useAuthContext()
+  const [realtimeUnreadCount, setRealtimeUnreadCount] = useState(0)
+  const [hasNewNotification, setHasNewNotification] = useState(false)
+  const { user } = useUser()
   const { unreadCount, refreshNotifications } = useNotifications()
+  const channelRef = useRef<RealtimeChannel | null>(null)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+
+  // Get user account type from Clerk metadata
+  const userAccountType = (user?.unsafeMetadata?.accountType as string) || 
+                          (user?.publicMetadata?.accountType as string) || 
+                          'renter'
 
   useEffect(() => {
     setMounted(true)
+    // Create audio element for notification sound (optional)
+    if (typeof window !== 'undefined') {
+      audioRef.current = new Audio('/notification-sound.mp3')
+      audioRef.current.volume = 0.5
+    }
   }, [])
 
   // Refresh notifications when user changes or panel opens
   useEffect(() => {
-    if (user?.uid) {
+    if (user?.id) {
       refreshNotifications()
+      loadUnreadCount()
     }
-  }, [user?.uid, refreshNotifications])
+  }, [user?.id, refreshNotifications])
 
-  // Refresh notifications when panel opens/closes
+  // Setup real-time notification subscription
   useEffect(() => {
-    if (isNotificationPanelOpen && user?.uid) {
-      refreshNotifications()
-    }
-  }, [isNotificationPanelOpen, user?.uid, refreshNotifications])
+    if (!user?.id) return
 
-  const handleSearch = () => {
-    if (searchQuery.trim()) {
-      if (typeof window !== 'undefined') {
-        window.location.href = `/listings?search=${encodeURIComponent(searchQuery.trim())}`
+    // Check if Supabase is configured
+    if (typeof window !== 'undefined' && !process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      console.log('Supabase not configured, skipping real-time notifications')
+      return
+    }
+
+    console.log('Setting up real-time notification subscription for user:', user.id)
+
+    try {
+      // Subscribe to real-time notifications
+      const channel = notificationsServiceRealtime.subscribeToNotifications(
+        user.id,
+        (notification) => {
+          console.log('New notification received via real-time:', notification)
+          
+          // Update unread count
+          setRealtimeUnreadCount(prev => prev + 1)
+          setHasNewNotification(true)
+          
+          // Show toast notification
+          toast({
+            title: notification.title,
+            description: notification.message || '',
+            duration: 5000,
+          })
+          
+          // Play notification sound (optional)
+          try {
+            audioRef.current?.play().catch(err => console.log('Audio play failed:', err))
+          } catch (error) {
+            console.log('Error playing notification sound:', error)
+          }
+          
+          // Trigger animation by resetting after a short delay
+          setTimeout(() => setHasNewNotification(false), 300)
+          
+          // Refresh notifications list
+          refreshNotifications()
+        }
+      )
+
+      channelRef.current = channel
+
+      // Cleanup subscription on unmount
+      return () => {
+        if (channelRef.current) {
+          console.log('Cleaning up real-time notification subscription')
+          notificationsServiceRealtime.unsubscribe(channelRef.current)
+        }
       }
+    } catch (error) {
+      console.error('Error setting up real-time notifications:', error)
+    }
+  }, [user?.id, refreshNotifications, toast])
+
+  // Load initial unread count
+  const loadUnreadCount = async () => {
+    if (!user?.id) return
+    
+    try {
+      const count = await notificationsServiceRealtime.getUnreadCount(user.id)
+      setRealtimeUnreadCount(count)
+    } catch (error) {
+      console.error('Error loading unread count:', error)
     }
   }
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  // Refresh notifications when panel opens/closes
+  useEffect(() => {
+    if (isNotificationPanelOpen && user?.id) {
+      refreshNotifications()
+      loadUnreadCount()
+    }
+  }, [isNotificationPanelOpen, user?.id, refreshNotifications])
+
+  // Use realtime count if available, fallback to context count
+  const displayUnreadCount = realtimeUnreadCount || unreadCount
+
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      router.push(`/listings?search=${encodeURIComponent(searchQuery.trim())}`)
+    } else {
+      router.push('/listings')
+    }
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       handleSearch()
     }
@@ -67,7 +164,7 @@ export function Header() {
   const handleNotificationPanelClose = () => {
     setIsNotificationPanelOpen(false)
     // Refresh notifications when panel closes to update unread count
-    if (user?.uid) {
+    if (user?.id) {
       refreshNotifications()
     }
   }
@@ -141,7 +238,7 @@ export function Header() {
               placeholder="Search Rentals"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyPress={handleKeyPress}
+              onKeyDown={handleKeyDown}
               className="pl-8 h-8 sm:h-9 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-600 focus:border-orange-500 focus:ring-orange-500 transition-all duration-200 focus-enhanced text-sm"
             />
           </div>
@@ -183,8 +280,8 @@ export function Header() {
             </Button>
           )}
 
-          {user ? (
-            // Authenticated user section
+          <SignedIn>
+            {/* Authenticated user section */}
             <div className="flex items-center gap-2 sm:gap-3">
               {/* Notification Bell */}
               <div className="relative">
@@ -193,15 +290,15 @@ export function Header() {
                   size="icon"
                   onClick={() => setIsNotificationPanelOpen(true)}
                   className={`h-8 w-8 sm:h-9 sm:w-9 transition-colors relative ${
-                    unreadCount > 0 
+                    displayUnreadCount > 0 
                       ? 'text-orange-500 hover:text-orange-600' 
                       : 'text-gray-700 dark:text-gray-300 hover:text-orange-500'
                   }`}
                 >
-                  <Bell className={`h-4 w-4 ${unreadCount > 0 ? 'animate-pulse' : ''}`} />
-                  {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium animate-bounce">
-                      {unreadCount > 99 ? '99+' : unreadCount}
+                  <Bell className={`h-4 w-4 ${displayUnreadCount > 0 ? 'animate-pulse' : ''} ${hasNewNotification ? 'animate-bounce' : ''}`} />
+                  {displayUnreadCount > 0 && (
+                    <span className={`absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium ${hasNewNotification ? 'animate-bounce' : 'animate-pulse'}`}>
+                      {displayUnreadCount > 99 ? '99+' : displayUnreadCount}
                     </span>
                   )}
                 </Button>
@@ -215,50 +312,128 @@ export function Header() {
                       variant="ghost"
                       className="flex items-center gap-1 sm:gap-2 px-1 sm:px-2 py-1 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                     >
-                      <Avatar className="h-7 w-7 sm:h-8 sm:w-8">
-                        <AvatarImage src={user.avatar || ""} />
-                        <AvatarFallback className="bg-purple-500 text-white text-xs sm:text-sm font-medium">
-                          {user.name?.charAt(0) || user.email?.charAt(0) || "U"}
-                        </AvatarFallback>
-                      </Avatar>
+                      <Link href="/profile">
+                        <Avatar className="h-7 w-7 sm:h-8 sm:w-8 cursor-pointer hover:ring-2 hover:ring-orange-500 transition-all">
+                          <AvatarImage src={user?.imageUrl || ""} />
+                          <AvatarFallback className="bg-purple-500 text-white text-xs sm:text-sm font-medium">
+                            {user?.firstName?.charAt(0) || user?.emailAddresses?.[0]?.emailAddress?.charAt(0) || "U"}
+                          </AvatarFallback>
+                        </Avatar>
+                      </Link>
                       <span className="hidden md:block text-sm font-medium text-gray-700 dark:text-gray-300">
-                        {user.name || user.email?.split("@")[0] || "User"}
+                        {user?.firstName || user?.emailAddresses?.[0]?.emailAddress?.split("@")[0] || "User"}
                       </span>
                       <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4 text-gray-500" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56">
-                    <DropdownMenuItem asChild>
-                      <Link href="/profile" className="cursor-pointer">
-                        My Profile
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href="/profile/bookings" className="cursor-pointer">
-                        My Bookings
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href="/profile/listings" className="cursor-pointer">
-                        My Listings
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href="/profile/favorites" className="cursor-pointer">
-                        Favorites
-                      </Link>
-                    </DropdownMenuItem>
+                  <DropdownMenuContent align="end" className="w-64">
+                    {/* Profile Header with Avatar */}
+                    <div className="flex items-center gap-3 p-3 border-b">
+                      <Avatar className="h-12 w-12 border-2 border-orange-500">
+                        <AvatarImage src={user?.imageUrl || ""} />
+                        <AvatarFallback className="bg-purple-500 text-white text-sm font-medium">
+                          {user?.firstName?.charAt(0) || user?.emailAddresses?.[0]?.emailAddress?.charAt(0) || "U"}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-sm text-gray-900 dark:text-gray-100 truncate">
+                          {user?.firstName} {user?.lastName}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                          {user?.emailAddresses?.[0]?.emailAddress}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Owner Dashboard Section (only for owners) */}
+                    {userAccountType === 'owner' && (
+                      <>
+                        <DropdownMenuLabel className="font-normal text-xs text-muted-foreground px-2 pt-2">
+                          Owner Dashboard
+                        </DropdownMenuLabel>
+                        <div className="py-2">
+                          <DropdownMenuItem asChild>
+                            <Link href="/dashboard/owner" className="cursor-pointer">
+                              Dashboard
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem asChild>
+                            <Link href="/list-item" className="cursor-pointer">
+                              Create Listing
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem asChild>
+                            <Link href="/dashboard/owner?tab=drafts" className="cursor-pointer">
+                              My Drafts
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem asChild>
+                            <Link href="/dashboard/owner?tab=analytics" className="cursor-pointer">
+                              Analytics
+                            </Link>
+                          </DropdownMenuItem>
+                        </div>
+                        <DropdownMenuSeparator />
+                      </>
+                    )}
+
+                    {/* Admin Section (only for admins) */}
+                    {(user?.publicMetadata?.role === 'admin' || (user?.unsafeMetadata as any)?.role === 'admin') && (
+                      <>
+                        <div className="py-2 bg-red-50 dark:bg-red-900/20 rounded-md px-2 mb-2">
+                          <DropdownMenuItem asChild>
+                            <Link href="/admin/verify-users" className="cursor-pointer font-bold text-red-600 dark:text-red-400">
+                              <Shield className="h-4 w-4 mr-2" />
+                              Admin: Verify Users
+                            </Link>
+                          </DropdownMenuItem>
+                        </div>
+                        <DropdownMenuSeparator />
+                      </>
+                    )}
+
+                    {/* Profile Section */}
+                    <div className="py-2">
+                      <DropdownMenuItem asChild>
+                        <Link href="/profile" className="cursor-pointer font-medium">
+                          My Profile
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href="/profile/settings" className="cursor-pointer">
+                          Account Settings
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href="/profile/billing" className="cursor-pointer">
+                          Billing & Payments
+                        </Link>
+                      </DropdownMenuItem>
+                    </div>
+
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
-                      <Link href="/profile/settings" className="cursor-pointer">
-                        Account Settings
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href="/profile/billing" className="cursor-pointer">
-                        Billing & Payments
-                      </Link>
-                    </DropdownMenuItem>
+
+                    {/* Activity Section */}
+                    <div className="py-2">
+                      <DropdownMenuItem asChild>
+                        <Link href="/profile/bookings" className="cursor-pointer">
+                          My Bookings
+                        </Link>
+                      </DropdownMenuItem>
+                      {userAccountType === 'owner' && (
+                        <DropdownMenuItem asChild>
+                          <Link href="/profile/listings" className="cursor-pointer">
+                            My Listings
+                          </Link>
+                        </DropdownMenuItem>
+                      )}
+                      <DropdownMenuItem asChild>
+                        <Link href="/profile/favorites" className="cursor-pointer">
+                          Favorites
+                        </Link>
+                      </DropdownMenuItem>
+                    </div>
+
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
                       <Link href="/help" className="cursor-pointer">
@@ -267,62 +442,37 @@ export function Header() {
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem 
-                      onClick={() => auth.signOut()}
-                      className="cursor-pointer text-red-600 hover:text-red-700"
+                      onClick={() => signOut(() => router.push('/'))}
+                      className="cursor-pointer text-red-600 dark:text-red-400 focus:text-red-600 dark:focus:text-red-400"
                     >
+                      <LogOut className="h-4 w-4 mr-2" />
                       Sign Out
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               )}
             </div>
-          ) : (
-            // Non-authenticated user section
-            <>
-              <div className="hidden md:flex items-center gap-2 lg:gap-3">
-                <Button
-                  variant="ghost"
-                  asChild
-                  className="text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors text-sm lg:text-base"
-                >
-                  <Link href="/login">Sign in</Link>
-                </Button>
-                <Button
-                  asChild
-                  className="bg-orange-500 hover:bg-orange-600 text-white transition-all rounded-lg text-sm lg:text-base px-3 lg:px-4"
-                >
-                  <Link href="/signup">Sign up</Link>
-                </Button>
-              </div>
+          </SignedIn>
 
-              {mounted && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 sm:h-9 sm:w-9 text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors md:hidden"
-                    >
-                      <User className="h-4 w-4" />
-                      <span className="sr-only">Profile menu</span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56">
-                    <DropdownMenuItem asChild>
-                      <Link href="/login" className="cursor-pointer">
-                        Sign in
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href="/signup" className="cursor-pointer">
-                        Sign up
-                      </Link>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
-            </>
-          )}
+          <SignedOut>
+            {/* Non-authenticated user section */}
+            <div className="flex items-center gap-2 sm:gap-3">
+              <Link href="/sign-in">
+                <Button
+                  className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white transition-all rounded-lg text-xs sm:text-sm px-3 sm:px-4 py-2 shadow-md hover:shadow-lg font-medium"
+                >
+                  Log in
+                </Button>
+              </Link>
+              <Link href="/sign-up">
+                <Button
+                  className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white transition-all rounded-lg text-xs sm:text-sm px-3 sm:px-4 py-2 shadow-md hover:shadow-lg font-medium"
+                >
+                  Sign up
+                </Button>
+              </Link>
+            </div>
+          </SignedOut>
         </div>
       </div>
 
@@ -392,7 +542,7 @@ export function Header() {
                   placeholder="Search Rentals"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyPress={handleKeyPress}
+                  onKeyDown={handleKeyDown}
                   className="pl-10 h-10 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-600 focus:border-orange-500 focus:ring-orange-500 transition-all duration-200"
                 />
               </div>

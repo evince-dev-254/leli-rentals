@@ -36,7 +36,7 @@ import {
   TrendingUp, Users, Award, Filter, Download, Share2, Phone,
   Bookmark, Plus, Heart, Tag
 } from "lucide-react"
-import { useAuthContext } from "@/lib/auth-context"
+import { useUser } from '@clerk/nextjs'
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { bookingsService, Booking } from "@/lib/bookings-service"
@@ -45,7 +45,7 @@ import { SavedBooking } from "@/lib/types/saved-booking"
 import LocationSelector from "@/components/location-selector"
 
 export default function BookingsPage() {
-  const { user } = useAuthContext()
+  const { user, isLoaded } = useUser()
   const router = useRouter()
   const { toast } = useToast()
   
@@ -64,7 +64,7 @@ export default function BookingsPage() {
       
       setIsLoading(true)
       try {
-        const userBookings = await bookingsService.getUserBookings(user.uid)
+        const userBookings = await bookingsService.getUserBookings(user.id)
         setBookings(userBookings)
       } catch (error) {
         console.error("Error loading bookings:", error)
@@ -87,7 +87,7 @@ export default function BookingsPage() {
       
       setIsLoadingSaved(true)
       try {
-        const userSavedBookings = await hybridSavedBookingsService.getUserSavedBookings(user.uid)
+        const userSavedBookings = await hybridSavedBookingsService.getUserSavedBookings(user.id)
         setSavedBookings(userSavedBookings)
       } catch (error) {
         console.error("Error loading saved bookings:", error)
@@ -252,7 +252,7 @@ For support, contact: support@lelirentals.com
     if (!user) return
     
     try {
-      await hybridSavedBookingsService.removeSavedBooking(user.uid, listingId)
+      await hybridSavedBookingsService.removeSavedBooking(user.id, listingId)
       setSavedBookings(prev => prev.filter(booking => booking.listingId !== listingId))
       
       toast({
@@ -326,6 +326,17 @@ For support, contact: support@lelirentals.com
       <Header />
 
       <div className="container mx-auto px-3 sm:px-4 md:px-6 py-6 sm:py-8">
+        {/* Back Button */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => router.back()}
+          className="mb-4 hover:bg-purple-100 dark:hover:bg-purple-900"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back
+        </Button>
+
         {/* Header */}
         <div className="mb-6 sm:mb-8 fade-in-up">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -768,3 +779,7 @@ For support, contact: support@lelirentals.com
     </div>
   )
 }
+
+
+
+

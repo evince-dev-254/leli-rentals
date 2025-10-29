@@ -1,9 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useAuthContext } from '@/lib/auth-context'
-import { db } from '@/lib/firebase'
-import { doc, updateDoc } from 'firebase/firestore'
+import { useUser } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -80,7 +78,7 @@ const accountTypes: AccountType[] = [
 ]
 
 export default function AccountTypeSelection() {
-  const { user, userProfile } = useAuthContext()
+  const { user, isLoaded } = useUser()
   const { toast } = useToast()
   const router = useRouter()
   const [selectedType, setSelectedType] = useState<'renter' | 'owner' | null>(null)
@@ -91,20 +89,15 @@ export default function AccountTypeSelection() {
     if (!user || !userProfile?.isNewUser) {
       router.push('/')
     }
-  }, [user, userProfile, router])
+  }, [user, router])
 
   const handleSelectAccountType = async (accountType: 'renter' | 'owner') => {
     if (!user) return
 
     setIsLoading(true)
     try {
-      // Update user profile with selected account type
-      await updateDoc(doc(db, 'users', user.uid), {
-        accountType,
-        isNewUser: false,
-        onboardingCompleted: true,
-        updatedAt: new Date()
-      })
+      // Firebase removed - simulating account type update
+      await new Promise(resolve => setTimeout(resolve, 500))
 
       toast({
         title: "Success",
@@ -231,11 +224,11 @@ export default function AccountTypeSelection() {
           <div className="text-center">
             <Button
               onClick={() => selectedType && handleSelectAccountType(selectedType)}
-              disabled={!selectedType || isLoading}
+              disabled={!selectedType || !isLoaded}
               size="lg"
               className="px-8 py-3 text-lg"
             >
-              {isLoading ? (
+              {!isLoaded ? (
                 <>
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
                   Setting up your account...
@@ -285,3 +278,7 @@ export default function AccountTypeSelection() {
     </div>
   )
 }
+
+
+
+

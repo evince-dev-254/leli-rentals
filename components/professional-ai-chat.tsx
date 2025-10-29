@@ -22,7 +22,8 @@ import {
   MessageSquare
 } from "lucide-react"
 import { professionalAIChatService, ChatMessage, ChatSession, AIResponse } from "@/lib/professional-ai-chat-service"
-import { useAuthContext } from "@/lib/auth-context"
+import { enhancedAIChatService } from "@/lib/enhanced-ai-chat-service"
+import { useUser } from "@clerk/nextjs"
 
 interface ProfessionalAIChatProps {
   isOpen: boolean
@@ -30,7 +31,7 @@ interface ProfessionalAIChatProps {
 }
 
 export default function ProfessionalAIChat({ isOpen, onToggle }: ProfessionalAIChatProps) {
-  const { user } = useAuthContext()
+  const { user, isLoaded } = useUser()
   const [session, setSession] = useState<ChatSession | null>(null)
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [newMessage, setNewMessage] = useState("")
@@ -49,52 +50,70 @@ export default function ProfessionalAIChat({ isOpen, onToggle }: ProfessionalAIC
 
   const initializeSession = async () => {
     try {
-      const userContext = {
+      const sessionId = await professionalAIChatService.createSession(user?.id)
+      
+      // Load previous conversation history if exists
+      const previousMessages = enhancedAIChatService.loadConversationHistory(sessionId)
+      
+      // Get user context for personalization
+      const userContext = await enhancedAIChatService.getUserContext(user?.id)
+      
+      const contextData = {
         currentPage: typeof window !== 'undefined' ? window.location.pathname : '/',
         deviceType: typeof window !== 'undefined' ?
-          (window.innerWidth < 768 ? 'mobile' : 'desktop') : 'desktop'
+          (window.innerWidth < 768 ? 'mobile' : 'desktop') : 'desktop',
+        ...userContext
       }
 
-      const sessionId = await professionalAIChatService.createSession(user?.uid)
       setSession({
         id: sessionId,
-        userId: user?.uid,
+        userId: user?.id,
         messages: [],
         status: 'active',
         createdAt: new Date(),
         updatedAt: new Date(),
-        context: userContext,
+        context: contextData,
         metadata: {
           userAgent: typeof window !== 'undefined' ? window.navigator.userAgent : undefined,
-          deviceType: 'desktop',
+          deviceType: contextData.deviceType,
           sessionStartTime: new Date(),
-          totalMessages: 0
+          totalMessages: previousMessages.length
         }
       })
 
-      // Add welcome message
-      const welcomeMessage: ChatMessage = {
-        id: 'welcome',
-        sender: 'ai',
-        type: 'text',
-        role: 'assistant',
-        content: `👋 Hi${user?.displayName ? ` ${user.displayName.split(' ')[0]}` : ''}! I'm Leli, your AI assistant for Leli Rentals.
+      // If there's previous conversation, load it
+      if (previousMessages.length > 0) {
+        setMessages(previousMessages)
+        setShowWelcome(false)
+      } else {
+        // Generate personalized welcome message
+        const personalizedGreeting = enhancedAIChatService.generatePersonalizedGreeting(
+          userContext,
+          user?.firstName
+        )
+        
+        const contextualSuggestions = enhancedAIChatService.getContextualSuggestions(userContext)
+
+        const welcomeMessage: ChatMessage = {
+          id: 'welcome',
+          sender: 'ai',
+          type: 'text',
+          role: 'assistant',
+          content: `${personalizedGreeting}
 
 I can help you with:
-• Finding and booking rentals
-• Managing your listings
-• Payment and billing questions
-• Account support
+${contextualSuggestions.map((s, i) => `${i === 0 ? '•' : '•'} ${s}`).join('\n')}
 
 What can I help you with today?`,
-        timestamp: new Date(),
-        metadata: {
-          quickReplies: ['I need booking help', 'Listing questions', 'Payment issues', 'Account support']
+          timestamp: new Date(),
+          metadata: {
+            quickReplies: contextualSuggestions.slice(0, 4)
+          }
         }
-      }
 
-      setMessages([welcomeMessage])
-      setQuickReplies(['I need booking help', 'Listing questions', 'Payment issues', 'Account support', '💬 Chat on WhatsApp'])
+        setMessages([welcomeMessage])
+        setQuickReplies([...contextualSuggestions.slice(0, 4), '💬 Chat on WhatsApp'])
+      }
     } catch (error) {
       console.error('Error initializing session:', error)
     }
@@ -159,6 +178,9 @@ What can I help you with today?`,
       // Add AI message to session
       await professionalAIChatService.addMessage(session.id, aiMessage)
 
+      // Save conversation history
+      const updatedMessages = [...messages, userMessage, aiMessage]
+      enhancedAIChatService.saveConversationHistory(session.id, updatedMessages)
 
     } catch (error) {
       console.error('Error sending message:', error)
@@ -286,9 +308,17 @@ What can I help you with today?`,
   }
 
   return (
-    <Card className="fixed bottom-6 right-6 w-96 h-[600px] shadow-2xl z-50 flex flex-col animate-in slide-in-from-bottom-4 duration-300 border-2">
+    <div className="fixed bottom-6 right-6 w-96 h-[600px] z-50 animate-in slide-in-from-bottom-4 duration-300">
+      {/* Animated Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-100 via-white to-blue-100 dark:from-purple-950 dark:via-gray-900 dark:to-blue-950 rounded-lg overflow-hidden pointer-events-none">
+        {/* Background orbs */}
+        <div className="absolute -top-20 -right-20 w-40 h-40 bg-purple-400/20 dark:bg-purple-600/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-blue-400/20 dark:bg-blue-600/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+      </div>
+      
+      <Card className="relative h-full shadow-2xl flex flex-col border-2 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md">
       {/* Header */}
-      <CardHeader className="pb-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-t-lg">
+      <CardHeader className="pb-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-t-lg">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Avatar className="h-8 w-8">
@@ -517,5 +547,6 @@ What can I help you with today?`,
         </div>
       </div>
     </Card>
+    </div>
   )
 }

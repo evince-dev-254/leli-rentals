@@ -1,19 +1,9 @@
-// Utility functions for Firebase Storage operations
-import { ref, getDownloadURL } from "firebase/storage"
-import { storage } from "./firebase"
+// Utility functions for Storage operations
+// Firebase removed - all imports removed
 
 export const checkStorageAvailability = async (): Promise<boolean> => {
-  try {
-    // Simple check to see if Firebase Storage is available
-    const testRef = ref(storage, 'test-connection-check')
-    await getDownloadURL(testRef).catch(() => {
-      // This is expected to fail, we just want to check if the service is reachable
-    })
-    return true
-  } catch (error) {
-    console.warn('Firebase Storage may not be available:', error)
-    return false
-  }
+  // Firebase removed - returning false
+  return false
 }
 
 export const optimizeImageForUpload = (file: File, maxWidth: number = 800, quality: number = 0.8): Promise<File> => {
@@ -67,3 +57,5 @@ export const getImageDimensions = (file: File): Promise<{ width: number; height:
     img.src = URL.createObjectURL(file)
   })
 }
+
+

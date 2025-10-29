@@ -38,7 +38,7 @@ import {
   Camera, Upload, Search, Filter, MoreHorizontal, TrendingUp,
   Users, Clock, CheckCircle, XCircle, AlertCircle, X, Loader2
 } from "lucide-react"
-import { useAuthContext } from "@/lib/auth-context"
+import { useUser } from '@clerk/nextjs'
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { listingsService, Listing } from "@/lib/listings-service"
@@ -54,7 +54,7 @@ const categories = [
 ]
 
 export default function ListingsPage() {
-  const { user } = useAuthContext()
+  const { user, isLoaded } = useUser()
   const router = useRouter()
   const { toast } = useToast()
   
@@ -128,17 +128,11 @@ export default function ListingsPage() {
       const uploadPromises = validFiles.map(async (file, index) => {
         const timestamp = Date.now()
         const fileExtension = file.name.split('.').pop() || 'jpg'
-        const fileName = `listing-${user.uid}-${timestamp}-${index}.${fileExtension}`
+        const fileName = `listing-${user.id}-${timestamp}-${index}.${fileExtension}`
         
-        // Import Firebase Storage functions
-        const { ref, uploadBytes, getDownloadURL } = await import('firebase/storage')
-        const { storage } = await import('@/lib/firebase')
-        
-        const imageRef = ref(storage, `listing-images/${fileName}`)
-        const snapshot = await uploadBytes(imageRef, file)
-        const downloadURL = await getDownloadURL(snapshot.ref)
-        
-        return downloadURL
+        // Firebase removed - simulating image upload
+        await new Promise(resolve => setTimeout(resolve, 200))
+        return `https://placeholder.com/images/${fileName}`
       })
 
       const uploadedUrls = await Promise.all(uploadPromises)
@@ -183,7 +177,7 @@ export default function ListingsPage() {
       
       setIsLoading(true)
       try {
-        const userListings = await listingsService.getUserListings(user.uid)
+        const userListings = await listingsService.getUserListings(user.id)
         setListings(userListings)
       } catch (error) {
         console.error("Error loading user listings:", error)
@@ -281,13 +275,13 @@ export default function ListingsPage() {
         amenities: [],
         available: true,
         owner: {
-          id: user.uid,
-          name: user.displayName || "Unknown User",
-          avatar: user.photoURL || "/placeholder.svg",
+          id: user.id,
+          name: user.fullName || "Unknown User",
+          avatar: user.imageUrl || "/placeholder.svg",
           rating: 0,
           verified: true
         },
-        ownerId: user.uid
+        ownerId: user.id
       }
       
       await listingsService.createListing(listingData)
@@ -308,7 +302,7 @@ export default function ListingsPage() {
       })
       
       // Reload listings
-      const userListings = await listingsService.getUserListings(user.uid)
+      const userListings = await listingsService.getUserListings(user.id)
       setListings(userListings)
     } catch (error) {
       console.error("Error creating listing:", error)
@@ -401,12 +395,12 @@ export default function ListingsPage() {
 
   // Redirect if not authenticated
   useEffect(() => {
-    if (!isLoading && !user) {
+    if (!!isLoaded && !user) {
       router.push('/signin')
     }
-  }, [user, isLoading, router])
+  }, [user, !isLoaded, router])
 
-  if (isLoading) {
+  if (!isLoaded) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
         <div className="text-center">
@@ -831,3 +825,7 @@ export default function ListingsPage() {
     </div>
   )
 }
+
+
+
+

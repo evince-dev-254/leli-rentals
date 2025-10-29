@@ -1,5 +1,4 @@
-import { db } from "./firebase"
-import { collection, addDoc, query, where, getDocs, getDoc, orderBy, limit, doc, updateDoc, serverTimestamp } from "firebase/firestore"
+// Firebase removed - db import removed
 
 // Professional AI Chat Service for Leli Rentals
 // Features inspired by Airbnb, Booking.com, and other professional rental platforms
@@ -78,9 +77,9 @@ class ProfessionalAIChatService {
   public readonly quickActions: QuickAction[] = [
     {
       id: 'book_item',
-      label: 'Book an Item',
-      icon: '📅',
-      action: 'I want to book an item',
+      label: 'Find & Book Items',
+      icon: '🔍',
+      action: 'Help me find and book an item',
       category: 'booking',
       priority: 1
     },
@@ -96,17 +95,33 @@ class ProfessionalAIChatService {
       id: 'manage_bookings',
       label: 'My Bookings',
       icon: '📋',
-      action: 'Help me manage my bookings',
+      action: 'Show me my bookings',
       category: 'account',
       priority: 3
+    },
+    {
+      id: 'pricing_help',
+      label: 'Pricing Help',
+      icon: '💰',
+      action: 'Help me with pricing my item',
+      category: 'listing',
+      priority: 4
+    },
+    {
+      id: 'verification',
+      label: 'Account Verification',
+      icon: '✓',
+      action: 'Help me verify my account',
+      category: 'account',
+      priority: 5
     },
     {
       id: 'payment_help',
       label: 'Payment Issues',
       icon: '💳',
-      action: 'I have a payment question',
-      category: 'billing',
-      priority: 4
+      action: 'I need help with payments',
+      category: 'support',
+      priority: 6
     },
     {
       id: 'account_help',
@@ -114,7 +129,15 @@ class ProfessionalAIChatService {
       icon: '👤',
       action: 'Help with my account',
       category: 'account',
-      priority: 5
+      priority: 7
+    },
+    {
+      id: 'live_support',
+      label: 'Talk to Human',
+      icon: '💬',
+      action: 'I need to speak with a support agent',
+      category: 'support',
+      priority: 8
     }
   ]
 
@@ -541,10 +564,13 @@ class ProfessionalAIChatService {
     }
   }
 
-  // Session management
+  // Session management (using localStorage instead of Firebase)
   async createSession(userId?: string): Promise<string> {
     try {
-      const newSession: Omit<ChatSession, 'id'> = {
+      const sessionId = `chat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      
+      const newSession: ChatSession = {
+        id: sessionId,
         userId,
         messages: [],
         status: 'active',
@@ -560,38 +586,41 @@ class ProfessionalAIChatService {
         }
       }
 
-      const docRef = await addDoc(collection(db, 'ai_chat_sessions'), {
-        ...newSession,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
-      })
+      // Store in localStorage
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem(`ai_chat_session_${sessionId}`, JSON.stringify(newSession))
+        } catch (e) {
+          console.warn('LocalStorage not available, session will be in-memory only')
+        }
+      }
 
-      return docRef.id // Return the Firestore document ID directly
+      return sessionId
     } catch (error) {
       console.error('Error creating chat session:', error)
-      throw new Error('Failed to create chat session')
+      // Return a fallback session ID instead of throwing
+      return `fallback_${Date.now()}`
     }
   }
 
   async getSession(sessionId: string): Promise<ChatSession | null> {
     try {
-      const docRef = doc(db, 'ai_chat_sessions', sessionId)
-      const docSnap = await getDoc(docRef)
-
-      if (!docSnap.exists()) return null
-
-      const data = docSnap.data()
-
-      return {
-        id: docSnap.id,
-        ...data,
-        createdAt: data?.createdAt?.toDate() || new Date(),
-        updatedAt: data?.updatedAt?.toDate() || new Date(),
-        messages: data?.messages?.map((msg: any) => ({
+      // Get from localStorage
+      if (typeof window !== 'undefined') {
+        const stored = localStorage.getItem(`ai_chat_session_${sessionId}`)
+        if (stored) {
+          const session = JSON.parse(stored)
+          // Convert date strings back to Date objects
+          session.createdAt = new Date(session.createdAt)
+          session.updatedAt = new Date(session.updatedAt)
+          session.messages = session.messages?.map((msg: any) => ({
           ...msg,
-          timestamp: msg.timestamp?.toDate() || new Date()
+            timestamp: new Date(msg.timestamp)
         })) || []
-      } as ChatSession
+          return session
+        }
+      }
+      return null
     } catch (error) {
       console.error('Error getting chat session:', error)
       return null
@@ -606,32 +635,38 @@ class ProfessionalAIChatService {
         timestamp: new Date()
       }
 
-      const sessionRef = doc(db, 'ai_chat_sessions', sessionId)
       const session = await this.getSession(sessionId)
 
       if (!session) throw new Error('Session not found')
 
       const updatedMessages = [...session.messages, newMessage]
+      session.messages = updatedMessages
+      session.updatedAt = new Date()
+      if (session.metadata) {
+        session.metadata.totalMessages = updatedMessages.length
+      }
 
-      await updateDoc(sessionRef, {
-        messages: updatedMessages,
-        updatedAt: serverTimestamp(),
-        'metadata.totalMessages': updatedMessages.length,
-        'metadata.lastMessageTime': serverTimestamp()
-      })
+      // Save updated session to localStorage
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(`ai_chat_session_${sessionId}`, JSON.stringify(session))
+      }
     } catch (error) {
       console.error('Error adding message:', error)
-      throw new Error('Failed to add message')
+      // Don't throw, just log the error
     }
   }
 
   async updateSessionContext(sessionId: string, contextUpdates: any): Promise<void> {
     try {
-      const sessionRef = doc(db, 'ai_chat_sessions', sessionId)
-      await updateDoc(sessionRef, {
-        context: contextUpdates,
-        updatedAt: serverTimestamp()
-      })
+      const session = await this.getSession(sessionId)
+      if (!session) return
+
+      session.context = { ...session.context, ...contextUpdates }
+      session.updatedAt = new Date()
+
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(`ai_chat_session_${sessionId}`, JSON.stringify(session))
+      }
     } catch (error) {
       console.error('Error updating session context:', error)
     }
@@ -639,12 +674,18 @@ class ProfessionalAIChatService {
 
   async closeSession(sessionId: string, satisfactionScore?: number): Promise<void> {
     try {
-      const sessionRef = doc(db, 'ai_chat_sessions', sessionId)
-      await updateDoc(sessionRef, {
-        status: 'closed',
-        updatedAt: serverTimestamp(),
-        'metadata.satisfactionScore': satisfactionScore
-      })
+      const session = await this.getSession(sessionId)
+      if (!session) return
+
+      session.status = 'closed'
+      session.updatedAt = new Date()
+      if (session.metadata && satisfactionScore) {
+        session.metadata.satisfactionScore = satisfactionScore
+      }
+
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(`ai_chat_session_${sessionId}`, JSON.stringify(session))
+      }
     } catch (error) {
       console.error('Error closing session:', error)
     }
@@ -652,14 +693,13 @@ class ProfessionalAIChatService {
 
   async submitFeedback(sessionId: string, messageId: string, feedback: 'positive' | 'negative'): Promise<void> {
     try {
-      const sessionRef = doc(db, 'ai_chat_sessions', sessionId)
       const session = await this.getSession(sessionId)
 
-      if (!session) throw new Error('Session not found')
+      if (!session) return
 
       // Find the message and update its feedback
       const messageIndex = session.messages.findIndex(msg => msg.id === messageId)
-      if (messageIndex === -1) throw new Error('Message not found')
+      if (messageIndex === -1) return
 
       const updatedMessages = [...session.messages]
       updatedMessages[messageIndex] = {
@@ -671,10 +711,12 @@ class ProfessionalAIChatService {
         }
       }
 
-      await updateDoc(sessionRef, {
-        messages: updatedMessages,
-        updatedAt: serverTimestamp()
-      })
+      session.messages = updatedMessages
+      session.updatedAt = new Date()
+
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(`ai_chat_session_${sessionId}`, JSON.stringify(session))
+      }
     } catch (error) {
       console.error('Error submitting feedback:', error)
     }

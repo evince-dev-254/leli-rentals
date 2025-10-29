@@ -8,9 +8,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useToast } from "@/hooks/use-toast"
-import { useAuthContext } from "@/lib/auth-context"
+import { useUser } from '@clerk/nextjs'
 import { ownerDashboardClientService, OwnerStats, OwnerListing, OwnerBooking, OwnerActivity } from "@/lib/owner-dashboard-client-service"
 import { getUserAccountType } from "@/lib/account-type-utils"
+import { listingsServiceSupabase, ListingData } from "@/lib/listings-service-supabase"
 import {
   Plus,
   TrendingUp,
@@ -35,15 +36,20 @@ import {
   Edit,
   Trash2,
   Copy,
-  ExternalLink
+  ExternalLink,
+  FileText,
+  Play
 } from "lucide-react"
 
 export default function OwnerDashboard() {
   const router = useRouter()
-  const { user } = useAuthContext()
+  const { user, isLoaded } = useUser()
   const { toast } = useToast()
   const [activeTab, setActiveTab] = useState("overview")
+  const [listingsTab, setListingsTab] = useState("published")
   const [listings, setListings] = useState<OwnerListing[]>([])
+  const [draftListings, setDraftListings] = useState<ListingData[]>([])
+  const [draftCount, setDraftCount] = useState(0)
   const [bookings, setBookings] = useState<OwnerBooking[]>([])
   const [activities, setActivities] = useState<OwnerActivity[]>([])
   const [stats, setStats] = useState<OwnerStats>({
@@ -57,22 +63,26 @@ export default function OwnerDashboard() {
   // Load owner dashboard data from database
   useEffect(() => {
     const loadDashboardData = async () => {
-      if (!user?.uid) return
+      if (!user?.id) return
       
       setIsLoading(true)
       try {
         // Load all dashboard data in parallel
-        const [statsData, listingsData, bookingsData, activitiesData] = await Promise.all([
-          ownerDashboardClientService.getOwnerStats(user.uid),
-          ownerDashboardClientService.getOwnerListings(user.uid),
-          ownerDashboardClientService.getOwnerBookings(user.uid),
-          ownerDashboardClientService.getOwnerActivity(user.uid, 10)
+        const [statsData, listingsData, bookingsData, activitiesData, drafts, count] = await Promise.all([
+          ownerDashboardClientService.getOwnerStats(user.id),
+          ownerDashboardClientService.getOwnerListings(user.id),
+          ownerDashboardClientService.getOwnerBookings(user.id),
+          ownerDashboardClientService.getOwnerActivity(user.id, 10),
+          listingsServiceSupabase.getUserListings(user.id, 'draft'),
+          listingsServiceSupabase.getDraftCount(user.id)
         ])
         
         setStats(statsData)
         setListings(listingsData)
         setBookings(bookingsData)
         setActivities(activitiesData)
+        setDraftListings(drafts)
+        setDraftCount(count)
         
       } catch (error) {
         console.error('Error loading dashboard data:', error)
@@ -87,7 +97,7 @@ export default function OwnerDashboard() {
     }
     
     loadDashboardData()
-  }, [user?.uid, toast])
+  }, [user?.id, toast])
 
   const handleCreateListing = () => {
     const userAccountType = getUserAccountType()
@@ -100,7 +110,32 @@ export default function OwnerDashboard() {
       router.push('/get-started')
       return
     }
-    router.push('/profile/create-listing')
+    router.push('/list-item')
+  }
+
+  const handleResumeDraft = (draftId: string) => {
+    router.push(`/list-item?draft=${draftId}`)
+  }
+
+  const handleDeleteDraft = async (draftId: string) => {
+    if (!user?.id) return
+    
+    try {
+      await listingsServiceSupabase.deleteListing(draftId, user.id)
+      setDraftListings(prev => prev.filter(draft => draft.id !== draftId))
+      setDraftCount(prev => prev - 1)
+      toast({
+        title: "Draft deleted",
+        description: "The draft has been removed"
+      })
+    } catch (error) {
+      console.error('Error deleting draft:', error)
+      toast({
+        title: "Error",
+        description: "Failed to delete draft",
+        variant: "destructive"
+      })
+    }
   }
 
   const handleViewListing = (listingId: string) => {
@@ -232,7 +267,7 @@ export default function OwnerDashboard() {
 
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-6">
-            {isLoading ? (
+            {!isLoaded ? (
               <div className="flex items-center justify-center py-12">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                 <span className="ml-2 text-gray-600 dark:text-gray-400">Loading dashboard...</span>
@@ -342,9 +377,9 @@ export default function OwnerDashboard() {
 
           {/* Listings Tab */}
           <TabsContent value="listings" className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mb-4">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                My Listings ({listings.length})
+                My Listings
               </h2>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm">
@@ -358,84 +393,176 @@ export default function OwnerDashboard() {
               </div>
             </div>
 
-            {listings.length === 0 ? (
-              <div className="text-center py-12">
-                <Package className="h-16 w-16 mx-auto text-gray-400 mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                  No listings yet
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400 mb-6">
-                  Create your first listing to start earning money
-                </p>
-                <Button onClick={handleCreateListing} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Your First Listing
-                </Button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {listings.map((listing) => (
-                <Card key={listing.id} className="card-animate">
-                  <div className="aspect-video relative">
-                    <img
-                      src={listing.image}
-                      alt={listing.title}
-                      className="w-full h-full object-cover rounded-t-lg"
-                    />
-                    <Badge className={`absolute top-2 right-2 ${getStatusColor(listing.status)}`}>
-                      {listing.status}
-                    </Badge>
-                  </div>
-                  <CardContent className="p-4">
-                    <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                      {listing.title}
+            {/* Nested Tabs for Published and Drafts */}
+            <Tabs value={listingsTab} onValueChange={setListingsTab} className="space-y-6">
+              <TabsList className="grid w-full grid-cols-2 max-w-md">
+                <TabsTrigger value="published" className="gap-2">
+                  Published ({listings.length})
+                </TabsTrigger>
+                <TabsTrigger value="drafts" className="gap-2">
+                  <FileText className="h-4 w-4" />
+                  Drafts ({draftCount})
+                </TabsTrigger>
+              </TabsList>
+
+              {/* Published Listings */}
+              <TabsContent value="published" className="space-y-6">
+                {listings.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Package className="h-16 w-16 mx-auto text-gray-400 mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                      No published listings yet
                     </h3>
-                    <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400 mb-3">
-                      <div className="flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        <span>{listing.bookings} bookings</span>
+                    <p className="text-gray-600 dark:text-gray-400 mb-6">
+                      Create and publish your first listing to start earning money
+                    </p>
+                    <Button onClick={handleCreateListing} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create Your First Listing
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {listings.map((listing) => (
+                    <Card key={listing.id} className="card-animate">
+                      <div className="aspect-video relative">
+                        <img
+                          src={listing.image}
+                          alt={listing.title}
+                          className="w-full h-full object-cover rounded-t-lg"
+                        />
+                        <Badge className={`absolute top-2 right-2 ${getStatusColor(listing.status)}`}>
+                          {listing.status}
+                        </Badge>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <Eye className="h-3 w-3" />
-                        <span>{listing.views} views</span>
+                      <CardContent className="p-4">
+                        <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                          {listing.title}
+                        </h3>
+                        <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400 mb-3">
+                          <div className="flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            <span>{listing.bookings} bookings</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Eye className="h-3 w-3" />
+                            <span>{listing.views} views</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Star className="h-3 w-3 text-yellow-400 fill-current" />
+                            <span>{listing.rating}</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                            {formatCurrency(listing.price)}/day
+                          </span>
+                          <div className="flex gap-1">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleViewListing(listing.id)}
+                            >
+                              <ExternalLink className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleEditListing(listing.id)}
+                            >
+                              <Edit className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                            >
+                              <MoreVertical className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
+
+              {/* Draft Listings */}
+              <TabsContent value="drafts" className="space-y-6">
+                {draftListings.length === 0 ? (
+                  <div className="text-center py-12">
+                    <FileText className="h-16 w-16 mx-auto text-gray-400 mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                      No draft listings
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-400 mb-6">
+                      Draft listings will be saved here automatically as you create them
+                    </p>
+                    <Button onClick={handleCreateListing} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create Listing
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {draftListings.map((draft) => (
+                    <Card key={draft.id} className="card-animate border-yellow-200 bg-yellow-50/50">
+                      <div className="aspect-video relative bg-gray-200">
+                        {draft.images && draft.images.length > 0 ? (
+                          <img
+                            src={draft.images[0]}
+                            alt={draft.title}
+                            className="w-full h-full object-cover rounded-t-lg"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <Package className="h-12 w-12 text-gray-400" />
+                          </div>
+                        )}
+                        <Badge className="absolute top-2 right-2 bg-yellow-100 text-yellow-800">
+                          <FileText className="h-3 w-3 mr-1" />
+                          Draft
+                        </Badge>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <Star className="h-3 w-3 text-yellow-400 fill-current" />
-                        <span>{listing.rating}</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
-                        {formatCurrency(listing.price)}/day
-                      </span>
-                      <div className="flex gap-1">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleViewListing(listing.id)}
-                        >
-                          <ExternalLink className="h-3 w-3" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleEditListing(listing.id)}
-                        >
-                          <Edit className="h-3 w-3" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                        >
-                          <MoreVertical className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-                ))}
-              </div>
-            )}
+                      <CardContent className="p-4">
+                        <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                          {draft.title || 'Untitled Draft'}
+                        </h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
+                          {draft.description || 'No description yet'}
+                        </p>
+                        {draft.price && (
+                          <p className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-3">
+                            ${draft.price.toFixed(2)} {draft.priceType && `/ ${draft.priceType.replace('_', ' ')}`}
+                          </p>
+                        )}
+                        <div className="text-xs text-gray-500 mb-3">
+                          Last updated: {draft.updated_at ? new Date(draft.updated_at).toLocaleDateString() : 'Unknown'}
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            className="flex-1"
+                            onClick={() => handleResumeDraft(draft.id!)}
+                          >
+                            <Play className="h-3 w-3 mr-1" />
+                            Resume Editing
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleDeleteDraft(draft.id!)}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
           </TabsContent>
 
           {/* Bookings Tab */}
@@ -562,3 +689,7 @@ export default function OwnerDashboard() {
     </div>
   )
 }
+
+
+
+

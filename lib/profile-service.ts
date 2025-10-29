@@ -1,19 +1,4 @@
-import {
-  collection,
-  addDoc,
-  query,
-  where,
-  getDocs,
-  getDoc,
-  orderBy,
-  limit,
-  doc,
-  setDoc,
-  updateDoc,
-  serverTimestamp,
-  deleteDoc
-} from "firebase/firestore"
-import { db } from "./firebase"
+// Firebase removed - all imports removed
 
 export interface UserProfile {
   id: string
@@ -364,3 +349,4 @@ export const profileService = {
     }
   }
 }
+

@@ -1,4 +1,4 @@
-import { db } from './database'
+import { supabase } from './supabase'
 
 export interface OwnerStats {
   totalEarnings: number
@@ -12,7 +12,7 @@ export interface OwnerListing {
   title: string
   category: string
   price: number
-  status: 'active' | 'inactive' | 'pending'
+  status: 'active' | 'inactive' | 'pending' | 'published' | 'draft'
   bookings: number
   rating: number
   views: number
@@ -50,56 +50,59 @@ export class OwnerDashboardService {
   // Get owner statistics
   async getOwnerStats(ownerId: string): Promise<OwnerStats> {
     try {
-      // Check if database is available
-      if (!db || typeof window !== 'undefined') {
-        console.warn('Database not available, returning mock data')
-        return {
-          totalEarnings: 0,
-          totalBookings: 0,
-          activeListings: 0,
-          rating: 0
-        }
+      // Get total earnings from paid bookings
+      const { data: earningsData, error: earningsError } = await supabase
+        .from('bookings')
+        .select('total_price')
+        .eq('owner_id', ownerId)
+        .eq('payment_status', 'paid')
+
+      if (earningsError) {
+        console.error('Error fetching earnings:', earningsError)
       }
-      
-      const client = await db.connect()
-      
-      try {
-        // Get total earnings
-        const earningsResult = await client.query(`
-          SELECT COALESCE(SUM(total_price), 0) as total_earnings
-          FROM bookings 
-          WHERE owner_id = $1 AND payment_status = 'paid'
-        `, [ownerId])
-        
-        // Get total bookings
-        const bookingsResult = await client.query(`
-          SELECT COUNT(*) as total_bookings
-          FROM bookings 
-          WHERE owner_id = $1
-        `, [ownerId])
-        
-        // Get active listings
-        const listingsResult = await client.query(`
-          SELECT COUNT(*) as active_listings
-          FROM listings 
-          WHERE owner_id = $1 AND status = 'active'
-        `, [ownerId])
-        
-        // Get average rating
-        const ratingResult = await client.query(`
-          SELECT COALESCE(AVG(rating), 0) as avg_rating
-          FROM reviews 
-          WHERE reviewee_id = $1
-        `, [ownerId])
+
+      const totalEarnings = earningsData?.reduce((sum, booking) => sum + (booking.total_price || 0), 0) || 0
+
+      // Get total bookings count
+      const { count: totalBookings, error: bookingsError } = await supabase
+        .from('bookings')
+        .select('*', { count: 'exact', head: true })
+        .eq('owner_id', ownerId)
+
+      if (bookingsError) {
+        console.error('Error fetching bookings count:', bookingsError)
+      }
+
+      // Get active/published listings count
+      const { count: activeListings, error: listingsError } = await supabase
+        .from('listings')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', ownerId)
+        .in('status', ['published', 'active'])
+
+      if (listingsError) {
+        console.error('Error fetching listings count:', listingsError)
+      }
+
+      // Get average rating from reviews
+      const { data: reviewsData, error: reviewsError } = await supabase
+        .from('reviews')
+        .select('rating')
+        .eq('reviewee_id', ownerId)
+
+      if (reviewsError) {
+        console.error('Error fetching reviews:', reviewsError)
+      }
+
+      const avgRating = reviewsData && reviewsData.length > 0
+        ? reviewsData.reduce((sum, review) => sum + (review.rating || 0), 0) / reviewsData.length
+        : 0
         
         return {
-          totalEarnings: parseFloat(earningsResult.rows[0]?.total_earnings || '0'),
-          totalBookings: parseInt(bookingsResult.rows[0]?.total_bookings || '0'),
-          activeListings: parseInt(listingsResult.rows[0]?.active_listings || '0'),
-          rating: parseFloat(ratingResult.rows[0]?.avg_rating || '0')
-        }
-      } finally {
-        client.release()
+        totalEarnings,
+        totalBookings: totalBookings || 0,
+        activeListings: activeListings || 0,
+        rating: Number(avgRating.toFixed(1))
       }
     } catch (error) {
       console.error('Error fetching owner stats:', error)
@@ -115,52 +118,64 @@ export class OwnerDashboardService {
   // Get owner listings
   async getOwnerListings(ownerId: string): Promise<OwnerListing[]> {
     try {
-      // Check if database is available
-      if (!db || typeof window !== 'undefined') {
-        console.warn('Database not available, returning empty array')
+      // Fetch listings
+      const { data: listings, error: listingsError } = await supabase
+        .from('listings')
+        .select('*')
+        .eq('user_id', ownerId)
+        .order('created_at', { ascending: false })
+
+      if (listingsError) {
+        console.error('Error fetching listings:', listingsError)
         return []
       }
       
-      const client = await db.connect()
-      
-      try {
-        const result = await client.query(`
-          SELECT 
-            l.id,
-            l.title,
-            l.category,
-            l.price,
-            l.status,
-            l.image_url as image,
-            l.created_at,
-            l.owner_id,
-            COUNT(b.id) as bookings,
-            COALESCE(AVG(r.rating), 0) as rating,
-            l.views
-          FROM listings l
-          LEFT JOIN bookings b ON l.id = b.listing_id
-          LEFT JOIN reviews r ON l.id = r.listing_id
-          WHERE l.owner_id = $1
-          GROUP BY l.id, l.title, l.category, l.price, l.status, l.image_url, l.created_at, l.owner_id, l.views
-          ORDER BY l.created_at DESC
-        `, [ownerId])
-        
-        return result.rows.map(row => ({
-          id: row.id,
-          title: row.title,
-          category: row.category,
-          price: parseFloat(row.price),
-          status: row.status,
-          bookings: parseInt(row.bookings),
-          rating: parseFloat(row.rating),
-          views: parseInt(row.views || '0'),
-          image: row.image,
-          createdAt: new Date(row.created_at),
-          ownerId: row.owner_id
-        }))
-      } finally {
-        client.release()
+      if (!listings || listings.length === 0) {
+        return []
       }
+
+      // Get bookings count and reviews for each listing
+      const listingsWithStats = await Promise.all(
+        listings.map(async (listing) => {
+          // Get bookings count
+          const { count: bookingsCount } = await supabase
+            .from('bookings')
+            .select('*', { count: 'exact', head: true })
+            .eq('listing_id', listing.id)
+
+          // Get reviews and calculate average rating
+          const { data: reviews } = await supabase
+            .from('reviews')
+            .select('rating')
+            .eq('listing_id', listing.id)
+
+          const avgRating = reviews && reviews.length > 0
+            ? reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviews.length
+            : 0
+
+          // Get views count
+          const { count: viewsCount } = await supabase
+            .from('listing_views')
+            .select('*', { count: 'exact', head: true })
+            .eq('listing_id', listing.id)
+
+          return {
+            id: listing.id,
+            title: listing.title,
+            category: listing.category,
+            price: listing.price,
+            status: listing.status,
+            bookings: bookingsCount || 0,
+            rating: Number(avgRating.toFixed(1)),
+            views: viewsCount || 0,
+            image: listing.images?.[0] || '/placeholder.jpg',
+            createdAt: new Date(listing.created_at),
+            ownerId: listing.user_id
+          }
+        })
+      )
+
+      return listingsWithStats
     } catch (error) {
       console.error('Error fetching owner listings:', error)
       return []
@@ -170,53 +185,50 @@ export class OwnerDashboardService {
   // Get owner bookings
   async getOwnerBookings(ownerId: string): Promise<OwnerBooking[]> {
     try {
-      // Check if database is available
-      if (!db || typeof window !== 'undefined') {
-        console.warn('Database not available, returning empty array')
+      // Fetch bookings for owner's listings
+      const { data: bookings, error: bookingsError } = await supabase
+        .from('bookings')
+        .select('*, listings!inner(title, user_id)')
+        .eq('owner_id', ownerId)
+        .order('created_at', { ascending: false })
+
+      if (bookingsError) {
+        console.error('Error fetching bookings:', bookingsError)
         return []
       }
       
-      const client = await db.connect()
-      
-      try {
-        const result = await client.query(`
-          SELECT 
-            b.id,
-            b.listing_id,
-            l.title as listing_title,
-            b.user_id as customer_id,
-            u.name as customer_name,
-            u.avatar as customer_avatar,
-            b.start_date,
-            b.end_date,
-            b.total_price,
-            b.status,
-            b.payment_status,
-            b.created_at
-          FROM bookings b
-          JOIN listings l ON b.listing_id = l.id
-          JOIN users u ON b.user_id = u.id
-          WHERE l.owner_id = $1
-          ORDER BY b.created_at DESC
-        `, [ownerId])
-        
-        return result.rows.map(row => ({
-          id: row.id,
-          listingId: row.listing_id,
-          listingTitle: row.listing_title,
-          customerId: row.customer_id,
-          customerName: row.customer_name,
-          customerAvatar: row.customer_avatar,
-          startDate: new Date(row.start_date),
-          endDate: new Date(row.end_date),
-          totalPrice: parseFloat(row.total_price),
-          status: row.status,
-          paymentStatus: row.payment_status,
-          createdAt: new Date(row.created_at)
-        }))
-      } finally {
-        client.release()
+      if (!bookings || bookings.length === 0) {
+        return []
       }
+
+      // Get user profiles for customer info using Clerk IDs
+      const bookingsWithCustomerInfo = await Promise.all(
+        bookings.map(async (booking: any) => {
+          // Try to get user profile from our database
+          const { data: userProfile } = await supabase
+            .from('user_profiles')
+            .select('name, avatar_url')
+            .eq('user_id', booking.user_id)
+            .single()
+
+          return {
+            id: booking.id,
+            listingId: booking.listing_id,
+            listingTitle: booking.listings?.title || 'Unknown Listing',
+            customerId: booking.user_id,
+            customerName: userProfile?.name || 'User',
+            customerAvatar: userProfile?.avatar_url || '/default-avatar.png',
+            startDate: new Date(booking.start_date),
+            endDate: new Date(booking.end_date),
+            totalPrice: booking.total_price,
+            status: booking.status,
+            paymentStatus: booking.payment_status,
+            createdAt: new Date(booking.created_at)
+          }
+        })
+      )
+
+      return bookingsWithCustomerInfo
     } catch (error) {
       console.error('Error fetching owner bookings:', error)
       return []
@@ -226,74 +238,98 @@ export class OwnerDashboardService {
   // Get owner activity
   async getOwnerActivity(ownerId: string, limit: number = 10): Promise<OwnerActivity[]> {
     try {
-      // Check if database is available
-      if (!db || typeof window !== 'undefined') {
-        console.warn('Database not available, returning empty array')
-        return []
+      const activities: OwnerActivity[] = []
+
+      // Get recent bookings
+      const { data: bookings, error: bookingsError } = await supabase
+        .from('bookings')
+        .select('id, created_at, total_price, user_id, listing_id, listings!inner(title)')
+        .eq('owner_id', ownerId)
+        .order('created_at', { ascending: false })
+        .limit(limit)
+
+      if (bookingsError) {
+        console.error('Error fetching booking activities:', bookingsError)
+      } else if (bookings) {
+        for (const booking of bookings) {
+          // Get user profile
+          const { data: userProfile } = await supabase
+            .from('user_profiles')
+            .select('name')
+            .eq('user_id', booking.user_id)
+            .single()
+
+          activities.push({
+            id: `booking-${booking.id}`,
+            type: 'booking',
+            title: 'New booking received',
+            description: `${(booking.listings as any)?.title || 'Unknown Listing'} - ${userProfile?.name || 'User'}`,
+            timestamp: new Date(booking.created_at),
+            bookingId: booking.id,
+            listingId: booking.listing_id
+          })
+        }
       }
-      
-      const client = await db.connect()
-      
-      try {
-        // Get recent bookings
-        const bookingsResult = await client.query(`
-          SELECT 
-            b.id,
-            b.created_at,
-            l.title,
-            u.name as customer_name,
-            b.total_price
-          FROM bookings b
-          JOIN listings l ON b.listing_id = l.id
-          JOIN users u ON b.user_id = u.id
-          WHERE l.owner_id = $1
-          ORDER BY b.created_at DESC
-          LIMIT $2
-        `, [ownerId, limit])
-        
-        const activities: OwnerActivity[] = bookingsResult.rows.map(row => ({
-          id: `booking-${row.id}`,
-          type: 'booking' as const,
-          title: 'New booking received',
-          description: `${row.title} - ${row.customer_name}`,
-          timestamp: new Date(row.created_at),
-          bookingId: row.id
-        }))
-        
-        // Get recent payments
-        const paymentsResult = await client.query(`
-          SELECT 
-            b.id,
-            b.created_at,
-            l.title,
-            u.name as customer_name,
-            b.total_price
-          FROM bookings b
-          JOIN listings l ON b.listing_id = l.id
-          JOIN users u ON b.user_id = u.id
-          WHERE l.owner_id = $1 AND b.payment_status = 'paid'
-          ORDER BY b.created_at DESC
-          LIMIT $2
-        `, [ownerId, limit])
-        
-        const paymentActivities: OwnerActivity[] = paymentsResult.rows.map(row => ({
-          id: `payment-${row.id}`,
-          type: 'payment' as const,
+
+      // Get recent payments (paid bookings)
+      const { data: payments, error: paymentsError } = await supabase
+        .from('bookings')
+        .select('id, created_at, total_price, user_id, listing_id, listings!inner(title)')
+        .eq('owner_id', ownerId)
+        .eq('payment_status', 'paid')
+        .order('created_at', { ascending: false })
+        .limit(limit)
+
+      if (paymentsError) {
+        console.error('Error fetching payment activities:', paymentsError)
+      } else if (payments) {
+        for (const payment of payments) {
+          // Get user profile
+          const { data: userProfile } = await supabase
+            .from('user_profiles')
+            .select('name')
+            .eq('user_id', payment.user_id)
+            .single()
+
+          activities.push({
+            id: `payment-${payment.id}`,
+            type: 'payment',
           title: 'Payment received',
-          description: `$${row.total_price} from ${row.customer_name}`,
-          timestamp: new Date(row.created_at),
-          bookingId: row.id
-        }))
-        
-        // Combine and sort by timestamp
-        const allActivities = [...activities, ...paymentActivities]
-          .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
-          .slice(0, limit)
-        
-        return allActivities
-      } finally {
-        client.release()
+            description: `KSh ${payment.total_price} from ${userProfile?.name || 'User'}`,
+            timestamp: new Date(payment.created_at),
+            bookingId: payment.id,
+            listingId: payment.listing_id
+          })
+        }
       }
+
+      // Get recent reviews
+      const { data: reviews, error: reviewsError } = await supabase
+        .from('reviews')
+        .select('id, created_at, rating, comment, listing_id')
+        .eq('reviewee_id', ownerId)
+        .order('created_at', { ascending: false })
+        .limit(limit)
+
+      if (reviewsError) {
+        console.error('Error fetching review activities:', reviewsError)
+      } else if (reviews) {
+        for (const review of reviews) {
+          activities.push({
+            id: `review-${review.id}`,
+            type: 'review',
+            title: 'New review received',
+            description: `${review.rating} stars${review.comment ? ': ' + review.comment.substring(0, 50) : ''}`,
+            timestamp: new Date(review.created_at),
+            listingId: review.listing_id
+          })
+        }
+      }
+
+      // Sort all activities by timestamp and return top N
+      return activities
+        .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+        .slice(0, limit)
     } catch (error) {
       console.error('Error fetching owner activity:', error)
       return []
@@ -307,49 +343,38 @@ export class OwnerDashboardService {
     totalReviews: number
   }> {
     try {
-      // Check if database is available
-      if (!db || typeof window !== 'undefined') {
-        console.warn('Database not available, returning default metrics')
-        return {
-          bookingSuccessRate: 0,
-          averageRating: 0,
-          totalReviews: 0
-        }
-      }
-      
-      const client = await db.connect()
-      
-      try {
-        // Get booking success rate
-        const successRateResult = await client.query(`
-          SELECT 
-            COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed_bookings,
-            COUNT(*) as total_bookings
-          FROM bookings b
-          JOIN listings l ON b.listing_id = l.id
-          WHERE l.owner_id = $1
-        `, [ownerId])
-        
-        const completedBookings = parseInt(successRateResult.rows[0]?.completed_bookings || '0')
-        const totalBookings = parseInt(successRateResult.rows[0]?.total_bookings || '0')
-        const bookingSuccessRate = totalBookings > 0 ? (completedBookings / totalBookings) * 100 : 0
-        
-        // Get average rating and total reviews
-        const ratingResult = await client.query(`
-          SELECT 
-            COALESCE(AVG(rating), 0) as avg_rating,
-            COUNT(*) as total_reviews
-          FROM reviews 
-          WHERE reviewee_id = $1
-        `, [ownerId])
+      // Get completed bookings count
+      const { count: completedCount } = await supabase
+        .from('bookings')
+        .select('*', { count: 'exact', head: true })
+        .eq('owner_id', ownerId)
+        .eq('status', 'completed')
+
+      // Get total bookings count
+      const { count: totalCount } = await supabase
+        .from('bookings')
+        .select('*', { count: 'exact', head: true })
+        .eq('owner_id', ownerId)
+
+      const bookingSuccessRate = totalCount && totalCount > 0
+        ? Math.round(((completedCount || 0) / totalCount) * 100)
+        : 0
+
+      // Get reviews
+      const { data: reviews } = await supabase
+        .from('reviews')
+        .select('rating')
+        .eq('reviewee_id', ownerId)
+
+      const totalReviews = reviews?.length || 0
+      const averageRating = totalReviews > 0
+        ? reviews!.reduce((sum, r) => sum + (r.rating || 0), 0) / totalReviews
+        : 0
         
         return {
-          bookingSuccessRate: Math.round(bookingSuccessRate),
-          averageRating: parseFloat(ratingResult.rows[0]?.avg_rating || '0'),
-          totalReviews: parseInt(ratingResult.rows[0]?.total_reviews || '0')
-        }
-      } finally {
-        client.release()
+        bookingSuccessRate,
+        averageRating: Number(averageRating.toFixed(1)),
+        totalReviews
       }
     } catch (error) {
       console.error('Error fetching performance metrics:', error)

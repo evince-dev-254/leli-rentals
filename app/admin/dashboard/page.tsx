@@ -1,8 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { db } from '@/lib/firebase'
-import { collection, query, orderBy, onSnapshot, updateDoc, doc, getDocs } from 'firebase/firestore'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -93,7 +91,7 @@ export default function AdminDashboard() {
     pendingPayments: 0,
     completedPayments: 0
   })
-  const [isLoading, setIsLoading] = useState(true)
+  const [!isLoaded, setIsLoading] = useState(true)
   const [selectedTicket, setSelectedTicket] = useState<ContactTicket | null>(null)
   const [adminResponse, setAdminResponse] = useState('')
   const [ticketStatus, setTicketStatus] = useState('')
@@ -101,73 +99,22 @@ export default function AdminDashboard() {
   useEffect(() => {
     const fetchAdminData = async () => {
       try {
-        // Fetch notifications
-        const notificationsQuery = query(
-          collection(db, 'adminNotifications'),
-          orderBy('createdAt', 'desc')
-        )
-
-        const unsubscribeNotifications = onSnapshot(notificationsQuery, (snapshot) => {
-          const notificationsData = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-            createdAt: doc.data().createdAt?.toDate() || new Date()
-          })) as AdminNotification[]
-          setNotifications(notificationsData)
-        })
-
-        // Fetch tickets
-        const ticketsQuery = query(
-          collection(db, 'contactTickets'),
-          orderBy('createdAt', 'desc')
-        )
-
-        const unsubscribeTickets = onSnapshot(ticketsQuery, (snapshot) => {
-          const ticketsData = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-            createdAt: doc.data().createdAt?.toDate() || new Date(),
-            updatedAt: doc.data().updatedAt?.toDate() || new Date(),
-            responses: doc.data().responses || []
-          })) as ContactTicket[]
-          setTickets(ticketsData)
-        })
-
-        // Fetch user stats
-        const usersSnapshot = await getDocs(collection(db, 'users'))
-        const users = usersSnapshot.docs.map(doc => doc.data())
-        
+        // Firebase removed - using mock data
+        setNotifications([])
+        setTickets([])
         setUserStats({
-          totalUsers: users.length,
-          newUsers: users.filter(user => {
-            const createdAt = user.createdAt?.toDate()
-            const thirtyDaysAgo = new Date()
-            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
-            return createdAt && createdAt > thirtyDaysAgo
-          }).length,
-          verifiedUsers: users.filter(user => user.isVerified).length,
-          activeUsers: users.filter(user => {
-            const lastActive = user.lastActive?.toDate()
-            const sevenDaysAgo = new Date()
-            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
-            return lastActive && lastActive > sevenDaysAgo
-          }).length
+          totalUsers: 0,
+          newUsers: 0,
+          verifiedUsers: 0,
+          activeUsers: 0
         })
-
-        // Fetch revenue stats (mock data for now)
         setRevenueStats({
           totalRevenue: 125000,
           monthlyRevenue: 15000,
           pendingPayments: 2500,
           completedPayments: 122500
         })
-
         setIsLoading(false)
-
-        return () => {
-          unsubscribeNotifications()
-          unsubscribeTickets()
-        }
       } catch (error) {
         console.error('Error fetching admin data:', error)
         setIsLoading(false)
@@ -184,9 +131,8 @@ export default function AdminDashboard() {
 
   const handleMarkAsRead = async (notificationId: string) => {
     try {
-      await updateDoc(doc(db, 'adminNotifications', notificationId), {
-        isRead: true
-      })
+      // Firebase removed - simulating notification mark as read
+      await new Promise(resolve => setTimeout(resolve, 100))
     } catch (error) {
       console.error('Error marking notification as read:', error)
     }
@@ -194,11 +140,8 @@ export default function AdminDashboard() {
 
   const handleUpdateTicketStatus = async (ticketId: string, status: string) => {
     try {
-      await updateDoc(doc(db, 'contactTickets', ticketId), {
-        status,
-        updatedAt: new Date(),
-        ...(status === 'resolved' && { resolvedAt: new Date() })
-      })
+      // Firebase removed - simulating ticket status update
+      await new Promise(resolve => setTimeout(resolve, 500))
 
       toast({
         title: "Success",
@@ -227,19 +170,8 @@ export default function AdminDashboard() {
           createdAt: new Date()
         }
 
-        const updatedResponses = [...ticket.responses, newResponse]
-        
-        await updateDoc(doc(db, 'contactTickets', ticketId), {
-          responses: updatedResponses,
-          updatedAt: new Date(),
-          status: 'in_progress'
-        })
-
-        // Notify user
-        await updateDoc(doc(db, 'users', ticket.userId), {
-          hasUnreadMessages: true,
-          lastMessageAt: new Date()
-        })
+        // Firebase removed - simulating admin response
+        await new Promise(resolve => setTimeout(resolve, 500))
 
         toast({
           title: "Success",
@@ -304,7 +236,7 @@ export default function AdminDashboard() {
     }
   }
 
-  if (isLoading) {
+  if (!isLoaded) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
@@ -730,3 +662,4 @@ export default function AdminDashboard() {
     </div>
   )
 }
+

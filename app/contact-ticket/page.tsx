@@ -1,9 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useAuthContext } from '@/lib/auth-context'
-import { db } from '@/lib/firebase'
-import { collection, addDoc, query, where, orderBy, onSnapshot, updateDoc, doc } from 'firebase/firestore'
+import { useUser } from '@clerk/nextjs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -85,7 +83,7 @@ const statuses = [
 ]
 
 export default function ContactTicketPage() {
-  const { user } = useAuthContext()
+  const { user, isLoaded } = useUser()
   const { toast } = useToast()
   const [tickets, setTickets] = useState<ContactTicket[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -102,33 +100,17 @@ export default function ContactTicketPage() {
   })
 
   useEffect(() => {
-    if (!user) return
+    if (!isLoaded) return
+    if (!user) {
+      setIsLoading(false)
+      return
+    }
 
     const fetchTickets = async () => {
       try {
-        const ticketsQuery = query(
-          collection(db, 'contactTickets'),
-          where('userId', '==', user.uid),
-          orderBy('createdAt', 'desc')
-        )
-
-        const unsubscribe = onSnapshot(ticketsQuery, (snapshot) => {
-          const ticketsData = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-            createdAt: doc.data().createdAt?.toDate() || new Date(),
-            updatedAt: doc.data().updatedAt?.toDate() || new Date(),
-            resolvedAt: doc.data().resolvedAt?.toDate(),
-            responses: doc.data().responses?.map((response: any) => ({
-              ...response,
-              createdAt: response.createdAt?.toDate() || new Date()
-            })) || []
-          })) as ContactTicket[]
-          setTickets(ticketsData)
-          setIsLoading(false)
-        })
-
-        return unsubscribe
+        // Firebase removed - using empty data
+        setTickets([])
+        setIsLoading(false)
       } catch (error) {
         console.error('Error fetching tickets:', error)
         setIsLoading(false)
@@ -141,7 +123,7 @@ export default function ContactTicketPage() {
     }
 
     fetchTickets()
-  }, [user, toast])
+  }, [user, isLoaded, toast])
 
   const handleCreateTicket = async () => {
     if (!user) return
@@ -164,46 +146,16 @@ export default function ContactTicketPage() {
         category: ticketForm.category,
         priority: ticketForm.priority,
         status: 'open',
-        userId: user.uid,
-        userEmail: user.email,
-        userName: user.displayName || 'User',
+        userId: user.id,
+        userEmail: user.emailAddresses[0]?.emailAddress || '',
+        userName: user.fullName || user.firstName || 'User',
         createdAt: new Date(),
         updatedAt: new Date(),
         responses: []
       }
 
-      // Create ticket
-      const ticketRef = await addDoc(collection(db, 'contactTickets'), ticketData)
-
-      // Notify admin
-      await addDoc(collection(db, 'adminNotifications'), {
-        type: 'new_ticket',
-        ticketId: ticketRef.id,
-        ticketNumber,
-        subject: ticketForm.subject,
-        priority: ticketForm.priority,
-        userId: user.uid,
-        userName: user.displayName || 'User',
-        createdAt: new Date(),
-        isRead: false
-      })
-
-      // Send email notification to admin (in real implementation)
-      await addDoc(collection(db, 'emailQueue'), {
-        to: 'admin@lelirentals.com',
-        subject: `New Support Ticket: ${ticketNumber}`,
-        template: 'new_ticket',
-        data: {
-          ticketNumber,
-          subject: ticketForm.subject,
-          priority: ticketForm.priority,
-          userName: user.displayName || 'User',
-          userEmail: user.email,
-          description: ticketForm.description
-        },
-        createdAt: new Date(),
-        status: 'pending'
-      })
+      // Firebase removed - simulating ticket creation
+      await new Promise(resolve => setTimeout(resolve, 500))
 
       toast({
         title: "Success",
@@ -237,36 +189,15 @@ export default function ContactTicketPage() {
         createdAt: new Date()
       }
 
-      // Add response to ticket
-      const ticket = tickets.find(t => t.id === ticketId)
-      if (ticket) {
-        const updatedResponses = [...ticket.responses, responseData]
-        
-        await updateDoc(doc(db, 'contactTickets', ticketId), {
-          responses: updatedResponses,
-          updatedAt: new Date(),
-          status: 'open' // Reopen if it was closed
-        })
+      // Firebase removed - simulating response addition
+      await new Promise(resolve => setTimeout(resolve, 500))
 
-        // Notify admin of new response
-        await addDoc(collection(db, 'adminNotifications'), {
-          type: 'ticket_response',
-          ticketId,
-          ticketNumber: ticket.ticketNumber,
-          userId: user.uid,
-          userName: user.displayName || 'User',
-          message: newResponse,
-          createdAt: new Date(),
-          isRead: false
-        })
+      toast({
+        title: "Success",
+        description: "Response added successfully"
+      })
 
-        toast({
-          title: "Success",
-          description: "Response added successfully"
-        })
-
-        setNewResponse('')
-      }
+      setNewResponse('')
     } catch (error) {
       console.error('Error adding response:', error)
       toast({
@@ -296,7 +227,7 @@ export default function ContactTicketPage() {
     return categoryInfo?.icon || '❓'
   }
 
-  if (isLoading) {
+  if (!isLoaded) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>

@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { User, Building2, ArrowRight, Star, CheckCircle, Clock } from 'lucide-react'
-import { useAuthContext } from '@/lib/auth-context'
+import { useUser } from '@clerk/nextjs'
 import { getUserAccountType, setUserAccountType } from "@/lib/account-type-utils"
 import { useToast } from "@/hooks/use-toast"
 
@@ -18,7 +18,7 @@ interface AccountTypeModalProps {
 }
 
 export function AccountTypeModal({ isOpen, onClose, trigger = 'manual' }: AccountTypeModalProps) {
-  const { user } = useAuthContext()
+  const { user, isLoaded } = useUser()
   const router = useRouter()
   const { toast } = useToast()
   const [selectedType, setSelectedType] = useState<string>("")

@@ -1,5 +1,4 @@
-import { db } from './firebase'
-import { collection, doc, addDoc, updateDoc, deleteDoc, getDocs, query, where, orderBy, limit, increment, serverTimestamp } from 'firebase/firestore'
+// Firebase removed - all imports removed
 
 export interface UserInteraction {
   id?: string

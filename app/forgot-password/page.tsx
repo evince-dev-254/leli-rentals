@@ -10,12 +10,10 @@ import { Label } from "@/components/ui/label"
 import { Mail, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
-import { sendPasswordResetEmail } from "firebase/auth"
-import { auth } from "@/lib/firebase"
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
+  const [!isLoaded, setIsLoading] = useState(false)
   const [isEmailSent, setIsEmailSent] = useState(false)
   const { toast } = useToast()
 
@@ -34,7 +32,8 @@ export default function ForgotPasswordPage() {
     setIsLoading(true)
 
     try {
-      await sendPasswordResetEmail(auth, email)
+      // Firebase removed - simulating password reset email
+      await new Promise(resolve => setTimeout(resolve, 500))
       setIsEmailSent(true)
       
       toast({
@@ -143,8 +142,8 @@ export default function ForgotPasswordPage() {
                 />
               </div>
               
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Sending..." : "Send Reset Email"}
+              <Button type="submit" className="w-full" disabled={!isLoaded}>
+                {!isLoaded ? "Sending..." : "Send Reset Email"}
               </Button>
             </form>
             

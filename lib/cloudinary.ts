@@ -2,9 +2,9 @@ import { v2 as cloudinary } from 'cloudinary'
 
 // Configure Cloudinary with your credentials
 cloudinary.config({
-  cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'drtjczrsl',
-  api_key: process.env.CLOUDINARY_API_KEY || '746675165345341',
-  api_secret: process.env.CLOUDINARY_API_SECRET || 'HoG_jecxLqK8ZaVgwxTTGiq9Nq4',
+  cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
   secure: true
 })
 
@@ -42,7 +42,23 @@ export const uploadToCloudinary = async (
       resource_type: 'auto' as const
     }
 
-    const result = await cloudinary.uploader.upload(file, uploadOptions)
+    // Convert Buffer to data URI string if needed
+    let fileToUpload: string
+    if (Buffer.isBuffer(file)) {
+      // Convert Buffer to base64 data URI
+      const base64 = file.toString('base64')
+      fileToUpload = `data:image/png;base64,${base64}`
+    } else {
+      fileToUpload = file
+    }
+
+    const result = await cloudinary.uploader.upload(fileToUpload, uploadOptions)
+    
+    console.log('✅ Cloudinary upload successful:', {
+      public_id: result.public_id,
+      secure_url: result.secure_url,
+      bytes: result.bytes
+    })
     
     return {
       public_id: result.public_id,
@@ -54,7 +70,7 @@ export const uploadToCloudinary = async (
       bytes: result.bytes
     }
   } catch (error) {
-    console.error('Cloudinary upload error:', error)
+    console.error('❌ Cloudinary upload error:', error)
     throw new Error(`Upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
   }
 }

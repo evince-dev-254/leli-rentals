@@ -7,8 +7,9 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
-import { useAuthContext } from "@/lib/auth-context"
-import { useAccountTypeRedirect, getUserAccountType } from "@/lib/account-type-utils"
+import { useUser } from '@clerk/nextjs'
+import { useAccountTypeRedirect, getUserAccountType, setUserAccountType } from "@/lib/account-type-utils"
+import { automaticNotifications } from "@/lib/automatic-notifications"
 import {
   User,
   Building2,
@@ -35,12 +36,43 @@ import {
 
 export default function GetStartedPage() {
   const router = useRouter()
-  const { user } = useAuthContext()
+  const { user, isLoaded } = useUser()
   const { toast } = useToast()
   const { selectAccountType } = useAccountTypeRedirect()
   const [selectedAccountType, setSelectedAccountType] = useState<string>("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isCheckingAccountType, setIsCheckingAccountType] = useState(true)
+  const [showTrialModal, setShowTrialModal] = useState(false)
+
+  // Send welcome email and notification on first visit
+  useEffect(() => {
+    if (user) {
+      const welcomeSent = localStorage.getItem(`welcome_sent_${user.id}`)
+      
+      if (!welcomeSent) {
+        const userName = user.fullName || user.firstName || 'there'
+        
+        // Send welcome email
+        fetch('/api/emails/welcome', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userEmail: user.emailAddresses[0]?.emailAddress,
+            userName: user.firstName || 'there'
+          })
+        }).then(() => {
+          console.log('✅ Welcome email sent')
+        }).catch(err => console.error('Email error:', err))
+        
+        // Send welcome notification
+        automaticNotifications.sendWelcomeNotification(user.id, userName)
+          .then(() => console.log('✅ Welcome notification sent'))
+          .catch(err => console.error('Notification error:', err))
+        
+        localStorage.setItem(`welcome_sent_${user.id}`, 'true')
+      }
+    }
+  }, [user])
 
   // Check if user already has an account type and redirect them
   useEffect(() => {
@@ -48,7 +80,7 @@ export default function GetStartedPage() {
       const existingAccountType = getUserAccountType()
       console.log('Checking account type for user:', user.id, 'Account type:', existingAccountType)
       
-      if (existingAccountType && existingAccountType !== null) {
+      if (existingAccountType && existingAccountType !== null && existingAccountType !== 'not_selected') {
         // User already has an account type, redirect them to their dashboard
         console.log('User has account type, redirecting to:', existingAccountType)
         if (existingAccountType === 'renter') {
@@ -59,8 +91,9 @@ export default function GetStartedPage() {
       } else {
         console.log('User needs to select account type')
         // Clear any invalid account type values
-        if (existingAccountType === 'null') {
+        if (existingAccountType === 'null' || existingAccountType === 'not_selected') {
           localStorage.removeItem('userAccountType')
+          localStorage.removeItem('accountTypeSkipped')
         }
         setIsCheckingAccountType(false)
       }
@@ -78,10 +111,11 @@ export default function GetStartedPage() {
       borderColor: "border-blue-200 dark:border-blue-700",
       features: [
         "Browse thousands of listings",
-        "Book instantly with secure payments",
-        "Chat directly with owners",
-        "Get 24/7 customer support",
-        "Access to exclusive deals"
+        "14-day free trial included",
+        "20% off first booking",
+        "No booking fees during trial",
+        "Priority customer support",
+        "Extended cancellation window"
       ],
       stats: "Join 50,000+ happy renters",
       popular: false
@@ -129,36 +163,134 @@ export default function GetStartedPage() {
       return
     }
 
+    // Show trial modal for renters
+    if (accountType === 'renter') {
+      setSelectedAccountType(accountType)
+      setShowTrialModal(true)
+      return
+    }
+
     setIsSubmitting(true)
     
     try {
-      // Simulate API call to update user account type
-      await new Promise(resolve => setTimeout(resolve, 1500))
+      // Update Clerk user metadata using unsafeMetadata
+      await user.update({
+        unsafeMetadata: {
+          ...user.unsafeMetadata,
+          accountType: accountType,
+          createdAt: new Date().toISOString(),
+          verificationDeadline: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 days from now
+        }
+      })
+      
+      // Set account type in localStorage immediately
+      setUserAccountType(accountType as 'renter' | 'owner')
       
       toast({
         title: "🎉 Welcome to Leli Rentals!",
-        description: `Your ${accountType === 'renter' ? 'renter' : 'owner'} account has been set up successfully.`,
+        description: `Your ${accountType === 'owner' ? 'owner' : 'renter'} account has been set up successfully.`,
         duration: 3000,
       })
 
       console.log('Calling selectAccountType with:', accountType)
-      // Use the utility function to handle account type selection and redirect
-      selectAccountType(accountType as 'renter' | 'owner')
+      
+      // Redirect based on account type
+      if (accountType === 'owner') {
+        router.push('/dashboard/owner')
+      } else {
+        selectAccountType(accountType as 'renter' | 'owner')
+      }
       
     } catch (error) {
       console.error('Error in account type selection:', error)
+      // Even if metadata update fails, still set localStorage and redirect
+      setUserAccountType(accountType as 'renter' | 'owner')
+      
       toast({
-        title: "Error setting up account",
-        description: "Please try again.",
-        variant: "destructive",
+        title: "⚠️ Account type set locally",
+        description: "Your selection was saved. You can continue using the app.",
+        duration: 3000,
       })
+      
+      // Still redirect even if metadata update failed
+      if (accountType === 'owner') {
+        router.push('/dashboard/owner')
+      } else {
+        selectAccountType(accountType as 'renter' | 'owner')
+      }
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  const handleSkipForNow = () => {
-    router.push('/listings')
+  const confirmRenterWithTrial = async (includeTrial: boolean) => {
+    setShowTrialModal(false)
+    setIsSubmitting(true)
+    
+    try {
+      // Update Clerk user metadata with trial info using unsafeMetadata
+      await user?.update({
+        unsafeMetadata: {
+          ...user.unsafeMetadata,
+          accountType: 'renter',
+          hasFreeTrial: includeTrial,
+          trialStartDate: includeTrial ? new Date().toISOString() : null,
+          trialEndDate: includeTrial ? new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString() : null,
+        }
+      })
+      
+      // Set account type in localStorage
+      setUserAccountType('renter')
+      
+      toast({
+        title: includeTrial ? "🎉 Free Trial Activated!" : "✅ Account Created!",
+        description: includeTrial 
+          ? "Enjoy 14 days of premium benefits!" 
+          : "Your renter account is ready to use.",
+        duration: 3000,
+      })
+
+      selectAccountType('renter')
+      
+    } catch (error) {
+      console.error('Error in account type selection:', error)
+      // Even if metadata update fails, still set localStorage and redirect
+      setUserAccountType('renter')
+      
+      toast({
+        title: "⚠️ Account type set locally",
+        description: "Your selection was saved. You can continue using the app.",
+        duration: 3000,
+      })
+      
+      selectAccountType('renter')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleSkipForNow = async () => {
+    // Set a flag that user skipped account type selection
+    if (user) {
+      try {
+        await user.update({
+          unsafeMetadata: {
+            ...user.unsafeMetadata,
+            accountType: 'not_selected',
+            skippedAccountType: true,
+            skippedAt: new Date().toISOString()
+          }
+        })
+      } catch (error) {
+        console.log('Could not update user metadata, using localStorage only')
+      }
+    }
+    
+    // Store in localStorage as well
+    localStorage.setItem('userAccountType', 'not_selected')
+    localStorage.setItem('accountTypeSkipped', 'true')
+    
+    router.push('/')
   }
 
   // Show loading state while checking account type
@@ -370,6 +502,91 @@ export default function GetStartedPage() {
           </p>
         </div>
       </div>
+
+      {/* Free Trial Modal */}
+      {showTrialModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <Card className="max-w-md w-full bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-900 border-2 border-blue-200 dark:border-blue-700">
+            <CardContent className="p-8">
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Star className="h-8 w-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+                  Start Your Free Trial!
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Get 14 days of premium benefits at no cost
+                </p>
+              </div>
+
+              <div className="space-y-3 mb-6">
+                <div className="flex items-start gap-3">
+                  <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-semibold text-gray-900 dark:text-gray-100">20% off first booking</span>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Save on your first rental</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-semibold text-gray-900 dark:text-gray-100">No booking fees</span>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Normally $5-15 per booking</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-semibold text-gray-900 dark:text-gray-100">Priority support</span>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Get help faster</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-semibold text-gray-900 dark:text-gray-100">Extended cancellation</span>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">48 hours instead of 24</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <Button
+                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3"
+                  onClick={() => confirmRenterWithTrial(true)}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Activating Trial...
+                    </>
+                  ) : (
+                    <>
+                      Start Free Trial
+                      <ArrowRight className="h-4 w-4 ml-2" />
+                    </>
+                  )}
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => confirmRenterWithTrial(false)}
+                  disabled={isSubmitting}
+                >
+                  Continue without trial
+                </Button>
+              </div>
+
+              <p className="text-xs text-center text-gray-500 dark:text-gray-400 mt-4">
+                No credit card required • Cancel anytime
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   )
 }
+

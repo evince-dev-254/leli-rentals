@@ -77,7 +77,7 @@ export class OwnerDashboardClientService {
   // Get owner listings
   async getOwnerListings(ownerId: string): Promise<OwnerListing[]> {
     try {
-      const response = await fetch(`${this.baseUrl}/api/owner/listings?ownerId=${ownerId}`)
+      const response = await fetch(`${this.baseUrl}/listings?ownerId=${ownerId}`)
       if (!response.ok) {
         throw new Error('Failed to fetch owner listings')
       }
@@ -89,7 +89,7 @@ export class OwnerDashboardClientService {
         createdAt: new Date(listing.createdAt)
       }))
     } catch (error) {
-      console.error('Error fetching owner listings:', error)
+      console.error('Failed to fetch owner listings:', error)
       return []
     }
   }
@@ -97,7 +97,7 @@ export class OwnerDashboardClientService {
   // Get owner bookings
   async getOwnerBookings(ownerId: string): Promise<OwnerBooking[]> {
     try {
-      const response = await fetch(`${this.baseUrl}/api/owner/bookings?ownerId=${ownerId}`)
+      const response = await fetch(`${this.baseUrl}/bookings?ownerId=${ownerId}`)
       if (!response.ok) {
         throw new Error('Failed to fetch owner bookings')
       }
@@ -111,7 +111,7 @@ export class OwnerDashboardClientService {
         createdAt: new Date(booking.createdAt)
       }))
     } catch (error) {
-      console.error('Error fetching owner bookings:', error)
+      console.error('Failed to fetch owner bookings:', error)
       return []
     }
   }
@@ -119,7 +119,7 @@ export class OwnerDashboardClientService {
   // Get owner activity
   async getOwnerActivity(ownerId: string, limit: number = 10): Promise<OwnerActivity[]> {
     try {
-      const response = await fetch(`${this.baseUrl}/api/owner/activity?ownerId=${ownerId}&limit=${limit}`)
+      const response = await fetch(`${this.baseUrl}/activity?ownerId=${ownerId}&limit=${limit}`)
       if (!response.ok) {
         throw new Error('Failed to fetch owner activity')
       }
@@ -131,7 +131,7 @@ export class OwnerDashboardClientService {
         timestamp: new Date(activity.timestamp)
       }))
     } catch (error) {
-      console.error('Error fetching owner activity:', error)
+      console.error('Failed to fetch owner activity:', error)
       return []
     }
   }

@@ -45,7 +45,7 @@ import {
   Settings,
   Image as ImageIcon
 } from "lucide-react"
-import { useAuthContext } from "@/lib/auth-context"
+import { useUser } from '@clerk/nextjs'
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { listingsService } from "@/lib/listings-service"
@@ -117,7 +117,7 @@ interface ListingFormData {
 }
 
 export default function CreateListingPage() {
-  const { user } = useAuthContext()
+  const { user, isLoaded } = useUser()
   const router = useRouter()
   const { toast } = useToast()
   
@@ -331,7 +331,7 @@ export default function CreateListingPage() {
           verified: true,
           phone: formData.contactPhone || undefined,
         },
-        ownerId: user.uid,
+        ownerId: user.id,
       }
       
       // Create listing
@@ -1043,3 +1043,6 @@ export default function CreateListingPage() {
     </div>
   )
 }
+
+
+

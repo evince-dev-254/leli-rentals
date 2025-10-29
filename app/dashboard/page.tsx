@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { useAuthContext } from "@/lib/auth-context"
+import { useUser } from "@clerk/nextjs"
 import { useRouter } from "next/navigation"
 import { VerificationBanner } from "@/components/verification-banner"
 import { getUserAccountType } from "@/lib/account-type-utils"
@@ -38,19 +38,19 @@ import {
 import Link from "next/link"
 
 export default function DashboardPage() {
-  const { user, isLoading } = useAuthContext()
+  const { user, isLoaded } = useUser()
   const router = useRouter()
   const [activeTab, setActiveTab] = useState("overview")
 
   // Redirect if not authenticated
   useEffect(() => {
-    if (!isLoading && !user) {
+    if (!!isLoaded && !user) {
       router.push("/login")
     }
-  }, [user, isLoading, router])
+  }, [user, !isLoaded, router])
 
   // Show loading while checking authentication
-  if (isLoading) {
+  if (!isLoaded) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
         <div className="text-center">
@@ -256,12 +256,14 @@ export default function DashboardPage() {
   // Get user account type for verification
   const userAccountType = getUserAccountType()
   
-  // Mock verification status - in real app, this would come from user data
+  // Get verification status from user metadata
+  const verificationStatusFromMetadata = user?.unsafeMetadata?.verificationStatus as string | undefined
   const verificationStatus = {
-    isVerified: false,
-    documentsSubmitted: false,
-    pendingReview: false,
-    rejectionReason: undefined
+    isVerified: verificationStatusFromMetadata === 'approved',
+    documentsSubmitted: verificationStatusFromMetadata === 'pending' || verificationStatusFromMetadata === 'approved',
+    pendingReview: verificationStatusFromMetadata === 'pending',
+    rejectionReason: user?.unsafeMetadata?.verificationRejectionReason as string | undefined,
+    submittedAt: user?.unsafeMetadata?.verificationSubmittedAt as string | undefined
   }
 
   return (
@@ -278,14 +280,14 @@ export default function DashboardPage() {
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-4">
             <Avatar className="h-16 w-16">
-              <AvatarImage src={user.photoURL || ""} />
+              <AvatarImage src={user.imageUrl || ""} />
               <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xl">
-                {user.displayName?.charAt(0) || user.email?.charAt(0) || "U"}
+                {user.fullName?.charAt(0) || user.emailAddresses[0]?.emailAddress?.charAt(0) || "U"}
               </AvatarFallback>
             </Avatar>
             <div>
               <h1 className="text-3xl font-bold text-gray-900">
-                Welcome back, {user.displayName?.split(' ')[0] || 'User'}!
+                Welcome back, {user.fullName?.split(' ')[0] || 'User'}!
               </h1>
               <p className="text-gray-600">Here's what's happening with your rentals</p>
             </div>
@@ -598,14 +600,14 @@ export default function DashboardPage() {
                 <CardContent className="space-y-4">
                   <div className="flex items-center gap-4">
                     <Avatar className="h-16 w-16">
-                      <AvatarImage src={user.photoURL || ""} />
+                      <AvatarImage src={user.imageUrl || ""} />
                       <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xl">
-                        {user.displayName?.charAt(0) || user.email?.charAt(0) || "U"}
+                        {user.fullName?.charAt(0) || user.emailAddresses[0]?.emailAddress?.charAt(0) || "U"}
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <h3 className="font-semibold text-gray-900">{user.displayName || "User"}</h3>
-                      <p className="text-sm text-gray-600">{user.email}</p>
+                      <h3 className="font-semibold text-gray-900">{user.fullName || "User"}</h3>
+                      <p className="text-sm text-gray-600">{user.emailAddresses[0]?.emailAddress}</p>
                       <Badge variant="secondary" className="mt-1">Verified</Badge>
                     </div>
                   </div>
@@ -661,3 +663,7 @@ export default function DashboardPage() {
     </div>
   )
 }
+
+
+
+

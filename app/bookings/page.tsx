@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { useAuthContext } from "@/lib/auth-context"
+import { useUser } from '@clerk/nextjs'
 import { useRouter } from "next/navigation"
 import { 
   Calendar, 
@@ -29,18 +29,18 @@ import {
 } from "lucide-react"
 
 export default function BookingsPage() {
-  const { user, isLoading } = useAuthContext()
+  const { user, isLoaded } = useUser()
   const router = useRouter()
   const [activeTab, setActiveTab] = useState("upcoming")
   const [searchQuery, setSearchQuery] = useState("")
 
   // Redirect if not authenticated
-  if (!isLoading && !user) {
+  if (!!isLoaded && !user) {
     router.push("/login")
     return null
   }
 
-  if (isLoading) {
+  if (!isLoaded) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
         <div className="text-center">
@@ -598,3 +598,6 @@ export default function BookingsPage() {
     </div>
   )
 }
+
+
+
