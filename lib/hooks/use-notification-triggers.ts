@@ -1,13 +1,13 @@
 import { useCallback } from 'react'
-import { useAuth } from '../auth'
+import { useUser } from '@clerk/nextjs'
 import { NotificationService, NotificationType } from '../notification-service'
 
 export function useNotificationTriggers() {
-  const { user } = useAuth()
+  const { user } = useUser()
 
   const triggerBookingRequest = useCallback(async (ownerId: string, listingTitle: string) => {
     if (!user) return
-    await NotificationService.triggerBookingRequest(ownerId, user.displayName || 'Someone', listingTitle)
+    await NotificationService.triggerBookingRequest(ownerId, user.fullName || user.firstName || 'Someone', listingTitle)
   }, [user])
 
   const triggerBookingConfirmed = useCallback(async (renterId: string, listingTitle: string) => {
@@ -22,12 +22,12 @@ export function useNotificationTriggers() {
 
   const triggerNewReview = useCallback(async (ownerId: string, listingTitle: string, rating: number) => {
     if (!user) return
-    await NotificationService.triggerNewReview(ownerId, user.displayName || 'Someone', listingTitle, rating)
+    await NotificationService.triggerNewReview(ownerId, user.fullName || user.firstName || 'Someone', listingTitle, rating)
   }, [user])
 
   const triggerMessageReceived = useCallback(async (receiverId: string, listingTitle?: string) => {
     if (!user) return
-    await NotificationService.triggerMessageReceived(receiverId, user.displayName || 'Someone', listingTitle)
+    await NotificationService.triggerMessageReceived(receiverId, user.fullName || user.firstName || 'Someone', listingTitle)
   }, [user])
 
   const triggerPaymentReceived = useCallback(async (ownerId: string, amount: number, listingTitle: string) => {

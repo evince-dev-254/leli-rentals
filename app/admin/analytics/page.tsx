@@ -26,7 +26,7 @@ import {
 
 export default function AdminAnalyticsPage() {
   const [activeTab, setActiveTab] = useState("overview")
-  const [!isLoaded, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(true)
   const [siteAnalytics, setSiteAnalytics] = useState<SiteAnalytics | null>(null)
   const [categoryAnalytics, setCategoryAnalytics] = useState<CategoryAnalytics[]>([])
   const [userAnalytics, setUserAnalytics] = useState<UserAnalytics[]>([])

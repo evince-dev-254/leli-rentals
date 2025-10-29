@@ -108,7 +108,7 @@ export default function OnboardingPage() {
   const [bio, setBio] = useState("")
   const [verificationMethod, setVerificationMethod] = useState("")
   const [agreedToTerms, setAgreedToTerms] = useState(false)
-  const [!isLoaded, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   const totalSteps = 5
   const progress = (currentStep / totalSteps) * 100

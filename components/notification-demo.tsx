@@ -3,11 +3,11 @@
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useNotificationTriggers } from '@/lib/hooks/use-notification-triggers'
-import { useAuth } from '@/lib/auth'
+import { useUser } from '@clerk/nextjs'
 import { Bell, Calendar, Star, MessageCircle, CreditCard, AlertCircle } from 'lucide-react'
 
 export function NotificationDemo() {
-  const { user } = useAuth()
+  const { user } = useUser()
   const {
     triggerBookingRequest,
     triggerBookingConfirmed,

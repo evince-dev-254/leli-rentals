@@ -91,7 +91,7 @@ export default function AdminDashboard() {
     pendingPayments: 0,
     completedPayments: 0
   })
-  const [!isLoaded, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(true)
   const [selectedTicket, setSelectedTicket] = useState<ContactTicket | null>(null)
   const [adminResponse, setAdminResponse] = useState('')
   const [ticketStatus, setTicketStatus] = useState('')

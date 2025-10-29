@@ -94,11 +94,3 @@ async function handleSubscriptionUpdate(
     console.error('Error updating user subscription:', error)
   }
 }
-
-// Disable body parsing to get raw body for signature verification
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-}
-

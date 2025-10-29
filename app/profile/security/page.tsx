@@ -61,7 +61,7 @@ export default function SecurityPage() {
   const { toast } = useToast()
   const [settings, setSettings] = useState<SecuritySettings>(defaultSecuritySettings)
   const [loginActivity, setLoginActivity] = useState<LoginActivity[]>([])
-  const [!isLoaded, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   
   // Password change form

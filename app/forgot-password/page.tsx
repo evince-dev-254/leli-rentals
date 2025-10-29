@@ -13,7 +13,7 @@ import { useToast } from "@/hooks/use-toast"
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("")
-  const [!isLoaded, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   const [isEmailSent, setIsEmailSent] = useState(false)
   const { toast } = useToast()
 

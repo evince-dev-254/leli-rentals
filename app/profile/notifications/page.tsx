@@ -88,7 +88,7 @@ export default function NotificationsPage() {
   const { user, isLoaded } = useUser()
   const { toast } = useToast()
   const [settings, setSettings] = useState<NotificationSettings>(defaultSettings)
-  const [!isLoaded, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
 
   useEffect(() => {
