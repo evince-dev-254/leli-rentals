@@ -30,10 +30,10 @@ export default function TestIntegrationPage() {
 
   // Test Firebase auth
   useEffect(() => {
-    if (user && !authLoading) {
+    if (user && isLoaded) {
       setTestResults(prev => ({ ...prev, auth: true, firebase: true }))
     }
-  }, [user, authLoading])
+  }, [user, isLoaded])
 
   const allTestsPassed = Object.values(testResults).every(Boolean)
 
@@ -94,7 +94,7 @@ export default function TestIntegrationPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {authLoading ? (
+            {!isLoaded ? (
               <div className="flex items-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
                 <span>Loading auth status...</span>
