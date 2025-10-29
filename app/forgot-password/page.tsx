@@ -142,8 +142,8 @@ export default function ForgotPasswordPage() {
                 />
               </div>
               
-              <Button type="submit" className="w-full" disabled={!isLoaded}>
-                {!isLoaded ? "Sending..." : "Send Reset Email"}
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? "Sending..." : "Send Reset Email"}
               </Button>
             </form>
             
