@@ -2,6 +2,8 @@
 
 A modern, full-featured rental platform for properties, vehicles, equipment, and more. Built with Next.js 16, Supabase, and Clerk.
 
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/evince-dev-254/leli-rentals)
+
 ## ✨ Features
 
 - 🔐 **Authentication** - Secure user authentication with Clerk
