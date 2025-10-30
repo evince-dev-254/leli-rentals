@@ -517,6 +517,77 @@ export function Header() {
                 Contact
               </Link>
             </nav>
+
+            {/* User-specific links for authenticated users */}
+            {user && (
+              <>
+                <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase">My Account</p>
+                  <div className="flex flex-col space-y-2">
+                    <Link 
+                      href="/profile" 
+                      className="text-base font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors duration-200 py-2"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      My Profile
+                    </Link>
+                    <Link 
+                      href="/profile/bookings" 
+                      className="text-base font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors duration-200 py-2"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      My Bookings
+                    </Link>
+                    {userAccountType === 'owner' && (
+                      <>
+                        <Link 
+                          href="/dashboard/owner" 
+                          className="text-base font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors duration-200 py-2"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                          Owner Dashboard
+                        </Link>
+                        <Link 
+                          href="/profile/listings" 
+                          className="text-base font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors duration-200 py-2"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                          My Listings
+                        </Link>
+                        <Link 
+                          href="/list-item" 
+                          className="text-base font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors duration-200 py-2"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                          Create Listing
+                        </Link>
+                      </>
+                    )}
+                    <Link 
+                      href="/profile/favorites" 
+                      className="text-base font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors duration-200 py-2"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      Favorites
+                    </Link>
+                    <Link 
+                      href="/profile/settings" 
+                      className="text-base font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors duration-200 py-2"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      Account Settings
+                    </Link>
+                    <Link 
+                      href="/profile/billing" 
+                      className="text-base font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors duration-200 py-2"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      Billing & Payments
+                    </Link>
+                  </div>
+                </div>
+              </>
+            )}
             
             {/* WhatsApp AI Chat - Mobile */}
             <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
