@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { useUser } from '@clerk/nextjs'
 import { Notification, NotificationContextType } from './types/notification'
-import { notificationsService, Notification as ServiceNotification } from './notifications-service'
+import { notificationsServiceRealtime, Notification as SupabaseNotification } from './notifications-service-realtime'
 import { useBrowserNotifications } from '../hooks/use-browser-notifications'
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined)
@@ -26,58 +26,78 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
     setIsLoading(true)
 
-    // Set up real-time subscription
-    const unsubscribe = notificationsService.subscribeToNotifications(
-      user.id,
-      (userNotifications) => {
-        // Convert ServiceNotification to Notification type
+    // Fetch initial notifications
+    const loadInitialNotifications = async () => {
+      try {
+        const userNotifications = await notificationsServiceRealtime.getNotifications(user.id, 50)
         const convertedNotifications: Notification[] = userNotifications.map(serviceNotif => ({
           id: serviceNotif.id,
-          userId: serviceNotif.userId,
-          type: serviceNotif.type,
+          userId: serviceNotif.user_id,
+          type: serviceNotif.type as any,
           title: serviceNotif.title,
-          message: serviceNotif.message,
-          link: serviceNotif.link,
+          message: serviceNotif.message || '',
+          link: serviceNotif.link || undefined,
           isRead: serviceNotif.read,
-          createdAt: serviceNotif.createdAt,
-          updatedAt: serviceNotif.updatedAt
+          createdAt: new Date(serviceNotif.created_at),
+          updatedAt: new Date(serviceNotif.created_at)
         }))
         setNotifications(convertedNotifications)
         
         // Calculate unread count
         const unread = convertedNotifications.filter(n => !n.isRead).length
         setUnreadCount(unread)
-        
-        // Show browser notification for new notifications
-        if (convertedNotifications.length > lastNotificationCount && lastNotificationCount > 0) {
-          const newNotifications = convertedNotifications.slice(0, convertedNotifications.length - lastNotificationCount)
-          newNotifications.forEach(notification => {
-            if (!notification.isRead && isGranted) {
-              showNotificationFromData({
-                title: notification.title,
-                message: notification.message,
-                link: notification.link,
-                type: notification.type,
-                priority: (notification as any).priority
-              })
-            }
-          })
-        }
-        
         setLastNotificationCount(convertedNotifications.length)
         setIsLoading(false)
-      },
-      (error) => {
-        console.error('Error in real-time notifications:', error)
+      } catch (error) {
+        console.error('Error loading initial notifications:', error)
         setIsLoading(false)
+      }
+    }
+
+    loadInitialNotifications()
+
+    // Set up real-time subscription for new notifications
+    const channel = notificationsServiceRealtime.subscribeToNotifications(
+      user.id,
+      (newNotification) => {
+        const convertedNotification: Notification = {
+          id: newNotification.id,
+          userId: newNotification.user_id,
+          type: newNotification.type as any,
+          title: newNotification.title,
+          message: newNotification.message || '',
+          link: newNotification.link || undefined,
+          isRead: newNotification.read,
+          createdAt: new Date(newNotification.created_at),
+          updatedAt: new Date(newNotification.created_at)
+        }
+
+        // Add new notification to the beginning of the list
+        setNotifications(prev => [convertedNotification, ...prev])
+        
+        // Update unread count
+        if (!convertedNotification.isRead) {
+          setUnreadCount(prev => prev + 1)
+        }
+
+        // Show browser notification if granted
+        if (isGranted) {
+          showNotificationFromData({
+            title: convertedNotification.title,
+            message: convertedNotification.message,
+            link: convertedNotification.link,
+            type: convertedNotification.type,
+            priority: (convertedNotification as any).priority
+          })
+        }
       }
     )
 
     // Cleanup subscription on unmount or user change
     return () => {
-      unsubscribe()
+      notificationsServiceRealtime.unsubscribe(channel)
     }
-  }, [user])
+  }, [user, isGranted, showNotificationFromData])
 
   const markAsRead = useCallback(async (notificationId: string) => {
     try {
