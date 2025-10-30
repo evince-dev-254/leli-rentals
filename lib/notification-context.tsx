@@ -101,7 +101,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
   const markAsRead = useCallback(async (notificationId: string) => {
     try {
-      await notificationsService.markAsRead(notificationId)
+      await notificationsServiceRealtime.markAsRead(notificationId)
       // Update local state immediately for better UX
       setNotifications(prev => 
         prev.map(notification => 
@@ -120,7 +120,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     if (!user) return
     
     try {
-      await notificationsService.markAllAsRead(user.id)
+      await notificationsServiceRealtime.markAllAsRead(user.id)
       // Update local state immediately
       setNotifications(prev => 
         prev.map(notification => ({ ...notification, isRead: true }))
@@ -133,8 +133,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
   const deleteNotification = useCallback(async (notificationId: string) => {
     try {
-      // For now, just mark as read since delete functionality isn't implemented
-      await notificationsService.markAsRead(notificationId)
+      await notificationsServiceRealtime.deleteNotification(notificationId)
       // Update local state immediately
       setNotifications(prev => prev.filter(n => n.id !== notificationId))
       // Update unread count if the deleted notification was unread
@@ -153,25 +152,25 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     setIsLoading(true)
     try {
       console.log('Loading notifications for user:', user.id)
-      const userNotifications = await notificationsService.getUserNotifications(user.id)
-      console.log('Raw notifications from service:', userNotifications)
+      const userNotifications = await notificationsServiceRealtime.getNotifications(user.id, 50)
+      console.log('Raw notifications from Supabase:', userNotifications)
       
-      // Convert ServiceNotification to Notification type
+      // Convert Supabase notification to app Notification type
       const convertedNotifications: Notification[] = userNotifications.map(serviceNotif => ({
         id: serviceNotif.id,
-        userId: serviceNotif.userId,
-        type: serviceNotif.type,
+        userId: serviceNotif.user_id,
+        type: serviceNotif.type as any,
         title: serviceNotif.title,
-        message: serviceNotif.message,
-        link: serviceNotif.link,
+        message: serviceNotif.message || '',
+        link: serviceNotif.link || undefined,
         isRead: serviceNotif.read,
-        createdAt: serviceNotif.createdAt,
-        updatedAt: serviceNotif.updatedAt
+        createdAt: new Date(serviceNotif.created_at),
+        updatedAt: new Date(serviceNotif.created_at)
       }))
       console.log('Converted notifications:', convertedNotifications)
       setNotifications(convertedNotifications)
       
-      const count = await notificationsService.getUnreadCount(user.uid)
+      const count = await notificationsServiceRealtime.getUnreadCount(user.id)
       console.log('Unread count:', count)
       setUnreadCount(count)
     } catch (error) {
@@ -185,19 +184,15 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     if (!user) return
     
     try {
-      await notificationsService.createNotification({
-        userId: notificationData.userId,
-        type: notificationData.type as string,
-        title: notificationData.title,
-        message: notificationData.message,
-        link: notificationData.link
-      })
-      // Refresh notifications to get the new one
-      await refreshNotifications()
+      // For client-side notification creation, we'll just log it
+      // In production, this should go through an API endpoint
+      console.log('Client-side notification creation (should use API):', notificationData)
+      // Notification will be automatically added via real-time subscription
+      // when created server-side
     } catch (error) {
       console.error('Error adding notification:', error)
     }
-  }, [user, refreshNotifications])
+  }, [user])
 
   const value: NotificationContextType = {
     notifications,
