@@ -45,6 +45,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import GoogleMapsAutocomplete from '@/components/google-maps-autocomplete'
+import { PhoneInput, parsePhoneNumber } from '@/components/ui/phone-input'
 
 interface ListingForm {
   id?: string
@@ -827,11 +828,14 @@ export default function CreateListingPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="phone">Phone Number</Label>
-                      <Input
-                        id="phone"
-                        value={formData.contactInfo.phone}
-                        onChange={(e) => handleNestedInputChange('contactInfo', 'phone', e.target.value)}
-                        placeholder="+254 700 000 000"
+                      <PhoneInput
+                        value={parsePhoneNumber(formData.contactInfo.phone).phoneNumber}
+                        onChange={(value) => {
+                          // Store the phone number without country code
+                          handleNestedInputChange('contactInfo', 'phone', value)
+                        }}
+                        defaultCountry="KE"
+                        placeholder="700 000 000"
                       />
                     </div>
                     <div className="space-y-2">
@@ -891,11 +895,14 @@ export default function CreateListingPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="ownerPhone">Phone Number *</Label>
-                    <Input
-                      id="ownerPhone"
-                      value={formData.ownerDetails.phone}
-                      onChange={(e) => handleNestedInputChange('ownerDetails', 'phone', e.target.value)}
-                      placeholder="+254 700 000 000"
+                    <PhoneInput
+                      value={parsePhoneNumber(formData.ownerDetails.phone).phoneNumber}
+                      onChange={(value) => {
+                        // Store the phone number without country code
+                        handleNestedInputChange('ownerDetails', 'phone', value)
+                      }}
+                      defaultCountry="KE"
+                      placeholder="700 000 000"
                       required
                     />
                   </div>
