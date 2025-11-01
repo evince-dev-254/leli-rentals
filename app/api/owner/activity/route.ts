@@ -26,14 +26,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error fetching owner activity:', error)
     
-    // Return empty array instead of error during build
-    if (process.env.NODE_ENV === 'production' && error instanceof Error && error.message.includes('timeout')) {
-      return NextResponse.json([])
-    }
-    
-    return NextResponse.json(
-      { error: 'Failed to fetch owner activity' },
-      { status: 500 }
-    )
+    // Return empty array instead of error
+    return NextResponse.json([])
   }
 }

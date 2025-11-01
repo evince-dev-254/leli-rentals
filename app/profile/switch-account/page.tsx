@@ -99,7 +99,9 @@ export default function SwitchAccountPage() {
     const fetchAccountType = async () => {
       try {
         // Get account type from Clerk metadata
-        const accountType = (user.publicMetadata?.accountType as string) || 'renter'
+        const accountType = (user.publicMetadata?.accountType as string) || 
+                           (user.unsafeMetadata?.accountType as string) || 
+                           'not_selected'
         setCurrentAccountType(accountType as 'renter' | 'owner')
         setIsLoading(false)
       } catch (error) {
@@ -163,14 +165,15 @@ export default function SwitchAccountPage() {
       toast({
         title: "Account Switched!",
         description: targetType === 'owner' 
-          ? "You'll need to verify your ID within 5 days" 
+          ? "You'll be redirected to ID verification. This is required to use owner features." 
           : "Your listings have been archived",
       })
 
       // Redirect based on account type
       setTimeout(() => {
         if (targetType === 'owner') {
-          router.push('/dashboard/owner/setup')
+          // Redirect to verification page for ID verification
+          router.push('/verification?redirect=/dashboard/owner&accountSwitch=true')
         } else {
           router.push('/listings')
         }

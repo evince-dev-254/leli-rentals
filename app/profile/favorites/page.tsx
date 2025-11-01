@@ -1,11 +1,11 @@
 "use client"
 
-export const runtime = 'edge'
 export const dynamic = 'force-dynamic'
 
 import type React from "react"
 import { useState, useEffect } from "react"
 import { Header } from "@/components/header"
+import { LoadingSpinner } from "@/components/loading-spinner"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -56,7 +56,7 @@ export default function FavoritesPage() {
   // Redirect if not authenticated
   useEffect(() => {
     if (isLoaded && !user) {
-      router.push('/login')
+      router.push('/sign-in')
     }
   }, [isLoaded, user, router])
 
@@ -67,21 +67,42 @@ export default function FavoritesPage() {
       
       setIsLoading(true)
       try {
-        const userFavorites = await favoritesService.getUserFavorites(user.id)
+        // Use API route instead of direct service call
+        const response = await fetch('/api/profile/favorites')
+        if (!response.ok) {
+          throw new Error('Failed to fetch favorites')
+        }
+        const data = await response.json()
+        // Transform API response to match Favorite interface
+        const userFavorites: Favorite[] = Array.isArray(data) 
+          ? data.filter((fav: any) => fav.userId === user.id).map((fav: any) => ({
+              id: fav.id,
+              userId: fav.userId || user.id,
+              listingId: fav.listingId || fav.id,
+              title: fav.title || 'Untitled',
+              description: fav.description || '',
+              price: typeof fav.price === 'number' ? fav.price : 0,
+              category: fav.category || 'misc',
+              image: fav.image || '/placeholder.svg',
+              location: fav.location || '',
+              ownerName: fav.owner || fav.ownerName || 'Unknown',
+              rating: typeof fav.rating === 'number' ? fav.rating : 0,
+              reviews: typeof fav.reviews === 'number' ? fav.reviews : 0,
+              addedDate: fav.createdAt ? new Date(fav.createdAt) : new Date(),
+              isAvailable: fav.isAvailable !== undefined ? fav.isAvailable : true,
+            }))
+          : []
         setFavorites(userFavorites)
       } catch (error) {
         console.error("Error loading favorites:", error)
-        toast({
-          title: "Error",
-          description: "Failed to load your favorites",
-          variant: "destructive"
-        })
+        // Set empty array as fallback instead of showing error for empty state
+        setFavorites([])
       } finally {
         setIsLoading(false)
       }
     }
     loadFavorites()
-  }, [user, toast])
+  }, [user])
 
   const filteredFavorites = favorites.filter(favorite => {
     const matchesSearch = favorite.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -197,26 +218,12 @@ export default function FavoritesPage() {
 
   // Show loading state while checking authentication
   if (!isLoaded) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    )
+    return <LoadingSpinner message="Loading..." variant="profile" />
   }
 
   // Show loading while redirecting
   if (!user) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Redirecting...</p>
-        </div>
-      </div>
-    )
+    return <LoadingSpinner message="Redirecting..." variant="profile" />
   }
 
   return (
@@ -225,19 +232,20 @@ export default function FavoritesPage() {
 
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 My Favorites
               </h1>
-              <p className="text-muted-foreground mt-2">
+              <p className="text-sm sm:text-base text-muted-foreground mt-1 sm:mt-2">
                 Items you've saved for later rental
               </p>
             </div>
             <Button 
               onClick={() => router.back()}
               variant="outline"
+              className="w-full sm:w-auto"
             >
               Back to Profile
             </Button>
@@ -245,64 +253,64 @@ export default function FavoritesPage() {
         </div>
 
         {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
           <Card className="border-0 shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-red-100 rounded-lg">
-                  <Heart className="h-5 w-5 text-red-600" />
+            <CardContent className="p-3 sm:p-6">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="p-1.5 sm:p-2 bg-red-100 rounded-lg">
+                  <Heart className="h-4 w-4 sm:h-5 sm:w-5 text-red-600" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-red-600">{favorites.length}</div>
-                  <div className="text-sm text-muted-foreground">Total Favorites</div>
+                  <div className="text-xl sm:text-2xl font-bold text-red-600">{favorites.length}</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Total Favorites</div>
                 </div>
               </div>
             </CardContent>
           </Card>
 
           <Card className="border-0 shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <CheckCircle className="h-5 w-5 text-green-600" />
+            <CardContent className="p-3 sm:p-6">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="p-1.5 sm:p-2 bg-green-100 rounded-lg">
+                  <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-green-600">
+                  <div className="text-xl sm:text-2xl font-bold text-green-600">
                     {favorites.filter(f => f.isAvailable).length}
                   </div>
-                  <div className="text-sm text-muted-foreground">Available</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Available</div>
                 </div>
               </div>
             </CardContent>
           </Card>
 
           <Card className="border-0 shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <TrendingUp className="h-5 w-5 text-blue-600" />
+            <CardContent className="p-3 sm:p-6">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="p-1.5 sm:p-2 bg-blue-100 rounded-lg">
+                  <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-blue-600">
+                  <div className="text-xl sm:text-2xl font-bold text-blue-600">
                     ${favorites.length > 0 ? Math.round(favorites.reduce((sum, f) => sum + (f.price || 0), 0) / favorites.length) : 0}
                   </div>
-                  <div className="text-sm text-muted-foreground">Avg. Price</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Avg. Price</div>
                 </div>
               </div>
             </CardContent>
           </Card>
 
           <Card className="border-0 shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-purple-100 rounded-lg">
-                  <Award className="h-5 w-5 text-purple-600" />
+            <CardContent className="p-3 sm:p-6">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="p-1.5 sm:p-2 bg-purple-100 rounded-lg">
+                  <Award className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-purple-600">
+                  <div className="text-xl sm:text-2xl font-bold text-purple-600">
                     {favorites.length > 0 ? (Math.round(favorites.reduce((sum, f) => sum + (f.rating || 0), 0) / favorites.length * 10) / 10) : 0}
                   </div>
-                  <div className="text-sm text-muted-foreground">Avg. Rating</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Avg. Rating</div>
                 </div>
               </div>
             </CardContent>
@@ -310,9 +318,9 @@ export default function FavoritesPage() {
         </div>
 
         {/* Filters and Search */}
-        <Card className="border-0 shadow-lg mb-6">
-          <CardContent className="p-6">
-            <div className="flex flex-col md:flex-row gap-4">
+        <Card className="border-0 shadow-lg mb-4 sm:mb-6">
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex flex-col gap-3 sm:gap-4">
               <div className="flex-1">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -320,15 +328,15 @@ export default function FavoritesPage() {
                     placeholder="Search favorites..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 h-10 sm:h-auto"
                   />
                 </div>
-          </div>
-              <div className="flex gap-3">
+              </div>
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                 <select
                   value={categoryFilter}
                   onChange={(e) => setCategoryFilter(e.target.value)}
-                  className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  className="flex-1 px-3 py-2 h-10 sm:h-auto border border-gray-300 rounded-md text-sm"
                   aria-label="Filter by category"
                 >
                   {categories.map((category) => (
@@ -340,7 +348,7 @@ export default function FavoritesPage() {
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  className="flex-1 sm:flex-none px-3 py-2 h-10 sm:h-auto border border-gray-300 rounded-md text-sm"
                   aria-label="Sort by"
                 >
                   <option value="recent">Recently Added</option>
@@ -348,17 +356,17 @@ export default function FavoritesPage() {
                   <option value="price-high">Price: High to Low</option>
                   <option value="rating">Highest Rated</option>
                 </select>
-          <Button variant="outline">
-            <Filter className="h-4 w-4 mr-2" />
+                <Button variant="outline" className="w-full sm:w-auto h-10 sm:h-auto">
+                  <Filter className="h-4 w-4 mr-2" />
                   More Filters
-          </Button>
-        </div>
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
 
         {/* Favorites Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {filteredFavorites.map((favorite) => (
             <Card key={favorite.id} className="border-0 shadow-lg hover:shadow-xl transition-shadow">
               <div className="aspect-[4/3] overflow-hidden rounded-t-lg relative">

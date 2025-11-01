@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { clerkClient } from '@clerk/nextjs/server'
+import { addCorsHeaders, createOptionsResponse } from '@/lib/admin-cors'
+
+export async function OPTIONS(req: NextRequest) {
+  return createOptionsResponse(req)
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -47,7 +52,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Return user data
-    return NextResponse.json({ 
+    const response = NextResponse.json({ 
       success: true,
       user: {
         id: foundUser.id,
@@ -60,6 +65,8 @@ export async function POST(request: NextRequest) {
         publicMetadata: foundUser.publicMetadata,
       }
     })
+    
+    return addCorsHeaders(response, request)
 
   } catch (error: any) {
     console.error('User search error:', error)

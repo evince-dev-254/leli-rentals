@@ -63,7 +63,7 @@ export default function VerificationPage() {
   // Redirect if not authenticated
   useEffect(() => {
     if (isLoaded && !user) {
-      router.push("/login")
+      router.push("/sign-in")
     }
   }, [isLoaded, user, router])
 
@@ -214,14 +214,21 @@ export default function VerificationPage() {
     setIsSubmitting(true)
     
     try {
-      // Update Clerk user metadata to mark verification as submitted
-      await user?.update({
-        unsafeMetadata: {
-          ...user.unsafeMetadata,
-          verificationStatus: 'pending',
-          verificationSubmittedAt: new Date().toISOString(),
-        }
+      // Upload documents to Cloudinary and save to Clerk metadata
+      const uploadFormData = new FormData()
+      if (formData.documentFront) uploadFormData.append('documentFront', formData.documentFront)
+      if (formData.documentBack) uploadFormData.append('documentBack', formData.documentBack)
+      if (formData.selfieWithDocument) uploadFormData.append('selfieWithDocument', formData.selfieWithDocument)
+
+      const uploadResponse = await fetch('/api/upload-verification-documents', {
+        method: 'POST',
+        body: uploadFormData,
       })
+
+      if (!uploadResponse.ok) {
+        const errorData = await uploadResponse.json()
+        throw new Error(errorData.error || 'Failed to upload documents')
+      }
 
       // Send verification confirmation email
       fetch('/api/emails/verification', {
@@ -233,9 +240,6 @@ export default function VerificationPage() {
           status: 'submitted'
         })
       }).catch(err => console.error('Email error:', err))
-
-      // TODO: Upload documents to Supabase storage and save verification data
-      // For now, we'll just update the metadata
       
       toast({
         title: "✅ Verification Submitted!",

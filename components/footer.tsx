@@ -257,7 +257,10 @@ export function Footer() {
       <div className="border-t border-border py-8">
         <div className="container mx-auto px-6 max-w-7xl">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <p className="text-muted-foreground text-center md:text-left">© 2025 Leli Rentals. All rights reserved.</p>
+            <div className="text-center md:text-left">
+              <p className="text-muted-foreground">© 2025 Leli Rentals. All rights reserved.</p>
+              <p className="text-muted-foreground text-sm mt-1">Developed by Gurugrafts Agency</p>
+            </div>
             <div className="flex space-x-6">
               <Link href="/privacy" className="text-muted-foreground hover:text-primary transition-colors">
                 Privacy Policy

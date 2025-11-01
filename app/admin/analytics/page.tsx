@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Header } from "@/components/header"
+import { LoadingSpinner } from "@/components/loading-spinner"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
@@ -101,15 +102,10 @@ export default function AdminAnalyticsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <>
         <Header />
-        <div className="container mx-auto px-4 sm:px-6 max-w-7xl py-8">
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <span className="ml-2 text-gray-600 dark:text-gray-400">Loading analytics...</span>
-          </div>
-        </div>
-      </div>
+        <LoadingSpinner message="Loading analytics..." variant="admin" />
+      </>
     )
   }
 

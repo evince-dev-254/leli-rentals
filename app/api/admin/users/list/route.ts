@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { clerkClient } from '@clerk/nextjs/server'
 import { auth } from '@clerk/nextjs/server'
+import { addCorsHeaders, createOptionsResponse } from '@/lib/admin-cors'
+
+export async function OPTIONS(req: NextRequest) {
+  return createOptionsResponse(req)
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -41,11 +46,13 @@ export async function GET(req: NextRequest) {
       publicMetadata: user.publicMetadata,
     }))
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       users: simplifiedUsers,
       totalCount
     })
+    
+    return addCorsHeaders(response, req)
 
   } catch (error: any) {
     console.error('Error fetching users:', error)

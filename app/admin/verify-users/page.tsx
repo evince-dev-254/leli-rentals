@@ -260,7 +260,7 @@ export default function AdminVerifyUsersPage() {
   return (
     <>
       <Header />
-      <div className="min-h-screen bg-background py-12 px-4">
+      <div className="min-h-screen bg-background py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto space-y-8">
           {/* Header */}
           <div className="text-center">
@@ -287,7 +287,7 @@ export default function AdminVerifyUsersPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex gap-4">
+              <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex-1">
                   <Label htmlFor="email">Email Address</Label>
                   <Input
@@ -297,13 +297,14 @@ export default function AdminVerifyUsersPage() {
                     value={emailAddress}
                     onChange={(e) => setEmailAddress(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                    className="w-full"
                   />
                 </div>
                 <div className="flex items-end">
                   <Button 
                     onClick={handleSearch} 
                     disabled={isSearching}
-                    className="bg-blue-600 hover:bg-blue-700"
+                    className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
                   >
                     {isSearching ? (
                       <>
@@ -412,61 +413,65 @@ export default function AdminVerifyUsersPage() {
                   </div>
                 )}
 
-                {/* Verification Documents */}
-                {(foundUser.unsafeMetadata?.verificationDocuments || foundUser.unsafeMetadata?.verificationStatus === 'pending') && (
+                {/* Verification Documents - ALWAYS SHOW if status is pending or if documents exist */}
+                {(foundUser.unsafeMetadata?.verificationStatus === 'pending' || foundUser.unsafeMetadata?.verificationDocuments) && (
                   <div className="space-y-4">
                     <h3 className="font-semibold text-lg flex items-center gap-2">
                       <FileText className="h-5 w-5" />
                       Verification Documents
                     </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {foundUser.unsafeMetadata?.verificationDocuments ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                       {/* Document Front */}
-                      {foundUser.unsafeMetadata?.verificationDocuments?.documentFront && (
+                        {foundUser.unsafeMetadata.verificationDocuments.documentFront && (
                         <div className="space-y-2">
                           <Label className="text-sm font-semibold">ID Front</Label>
                           <div className="relative rounded-lg overflow-hidden border-2 border-gray-200 dark:border-gray-700">
                             <img 
                               src={foundUser.unsafeMetadata.verificationDocuments.documentFront} 
                               alt="Document Front" 
-                              className="w-full h-48 object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                                className="w-full h-48 object-contain cursor-pointer hover:opacity-90 transition-opacity bg-gray-50 dark:bg-gray-900"
                               onClick={() => window.open(foundUser.unsafeMetadata.verificationDocuments.documentFront, '_blank')}
                             />
                           </div>
                         </div>
                       )}
                       {/* Document Back */}
-                      {foundUser.unsafeMetadata?.verificationDocuments?.documentBack && (
+                        {foundUser.unsafeMetadata.verificationDocuments.documentBack && (
                         <div className="space-y-2">
                           <Label className="text-sm font-semibold">ID Back</Label>
                           <div className="relative rounded-lg overflow-hidden border-2 border-gray-200 dark:border-gray-700">
                             <img 
                               src={foundUser.unsafeMetadata.verificationDocuments.documentBack} 
                               alt="Document Back" 
-                              className="w-full h-48 object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                                className="w-full h-48 object-contain cursor-pointer hover:opacity-90 transition-opacity bg-gray-50 dark:bg-gray-900"
                               onClick={() => window.open(foundUser.unsafeMetadata.verificationDocuments.documentBack, '_blank')}
                             />
                           </div>
                         </div>
                       )}
                       {/* Selfie with Document */}
-                      {foundUser.unsafeMetadata?.verificationDocuments?.selfieWithDocument && (
+                        {foundUser.unsafeMetadata.verificationDocuments.selfieWithDocument && (
                         <div className="space-y-2">
                           <Label className="text-sm font-semibold">Selfie with ID</Label>
                           <div className="relative rounded-lg overflow-hidden border-2 border-gray-200 dark:border-gray-700">
                             <img 
                               src={foundUser.unsafeMetadata.verificationDocuments.selfieWithDocument} 
                               alt="Selfie with Document" 
-                              className="w-full h-48 object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                                className="w-full h-48 object-contain cursor-pointer hover:opacity-90 transition-opacity bg-gray-50 dark:bg-gray-900"
                               onClick={() => window.open(foundUser.unsafeMetadata.verificationDocuments.selfieWithDocument, '_blank')}
                             />
                           </div>
                         </div>
                       )}
                     </div>
-                    {!foundUser.unsafeMetadata?.verificationDocuments && (
-                      <p className="text-sm text-muted-foreground italic">
-                        No documents uploaded yet
+                    ) : (
+                      <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                        <p className="text-sm font-semibold text-red-800 dark:text-red-200 flex items-center gap-2">
+                          <AlertCircle className="h-4 w-4" />
+                          No documents uploaded yet. User must submit verification documents before approval.
                       </p>
+                      </div>
                     )}
                   </div>
                 )}
@@ -486,11 +491,26 @@ export default function AdminVerifyUsersPage() {
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex gap-4">
+                    <div className="flex flex-col sm:flex-row gap-4">
                       <Button
                         onClick={handleApprove}
-                        disabled={isProcessing || foundUser.unsafeMetadata?.verificationStatus === 'approved'}
-                        className="flex-1 bg-green-600 hover:bg-green-700"
+                        disabled={
+                          isProcessing || 
+                          foundUser.unsafeMetadata?.verificationStatus === 'approved' ||
+                          !foundUser.unsafeMetadata?.verificationDocuments ||
+                          !foundUser.unsafeMetadata?.verificationDocuments?.documentFront ||
+                          !foundUser.unsafeMetadata?.verificationDocuments?.documentBack ||
+                          !foundUser.unsafeMetadata?.verificationDocuments?.selfieWithDocument
+                        }
+                        className="flex-1 bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        title={
+                          (!foundUser.unsafeMetadata?.verificationDocuments ||
+                           !foundUser.unsafeMetadata?.verificationDocuments?.documentFront ||
+                           !foundUser.unsafeMetadata?.verificationDocuments?.documentBack ||
+                           !foundUser.unsafeMetadata?.verificationDocuments?.selfieWithDocument)
+                            ? "Cannot approve: User has not submitted all required documents"
+                            : ""
+                        }
                       >
                         {isProcessing ? (
                           <>

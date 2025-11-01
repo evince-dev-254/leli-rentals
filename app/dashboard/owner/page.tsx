@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Header } from "@/components/header"
+import { LoadingSpinner } from "@/components/loading-spinner"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -12,6 +13,7 @@ import { useUser } from '@clerk/nextjs'
 import { ownerDashboardClientService, OwnerStats, OwnerListing, OwnerBooking, OwnerActivity } from "@/lib/owner-dashboard-client-service"
 import { getUserAccountType } from "@/lib/account-type-utils"
 import { listingsServiceSupabase, ListingData } from "@/lib/listings-service-supabase"
+import { VerificationBanner } from "@/components/verification-banner"
 import {
   Plus,
   TrendingUp,
@@ -60,10 +62,44 @@ export default function OwnerDashboard() {
   })
   const [isLoading, setIsLoading] = useState(true)
 
+  // Check account type and redirect if not owner
+  useEffect(() => {
+    if (!isLoaded) return
+    
+    if (!user) {
+      router.push('/sign-in')
+      return
+    }
+
+    // ONLY check Clerk metadata - ignore localStorage to avoid stale values
+    const clerkAccountType = (user.publicMetadata?.accountType as string) || 
+                            (user.unsafeMetadata?.accountType as string)
+
+    // Only owners should access this page
+    if (clerkAccountType !== 'owner') {
+      // If no account type or not owner, redirect to get-started
+      toast({
+        title: "Access Denied",
+        description: "This page is for owner accounts only. Please select an owner account type.",
+        variant: "destructive",
+      })
+      router.push('/get-started')
+      return
+    }
+  }, [user, isLoaded, router, toast])
+
   // Load owner dashboard data from database
   useEffect(() => {
     const loadDashboardData = async () => {
       if (!user?.id) return
+      
+      // Double check account type before loading - ONLY trust Clerk metadata
+      const clerkAccountType = (user.publicMetadata?.accountType as string) || 
+                              (user.unsafeMetadata?.accountType as string)
+      
+      if (clerkAccountType !== 'owner') {
+        return
+      }
       
       setIsLoading(true)
       try {
@@ -173,11 +209,52 @@ export default function OwnerDashboard() {
     }
   }
 
+  // Show loading state
+  if (isLoading || !isLoaded) {
+    return (
+      <>
+        <Header />
+        <LoadingSpinner message="Fetching your stats..." variant="owner" />
+      </>
+    )
+  }
+
+  // Redirect check - if user is not owner, this will be handled by the useEffect above
+  // ONLY check Clerk metadata, ignore localStorage
+  const clerkAccountType = (user?.publicMetadata?.accountType as string) || 
+                          (user?.unsafeMetadata?.accountType as string)
+  
+  if (!user || clerkAccountType !== 'owner') {
+    return null // useEffect will handle redirect
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <Header />
       
       <div className="container mx-auto px-4 sm:px-6 max-w-7xl py-8">
+        {/* Verification Banner with Deadline Warning */}
+        <VerificationBanner
+          accountType="owner"
+          verificationStatus={{
+            isVerified: (user?.unsafeMetadata?.verificationStatus as string) === 'approved' ||
+                        (user?.publicMetadata?.verificationStatus as string) === 'approved' ||
+                        (user?.unsafeMetadata?.isVerified as boolean) ||
+                        (user?.publicMetadata?.isVerified as boolean) ||
+                        false,
+            documentsSubmitted: (user?.unsafeMetadata?.verificationStatus as string) === 'submitted' ||
+                               (user?.publicMetadata?.verificationStatus as string) === 'submitted',
+            pendingReview: (user?.unsafeMetadata?.verificationStatus as string) === 'pending' ||
+                          (user?.publicMetadata?.verificationStatus as string) === 'pending',
+            rejectionReason: (user?.unsafeMetadata?.verificationRejectionReason as string) ||
+                            (user?.publicMetadata?.verificationRejectionReason as string),
+            submittedAt: (user?.unsafeMetadata?.verificationSubmittedAt as string) ||
+                         (user?.publicMetadata?.verificationSubmittedAt as string)
+          }}
+          verificationDeadline={(user?.unsafeMetadata?.verificationDeadline as string) ||
+                                (user?.publicMetadata?.verificationDeadline as string)}
+        />
+        
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -258,10 +335,11 @@ export default function OwnerDashboard() {
 
         {/* Main Content Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="listings">My Listings</TabsTrigger>
             <TabsTrigger value="bookings">Bookings</TabsTrigger>
+            <TabsTrigger value="messages">Messages</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
           </TabsList>
 
@@ -646,6 +724,42 @@ export default function OwnerDashboard() {
                 ))}
               </div>
             )}
+          </TabsContent>
+
+          {/* Messages Tab */}
+          <TabsContent value="messages" className="space-y-6">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                  Messages from Renters
+                </h2>
+                <p className="text-muted-foreground mt-1">
+                  Communicate with renters interested in your listings
+                </p>
+              </div>
+              <Button onClick={() => router.push('/dashboard/owner/messages')}>
+                <MessageCircle className="h-4 w-4 mr-2" />
+                View All Messages
+              </Button>
+            </div>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="text-center py-12">
+                  <MessageCircle className="h-16 w-16 mx-auto text-gray-400 mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                    Manage Your Conversations
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400 mb-6">
+                    View and respond to messages from renters who are interested in your listings.
+                  </p>
+                  <Button onClick={() => router.push('/dashboard/owner/messages')}>
+                    Open Messages
+                    <ArrowRight className="h-4 w-4 ml-2" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Analytics Tab */}

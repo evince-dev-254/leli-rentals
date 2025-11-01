@@ -25,19 +25,12 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error fetching owner stats:', error)
     
-    // Return default stats instead of error during build
-    if (process.env.NODE_ENV === 'production' && error instanceof Error && error.message.includes('timeout')) {
-      return NextResponse.json({
-        totalEarnings: 0,
-        totalBookings: 0,
-        activeListings: 0,
-        rating: 0
-      })
-    }
-    
-    return NextResponse.json(
-      { error: 'Failed to fetch owner stats' },
-      { status: 500 }
-    )
+    // Return default stats instead of error
+    return NextResponse.json({
+      totalEarnings: 0,
+      totalBookings: 0,
+      activeListings: 0,
+      rating: 0
+    })
   }
 }

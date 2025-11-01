@@ -103,19 +103,69 @@ const returnPolicies = [
     value: 'flexible',
     label: 'Flexible',
     description: 'Full refund if canceled 24 hours before rental. 50% refund if canceled within 24 hours.',
-    icon: '😊'
+    icon: '😊',
+    detailedExplanation: `This flexible return policy is ideal for renters who may have uncertain plans. Here's what it includes:
+
+• **Full Refund (Cancel 24+ hours before rental start):** Renters receive 100% of their payment back if they cancel at least 24 hours before the scheduled rental period begins. This applies to deposits, rental fees, and service charges.
+
+• **Partial Refund (Cancel within 24 hours):** If a renter cancels less than 24 hours before the rental start time, they receive 50% of their total payment as a refund. The remaining 50% covers the owner's preparation time and potential lost opportunities.
+
+• **No-Show Policy:** If the renter fails to show up for the scheduled rental without canceling, no refund will be issued.
+
+• **Damage Protection:** This policy does not cover damage to the item during the rental period. Separate damage deposits and insurance may apply.
+
+• **Early Returns:** If the renter returns the item earlier than scheduled, they will receive a prorated refund for the unused rental time, minus any early return fees if specified.
+
+This policy balances flexibility for renters while protecting owners from last-minute cancellations.`
   },
   {
     value: 'moderate',
     label: 'Moderate',
     description: 'Full refund if canceled 48 hours before rental. No refund if canceled within 48 hours.',
-    icon: '⚖️'
+    icon: '⚖️',
+    detailedExplanation: `The moderate return policy offers a balanced approach between renter flexibility and owner protection:
+
+• **Full Refund (Cancel 48+ hours before rental start):** Renters receive a complete refund (100%) of all payments including deposits, rental fees, and service charges if they cancel at least 48 hours before the scheduled rental period.
+
+• **No Refund (Cancel within 48 hours):** If cancellation occurs less than 48 hours before the rental start time, no refund will be issued. This includes partial payments, deposits, and fees. This policy protects owners who have reserved the item and may have turned away other potential renters.
+
+• **Emergency Exceptions:** In cases of documented emergencies (medical emergencies, natural disasters, flight cancellations), owners may choose to offer partial refunds or credits at their discretion, though this is not guaranteed.
+
+• **Date Changes:** Requests to change rental dates (rather than cancel) must be made at least 48 hours in advance and are subject to availability and owner approval. Date change fees may apply.
+
+• **Damage and Loss:** This policy does not cover damage, loss, or theft of the item during the rental period. Renters are responsible for any damage beyond normal wear and tear, as outlined in the rental agreement.
+
+• **Force Majeure:** In cases of unforeseen circumstances beyond either party's control (such as government restrictions, pandemics, extreme weather), both parties should work together to find a mutually acceptable solution.
+
+This policy provides reasonable protection for owners while still allowing renters adequate time to adjust their plans.`
   },
   {
     value: 'strict',
     label: 'Strict',
     description: 'Full refund if canceled 7 days before rental. 50% refund if canceled within 7 days. No refund within 24 hours.',
-    icon: '🔒'
+    icon: '🔒',
+    detailedExplanation: `The strict return policy is designed for owners who need maximum protection and commitment from renters:
+
+• **Full Refund (Cancel 7+ days before rental start):** Renters receive a complete 100% refund of all payments, including deposits, rental fees, and service charges, if they cancel at least 7 days (one week) before the scheduled rental start date.
+
+• **Partial Refund (Cancel within 7 days but 24+ hours before):** If cancellation occurs between 7 days and 24 hours before the rental start time, renters receive a 50% refund. The remaining 50% compensates the owner for reserved dates and potential lost bookings.
+
+• **No Refund (Cancel within 24 hours or no-show):** Cancellations made less than 24 hours before the rental start time, or if the renter simply doesn't show up, result in no refund. All payments including deposits become non-refundable.
+
+• **Additional Terms:**
+  - **Booking Confirmation:** Once booking is confirmed and payment is processed, the strict policy applies regardless of when payment was made.
+  
+  - **Date Modifications:** Changing rental dates is treated the same as a cancellation followed by a new booking. The original cancellation policy applies to the first booking.
+
+  - **Insurance and Deposits:** Damage deposits are held separately and refunded after the rental period, minus any damage or cleaning fees. This return policy only applies to rental fees.
+
+  - **Renter Responsibilities:** Renters are responsible for ensuring their availability and readiness for the rental. This policy does not cover personal circumstances, schedule conflicts, or changes of mind.
+
+  - **Owner Discretion:** While this is a strict policy, owners may choose to offer partial refunds or credits in exceptional circumstances at their own discretion, but this should not be expected by renters.
+
+• **Why Choose Strict Policy:** This policy is best for high-demand items, long-term rentals, or when owners need to commit significant preparation time. It ensures serious bookings and protects owners' income stability.
+
+This policy maximizes protection for owners but requires renters to be certain of their rental plans before booking.`
   }
 ]
 
@@ -999,9 +1049,17 @@ export default function CreateListingPage() {
                                 </Badge>
                               )}
                             </div>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
                               {policy.description}
                             </p>
+                            {/* Detailed Explanation */}
+                            <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                              <div className="prose prose-sm dark:prose-invert max-w-none">
+                                <div className="text-xs text-gray-700 dark:text-gray-300 whitespace-pre-line leading-relaxed">
+                                  {policy.detailedExplanation}
+                                </div>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </CardContent>

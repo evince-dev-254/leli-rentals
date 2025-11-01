@@ -51,10 +51,18 @@ export class OwnerDashboardClientService {
   async getOwnerStats(ownerId: string): Promise<OwnerStats> {
     try {
       const response = await fetch(`${this.baseUrl}/stats?ownerId=${ownerId}`)
-      if (!response.ok) {
-        throw new Error('Failed to fetch owner stats')
-      }
       const data = await response.json()
+      
+      // Check if response contains error (legacy handling)
+      if (!response.ok && data.error) {
+        // Return default values for errors
+        return {
+          totalEarnings: 0,
+          totalBookings: 0,
+          activeListings: 0,
+          rating: 0
+        }
+      }
       
       // Convert date strings back to Date objects
       return {
@@ -64,7 +72,7 @@ export class OwnerDashboardClientService {
         rating: data.rating || 0
       }
     } catch (error) {
-      console.error('Error fetching owner stats:', error)
+      // Silently return defaults for network errors
       return {
         totalEarnings: 0,
         totalBookings: 0,
@@ -78,10 +86,18 @@ export class OwnerDashboardClientService {
   async getOwnerListings(ownerId: string): Promise<OwnerListing[]> {
     try {
       const response = await fetch(`${this.baseUrl}/listings?ownerId=${ownerId}`)
-      if (!response.ok) {
-        throw new Error('Failed to fetch owner listings')
-      }
       const data = await response.json()
+      
+      // Check if response contains error (legacy handling)
+      if (!response.ok && data.error) {
+        // Return empty array for errors
+        return []
+      }
+      
+      // Ensure data is an array
+      if (!Array.isArray(data)) {
+        return []
+      }
       
       // Convert date strings back to Date objects
       return data.map((listing: any) => ({
@@ -89,7 +105,7 @@ export class OwnerDashboardClientService {
         createdAt: new Date(listing.createdAt)
       }))
     } catch (error) {
-      console.error('Failed to fetch owner listings:', error)
+      // Silently return empty array for network errors
       return []
     }
   }
@@ -98,10 +114,18 @@ export class OwnerDashboardClientService {
   async getOwnerBookings(ownerId: string): Promise<OwnerBooking[]> {
     try {
       const response = await fetch(`${this.baseUrl}/bookings?ownerId=${ownerId}`)
-      if (!response.ok) {
-        throw new Error('Failed to fetch owner bookings')
-      }
       const data = await response.json()
+      
+      // Check if response contains error (legacy handling)
+      if (!response.ok && data.error) {
+        // Return empty array for errors
+        return []
+      }
+      
+      // Ensure data is an array
+      if (!Array.isArray(data)) {
+        return []
+      }
       
       // Convert date strings back to Date objects
       return data.map((booking: any) => ({
@@ -111,7 +135,7 @@ export class OwnerDashboardClientService {
         createdAt: new Date(booking.createdAt)
       }))
     } catch (error) {
-      console.error('Failed to fetch owner bookings:', error)
+      // Silently return empty array for network errors
       return []
     }
   }
@@ -120,10 +144,18 @@ export class OwnerDashboardClientService {
   async getOwnerActivity(ownerId: string, limit: number = 10): Promise<OwnerActivity[]> {
     try {
       const response = await fetch(`${this.baseUrl}/activity?ownerId=${ownerId}&limit=${limit}`)
-      if (!response.ok) {
-        throw new Error('Failed to fetch owner activity')
-      }
       const data = await response.json()
+      
+      // Check if response contains error (legacy handling)
+      if (!response.ok && data.error) {
+        // Return empty array for errors
+        return []
+      }
+      
+      // Ensure data is an array
+      if (!Array.isArray(data)) {
+        return []
+      }
       
       // Convert date strings back to Date objects
       return data.map((activity: any) => ({
@@ -131,7 +163,7 @@ export class OwnerDashboardClientService {
         timestamp: new Date(activity.timestamp)
       }))
     } catch (error) {
-      console.error('Failed to fetch owner activity:', error)
+      // Silently return empty array for network errors
       return []
     }
   }

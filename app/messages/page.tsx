@@ -172,15 +172,53 @@ export default function MessagesPage() {
         setActiveChat(existingChat.id)
         setCurrentChat(existingChat)
       } else {
+        // Fetch owner details from listing if ownerId is provided
+        const ownerIdParam = searchParams?.get('ownerId')
+        let ownerDetails = {
+          name: ownerParam,
+          phone: "+254700000000",
+          avatar: "/placeholder-user.jpg",
+          verified: false,
+          rating: 4.5
+        }
+
+        if (ownerIdParam && ownerIdParam !== 'unknown') {
+          try {
+            // Try to fetch owner details from database
+            const { supabase } = await import('@/lib/supabase')
+            const { data: listing } = await supabase
+              .from('listings')
+              .select('contact_info, user_id')
+              .eq('user_id', ownerIdParam)
+              .limit(1)
+              .single()
+
+            if (listing?.contact_info) {
+              ownerDetails = {
+                name: listing.contact_info.name || ownerParam,
+                phone: listing.contact_info.phone || "+254700000000",
+                avatar: listing.contact_info.avatar || "/placeholder-user.jpg",
+                verified: listing.contact_info.verified || false,
+                rating: listing.contact_info.rating || 4.5
+              }
+            }
+
+            // Also try to get user details from Clerk if possible
+            // This would require an API call
+          } catch (error) {
+            console.error('Error fetching owner details:', error)
+          }
+        }
+
         // Create new chat session
         const newChat: ChatSession = {
           id: `chat_${Date.now()}`,
-          participantId: `owner_${ownerParam.replace(/\s+/g, '_').toLowerCase()}`,
-          participantName: ownerParam,
-          participantAvatar: "/placeholder-user.jpg",
-          participantPhone: "+254700000000",
-          participantRating: 4.5,
-          participantVerified: false,
+          participantId: ownerIdParam || `owner_${ownerParam.replace(/\s+/g, '_').toLowerCase()}`,
+          participantName: ownerDetails.name,
+          participantAvatar: ownerDetails.avatar,
+          participantPhone: ownerDetails.phone,
+          participantRating: ownerDetails.rating,
+          participantVerified: ownerDetails.verified,
           unreadCount: 0,
           listingTitle: listingParam || "Rental Inquiry",
           listingImage: "/placeholder.svg",

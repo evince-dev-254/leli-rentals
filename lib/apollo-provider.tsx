@@ -1,16 +1,15 @@
 'use client'
 
-import { ApolloProvider } from '@apollo/client'
-import { apolloClient } from './graphql-client'
+import { ReactNode } from 'react'
 
 interface ApolloWrapperProps {
-  children: React.ReactNode
+  children: ReactNode
 }
 
+// Apollo Client is not currently set up in this project
+// This component is kept for future use
 export function ApolloWrapper({ children }: ApolloWrapperProps) {
-  return (
-    <ApolloProvider client={apolloClient}>
-      {children}
-    </ApolloProvider>
-  )
+  // Return children without Apollo wrapper
+  // To enable Apollo, install @apollo/client and create graphql-client.ts
+  return <>{children}</>
 }

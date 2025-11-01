@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react"
 import { DatabaseService } from '@/lib/database-service'
 import { Header } from "@/components/header"
+import { LoadingSpinner } from "@/components/loading-spinner"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -110,7 +111,7 @@ export default function ProfilePage() {
         dateJoined: getJoinDate(user.createdAt),
         accountType: (user.unsafeMetadata?.accountType as string) || 
                     (user.publicMetadata?.accountType as string) || 
-                    'renter',
+                    'not_selected',
         subscriptionStatus: (user.unsafeMetadata?.subscriptionStatus as string) || 
                            (user.publicMetadata?.subscriptionStatus as string) || 
                            'free',
@@ -155,26 +156,12 @@ export default function ProfilePage() {
 
   // Show loading state
   if (!isLoaded) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading profile...</p>
-        </div>
-      </div>
-    )
+    return <LoadingSpinner message="Loading profile..." variant="profile" />
   }
 
   // Show loading while redirecting
   if (!user) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Redirecting...</p>
-        </div>
-      </div>
-    )
+    return <LoadingSpinner message="Redirecting..." variant="profile" />
   }
 
   const handleSave = async () => {

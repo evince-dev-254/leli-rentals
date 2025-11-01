@@ -41,6 +41,10 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider
+      afterSignInUrl="/dashboard"
+      afterSignUpUrl="/get-started"
+      signInUrl="/sign-in"
+      signUpUrl="/sign-up"
       appearance={{
         baseTheme: undefined,
         variables: {

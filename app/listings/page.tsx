@@ -40,6 +40,7 @@ import { useNotifications } from "@/lib/notification-context"
 import GoogleMapsAutocomplete from '@/components/google-maps-autocomplete'
 import { supabase } from "@/lib/supabase"
 import { NotificationType } from "@/lib/types/notification"
+import { AccountTypeRequiredDropdown } from "@/components/account-type-required-dropdown"
 
 // Mock listings are now imported from lib/mock-listings-data.ts
 
@@ -76,6 +77,12 @@ export default function ListingsPage() {
   const [availabilityFilter, setAvailabilityFilter] = useState("any")
   const [ratingFilter, setRatingFilter] = useState("any")
   const [locationFilter, setLocationFilter] = useState("")
+
+  // Check if user has account type
+  const hasAccountType = user && (
+    (user.publicMetadata?.accountType as string) || 
+    (user.unsafeMetadata?.accountType as string)
+  )
 
   // Fetch listings from Supabase
   const fetchListings = async () => {
@@ -234,6 +241,26 @@ export default function ListingsPage() {
 
     setListings(filteredListings)
   }, [selectedCategory, searchQuery, sortBy, priceRange, availabilityFilter, ratingFilter, locationFilter])
+
+  // Show account type reminder if not set - BLOCK ACCESS
+  if (isLoaded && user && !hasAccountType) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        <Header />
+        <AccountTypeRequiredDropdown blocking={true} />
+        <div className="container mx-auto px-4 py-8 pt-24">
+          <div className="max-w-2xl mx-auto text-center space-y-4">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+              Account Type Required
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              Please select an account type above to access listings and other features.
+            </p>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   const getCategoryIcon = (category: string) => {
     switch (category) {

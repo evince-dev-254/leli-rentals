@@ -24,14 +24,22 @@ function HomePageContent() {
   const { user, isLoaded } = useUser()
   const router = useRouter()
   
-  // Create welcome notification for new sign-ins
+  // Check if user needs to select account type and redirect
   useEffect(() => {
     if (user && isLoaded) {
+      const accountType = (user.publicMetadata?.accountType as string) || 
+                         (user.unsafeMetadata?.accountType as string)
+      
+      // If account type is not set or is 'not_selected', redirect to get-started
+      if (!accountType || accountType === 'not_selected') {
+        router.push('/get-started')
+        return
+      }
+      
       // Check if this is a new sign-in (hasn't seen welcome notification)
       const hasSeenWelcome = localStorage.getItem(`welcome_${user.id}`)
       
       if (!hasSeenWelcome) {
-        const accountType = (user.publicMetadata?.accountType as string) || 'renter'
         const userName = user.fullName || user.firstName || 'User'
         
         // Create welcome notification
@@ -41,7 +49,7 @@ function HomePageContent() {
         localStorage.setItem(`welcome_${user.id}`, 'true')
       }
     }
-  }, [user, isLoaded])
+  }, [user, isLoaded, router])
   
   // No automatic redirects - let users choose their path
   // They can click "Get Started" to begin onboarding

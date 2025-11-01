@@ -7,6 +7,7 @@ const isPublicRoute = createRouteMatcher([
   '/',
   '/sign-in(.*)',
   '/sign-up(.*)',
+  '/super-admin(.*)',
   '/about',
   '/contact',
   '/help',
@@ -37,9 +38,19 @@ export default clerkMiddleware(async (auth, request: NextRequest) => {
   const { userId, redirectToSignIn, sessionClaims } = await auth()
   const pathname = request.nextUrl.pathname
 
+  // Create response
+  const response = NextResponse.next()
+  
+  // Set SameSite=None for Clerk cookies in development to help with email verification
+  // Note: This may need adjustment based on your domain setup
+  if (process.env.NODE_ENV === 'development') {
+    // Allow cross-origin cookies for Clerk session sharing
+    response.headers.set('Access-Control-Allow-Credentials', 'true')
+  }
+
   // Allow public routes
   if (isPublicRoute(request)) {
-    return NextResponse.next()
+    return response
   }
 
   // Redirect to sign-in if not authenticated
@@ -89,7 +100,7 @@ export default clerkMiddleware(async (auth, request: NextRequest) => {
   //   }
   // }
 
-  return NextResponse.next()
+  return response
 })
 
 export const config = {

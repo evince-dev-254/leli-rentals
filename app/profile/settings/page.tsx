@@ -42,6 +42,7 @@ import { userSettingsService, UserSettings } from "@/lib/user-settings-service"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { getUserAccountType } from "@/lib/account-type-utils"
+import { AccountTypeRequiredDropdown } from "@/components/account-type-required-dropdown"
 
 export default function AccountSettingsPage() {
   const { user, isLoaded } = useUser()
@@ -84,13 +85,19 @@ export default function AccountSettingsPage() {
                           (user?.publicMetadata?.accountType as string) || 
                           'renter'
 
+  // Check if user has account type
+  const hasAccountType = user && (
+    (user.publicMetadata?.accountType as string) || 
+    (user.unsafeMetadata?.accountType as string)
+  )
+
   // Get email verification status from Clerk
   const isEmailVerified = user?.emailAddresses?.[0]?.verification?.status === 'verified'
 
   // Handle redirect if not logged in
   useEffect(() => {
     if (!user && isLoaded) {
-      router.push('/login')
+      router.push('/sign-in')
     }
   }, [user, isLoaded, router])
 
@@ -136,12 +143,12 @@ export default function AccountSettingsPage() {
 
     setIsSendingVerification(true)
     try {
-      // Use Clerk's prepareEmailAddressVerification
-      await user.emailAddresses[0]?.prepareVerification({ strategy: 'email_link' })
+      // Use Clerk's prepareEmailAddressVerification with code strategy
+      await user.emailAddresses[0]?.prepareVerification({ strategy: 'email_code' })
       
       toast({
         title: "Verification Email Sent",
-        description: "Please check your email and click the verification link.",
+        description: "Please check your email for the verification code.",
       })
     } catch (error: any) {
       console.error('Error sending verification email:', error)
@@ -515,6 +522,26 @@ export default function AccountSettingsPage() {
     }
   }
 
+  // Show account type reminder if not set - BLOCK ACCESS
+  if (isLoaded && user && !hasAccountType) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+        <Header />
+        <AccountTypeRequiredDropdown blocking={true} />
+        <div className="container mx-auto px-4 py-8 pt-24">
+          <div className="max-w-2xl mx-auto text-center space-y-4">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+              Account Type Required
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              Please select an account type above to access settings and other features.
+            </p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   if (!isLoaded || !user) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -529,8 +556,7 @@ export default function AccountSettingsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <Header />
-
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
+      <div className="container mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-6 sm:py-8 max-w-7xl">
         {/* Back Button */}
             <Button 
           variant="ghost"
@@ -543,10 +569,12 @@ export default function AccountSettingsPage() {
             </Button>
 
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <SettingsIcon className="h-8 w-8 text-blue-600" />
-            <h1 className="text-3xl font-bold text-gray-900">Account Settings</h1>
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
+            <div className="flex items-center gap-3">
+              <SettingsIcon className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Account Settings</h1>
+            </div>
             {userAccountType === 'owner' && (
               <Badge className="bg-gradient-to-r from-orange-500 to-purple-500 text-white">
                 <Crown className="h-3 w-3 mr-1" />
@@ -554,14 +582,14 @@ export default function AccountSettingsPage() {
               </Badge>
             )}
           </div>
-          <p className="text-muted-foreground">
+          <p className="text-sm sm:text-base text-muted-foreground">
             Manage your account preferences and security settings
           </p>
         </div>
 
         {/* Tabbed Interface */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
+          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5 overflow-x-auto">
             <TabsTrigger value="profile">Profile</TabsTrigger>
             <TabsTrigger value="security">Security</TabsTrigger>
             <TabsTrigger value="notifications">Notifications</TabsTrigger>
@@ -573,6 +601,51 @@ export default function AccountSettingsPage() {
 
           {/* Profile Tab */}
           <TabsContent value="profile" className="space-y-6">
+            {/* Account Type Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Crown className="h-5 w-5 text-orange-600" />
+                  Account Type
+                </CardTitle>
+                <CardDescription>Switch between renter and owner accounts</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 p-3 sm:p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 rounded-lg border">
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <div className={`p-1.5 sm:p-2 rounded-lg ${
+                      userAccountType === 'owner' 
+                        ? 'bg-orange-100 dark:bg-orange-900/30' 
+                        : 'bg-blue-100 dark:bg-blue-900/30'
+                    }`}>
+                      {userAccountType === 'owner' ? (
+                        <Crown className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600 dark:text-orange-400" />
+                      ) : (
+                        <User className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 dark:text-blue-400" />
+                      )}
+                    </div>
+                    <div>
+                      <div className="text-sm sm:text-base font-semibold">
+                        Current Account: {userAccountType === 'owner' ? 'Owner' : 'Renter'}
+                      </div>
+                      <div className="text-xs sm:text-sm text-muted-foreground">
+                        {userAccountType === 'owner' 
+                          ? 'You can list items and manage bookings' 
+                          : 'You can browse and book rentals'}
+                      </div>
+                    </div>
+                  </div>
+                  <Button
+                    onClick={() => router.push('/profile/switch-account')}
+                    variant="outline"
+                    className="w-full sm:w-auto text-sm sm:text-base"
+                  >
+                    Switch Account Type
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -1007,10 +1080,10 @@ export default function AccountSettingsPage() {
                     <AlertDialogHeader>
                       <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                       <AlertDialogDescription className="space-y-3">
-                        <p className="text-red-600 dark:text-red-400 font-semibold">
+                        <div className="text-red-600 dark:text-red-400 font-semibold">
                           This will permanently delete your account and remove all your data from our servers.
-                        </p>
-                        <p>This includes:</p>
+                        </div>
+                        <div>This includes:</div>
                         <ul className="list-disc list-inside text-sm space-y-1">
                           <li>Your profile and personal information</li>
                           <li>All listings you've created</li>
@@ -1019,9 +1092,9 @@ export default function AccountSettingsPage() {
                           <li>Your reviews and ratings</li>
                           <li>Payment and subscription information</li>
                         </ul>
-                        <p className="font-semibold pt-2">
+                        <div className="font-semibold pt-2">
                           This action cannot be undone. Are you sure you want to continue?
-                        </p>
+                        </div>
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>

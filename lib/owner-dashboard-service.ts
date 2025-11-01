@@ -88,7 +88,7 @@ export class OwnerDashboardService {
       const { data: reviewsData, error: reviewsError } = await supabase
         .from('reviews')
         .select('rating')
-        .eq('reviewee_id', ownerId)
+        .eq('owner_id', ownerId)
 
       if (reviewsError) {
         console.error('Error fetching reviews:', reviewsError)
@@ -307,7 +307,7 @@ export class OwnerDashboardService {
       const { data: reviews, error: reviewsError } = await supabase
         .from('reviews')
         .select('id, created_at, rating, comment, listing_id')
-        .eq('reviewee_id', ownerId)
+        .eq('owner_id', ownerId)
         .order('created_at', { ascending: false })
         .limit(limit)
 
@@ -364,7 +364,7 @@ export class OwnerDashboardService {
       const { data: reviews } = await supabase
         .from('reviews')
         .select('rating')
-        .eq('reviewee_id', ownerId)
+        .eq('owner_id', ownerId)
 
       const totalReviews = reviews?.length || 0
       const averageRating = totalReviews > 0

@@ -92,7 +92,7 @@ export default function SignUpPage() {
                 formFieldInputShowPasswordButton: "text-amber-600 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-200",
                 identityPreviewEditButton: "text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300",
                 formResendCodeLink: "text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300",
-                otpCodeFieldInput: "bg-gray-50 dark:bg-gray-950/70 border-amber-200 dark:border-amber-800/40 text-amber-900 dark:text-amber-100",
+                otpCodeFieldInput: "bg-gray-50 dark:bg-gray-950/70 border-amber-200 dark:border-amber-800/40 text-amber-900 dark:text-amber-100 focus:border-amber-500 dark:focus:border-amber-600",
                 formFieldWarningText: "text-amber-600 dark:text-amber-400",
                 formFieldSuccessText: "text-green-600 dark:text-green-400",
                 formFieldErrorText: "text-red-600 dark:text-red-400",

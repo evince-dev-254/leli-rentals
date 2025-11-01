@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useUser } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 import { Header } from '@/components/header'
+import { LoadingSpinner } from '@/components/loading-spinner'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -27,7 +28,25 @@ import {
   Eye,
   Mail,
   Phone,
-  Calendar
+  Calendar,
+  Package,
+  Activity,
+  Clock,
+  Ban,
+  RefreshCw,
+  Download,
+  Filter,
+  MoreVertical,
+  Edit,
+  Trash2,
+  Star,
+  MessageSquare,
+  CreditCard,
+  TrendingDown,
+  ArrowUpRight,
+  ArrowDownRight,
+  PlayCircle,
+  PauseCircle
 } from 'lucide-react'
 
 interface UserStats {
@@ -70,12 +89,29 @@ export default function AdminPanelPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [filterType, setFilterType] = useState<'all' | 'owner' | 'renter' | 'verified' | 'pending'>('all')
 
+  // Listings state
+  const [listings, setListings] = useState<any[]>([])
+  const [listingsLoading, setListingsLoading] = useState(false)
+  const [listingsFilter, setListingsFilter] = useState<'all' | 'published' | 'draft' | 'archived'>('all')
+  
+  // Bookings state
+  const [bookings, setBookings] = useState<any[]>([])
+  const [bookingsLoading, setBookingsLoading] = useState(false)
+  const [bookingsFilter, setBookingsFilter] = useState<'all' | 'pending' | 'confirmed' | 'completed' | 'cancelled'>('all')
+  
+  // Platform stats
+  const [platformStats, setPlatformStats] = useState<any>(null)
+  const [statsLoading, setStatsLoading] = useState(false)
+
   // Check admin access
   useEffect(() => {
     if (isLoaded && user) {
       // TEMPORARILY DISABLED FOR DEVELOPMENT - Allow all authenticated users
       setIsAdmin(true)
       fetchAllUsers()
+      fetchListings()
+      fetchBookings()
+      fetchPlatformStats()
       
       // const adminCheck = user.publicMetadata?.role === 'admin' || (user.unsafeMetadata as any)?.role === 'admin'
       // setIsAdmin(adminCheck)
@@ -113,6 +149,64 @@ export default function AdminPanelPage() {
       })
     } finally {
       setIsLoadingStats(false)
+    }
+  }
+
+  const fetchListings = async () => {
+    setListingsLoading(true)
+    try {
+      const response = await fetch('/api/admin/listings')
+      const data = await response.json()
+      
+      if (response.ok && data.listings) {
+        setListings(data.listings)
+      }
+    } catch (error) {
+      console.error('Error fetching listings:', error)
+      toast({
+        title: '❌ Error',
+        description: 'Failed to load listings',
+        variant: 'destructive'
+      })
+    } finally {
+      setListingsLoading(false)
+    }
+  }
+
+  const fetchBookings = async () => {
+    setBookingsLoading(true)
+    try {
+      const response = await fetch('/api/admin/bookings')
+      const data = await response.json()
+      
+      if (response.ok && data.bookings) {
+        setBookings(data.bookings)
+      }
+    } catch (error) {
+      console.error('Error fetching bookings:', error)
+      toast({
+        title: '❌ Error',
+        description: 'Failed to load bookings',
+        variant: 'destructive'
+      })
+    } finally {
+      setBookingsLoading(false)
+    }
+  }
+
+  const fetchPlatformStats = async () => {
+    setStatsLoading(true)
+    try {
+      const response = await fetch('/api/admin/stats')
+      const data = await response.json()
+      
+      if (response.ok) {
+        setPlatformStats(data)
+      }
+    } catch (error) {
+      console.error('Error fetching platform stats:', error)
+    } finally {
+      setStatsLoading(false)
     }
   }
 
@@ -166,14 +260,7 @@ export default function AdminPanelPage() {
   }
 
   if (!isLoaded || isLoadingStats) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading Admin Panel...</p>
-        </div>
-      </div>
-    )
+    return <LoadingSpinner message="Loading Admin Panel..." variant="admin" />
   }
 
   if (!isAdmin) {
@@ -196,9 +283,13 @@ export default function AdminPanelPage() {
                 Manage users, verifications, and platform settings
               </p>
             </div>
-            <Badge className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 text-sm">
+            <Button
+              onClick={() => router.push('/super-admin')}
+              className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 text-sm hover:from-blue-700 hover:to-purple-700"
+            >
+              <Shield className="h-4 w-4 mr-2" />
               Super Admin
-            </Badge>
+            </Button>
           </div>
 
           {/* Stats Cards */}
@@ -283,14 +374,137 @@ export default function AdminPanelPage() {
           </div>
 
           {/* Main Content Tabs */}
-          <Tabs defaultValue="users" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-5">
-              <TabsTrigger value="users">All Users</TabsTrigger>
-              <TabsTrigger value="verify">Verify Users</TabsTrigger>
-              <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <Tabs defaultValue="overview" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-2">
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="users">Users</TabsTrigger>
+              <TabsTrigger value="verify">Verify</TabsTrigger>
               <TabsTrigger value="listings">Listings</TabsTrigger>
+              <TabsTrigger value="bookings">Bookings</TabsTrigger>
+              <TabsTrigger value="analytics">Analytics</TabsTrigger>
+              <TabsTrigger value="revenue">Revenue</TabsTrigger>
               <TabsTrigger value="settings">Settings</TabsTrigger>
             </TabsList>
+
+            {/* Overview Tab */}
+            <TabsContent value="overview" className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <Card className="border-l-4 border-l-blue-500">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Total Listings</CardTitle>
+                    <Package className="h-4 w-4 text-blue-600" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{platformStats?.listings?.total || 0}</div>
+                    <p className="text-xs text-muted-foreground">
+                      {platformStats?.listings?.published || 0} published
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-l-4 border-l-purple-500">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Total Bookings</CardTitle>
+                    <Calendar className="h-4 w-4 text-purple-600" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{platformStats?.bookings?.total || 0}</div>
+                    <p className="text-xs text-muted-foreground">
+                      {platformStats?.bookings?.confirmed || 0} confirmed
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-l-4 border-l-green-500">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+                    <DollarSign className="h-4 w-4 text-green-600" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">
+                      ${(platformStats?.revenue?.total || 0).toLocaleString()}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      ${(platformStats?.revenue?.monthly || 0).toLocaleString()} this month
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-l-4 border-l-orange-500">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Active Users</CardTitle>
+                    <Activity className="h-4 w-4 text-orange-600" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{userStats.totalUsers}</div>
+                    <p className="text-xs text-muted-foreground">
+                      {userStats.owners} owners, {userStats.renters} renters
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Quick Actions */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Quick Actions</CardTitle>
+                  <CardDescription>Common administrative tasks</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <Button variant="outline" className="h-20 flex-col" onClick={() => router.push('/admin/verify-users')}>
+                      <Shield className="h-5 w-5 mb-2" />
+                      Review Verifications
+                    </Button>
+                    <Button variant="outline" className="h-20 flex-col" onClick={() => fetchListings()}>
+                      <FileText className="h-5 w-5 mb-2" />
+                      Manage Listings
+                    </Button>
+                    <Button variant="outline" className="h-20 flex-col" onClick={() => fetchBookings()}>
+                      <Calendar className="h-5 w-5 mb-2" />
+                      View Bookings
+                    </Button>
+                    <Button variant="outline" className="h-20 flex-col" onClick={() => fetchPlatformStats()}>
+                      <BarChart3 className="h-5 w-5 mb-2" />
+                      Refresh Stats
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Recent Activity */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Recent Activity</CardTitle>
+                  <CardDescription>Latest platform activities</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-4 p-3 border rounded-lg">
+                      <Users className="h-5 w-5 text-blue-600" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">New user registered</p>
+                        <p className="text-xs text-muted-foreground">2 minutes ago</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4 p-3 border rounded-lg">
+                      <Package className="h-5 w-5 text-green-600" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">New listing published</p>
+                        <p className="text-xs text-muted-foreground">15 minutes ago</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4 p-3 border rounded-lg">
+                      <Calendar className="h-5 w-5 text-purple-600" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">New booking confirmed</p>
+                        <p className="text-xs text-muted-foreground">1 hour ago</p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
 
             {/* All Users Tab */}
             <TabsContent value="users" className="space-y-6">
@@ -393,19 +607,33 @@ export default function AdminPanelPage() {
                               {new Date(user.createdAt).toLocaleDateString()}
                             </td>
                             <td className="p-3">
+                              <div className="flex gap-2">
                               <Button 
                                 size="sm" 
                                 variant="outline"
                                 onClick={() => {
-                                  // Navigate to user detail or verification page
                                   if (user.unsafeMetadata?.verificationStatus === 'pending') {
-                                    router.push(`/admin-panel?tab=verify&email=${user.emailAddresses?.[0]?.emailAddress}`)
+                                      router.push(`/admin/verify-users?email=${user.emailAddresses?.[0]?.emailAddress}`)
                                   }
                                 }}
                               >
                                 <Eye className="h-3 w-3 mr-1" />
                                 View
                               </Button>
+                                <Button 
+                                  size="sm" 
+                                  variant="outline"
+                                  onClick={() => {
+                                    // TODO: Implement user suspension
+                                    toast({
+                                      title: 'User Management',
+                                      description: 'Suspension feature coming soon',
+                                    })
+                                  }}
+                                >
+                                  <Ban className="h-3 w-3" />
+                                </Button>
+                              </div>
                             </td>
                           </tr>
                         ))}
@@ -445,15 +673,187 @@ export default function AdminPanelPage() {
 
             {/* Analytics Tab */}
             <TabsContent value="analytics" className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-sm">User Growth</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-bold">{platformStats?.users?.total || 0}</div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {platformStats?.users?.owners || 0} owners, {platformStats?.users?.renters || 0} renters
+                    </p>
+                    <div className="flex items-center gap-2 mt-2">
+                      <TrendingUp className="h-4 w-4 text-green-600" />
+                      <span className="text-xs text-green-600">+{platformStats?.users?.pendingVerification || 0} pending verification</span>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-sm">Listings Overview</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-sm">Published:</span>
+                        <span className="font-semibold">{platformStats?.listings?.published || 0}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm">Draft:</span>
+                        <span className="font-semibold">{platformStats?.listings?.draft || 0}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm">Recent (30d):</span>
+                        <span className="font-semibold">{platformStats?.listings?.recent || 0}</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-sm">Bookings Overview</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-sm">Total:</span>
+                        <span className="font-semibold">{platformStats?.bookings?.total || 0}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm">Confirmed:</span>
+                        <span className="font-semibold">{platformStats?.bookings?.confirmed || 0}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm">Pending:</span>
+                        <span className="font-semibold">{platformStats?.bookings?.pending || 0}</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Category Breakdown */}
+              {platformStats?.listings?.categories && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Listings by Category</CardTitle>
+                    <CardDescription>Distribution of listings across categories</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      {Object.entries(platformStats.listings.categories).map(([category, count]: [string, any]) => (
+                        <div key={category} className="flex items-center justify-between p-2 border rounded">
+                          <span className="capitalize font-medium">{category}</span>
+                          <Badge>{count}</Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+
+            {/* Revenue Tab */}
+            <TabsContent value="revenue" className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <Card className="border-l-4 border-l-green-500">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+                    <DollarSign className="h-4 w-4 text-green-600" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-bold">
+                      ${(platformStats?.revenue?.total || 0).toLocaleString()}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      All time earnings
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-l-4 border-l-blue-500">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Monthly Revenue</CardTitle>
+                    <TrendingUp className="h-4 w-4 text-blue-600" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-bold">
+                      ${(platformStats?.revenue?.monthly || 0).toLocaleString()}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      This month
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-l-4 border-l-purple-500">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Weekly Revenue</CardTitle>
+                    <Activity className="h-4 w-4 text-purple-600" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-bold">
+                      ${(platformStats?.revenue?.weekly || 0).toLocaleString()}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Last 7 days
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-l-4 border-l-orange-500">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Avg Booking</CardTitle>
+                    <BarChart3 className="h-4 w-4 text-orange-600" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-bold">
+                      ${(platformStats?.revenue?.averageBooking || 0).toFixed(2)}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Per booking
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+
               <Card>
                 <CardHeader>
-                  <CardTitle>Platform Analytics</CardTitle>
-                  <CardDescription>View platform statistics and insights</CardDescription>
+                  <CardTitle>Revenue Breakdown</CardTitle>
+                  <CardDescription>Detailed revenue analytics</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="text-center text-muted-foreground">
-                    <BarChart3 className="h-16 w-16 mx-auto mb-4 text-gray-400" />
-                    <p>Detailed analytics dashboard coming soon</p>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-4 border rounded-lg">
+                      <div>
+                        <p className="font-medium">Total Revenue</p>
+                        <p className="text-sm text-muted-foreground">All completed bookings</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-2xl font-bold">${(platformStats?.revenue?.total || 0).toLocaleString()}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between p-4 border rounded-lg">
+                      <div>
+                        <p className="font-medium">This Month</p>
+                        <p className="text-sm text-muted-foreground">Current month earnings</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-2xl font-bold">${(platformStats?.revenue?.monthly || 0).toLocaleString()}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between p-4 border rounded-lg">
+                      <div>
+                        <p className="font-medium">This Week</p>
+                        <p className="text-sm text-muted-foreground">Last 7 days earnings</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-2xl font-bold">${(platformStats?.revenue?.weekly || 0).toLocaleString()}</p>
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -463,14 +863,249 @@ export default function AdminPanelPage() {
             <TabsContent value="listings" className="space-y-6">
               <Card>
                 <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
                   <CardTitle>Listings Management</CardTitle>
-                  <CardDescription>View and moderate platform listings</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="text-center text-muted-foreground">
-                    <FileText className="h-16 w-16 mx-auto mb-4 text-gray-400" />
-                    <p>Listings moderation tools coming soon</p>
+                      <CardDescription>View and moderate platform listings ({listings.length} total)</CardDescription>
+                    </div>
+                    <Button onClick={fetchListings} variant="outline" size="sm">
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Refresh
+                    </Button>
                   </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Filters */}
+                  <div className="flex flex-wrap gap-2">
+                    <Button 
+                      variant={listingsFilter === 'all' ? 'default' : 'outline'} 
+                      size="sm"
+                      onClick={() => setListingsFilter('all')}
+                    >
+                      All ({listings.length})
+                    </Button>
+                    <Button 
+                      variant={listingsFilter === 'published' ? 'default' : 'outline'} 
+                      size="sm"
+                      onClick={() => setListingsFilter('published')}
+                    >
+                      Published ({listings.filter(l => l.status === 'published').length})
+                    </Button>
+                    <Button 
+                      variant={listingsFilter === 'draft' ? 'default' : 'outline'} 
+                      size="sm"
+                      onClick={() => setListingsFilter('draft')}
+                    >
+                      Draft ({listings.filter(l => l.status === 'draft').length})
+                    </Button>
+                    <Button 
+                      variant={listingsFilter === 'archived' ? 'default' : 'outline'} 
+                      size="sm"
+                      onClick={() => setListingsFilter('archived')}
+                    >
+                      Archived ({listings.filter(l => l.status === 'archived').length})
+                    </Button>
+                  </div>
+
+                  {/* Listings Table */}
+                  {listingsLoading ? (
+                    <div className="text-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                      <p className="text-muted-foreground">Loading listings...</p>
+                    </div>
+                  ) : (
+                    <div className="rounded-md border overflow-x-auto">
+                      <table className="w-full">
+                        <thead className="bg-muted">
+                          <tr>
+                            <th className="text-left p-3 font-semibold">Title</th>
+                            <th className="text-left p-3 font-semibold">Owner</th>
+                            <th className="text-left p-3 font-semibold">Category</th>
+                            <th className="text-left p-3 font-semibold">Price</th>
+                            <th className="text-left p-3 font-semibold">Status</th>
+                            <th className="text-left p-3 font-semibold">Created</th>
+                            <th className="text-left p-3 font-semibold">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {listings
+                            .filter(l => listingsFilter === 'all' || l.status === listingsFilter)
+                            .slice(0, 50)
+                            .map((listing) => (
+                              <tr key={listing.id} className="border-t hover:bg-muted/50">
+                                <td className="p-3 font-medium">{listing.title}</td>
+                                <td className="p-3 text-sm text-muted-foreground">
+                                  {listing.owner_name || 'Unknown'}
+                                </td>
+                                <td className="p-3">
+                                  <Badge variant="outline" className="capitalize">
+                                    {listing.category || 'N/A'}
+                                  </Badge>
+                                </td>
+                                <td className="p-3">
+                                  {listing.price ? `KES ${listing.price.toLocaleString()}` : 'N/A'}
+                                </td>
+                                <td className="p-3">
+                                  <Badge 
+                                    variant={
+                                      listing.status === 'published' ? 'default' :
+                                      listing.status === 'draft' ? 'secondary' :
+                                      'outline'
+                                    }
+                                  >
+                                    {listing.status || 'N/A'}
+                                  </Badge>
+                                </td>
+                                <td className="p-3 text-sm text-muted-foreground">
+                                  {listing.created_at ? new Date(listing.created_at).toLocaleDateString() : 'N/A'}
+                                </td>
+                                <td className="p-3">
+                                  <div className="flex gap-2">
+                                    <Button size="sm" variant="outline">
+                                      <Eye className="h-3 w-3" />
+                                    </Button>
+                                    <Button size="sm" variant="outline">
+                                      <MoreVertical className="h-3 w-3" />
+                                    </Button>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                        </tbody>
+                      </table>
+                      {listings.length === 0 && (
+                        <div className="text-center py-8 text-muted-foreground">
+                          No listings found
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Bookings Tab */}
+            <TabsContent value="bookings" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle>Bookings Management</CardTitle>
+                      <CardDescription>View and manage all platform bookings ({bookings.length} total)</CardDescription>
+                    </div>
+                    <Button onClick={fetchBookings} variant="outline" size="sm">
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Refresh
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Filters */}
+                  <div className="flex flex-wrap gap-2">
+                    <Button 
+                      variant={bookingsFilter === 'all' ? 'default' : 'outline'} 
+                      size="sm"
+                      onClick={() => setBookingsFilter('all')}
+                    >
+                      All
+                    </Button>
+                    <Button 
+                      variant={bookingsFilter === 'pending' ? 'default' : 'outline'} 
+                      size="sm"
+                      onClick={() => setBookingsFilter('pending')}
+                    >
+                      Pending ({bookings.filter(b => b.status === 'pending').length})
+                    </Button>
+                    <Button 
+                      variant={bookingsFilter === 'confirmed' ? 'default' : 'outline'} 
+                      size="sm"
+                      onClick={() => setBookingsFilter('confirmed')}
+                    >
+                      Confirmed ({bookings.filter(b => b.status === 'confirmed').length})
+                    </Button>
+                    <Button 
+                      variant={bookingsFilter === 'completed' ? 'default' : 'outline'} 
+                      size="sm"
+                      onClick={() => setBookingsFilter('completed')}
+                    >
+                      Completed ({bookings.filter(b => b.status === 'completed').length})
+                    </Button>
+                    <Button 
+                      variant={bookingsFilter === 'cancelled' ? 'default' : 'outline'} 
+                      size="sm"
+                      onClick={() => setBookingsFilter('cancelled')}
+                    >
+                      Cancelled ({bookings.filter(b => b.status === 'cancelled').length})
+                    </Button>
+                  </div>
+
+                  {/* Bookings Table */}
+                  {bookingsLoading ? (
+                    <div className="text-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                      <p className="text-muted-foreground">Loading bookings...</p>
+                    </div>
+                  ) : (
+                    <div className="rounded-md border overflow-x-auto">
+                      <table className="w-full">
+                        <thead className="bg-muted">
+                          <tr>
+                            <th className="text-left p-3 font-semibold">Listing</th>
+                            <th className="text-left p-3 font-semibold">Customer</th>
+                            <th className="text-left p-3 font-semibold">Dates</th>
+                            <th className="text-left p-3 font-semibold">Amount</th>
+                            <th className="text-left p-3 font-semibold">Status</th>
+                            <th className="text-left p-3 font-semibold">Created</th>
+                            <th className="text-left p-3 font-semibold">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {bookings
+                            .filter(b => bookingsFilter === 'all' || b.status === bookingsFilter)
+                            .slice(0, 50)
+                            .map((booking) => (
+                              <tr key={booking.id} className="border-t hover:bg-muted/50">
+                                <td className="p-3 font-medium">{booking.listing_title || 'Unknown'}</td>
+                                <td className="p-3 text-sm text-muted-foreground">
+                                  {booking.customer_name || 'Unknown'}
+                                </td>
+                                <td className="p-3 text-sm">
+                                  {booking.start_date ? new Date(booking.start_date).toLocaleDateString() : 'N/A'} - {booking.end_date ? new Date(booking.end_date).toLocaleDateString() : 'N/A'}
+                                </td>
+                                <td className="p-3 font-medium">
+                                  {booking.total_price ? `KES ${booking.total_price.toLocaleString()}` : 'N/A'}
+                                </td>
+                                <td className="p-3">
+                                  <Badge 
+                                    variant={
+                                      booking.status === 'confirmed' ? 'default' :
+                                      booking.status === 'completed' ? 'default' :
+                                      booking.status === 'cancelled' ? 'destructive' :
+                                      'secondary'
+                                    }
+                                  >
+                                    {booking.status || 'N/A'}
+                                  </Badge>
+                                </td>
+                                <td className="p-3 text-sm text-muted-foreground">
+                                  {booking.created_at ? new Date(booking.created_at).toLocaleDateString() : 'N/A'}
+                                </td>
+                                <td className="p-3">
+                                  <Button size="sm" variant="outline">
+                                    <Eye className="h-3 w-3" />
+                                  </Button>
+                                </td>
+                              </tr>
+                            ))}
+                        </tbody>
+                      </table>
+                      {bookings.length === 0 && (
+                        <div className="text-center py-8 text-muted-foreground">
+                          No bookings found
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -483,9 +1118,47 @@ export default function AdminPanelPage() {
                   <CardDescription>Configure platform settings and preferences</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  <div className="text-center text-muted-foreground">
-                    <Settings className="h-16 w-16 mx-auto mb-4 text-gray-400" />
-                    <p>Platform settings coming soon</p>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-4 border rounded-lg">
+                      <div>
+                        <p className="font-medium">Maintenance Mode</p>
+                        <p className="text-sm text-muted-foreground">Temporarily disable the platform</p>
+                      </div>
+                      <Button variant="outline" size="sm">
+                        <Settings className="h-4 w-4 mr-2" />
+                        Configure
+                      </Button>
+                    </div>
+                    <div className="flex items-center justify-between p-4 border rounded-lg">
+                      <div>
+                        <p className="font-medium">Email Notifications</p>
+                        <p className="text-sm text-muted-foreground">Manage notification settings</p>
+                      </div>
+                      <Button variant="outline" size="sm">
+                        <Mail className="h-4 w-4 mr-2" />
+                        Configure
+                      </Button>
+                    </div>
+                    <div className="flex items-center justify-between p-4 border rounded-lg">
+                      <div>
+                        <p className="font-medium">Platform Fees</p>
+                        <p className="text-sm text-muted-foreground">Set commission and transaction fees</p>
+                      </div>
+                      <Button variant="outline" size="sm">
+                        <DollarSign className="h-4 w-4 mr-2" />
+                        Configure
+                      </Button>
+                    </div>
+                    <div className="flex items-center justify-between p-4 border rounded-lg">
+                      <div>
+                        <p className="font-medium">Content Moderation</p>
+                        <p className="text-sm text-muted-foreground">Review and approve content</p>
+                      </div>
+                      <Button variant="outline" size="sm">
+                        <Shield className="h-4 w-4 mr-2" />
+                        Configure
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

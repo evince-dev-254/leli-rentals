@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
-import { isAdmin, getAdminUser } from '@/lib/admin-auth'
-import AdminDashboard from '@/components/admin/admin-dashboard'
+import { isAdmin } from '@/lib/admin-auth'
+import ComprehensiveAdminDashboard from '@/components/admin/comprehensive-admin-dashboard'
 
 export default async function AdminPage() {
   // Check if user is admin
@@ -10,8 +10,6 @@ export default async function AdminPage() {
     redirect('/unauthorized')
   }
 
-  const adminUser = await getAdminUser()
-
-  return <AdminDashboard adminUser={adminUser!} />
+  return <ComprehensiveAdminDashboard />
 }
 
