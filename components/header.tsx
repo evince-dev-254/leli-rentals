@@ -186,21 +186,21 @@ export function Header() {
 
           {/* Logo - Smaller on mobile */}
           <Link href="/" className="flex items-center group flex-shrink-0">
-            <img 
-              src="/default-monochrome-black.svg" 
-              alt="Leli Rentals Logo" 
+          <img 
+            src="/default-monochrome-black.svg" 
+            alt="Leli Rentals Logo" 
               className="h-6 w-auto sm:h-8 md:h-10 object-contain dark:hidden hover:opacity-80 transition-opacity duration-200"
-            />
-            <img 
-              src="/default-monochrome-white.svg" 
-              alt="Leli Rentals Logo" 
+          />
+          <img 
+            src="/default-monochrome-white.svg" 
+            alt="Leli Rentals Logo" 
               className="h-6 w-auto sm:h-8 md:h-10 object-contain hidden dark:block hover:opacity-80 transition-opacity duration-200"
-            />
-          </Link>
+          />
+        </Link>
         </div>
 
         {/* Navigation Links - Desktop only */}
-        <nav className="hidden lg:flex items-center gap-6 xl:gap-8 flex-1 justify-center">
+        <nav className="hidden lg:flex items-center gap-4 xl:gap-6 flex-1 justify-center">
           <Link 
             href="/" 
             className="text-sm xl:text-base font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors duration-200"
@@ -213,24 +213,37 @@ export function Header() {
           >
             Categories
           </Link>
-          <Link 
-            href="/get-started" 
-            className="text-sm xl:text-base font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors duration-200"
-          >
-            Get Started
-          </Link>
-          <Link 
-            href="/about" 
-            className="text-sm xl:text-base font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors duration-200"
-          >
-            About
-          </Link>
-          <Link 
-            href="/contact" 
-            className="text-sm xl:text-base font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors duration-200"
-          >
-            Contact
-          </Link>
+          {/* More links in dropdown for cleaner header */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="text-sm xl:text-base font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500">
+                More <ChevronDown className="h-3 w-3 ml-1" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="center" className="w-48">
+              <DropdownMenuItem asChild>
+                <Link href="/get-started" className="cursor-pointer">
+                  Get Started
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/about" className="cursor-pointer">
+                  About
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/contact" className="cursor-pointer">
+                  Contact
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href="/help" className="cursor-pointer">
+                  Help & Support
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </nav>
 
         {/* Search Bar - Desktop only */}

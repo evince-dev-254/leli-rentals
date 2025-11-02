@@ -22,7 +22,9 @@ import {
 } from "lucide-react"
 import { userProfileService, UserProfile } from "@/lib/user-profile-service"
 import { userSettingsService } from "@/lib/user-settings-service"
+import { supabase } from "@/lib/supabase"
 import Link from "next/link"
+import Image from "next/image"
 
 export default function PublicProfilePage() {
   const params = useParams()
@@ -33,6 +35,8 @@ export default function PublicProfilePage() {
   const [loading, setLoading] = useState(true)
   const [profileVisibility, setProfileVisibility] = useState<'public' | 'private'>('public')
   const [canViewProfile, setCanViewProfile] = useState(true)
+  const [ownerListings, setOwnerListings] = useState<any[]>([])
+  const [listingsLoading, setListingsLoading] = useState(true)
 
   useEffect(() => {
     async function loadProfile() {
@@ -64,6 +68,11 @@ export default function PublicProfilePage() {
               // Renters can only view public owner profiles
               setCanViewProfile(visibility === 'public')
             }
+            
+            // Load owner's listings if profile is viewable
+            if (data && (visibility === 'public' || viewerAccountType === 'owner' || currentUser?.id === userId)) {
+              await loadOwnerListings(data.user_id || userId)
+            }
           } else {
             // For non-owner profiles, respect visibility settings
             setCanViewProfile(visibility === 'public' || currentUser?.id === userId)
@@ -73,6 +82,51 @@ export default function PublicProfilePage() {
         }
       }
       setLoading(false)
+    }
+
+    async function loadOwnerListings(ownerUserId: string) {
+      setListingsLoading(true)
+      try {
+        // Try querying by user_id (Clerk ID) first
+        let { data: listings, error } = await supabase
+          .from('listings')
+          .select('id, title, price, location, images, status')
+          .eq('user_id', ownerUserId)
+          .eq('status', 'published')
+          .order('created_at', { ascending: false })
+          .limit(6)
+
+        // If no results and userId is UUID format, try by id
+        if ((!listings || listings.length === 0) && ownerUserId.includes('-')) {
+          const { data: profileData } = await supabase
+            .from('user_profiles')
+            .select('user_id')
+            .eq('id', ownerUserId)
+            .single()
+          
+          if (profileData?.user_id) {
+            const { data: listingsById } = await supabase
+              .from('listings')
+              .select('id, title, price, location, images, status')
+              .eq('user_id', profileData.user_id)
+              .eq('status', 'published')
+              .order('created_at', { ascending: false })
+              .limit(6)
+            
+            listings = listingsById
+          }
+        }
+
+        if (error) {
+          console.error('Error fetching owner listings:', error)
+        } else {
+          setOwnerListings(listings || [])
+        }
+      } catch (error) {
+        console.error('Error loading owner listings:', error)
+      } finally {
+        setListingsLoading(false)
+      }
     }
 
     loadProfile()
@@ -261,12 +315,63 @@ export default function PublicProfilePage() {
         {profile.account_type === 'owner' && (
           <Card>
             <CardHeader>
-              <CardTitle>Listings</CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle>Listings</CardTitle>
+                {ownerListings.length > 0 && (
+                  <Link href={`/profile/${userId}?tab=listings`}>
+                    <Button variant="outline" size="sm">
+                      View All
+                    </Button>
+                  </Link>
+                )}
+              </div>
             </CardHeader>
             <CardContent>
-              <p className="text-center text-gray-600 dark:text-gray-400 py-8">
-                No listings to display
-              </p>
+              {listingsLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
+                </div>
+              ) : ownerListings.length === 0 ? (
+                <p className="text-center text-gray-600 dark:text-gray-400 py-8">
+                  No listings available yet
+                </p>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {ownerListings.map((listing: any) => (
+                    <Link key={listing.id} href={`/listings/details/${listing.id}`}>
+                      <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                        <div className="relative h-48 w-full overflow-hidden rounded-t-lg bg-gray-200 dark:bg-gray-700">
+                          <Image
+                            src={Array.isArray(listing.images) && listing.images.length > 0 
+                              ? listing.images[0] 
+                              : (listing.image || '/placeholder.jpg')}
+                            alt={listing.title || 'Listing'}
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                          />
+                        </div>
+                        <CardContent className="p-4">
+                          <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2 line-clamp-2">
+                            {listing.title}
+                          </h3>
+                          <div className="flex items-center justify-between">
+                            <p className="text-orange-600 font-bold">
+                              KSh {(listing.price || 0).toLocaleString('en-KE')}/day
+                            </p>
+                            {listing.location && (
+                              <p className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1">
+                                <MapPin className="h-3 w-3" />
+                                {listing.location}
+                              </p>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
