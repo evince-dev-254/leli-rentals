@@ -25,7 +25,8 @@ import {
   EyeOff,
   Plus,
   Trash2,
-  Download
+  Download,
+  Settings
 } from 'lucide-react'
 
 interface SecuritySettings {

@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { clerkClient } from '@clerk/nextjs/server'
 import { automaticNotifications } from '@/lib/automatic-notifications'
+import { addCorsHeaders, createOptionsResponse } from '@/lib/admin-cors'
+
+export async function OPTIONS(req: NextRequest) {
+  return createOptionsResponse(req)
+}
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ userId: string }> }) {
   try {
@@ -53,10 +58,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ use
       // Don't fail the rejection if notification fails
     }
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       message: 'Verification rejected',
     })
+    
+    return addCorsHeaders(response, req)
   } catch (error) {
     console.error('Error rejecting verification:', error)
     return NextResponse.json(

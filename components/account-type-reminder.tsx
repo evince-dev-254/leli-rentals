@@ -22,12 +22,22 @@ export function AccountTypeReminder({ variant = 'banner', onDismiss }: AccountTy
   const [isVisible, setIsVisible] = useState(false)
   const [isDismissed, setIsDismissed] = useState(false)
   const [lastReminderTime, setLastReminderTime] = useState<number | null>(null)
+  const [hasVerificationBanner, setHasVerificationBanner] = useState(false)
 
   // Check if user needs account type selection
   useEffect(() => {
-    if (!user) return
+    if (!user || !isLoaded) return
 
-    const accountType = getUserAccountType()
+    // Check Clerk metadata first - most reliable
+    const clerkAccountType = (user.publicMetadata?.accountType as string) || 
+                            (user.unsafeMetadata?.accountType as string)
+    
+    // Also check localStorage as fallback
+    const localStorageAccountType = getUserAccountType()
+    
+    // Check if user skipped account type selection
+    const skipped = user.unsafeMetadata?.skippedAccountType as boolean
+    
     const dismissedKey = `accountTypeReminder_dismissed_${user.id}`
     const lastReminderKey = `accountTypeReminder_last_${user.id || 'unknown'}`
     
@@ -38,8 +48,19 @@ export function AccountTypeReminder({ variant = 'banner', onDismiss }: AccountTy
       return
     }
 
-    // Check if user needs account type selection or skipped it
-    if (!accountType || accountType === 'not_selected') {
+    // Only show if user skipped account type selection (not_selected) or has no account type
+    // Explicitly check that account type is NOT 'renter' or 'owner'
+    const hasValidAccountType = clerkAccountType === 'renter' || clerkAccountType === 'owner' || 
+                                localStorageAccountType === 'renter' || localStorageAccountType === 'owner'
+    
+    const needsSelection = !hasValidAccountType && (
+                          !clerkAccountType || 
+                          clerkAccountType === 'not_selected' || 
+                          skipped ||
+                          (!clerkAccountType && !localStorageAccountType)
+                        )
+    
+    if (needsSelection) {
       const lastReminder = localStorage.getItem(lastReminderKey)
       const now = Date.now()
       const reminderInterval = 24 * 60 * 60 * 1000 // 24 hours
@@ -47,13 +68,25 @@ export function AccountTypeReminder({ variant = 'banner', onDismiss }: AccountTy
       // Show reminder if:
       // 1. Never shown before
       // 2. More than 24 hours since last reminder
-      // 3. User is on a page where they can take action
       if (!lastReminder || (now - parseInt(lastReminder)) > reminderInterval) {
         setIsVisible(true)
         setLastReminderTime(parseInt(lastReminder || '0') || 0)
       }
     }
-  }, [user])
+  }, [user, isLoaded])
+
+  // Check if verification banner exists to position account type reminder below it
+  useEffect(() => {
+    if (variant === 'banner' && typeof window !== 'undefined') {
+      const checkBanner = () => {
+        const banner = document.querySelector('[data-verification-banner]')
+        setHasVerificationBanner(!!banner)
+      }
+      checkBanner()
+      const interval = setInterval(checkBanner, 100)
+      return () => clearInterval(interval)
+    }
+  }, [variant])
 
   const handleSelectAccountType = (accountType: 'renter' | 'owner') => {
     setUserAccountType(accountType)
@@ -120,16 +153,19 @@ export function AccountTypeReminder({ variant = 'banner', onDismiss }: AccountTy
 
   if (variant === 'banner') {
     return (
-      <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg">
+      <div 
+        className="fixed left-0 right-0 z-40 bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
+        style={{ top: hasVerificationBanner ? '48px' : '0' }}
+      >
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
                 <Star className="h-5 w-5 text-yellow-300" />
-                <span className="font-semibold">Complete Your Profile</span>
+                <span className="font-semibold">Choose Account Type</span>
               </div>
               <span className="text-sm opacity-90">
-                Choose your account type to unlock all features
+                Select your account type to access all services
               </span>
             </div>
             

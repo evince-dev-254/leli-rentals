@@ -65,16 +65,29 @@ export default function ContactPage() {
     setIsSubmitting(true)
 
     try {
-      // Simulate form submission with validation
-      await new Promise((resolve, reject) => {
-        setTimeout(() => {
-          if (!formData.name || !formData.email || !formData.message) {
-            reject(new Error("Please fill in all required fields"))
-          } else {
-            resolve(true)
-          }
-        }, 2000)
+      // Validate required fields
+      if (!formData.name || !formData.email || !formData.message) {
+        throw new Error("Please fill in all required fields")
+      }
+
+      // Send contact form email via API
+      const response = await fetch('/api/emails/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          subject: formData.subject || 'General Inquiry',
+          category: formData.category || 'general',
+          message: formData.message,
+        }),
       })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send message')
+      }
 
       setIsSubmitting(false)
       setIsSubmitted(true)
@@ -89,11 +102,11 @@ export default function ContactPage() {
         setIsSubmitted(false)
         setFormData({ name: "", email: "", subject: "", category: "", message: "" })
       }, 3000)
-    } catch (error) {
+    } catch (error: any) {
       setIsSubmitting(false)
       toast({
         title: "Failed to send message",
-        description: "Please check your information and try again.",
+        description: error.message || "Please check your information and try again.",
         variant: "destructive",
       })
     }

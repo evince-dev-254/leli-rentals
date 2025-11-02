@@ -1,8 +1,5 @@
 "use client"
 
-export const runtime = 'edge'
-export const dynamic = 'force-dynamic'
-
 import type React from "react"
 import { useState, useEffect } from "react"
 import { Header } from "@/components/header"
@@ -34,7 +31,7 @@ import {
   Search, Calendar, DollarSign, Star, MapPin, Eye, MessageCircle, 
   Clock, CheckCircle, XCircle, AlertCircle, Truck, CreditCard,
   TrendingUp, Users, Award, Filter, Download, Share2, Phone,
-  Bookmark, Plus, Heart, Tag
+  Bookmark, Plus, Heart, Tag, ArrowLeft
 } from "lucide-react"
 import { useUser } from '@clerk/nextjs'
 import { useRouter } from "next/navigation"
@@ -316,8 +313,14 @@ For support, contact: support@lelirentals.com
     }
   }
 
-  if (!user) {
-    router.push('/login')
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (isLoaded && !user) {
+      router.push('/sign-in')
+    }
+  }, [isLoaded, user, router])
+
+  if (!isLoaded || !user) {
     return null
   }
 
@@ -687,7 +690,7 @@ For support, contact: support@lelirentals.com
                                 </div>
                                 <div className="flex items-center gap-1">
                                   <DollarSign className="h-4 w-4" />
-                                  KSh {savedBooking.listingPrice.toLocaleString()}/day
+                                  KSh {savedBooking.listingPrice.toLocaleString('en-KE')}/day
                                 </div>
                                 <div className="flex items-center gap-1">
                                   <Tag className="h-4 w-4" />

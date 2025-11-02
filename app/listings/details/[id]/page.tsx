@@ -56,6 +56,7 @@ import { useToast } from "@/hooks/use-toast"
 import { bookingsDB } from "@/lib/interactions-database-service"
 import { paystackService } from "@/lib/paystack-service"
 import { notificationService } from "@/lib/notification-service"
+import { supabase } from "@/lib/supabase"
 
 export default function ListingDetailsPage() {
   const params = useParams()
@@ -86,23 +87,132 @@ export default function ListingDetailsPage() {
 
   useEffect(() => {
     setMounted(true)
-    if (!id) return
-    
-    // Find the listing by ID
-    const foundListing = mockListings.find(l => l.id === id)
-    if (foundListing) {
-      setListing(foundListing)
-      // Track view
-      trackView(id, { source: 'listing_details' })
-      
-      // Find related listings (same category, different items)
-      const related = mockListings
-        .filter(l => l.category === foundListing.category && l.id !== foundListing.id)
-        .slice(0, 4)
-      setRelatedListings(related)
+    if (!id) {
+      setLoading(false)
+      return
     }
-    setLoading(false)
-  }, [id, trackView])
+    
+    const fetchListing = async () => {
+      try {
+        // Fetch listing from Supabase
+        const { data, error } = await supabase
+          .from('listings')
+          .select('*')
+          .eq('id', id)
+          .eq('status', 'published')
+          .single()
+
+        if (error || !data) {
+          // Fallback to mock data if not found in database
+          const foundListing = mockListings.find(l => l.id === id)
+          if (foundListing) {
+            setListing(foundListing)
+            // Track view
+            trackView(id, { source: 'listing_details' })
+            
+            // Find related listings (same category, different items)
+            const related = mockListings
+              .filter(l => l.category === foundListing.category && l.id !== foundListing.id)
+              .slice(0, 4)
+            setRelatedListings(related)
+          } else {
+            toast({
+              title: "Listing not found",
+              description: "The listing you're looking for doesn't exist or has been removed.",
+              variant: "destructive",
+            })
+          }
+          setLoading(false)
+          return
+        }
+
+        // Transform Supabase data to Listing format
+        const transformedListing: Listing = {
+          id: data.id,
+          title: data.title,
+          description: data.description || '',
+          fullDescription: data.description || '',
+          price: data.price || 0,
+          location: data.location || '',
+          rating: 4.5, // Default rating
+          reviews: Math.floor(Math.random() * 200) + 10,
+          image: data.images?.[0] || '/placeholder.jpg',
+          images: data.images || ['/placeholder.jpg'],
+          amenities: data.features || [],
+          available: data.availability?.available !== false,
+          category: data.category || 'other',
+          owner: {
+            id: data.user_id,
+            name: data.contact_info?.name || 'Owner',
+            rating: 4.8,
+            verified: true,
+            phone: data.contact_info?.phone || ''
+          },
+          createdAt: new Date(data.created_at),
+          updatedAt: new Date(data.updated_at || data.created_at)
+        }
+
+        setListing(transformedListing)
+        
+        // Track view
+        trackView(id, { source: 'listing_details' })
+        
+        // Find related listings (same category, different items)
+        const { data: relatedData } = await supabase
+          .from('listings')
+          .select('*')
+          .eq('category', data.category)
+          .eq('status', 'published')
+          .neq('id', id)
+          .limit(4)
+
+        if (relatedData && relatedData.length > 0) {
+          const related: Listing[] = relatedData.map((item: any) => ({
+            id: item.id,
+            title: item.title,
+            description: item.description || '',
+            fullDescription: item.description || '',
+            price: item.price || 0,
+            location: item.location || '',
+            rating: 4.5,
+            reviews: Math.floor(Math.random() * 200) + 10,
+            image: item.images?.[0] || '/placeholder.jpg',
+            images: item.images || ['/placeholder.jpg'],
+            amenities: item.features || [],
+            available: item.availability?.available !== false,
+            category: item.category || 'other',
+            owner: {
+              id: item.user_id,
+              name: item.contact_info?.name || 'Owner',
+              rating: 4.8,
+              verified: true,
+              phone: item.contact_info?.phone || ''
+            },
+            createdAt: new Date(item.created_at),
+            updatedAt: new Date(item.updated_at || item.created_at)
+          }))
+          setRelatedListings(related)
+        } else {
+          // Fallback to mock related listings
+          const related = mockListings
+            .filter(l => l.category === transformedListing.category && l.id !== transformedListing.id)
+            .slice(0, 4)
+          setRelatedListings(related)
+        }
+      } catch (error) {
+        console.error('Error fetching listing:', error)
+        toast({
+          title: "Error loading listing",
+          description: "Failed to load listing details. Please try again.",
+          variant: "destructive",
+        })
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchListing()
+  }, [id, trackView, toast])
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
@@ -201,10 +311,41 @@ export default function ListingDetailsPage() {
     setShowBookingModal(true)
   }
 
-  const handleContactOwner = (ownerName: string) => {
+  const handleContactOwner = async (ownerName: string) => {
     try {
+      // Get ownerId from listing - check if listing has user_id or ownerId
+      let ownerId = listing?.ownerId || (listing as any)?.user_id || (listing as any)?.owner_id
+      
+      // If ownerId not in listing, try to fetch from Supabase
+      if (!ownerId && listing?.id) {
+        try {
+          const { supabase } = await import('@/lib/supabase')
+          const { data, error } = await supabase
+            .from('listings')
+            .select('user_id')
+            .eq('id', listing.id)
+            .single()
+          
+          if (!error && data) {
+            ownerId = data.user_id
+          }
+        } catch (error) {
+          console.error('Error fetching ownerId:', error)
+        }
+      }
+
       // Navigate to messages page with owner pre-filled
-      const messagesUrl = `/messages?owner=${encodeURIComponent(ownerName)}&listing=${encodeURIComponent(listing?.title || '')}&booking=${id}`
+      const params = new URLSearchParams({
+        owner: ownerName,
+        listing: listing?.title || '',
+        listingImage: listing?.images?.[0] || ''
+      })
+      
+      if (ownerId) {
+        params.set('ownerId', ownerId)
+      }
+      
+      const messagesUrl = `/messages?${params.toString()}`
       console.log('Navigating to messages:', messagesUrl)
 
       // Use window.location for more reliable navigation
@@ -640,7 +781,7 @@ export default function ListingDetailsPage() {
                 <div className="absolute bottom-4 left-4">
                   <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg px-4 py-2">
                     <span className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                      KSh {listing.price.toLocaleString()}/day
+                      KSh {listing.price.toLocaleString('en-KE')}/day
                     </span>
                   </div>
                 </div>
@@ -833,7 +974,7 @@ export default function ListingDetailsPage() {
                           />
                           <div className="absolute bottom-2 left-2 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded px-2 py-1">
                             <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                              KSh {relatedListing.price.toLocaleString()}/day
+                              KSh {relatedListing.price.toLocaleString('en-KE')}/day
                             </span>
                           </div>
                         </div>
@@ -859,7 +1000,7 @@ export default function ListingDetailsPage() {
                 <div className="space-y-6">
                   <div>
                     <div className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-                      KSh {listing.price.toLocaleString()}/day
+                      KSh {listing.price.toLocaleString('en-KE')}/day
                     </div>
                     <div className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400">
                       <Star className="h-4 w-4 text-yellow-400 fill-current" />

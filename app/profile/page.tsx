@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react"
 import { DatabaseService } from '@/lib/database-service'
 import { Header } from "@/components/header"
+import { LoadingSpinner } from "@/components/loading-spinner"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -110,7 +111,7 @@ export default function ProfilePage() {
         dateJoined: getJoinDate(user.createdAt),
         accountType: (user.unsafeMetadata?.accountType as string) || 
                     (user.publicMetadata?.accountType as string) || 
-                    'renter',
+                    'not_selected',
         subscriptionStatus: (user.unsafeMetadata?.subscriptionStatus as string) || 
                            (user.publicMetadata?.subscriptionStatus as string) || 
                            'free',
@@ -141,40 +142,36 @@ export default function ProfilePage() {
                              (user?.publicMetadata?.subscriptionStatus as string) || 
                              'free'
   
+  const verificationStatusRaw = (user?.unsafeMetadata?.verificationStatus as string) ||
+                                (user?.publicMetadata?.verificationStatus as string) ||
+                                'not_verified'
+  
   const verificationStatus = {
-    isVerified: (user?.unsafeMetadata?.isVerified as boolean) || 
-                (user?.publicMetadata?.isVerified as boolean) || 
-                false,
-    documentsSubmitted: (user?.unsafeMetadata?.verificationStatus as string) === 'submitted' ||
-                       (user?.publicMetadata?.verificationStatus as string) === 'submitted',
-    pendingReview: (user?.unsafeMetadata?.verificationStatus as string) === 'pending' ||
-                   (user?.publicMetadata?.verificationStatus as string) === 'pending',
+    status: verificationStatusRaw,
+    isVerified: verificationStatusRaw === 'approved',
+    isPending: verificationStatusRaw === 'pending',
+    isNotVerified: verificationStatusRaw === 'not_verified' || !verificationStatusRaw,
+    documentsSubmitted: verificationStatusRaw === 'pending' || verificationStatusRaw === 'approved',
+    pendingReview: verificationStatusRaw === 'pending',
     rejectionReason: (user?.unsafeMetadata?.verificationRejectionReason as string) ||
                     (user?.publicMetadata?.verificationRejectionReason as string)
   }
 
+  // Load profile data when component mounts
+  useEffect(() => {
+    if (user && isLoaded) {
+      loadProfileFromDatabase()
+    }
+  }, [user, isLoaded])
+
   // Show loading state
   if (!isLoaded) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading profile...</p>
-        </div>
-      </div>
-    )
+    return <LoadingSpinner message="Loading profile..." variant="profile" />
   }
 
   // Show loading while redirecting
   if (!user) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Redirecting...</p>
-        </div>
-      </div>
-    )
+    return <LoadingSpinner message="Redirecting..." variant="profile" />
   }
 
   const handleSave = async () => {
@@ -257,13 +254,6 @@ export default function ProfilePage() {
     }
   }
 
-  // Load profile data when component mounts
-  useEffect(() => {
-    if (user && isLoaded) {
-      loadProfileFromDatabase()
-    }
-  }, [user, isLoaded])
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <Header />
@@ -305,16 +295,31 @@ export default function ProfilePage() {
                   <h1 className="text-3xl font-bold text-gray-900">
                     {profileData.firstName} {profileData.lastName}
                         </h1>
-                  {profileData.verified && (
+                  {/* Verification Status Badge */}
+                  {verificationStatus.isVerified ? (
                     <Badge className="bg-green-100 text-green-800">
                       <CheckCircle className="h-3 w-3 mr-1" />
-                          Verified
-                        </Badge>
-                  )}
+                      Verified
+                    </Badge>
+                  ) : verificationStatus.isPending ? (
+                    <Badge className="bg-yellow-100 text-yellow-800">
+                      <Shield className="h-3 w-3 mr-1" />
+                      Verification Pending
+                    </Badge>
+                  ) : userAccountType === 'owner' ? (
+                    <Badge className="bg-orange-100 text-orange-800">
+                      <AlertTriangle className="h-3 w-3 mr-1" />
+                      Not Verified
+                    </Badge>
+                  ) : null}
+                  
+                  {/* Account Type Badge */}
                   <Badge variant="outline" className="capitalize">
-                    {userAccountType}
+                    {userAccountType === 'not_selected' ? 'Not Selected' : userAccountType}
                   </Badge>
-                  {subscriptionStatus !== 'free' && (
+                  
+                  {/* Subscription Badge */}
+                  {subscriptionStatus !== 'free' && subscriptionStatus !== 'none' && (
                     <Badge className="bg-purple-500 text-white">
                       <Crown className="h-3 w-3 mr-1" />
                       {subscriptionStatus.charAt(0).toUpperCase() + subscriptionStatus.slice(1)}

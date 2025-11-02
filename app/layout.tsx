@@ -39,8 +39,16 @@ export default function RootLayout({
 }: Readonly<{
   children: ReactNode
 }>) {
+  const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+  const clerkJsUrl = process.env.NEXT_PUBLIC_CLERK_JS_URL
   return (
     <ClerkProvider
+      publishableKey={publishableKey}
+      clerkJSUrl={clerkJsUrl}
+      afterSignInUrl="/get-started"
+      afterSignUpUrl="/get-started"
+      signInUrl="/sign-in"
+      signUpUrl="/sign-up"
       appearance={{
         baseTheme: undefined,
         variables: {

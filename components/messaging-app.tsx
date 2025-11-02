@@ -338,6 +338,26 @@ export default function MessagingApp({
           </div>
         </div>
 
+        {/* Owner Profile Button - Show for renters chatting with owners */}
+        {selectedSession && user && (
+          <div className="flex items-center gap-2 mt-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="bg-white/10 border-white/20 text-white hover:bg-white/20 text-xs"
+              onClick={() => {
+                const participantId = selectedSession.participantId
+                if (participantId) {
+                  window.open(`/profile/${participantId}`, '_blank')
+                }
+              }}
+            >
+              <User className="h-3 w-3 mr-1" />
+              View Owner Profile
+            </Button>
+          </div>
+        )}
+
         {/* Listing info for selected session */}
         {selectedSession?.listingTitle && (
           <div className="flex items-center gap-2 mt-2 p-2 bg-white/10 rounded-lg">

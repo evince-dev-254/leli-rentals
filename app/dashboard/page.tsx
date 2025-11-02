@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react"
 import { Header } from "@/components/header"
+import { LoadingSpinner } from "@/components/loading-spinner"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -42,23 +43,34 @@ export default function DashboardPage() {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState("overview")
 
-  // Redirect if not authenticated
+  // Redirect if not authenticated or check account type
   useEffect(() => {
-    if (!!isLoaded && !user) {
-      router.push("/login")
+    if (!isLoaded) return
+    
+    if (!user) {
+      router.push("/sign-in")
+      return
     }
-  }, [user, !isLoaded, router])
+
+    // Check account type and redirect accordingly
+    // ONLY check Clerk metadata - ignore localStorage to avoid stale values
+    const clerkAccountType = (user.publicMetadata?.accountType as string) || 
+                            (user.unsafeMetadata?.accountType as string)
+
+    // If user has account type in Clerk, redirect them to the appropriate dashboard
+    if (clerkAccountType === 'owner') {
+      router.push('/dashboard/owner')
+    } else if (clerkAccountType === 'renter') {
+      router.push('/listings')
+    } else {
+      // If no account type selected, redirect to account type selection
+      router.push('/get-started')
+    }
+  }, [user, isLoaded, router])
 
   // Show loading while checking authentication
   if (!isLoaded) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading dashboard...</p>
-        </div>
-      </div>
-    )
+    return <LoadingSpinner message="Loading your dashboard..." variant="default" />
   }
 
   // Show login prompt if not authenticated
@@ -72,10 +84,10 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <Button asChild className="w-full">
-              <Link href="/login">Sign In</Link>
+              <Link href="/sign-in">Sign In</Link>
             </Button>
             <Button variant="outline" asChild className="w-full">
-              <Link href="/signup">Create Account</Link>
+              <Link href="/sign-up">Create Account</Link>
             </Button>
           </CardContent>
         </Card>

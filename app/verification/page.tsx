@@ -63,7 +63,7 @@ export default function VerificationPage() {
   // Redirect if not authenticated
   useEffect(() => {
     if (isLoaded && !user) {
-      router.push("/login")
+      router.push("/sign-in")
     }
   }, [isLoaded, user, router])
 
@@ -71,13 +71,26 @@ export default function VerificationPage() {
   useEffect(() => {
     if (isLoaded && user) {
       const verificationStatus = user.unsafeMetadata?.verificationStatus as string
-      if (verificationStatus === 'pending' || verificationStatus === 'approved') {
+      const accountType = (user.unsafeMetadata?.accountType as string) || 
+                          (user.publicMetadata?.accountType as string)
+      
+      if (verificationStatus === 'approved') {
+        // After verification approval, owners must choose subscription plan
+        if (accountType === 'owner') {
+          const hasSubscription = user.unsafeMetadata?.subscriptionStatus as string
+          if (!hasSubscription || hasSubscription === 'none') {
+            router.push('/profile/billing')
+            return
+          }
+        }
         // Check if there's a redirect parameter in the URL
         const searchParams = new URLSearchParams(window.location.search)
         const redirectTo = searchParams.get('redirect')
-        
-        // Redirect to the intended page or dashboard
-        router.push(redirectTo || '/dashboard')
+        router.push(redirectTo || '/dashboard/owner')
+      } else if (verificationStatus === 'pending') {
+        // If pending, allow access but show pending status
+        // Don't redirect - let them see the pending message
+        return
       }
     }
   }, [isLoaded, user, router])
@@ -246,13 +259,13 @@ export default function VerificationPage() {
       // Wait a bit for Clerk to update the session, then reload and redirect
       await user?.reload() // Refresh the user session
       
-      // Get redirect parameter if it exists
-      const searchParams = new URLSearchParams(window.location.search)
-      const redirectTo = searchParams.get('redirect')
-      
-      setTimeout(() => {
-        router.push(redirectTo || "/dashboard")
-      }, 1000)
+      // After submission, stay on page to show pending status
+      // Admin will approve and redirect will happen via the useEffect above
+      toast({
+        title: "✅ Documents Submitted!",
+        description: "Your verification is pending review. You'll be redirected to choose a subscription plan once approved.",
+        duration: 5000,
+      })
       
     } catch (error) {
       console.error('Error submitting verification:', error)

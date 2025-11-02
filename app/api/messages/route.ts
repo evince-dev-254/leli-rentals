@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { messagingService } from '@/lib/messaging-service'
+import { messagingServiceSupabase } from '@/lib/messaging-service-supabase'
 
 export async function GET(request: NextRequest) {
   try {
@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
 
     switch (action) {
       case 'sessions': {
-        const sessions = await messagingService.getChatSessions(userId)
+        const sessions = await messagingServiceSupabase.getChatSessions(userId)
         return NextResponse.json({ sessions })
       }
 
@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
           return NextResponse.json({ error: 'Session ID required' }, { status: 400 })
         }
 
-        const messages = await messagingService.getMessages(sessionId)
+        const messages = await messagingServiceSupabase.getMessages(sessionId)
         return NextResponse.json({ messages })
       }
 
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
           listingId
         }
 
-        const messageId = await messagingService.sendMessage(messageData)
+        const messageId = await messagingServiceSupabase.sendMessage(messageData)
         return NextResponse.json({ messageId })
       }
 
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ error: 'Session ID required' }, { status: 400 })
         }
 
-        await messagingService.markMessagesAsRead(sessionId, userId)
+        await messagingServiceSupabase.markMessagesAsRead(sessionId, userId)
         return NextResponse.json({ success: true })
       }
 
@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ error: 'Participant ID required' }, { status: 400 })
         }
 
-        const sessionId = await messagingService.getOrCreateChatSession(
+        const sessionId = await messagingServiceSupabase.getOrCreateChatSession(
           userId,
           participantId,
           listingData

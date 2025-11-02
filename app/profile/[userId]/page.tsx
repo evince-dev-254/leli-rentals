@@ -1,7 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
+import { useUser } from "@clerk/nextjs"
 import { Header } from "@/components/header"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -16,28 +17,66 @@ import {
   Shield, 
   CheckCircle,
   Star,
-  MessageCircle
+  MessageCircle,
+  Lock
 } from "lucide-react"
 import { userProfileService, UserProfile } from "@/lib/user-profile-service"
+import { userSettingsService } from "@/lib/user-settings-service"
 import Link from "next/link"
 
 export default function PublicProfilePage() {
   const params = useParams()
+  const router = useRouter()
+  const { user: currentUser } = useUser()
   const userId = params.userId as string
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
+  const [profileVisibility, setProfileVisibility] = useState<'public' | 'private'>('public')
+  const [canViewProfile, setCanViewProfile] = useState(true)
 
   useEffect(() => {
     async function loadProfile() {
       if (userId) {
+        try {
         const data = await userProfileService.getPublicProfile(userId)
         setProfile(data)
+          
+          // Check profile visibility settings
+          const settings = await userSettingsService.getUserSettings(userId)
+          const visibility = settings?.privacy?.profileVisibility || 'public'
+          setProfileVisibility(visibility as 'public' | 'private')
+          
+          // Determine if current user can view this profile
+          // Owners can always view other owners' profiles
+          // Renters can only view public profiles
+          const viewerAccountType = (currentUser?.unsafeMetadata?.accountType as string) ||
+                                   (currentUser?.publicMetadata?.accountType as string)
+          const profileAccountType = data?.account_type
+          
+          if (profileAccountType === 'owner') {
+            // If viewing own profile, always allow
+            if (currentUser?.id === userId) {
+              setCanViewProfile(true)
+            } else if (viewerAccountType === 'owner') {
+              // Owners can always view other owners' profiles
+              setCanViewProfile(true)
+            } else {
+              // Renters can only view public owner profiles
+              setCanViewProfile(visibility === 'public')
+            }
+          } else {
+            // For non-owner profiles, respect visibility settings
+            setCanViewProfile(visibility === 'public' || currentUser?.id === userId)
+          }
+        } catch (error) {
+          console.error('Error loading profile:', error)
+        }
       }
       setLoading(false)
     }
 
     loadProfile()
-  }, [userId])
+  }, [userId, currentUser])
 
   if (loading) {
     return (
@@ -64,6 +103,33 @@ export default function PublicProfilePage() {
               </h2>
               <p className="text-gray-600 dark:text-gray-400 mb-6">
                 This user profile doesn't exist or has been removed.
+              </p>
+              <Link href="/">
+                <Button>Go Home</Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
+  }
+
+  if (!canViewProfile) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <Header />
+        <div className="container mx-auto px-4 py-12 max-w-4xl">
+          <Card>
+            <CardContent className="p-12 text-center">
+              <Lock className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+                Private Profile
+              </h2>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                This profile is set to private. Only the owner can view their full profile details.
+              </p>
+              <p className="text-sm text-gray-500 dark:text-gray-500 mb-6">
+                Note: Owners can always view other owners' profiles. Switch to an owner account to view this profile.
               </p>
               <Link href="/">
                 <Button>Go Home</Button>

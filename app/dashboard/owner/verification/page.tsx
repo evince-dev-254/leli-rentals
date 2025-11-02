@@ -88,38 +88,25 @@ export default function OwnerVerificationPage() {
     setIsSubmitting(true)
     
     try {
-      // In a real app, upload to Cloudinary
-      const formData = new FormData()
-      formData.append('idFront', documents.idFront)
-      formData.append('idBack', documents.idBack)
-      formData.append('selfie', documents.selfie)
-      formData.append('userId', user?.id || '')
-
-      // Simulate upload to cloud storage
-      await new Promise(resolve => setTimeout(resolve, 1500))
-
-      toast({
-        title: "Documents Uploaded",
-        description: "Processing verification...",
-      })
-
-      // Simulate verification processing
-      await new Promise(resolve => setTimeout(resolve, 1500))
-
-      // MOCK: Auto-approve after 2 seconds (for testing)
-      // In production, this would be a manual review or AI verification
+      // For now, send base64 previews to API which records a pending verification
       const response = await fetch('/api/verify-documents', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          documentFront: previews.idFront,
+          documentBack: previews.idBack,
+          selfieWithDocument: previews.selfie,
+        })
       })
 
       if (!response.ok) {
-        throw new Error('Verification update failed')
+        const data = await response.json().catch(() => ({}))
+        throw new Error(data?.error || 'Verification submission failed')
       }
       
       toast({
-        title: "Verification Approved! 🎉",
-        description: "Your account has been verified. You can now create listings and receive bookings!",
+        title: "Documents submitted!",
+        description: "Your verification is pending admin review. We'll notify you once it's approved.",
       })
       
       // Redirect to dashboard

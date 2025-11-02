@@ -39,7 +39,7 @@ export interface ChatSession {
 
 class MessagingService {
   // Create a new chat session
-  async createChatSession(sessionData: Omit<ChatSession, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
+  async createChatSession(userId: string, sessionData: Omit<ChatSession, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
     try {
       const result = await dbQuery(`
         INSERT INTO chat_sessions (
@@ -49,17 +49,17 @@ class MessagingService {
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
         RETURNING id
       `, [
-        sessionData.participantId, // This will be the user_id in our case
-        sessionData.participantId, // participant_id
+        userId, // The user who owns this chat session
+        sessionData.participantId, // The participant (the other user)
         sessionData.participantName,
         sessionData.participantAvatar,
-        sessionData.participantPhone,
-        sessionData.participantRating,
-        sessionData.participantVerified,
-        sessionData.listingTitle,
-        sessionData.listingImage,
-        sessionData.bookingId,
-        sessionData.unreadCount,
+        sessionData.participantPhone || null,
+        sessionData.participantRating || null,
+        sessionData.participantVerified || false,
+        sessionData.listingTitle || null,
+        sessionData.listingImage || null,
+        sessionData.bookingId || null,
+        sessionData.unreadCount || 0,
         'active'
       ])
 
@@ -242,18 +242,39 @@ class MessagingService {
         return result.rows[0].id
       }
 
+      // Get participant info from user profile if possible
+      let participantName = 'Unknown User'
+      let participantAvatar = '/placeholder-user.jpg'
+      
+      try {
+        // Try to get user info from Supabase
+        const { supabase } = await import('./supabase')
+        const { data: profile } = await supabase
+          .from('user_profiles')
+          .select('name, avatar')
+          .eq('id', userId2)
+          .maybeSingle()
+        
+        if (profile) {
+          participantName = profile.name || participantName
+          participantAvatar = profile.avatar || participantAvatar
+        }
+      } catch (error) {
+        console.error('Error fetching participant profile:', error)
+      }
+
       // Create new chat session
       const sessionData = {
         participantId: userId2,
-        participantName: 'Unknown User', // This should be fetched from user profile
-        participantAvatar: '/placeholder-user.jpg',
+        participantName,
+        participantAvatar,
         unreadCount: 0,
         listingTitle: listingData?.title,
         listingImage: listingData?.image,
         bookingId: listingData?.bookingId
       }
 
-      return await this.createChatSession(sessionData)
+      return await this.createChatSession(userId1, sessionData)
     } catch (error) {
       console.error('Error getting or creating chat session:', error)
       throw new Error('Failed to get or create chat session')

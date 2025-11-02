@@ -19,7 +19,7 @@ export function Footer() {
     setMounted(true)
   }, [])
 
-  const handleSubscribe = () => {
+  const handleSubscribe = async () => {
     if (!email.trim()) {
       toast({
         title: "Email required",
@@ -38,12 +38,31 @@ export function Footer() {
       return
     }
 
-    // Simulate subscription
-    toast({
-      title: "Successfully subscribed!",
-      description: "Thank you for subscribing to our newsletter.",
-    })
-    setEmail("")
+    try {
+      const response = await fetch('/api/newsletter/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to subscribe')
+      }
+
+      toast({
+        title: "Successfully subscribed!",
+        description: "Thank you for subscribing to our newsletter. Check your email for confirmation.",
+      })
+      setEmail("")
+    } catch (error: any) {
+      toast({
+        title: "Subscription failed",
+        description: error.message || "Please try again later.",
+        variant: "destructive",
+      })
+    }
   }
 
   const handleSocialClick = (platform: string) => {
@@ -257,7 +276,10 @@ export function Footer() {
       <div className="border-t border-border py-8">
         <div className="container mx-auto px-6 max-w-7xl">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <p className="text-muted-foreground text-center md:text-left">© 2025 Leli Rentals. All rights reserved.</p>
+            <div className="text-center md:text-left">
+              <p className="text-muted-foreground">© 2025 Leli Rentals. All rights reserved.</p>
+              <p className="text-muted-foreground text-sm mt-1">Developed by Gurugrafts Agency</p>
+            </div>
             <div className="flex space-x-6">
               <Link href="/privacy" className="text-muted-foreground hover:text-primary transition-colors">
                 Privacy Policy

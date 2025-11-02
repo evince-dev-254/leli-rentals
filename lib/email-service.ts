@@ -863,6 +863,181 @@ export async function sendInquiryResponseEmail(
   })
 }
 
+/**
+ * Send contact form email
+ */
+export async function sendContactFormEmail(
+  name: string,
+  email: string,
+  subject: string,
+  category: string,
+  message: string
+) {
+  const html = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>New Contact Form Submission</title>
+      </head>
+      <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f5f5f5;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
+          <tr>
+            <td align="center">
+              <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <tr>
+                  <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 30px; text-align: center;">
+                    <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: bold;">New Contact Form Submission</h1>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 40px 30px;">
+                    <div style="margin-bottom: 25px;">
+                      <strong style="color: #667eea; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">From:</strong>
+                      <p style="margin: 5px 0 0; font-size: 16px; color: #333333;">${name}</p>
+                      <p style="margin: 5px 0 0; font-size: 16px; color: #666666;">${email}</p>
+                    </div>
+                    <div style="margin-bottom: 25px;">
+                      <strong style="color: #667eea; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Category:</strong>
+                      <p style="margin: 5px 0 0; font-size: 16px; color: #333333;">${category}</p>
+                    </div>
+                    <div style="margin-bottom: 25px;">
+                      <strong style="color: #667eea; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Subject:</strong>
+                      <p style="margin: 5px 0 0; font-size: 16px; color: #333333;">${subject}</p>
+                    </div>
+                    <div style="margin-bottom: 25px;">
+                      <strong style="color: #667eea; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Message:</strong>
+                      <p style="margin: 10px 0 0; font-size: 16px; color: #333333; line-height: 1.6; white-space: pre-wrap;">${message}</p>
+                    </div>
+                    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e5e5;">
+                      <p style="margin: 0; font-size: 14px; color: #666666;">
+                        You can reply directly to this email to respond to ${name}.
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+    </html>
+  `
+
+  return await sendEmail({
+    to: SUPPORT_EMAIL,
+    subject: `Contact Form: ${subject}`,
+    html,
+    replyTo: email,
+  })
+}
+
+/**
+ * Subscribe to newsletter
+ */
+export async function subscribeToNewsletter(email: string) {
+  // Send confirmation email to user
+  const userHtml = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Newsletter Subscription Confirmed</title>
+      </head>
+      <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f5f5f5;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
+          <tr>
+            <td align="center">
+              <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <tr>
+                  <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 30px; text-align: center;">
+                    <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: bold;">🎉 You're Subscribed!</h1>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 40px 30px;">
+                    <p style="margin: 0 0 20px; font-size: 18px; color: #333333;">
+                      Thank you for subscribing to the Leli Rentals newsletter!
+                    </p>
+                    <p style="margin: 0 0 20px; font-size: 16px; color: #666666; line-height: 1.6;">
+                      You'll now receive the latest rental deals, new listings, and platform updates delivered directly to your inbox.
+                    </p>
+                    <p style="margin: 20px 0 0; font-size: 14px; color: #999999;">
+                      If you didn't subscribe, please ignore this email.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+    </html>
+  `
+
+  // Send notification to admin
+  const adminHtml = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>New Newsletter Subscription</title>
+      </head>
+      <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f5f5f5;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
+          <tr>
+            <td align="center">
+              <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <tr>
+                  <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 30px; text-align: center;">
+                    <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: bold;">New Newsletter Subscription</h1>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 40px 30px;">
+                    <p style="margin: 0 0 20px; font-size: 18px; color: #333333;">
+                      A new user has subscribed to the newsletter:
+                    </p>
+                    <p style="margin: 0 0 20px; font-size: 16px; color: #666666;">
+                      <strong>Email:</strong> ${email}
+                    </p>
+                    <p style="margin: 20px 0 0; font-size: 14px; color: #999999;">
+                      Subscription date: ${new Date().toLocaleString()}
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+    </html>
+  `
+
+  // Send confirmation to user
+  const userResult = await sendEmail({
+    to: email,
+    subject: 'Welcome to Leli Rentals Newsletter! 🎉',
+    html: userHtml,
+  })
+
+  // Send notification to admin
+  const adminResult = await sendEmail({
+    to: SUPPORT_EMAIL,
+    subject: 'New Newsletter Subscription',
+    html: adminHtml,
+  })
+
+  if (userResult.success || adminResult.success) {
+    return { success: true }
+  } else {
+    return { success: false, error: userResult.error || adminResult.error }
+  }
+}
+
 export const emailService = {
   sendEmail,
   sendWelcomeEmail,
@@ -873,4 +1048,6 @@ export const emailService = {
   sendPaymentReceiptEmail,
   sendSupportTicketEmail,
   sendInquiryResponseEmail,
+  sendContactFormEmail,
+  subscribeToNewsletter,
 }

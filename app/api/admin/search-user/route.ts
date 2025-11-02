@@ -1,30 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { clerkClient } from '@clerk/nextjs/server'
+import { addCorsHeaders, createOptionsResponse } from '@/lib/admin-cors'
 
-export async function POST(request: NextRequest) {
+export async function OPTIONS(req: NextRequest) {
+  return createOptionsResponse(req)
+}
+
+export async function POST(req: NextRequest) {
   try {
-    const { emailAddress } = await request.json()
+    const { email, emailAddress } = await req.json()
+    
+    // Support both 'email' and 'emailAddress' for backward compatibility
+    const emailToSearch = email || emailAddress
 
-    if (!emailAddress) {
+    if (!emailToSearch) {
       return NextResponse.json({ error: 'Email address is required' }, { status: 400 })
     }
 
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(emailAddress)) {
+    if (!emailRegex.test(emailToSearch)) {
       return NextResponse.json({ error: 'Invalid email address format' }, { status: 400 })
     }
 
-    // Admin authentication check
-    // TODO: Get the current user from the request and verify they are admin
-    // For now, this endpoint should only be called from the admin page which already checks
-    // In production, you should add proper authentication here using Clerk's auth()
+    // Check authentication
+    const { auth } = await import('@clerk/nextjs/server')
+    const { userId } = await auth()
+    
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
     const client = await clerkClient()
     
     // Search for user by email address
     const { data: users } = await client.users.getUserList({ 
-      emailAddress: [emailAddress.toLowerCase().trim()],
+      emailAddress: [emailToSearch.toLowerCase().trim()],
       limit: 10 
     })
 
@@ -33,7 +44,7 @@ export async function POST(request: NextRequest) {
       // Check primary email addresses
       if (user.emailAddresses && user.emailAddresses.length > 0) {
         return user.emailAddresses.some(email => 
-          email.emailAddress.toLowerCase() === emailAddress.toLowerCase().trim()
+          email.emailAddress.toLowerCase() === emailToSearch.toLowerCase().trim()
         )
       }
       return false
@@ -41,13 +52,14 @@ export async function POST(request: NextRequest) {
 
     if (!foundUser) {
       return NextResponse.json({ 
+        success: false,
         error: 'User not found',
         message: 'No user found with this email address' 
       }, { status: 404 })
     }
 
     // Return user data
-    return NextResponse.json({ 
+    const response = NextResponse.json({ 
       success: true,
       user: {
         id: foundUser.id,
@@ -60,10 +72,15 @@ export async function POST(request: NextRequest) {
         publicMetadata: foundUser.publicMetadata,
       }
     })
+    
+    return addCorsHeaders(response, req)
 
   } catch (error: any) {
     console.error('User search error:', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ 
+      success: false,
+      error: error.message 
+    }, { status: 500 })
   }
 }
 

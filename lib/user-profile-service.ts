@@ -60,12 +60,22 @@ export class UserProfileService {
    */
   async updateProfile(userId: string, profileData: Partial<UserProfile>): Promise<UpdateProfileResult> {
     try {
+      if (!userId) {
+        return {
+          success: false,
+          error: 'User ID is required'
+        }
+      }
+
+      // Use user_id (Clerk ID) as the identifier for upsert
       const { error } = await supabase
         .from('user_profiles')
         .upsert({
-          id: userId,
+          user_id: userId,
           ...profileData,
           updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id'
         })
 
       if (error) throw error
@@ -74,7 +84,11 @@ export class UserProfileService {
         success: true
       }
     } catch (error) {
-      console.error('Error updating profile:', error)
+      console.error('Error updating profile:', {
+        error: error instanceof Error ? error.message : String(error),
+        userId,
+        details: error instanceof Error ? error.stack : undefined
+      })
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Update failed'
@@ -87,17 +101,52 @@ export class UserProfileService {
    */
   async getUserProfile(userId: string): Promise<UserProfile | null> {
     try {
-      const { data, error } = await supabase
+      if (!userId) {
+        console.warn('getUserProfile called with empty userId')
+        return null
+      }
+
+      // Try querying by user_id first (Clerk ID), then by id (UUID)
+      let { data, error } = await supabase
         .from('user_profiles')
         .select('*')
-        .eq('id', userId)
+        .eq('user_id', userId)
         .single()
 
-      if (error && error.code !== 'PGRST116') throw error
+      // If not found by user_id, try by id
+      if (error && error.code === 'PGRST116') {
+        const { data: dataById, error: errorById } = await supabase
+          .from('user_profiles')
+          .select('*')
+          .eq('id', userId)
+          .single()
+        
+        if (!errorById) {
+          data = dataById
+          error = null
+        } else {
+          // Profile doesn't exist - this is fine
+          return null
+        }
+      }
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error getting user profile:', {
+          code: error.code,
+          message: error.message,
+          userId
+        })
+        throw error
+      }
 
       return data || null
     } catch (error) {
-      console.error('Error getting user profile:', error)
+      if (error && typeof error === 'object' && 'code' in error && error.code !== 'PGRST116') {
+        console.error('Error getting user profile:', {
+          error: error instanceof Error ? error.message : String(error),
+          userId
+        })
+      }
       return null
     }
   }
@@ -107,17 +156,59 @@ export class UserProfileService {
    */
   async getPublicProfile(userId: string): Promise<UserProfile | null> {
     try {
-      const { data, error } = await supabase
+      if (!userId) {
+        console.warn('getPublicProfile called with empty userId')
+        return null
+      }
+
+      // Try querying by user_id first (Clerk ID), then by id (UUID)
+      let { data, error } = await supabase
         .from('user_profiles')
-        .select('id, name, avatar, bio, location, account_type, subscription_status, is_verified')
-        .eq('id', userId)
+        .select('id, user_id, name, avatar, bio, location, account_type, subscription_status, is_verified, phone, email, avatar_url')
+        .eq('user_id', userId)
         .single()
 
-      if (error && error.code !== 'PGRST116') throw error
+      // If not found by user_id, try by id
+      if (error && error.code === 'PGRST116') {
+        const { data: dataById, error: errorById } = await supabase
+          .from('user_profiles')
+          .select('id, user_id, name, avatar, bio, location, account_type, subscription_status, is_verified, phone, email, avatar_url')
+          .eq('id', userId)
+          .single()
+        
+        if (!errorById) {
+          data = dataById
+          error = null
+        }
+      }
+
+      // PGRST116 is "not found" - this is acceptable, return null
+      if (error) {
+        if (error.code === 'PGRST116') {
+          // Profile doesn't exist yet - this is fine
+          return null
+        }
+        // For other errors, log more details
+        console.error('Error getting public profile:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          userId
+        })
+        throw error
+      }
 
       return data || null
     } catch (error) {
-      console.error('Error getting public profile:', error)
+      // Only log if it's not a "not found" error
+      if (error && typeof error === 'object' && 'code' in error && error.code !== 'PGRST116') {
+        console.error('Error getting public profile:', {
+          error: error instanceof Error ? error.message : String(error),
+          userId,
+          stack: error instanceof Error ? error.stack : undefined
+        })
+      }
       return null
     }
   }

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Header } from "@/components/header"
+import { LoadingSpinner } from "@/components/loading-spinner"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -76,29 +77,37 @@ export default function GetStartedPage() {
 
   // Check if user already has an account type and redirect them
   useEffect(() => {
-    if (user) {
-      const existingAccountType = getUserAccountType()
-      console.log('Checking account type for user:', user.id, 'Account type:', existingAccountType)
+    if (user && isLoaded) {
+      // ONLY check Clerk metadata - ignore localStorage for new users
+      // localStorage can have stale values from previous sessions
+      const clerkAccountType = (user.publicMetadata?.accountType as string) || 
+                              (user.unsafeMetadata?.accountType as string)
       
-      if (existingAccountType && existingAccountType !== null && existingAccountType !== 'not_selected') {
-        // User already has an account type, redirect them to their dashboard
-        console.log('User has account type, redirecting to:', existingAccountType)
-        if (existingAccountType === 'renter') {
-          router.push('/listings')
-        } else if (existingAccountType === 'owner') {
+      console.log('Checking account type for user:', user.id, 'Clerk account type:', clerkAccountType)
+      
+      // ONLY redirect if Clerk metadata explicitly has account type set
+      // This ensures new users always see the selection page
+      if (clerkAccountType === 'renter' || clerkAccountType === 'owner') {
+        // User already has an account type in Clerk, redirect them to their dashboard
+        console.log('User has account type in Clerk, redirecting to:', clerkAccountType)
+        if (clerkAccountType === 'owner') {
           router.push('/dashboard/owner')
+        } else {
+          router.push('/listings')
         }
       } else {
-        console.log('User needs to select account type')
-        // Clear any invalid account type values
-        if (existingAccountType === 'null' || existingAccountType === 'not_selected') {
-          localStorage.removeItem('userAccountType')
-          localStorage.removeItem('accountTypeSkipped')
-        }
+        console.log('User needs to select account type - clearing any stale localStorage values')
+        // Clear any localStorage account type values for new users
+        // This ensures fresh start for new sign-ups
+        localStorage.removeItem('userAccountType')
+        localStorage.removeItem('accountTypeSkipped')
         setIsCheckingAccountType(false)
       }
+    } else if (isLoaded && !user) {
+      // Redirect to sign-in if not authenticated
+      router.push('/sign-in')
     }
-  }, [user, router])
+  }, [user, isLoaded, router])
 
   const accountTypes = [
     {
@@ -196,7 +205,8 @@ export default function GetStartedPage() {
       
       // Redirect based on account type
       if (accountType === 'owner') {
-        router.push('/dashboard/owner')
+        // New owners must verify first - redirect to verification
+        router.push('/verification')
       } else {
         selectAccountType(accountType as 'renter' | 'owner')
       }
@@ -214,7 +224,8 @@ export default function GetStartedPage() {
       
       // Still redirect even if metadata update failed
       if (accountType === 'owner') {
-        router.push('/dashboard/owner')
+        // New owners must verify first - redirect to verification
+        router.push('/verification')
       } else {
         selectAccountType(accountType as 'renter' | 'owner')
       }
@@ -296,17 +307,15 @@ export default function GetStartedPage() {
   // Show loading state while checking account type
   if (isCheckingAccountType) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <>
         <Header />
-        <div className="container mx-auto px-4 sm:px-6 max-w-6xl py-8 sm:py-12">
-          <div className="flex items-center justify-center min-h-[400px]">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-              <p className="text-gray-600 dark:text-gray-400">Setting up your account...</p>
-            </div>
-          </div>
-        </div>
-      </div>
+        <LoadingSpinner 
+          message="Setting up your account..."
+          variant="default"
+          fullScreen={true}
+          showHeader={false}
+        />
+      </>
     )
   }
 
@@ -388,7 +397,10 @@ export default function GetStartedPage() {
                 >
                   {isSubmitting && selectedAccountType === type.id ? (
                     <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      <div className="relative w-4 h-4 mr-2">
+                        <div className="absolute inset-0 rounded-full border-2 border-white border-t-transparent animate-spin"></div>
+                        <div className="absolute inset-1 rounded-full bg-white/20"></div>
+                      </div>
                       Setting up...
                     </>
                   ) : (
@@ -559,7 +571,10 @@ export default function GetStartedPage() {
                 >
                   {isSubmitting ? (
                     <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      <div className="relative w-4 h-4 mr-2">
+                        <div className="absolute inset-0 rounded-full border-2 border-white border-t-transparent animate-spin"></div>
+                        <div className="absolute inset-1 rounded-full bg-white/20"></div>
+                      </div>
                       Activating Trial...
                     </>
                   ) : (

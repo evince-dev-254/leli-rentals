@@ -16,9 +16,10 @@ interface VerificationBannerProps {
     rejectionReason?: string
     submittedAt?: string
   }
+  verificationDeadline?: string
 }
 
-export function VerificationBanner({ accountType, verificationStatus }: VerificationBannerProps) {
+export function VerificationBanner({ accountType, verificationStatus, verificationDeadline }: VerificationBannerProps) {
   // Only show for owner account types
   if (accountType !== "owner") {
     return null
@@ -27,6 +28,16 @@ export function VerificationBanner({ accountType, verificationStatus }: Verifica
   // Don't show banner if user is already verified
   if (verificationStatus.isVerified) {
     return null
+  }
+
+  // Calculate days remaining until deadline
+  let daysRemaining: number | null = null
+  if (verificationDeadline) {
+    const deadline = new Date(verificationDeadline)
+    const now = new Date()
+    const diffTime = deadline.getTime() - now.getTime()
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    daysRemaining = diffDays > 0 ? diffDays : 0
   }
 
   const getStatusColor = () => {
@@ -78,6 +89,71 @@ export function VerificationBanner({ accountType, verificationStatus }: Verifica
                 : "As an owner account, you must verify your identity with a valid ID or passport to list items for rent. This helps ensure the safety and trust of our rental community."
               }
             </p>
+
+            {/* 5-Day Deadline Warning */}
+            {!verificationStatus.isVerified && !verificationStatus.pendingReview && daysRemaining !== null && daysRemaining <= 5 && (
+              <div className={`mb-4 p-4 rounded-lg border-2 ${
+                daysRemaining <= 1 
+                  ? 'bg-red-50 border-red-300 dark:bg-red-900/20 dark:border-red-700' 
+                  : daysRemaining <= 2
+                  ? 'bg-orange-50 border-orange-300 dark:bg-orange-900/20 dark:border-orange-700'
+                  : 'bg-amber-50 border-amber-300 dark:bg-amber-900/20 dark:border-amber-700'
+              }`}>
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className={`h-6 w-6 flex-shrink-0 mt-0.5 ${
+                    daysRemaining <= 1 
+                      ? 'text-red-600' 
+                      : daysRemaining <= 2
+                      ? 'text-orange-600'
+                      : 'text-amber-600'
+                  }`} />
+                  <div className="flex-1">
+                    <h4 className={`font-bold text-lg mb-1 ${
+                      daysRemaining <= 1 
+                        ? 'text-red-900 dark:text-red-100' 
+                        : daysRemaining <= 2
+                        ? 'text-orange-900 dark:text-orange-100'
+                        : 'text-amber-900 dark:text-amber-100'
+                    }`}>
+                      {daysRemaining === 0 
+                        ? '⚠️ Account Suspension Imminent!' 
+                        : daysRemaining === 1
+                        ? '⚠️ Final Day to Verify!'
+                        : `${daysRemaining} Days Remaining to Verify`
+                      }
+                    </h4>
+                    <p className={`text-sm mb-2 ${
+                      daysRemaining <= 1 
+                        ? 'text-red-800 dark:text-red-200' 
+                        : daysRemaining <= 2
+                        ? 'text-orange-800 dark:text-orange-200'
+                        : 'text-amber-800 dark:text-amber-200'
+                    }`}>
+                      {daysRemaining === 0 
+                        ? 'Your verification deadline has passed. Your account will be suspended if verification is not completed immediately.'
+                        : daysRemaining === 1
+                        ? 'You must verify your account today or your account will be suspended tomorrow.'
+                        : `You have ${daysRemaining} day${daysRemaining !== 1 ? 's' : ''} to verify your account. Your account will be suspended if verification is not completed within this time.`
+                      }
+                    </p>
+                    <p className={`text-xs font-medium ${
+                      daysRemaining <= 1 
+                        ? 'text-red-700 dark:text-red-300' 
+                        : daysRemaining <= 2
+                        ? 'text-orange-700 dark:text-orange-300'
+                        : 'text-amber-700 dark:text-amber-300'
+                    }`}>
+                      Deadline: {verificationDeadline ? new Date(verificationDeadline).toLocaleDateString('en-US', { 
+                        weekday: 'long', 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric' 
+                      }) : '5 days from account creation'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {verificationStatus.rejectionReason && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">

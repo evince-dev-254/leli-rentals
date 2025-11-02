@@ -103,7 +103,7 @@ export default function ForgotPasswordPage() {
                   Try Different Email
                 </Button>
                 <Button asChild variant="outline" className="w-full">
-                  <Link href="/login">
+                  <Link href="/sign-in">
                     <ArrowLeft className="h-4 w-4 mr-2" />
                     Back to Sign In
                   </Link>
@@ -150,7 +150,7 @@ export default function ForgotPasswordPage() {
             <div className="mt-6 text-center">
               <p className="text-sm text-muted-foreground">
                 Remember your password?{" "}
-                <Link href="/login" className="text-primary hover:underline">
+                <Link href="/sign-in" className="text-primary hover:underline">
                   Sign in
                 </Link>
               </p>
