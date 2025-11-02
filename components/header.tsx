@@ -171,23 +171,36 @@ export function Header() {
 
   return (
     <header className="w-full bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/90 dark:bg-gray-900/95 dark:supports-[backdrop-filter]:bg-gray-900/90 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50 transition-all duration-300 shadow-theme">
-      <div className="container mx-auto flex h-14 sm:h-16 items-center justify-between px-3 sm:px-4 md:px-6 max-w-7xl">
-        {/* Logo */}
-        <Link href="/" className="flex items-center group mr-8 lg:mr-12">
-          <img 
-            src="/default-monochrome-black.svg" 
-            alt="Leli Rentals Logo" 
-            className="logo-mobile sm:logo-desktop object-contain dark:hidden hover:opacity-80 transition-opacity duration-200"
-          />
-          <img 
-            src="/default-monochrome-white.svg" 
-            alt="Leli Rentals Logo" 
-            className="logo-mobile sm:logo-desktop object-contain hidden dark:block hover:opacity-80 transition-opacity duration-200"
-          />
-        </Link>
+      <div className="container mx-auto flex h-14 sm:h-16 items-center justify-between px-2 sm:px-4 md:px-6 max-w-7xl gap-2">
+        {/* Left: Logo and Mobile Menu */}
+        <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+          {/* Mobile Menu Button - Only on mobile */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="lg:hidden h-9 w-9 flex-shrink-0 text-gray-800 dark:text-gray-200 hover:text-orange-500 transition-all duration-200"
+          >
+            {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </Button>
 
-        {/* Navigation Links */}
-        <nav className="hidden lg:flex items-center gap-6 xl:gap-8">
+          {/* Logo - Smaller on mobile */}
+          <Link href="/" className="flex items-center group flex-shrink-0">
+            <img 
+              src="/default-monochrome-black.svg" 
+              alt="Leli Rentals Logo" 
+              className="h-6 w-auto sm:h-8 md:h-10 object-contain dark:hidden hover:opacity-80 transition-opacity duration-200"
+            />
+            <img 
+              src="/default-monochrome-white.svg" 
+              alt="Leli Rentals Logo" 
+              className="h-6 w-auto sm:h-8 md:h-10 object-contain hidden dark:block hover:opacity-80 transition-opacity duration-200"
+            />
+          </Link>
+        </div>
+
+        {/* Navigation Links - Desktop only */}
+        <nav className="hidden lg:flex items-center gap-6 xl:gap-8 flex-1 justify-center">
           <Link 
             href="/" 
             className="text-sm xl:text-base font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors duration-200"
@@ -220,17 +233,7 @@ export function Header() {
           </Link>
         </nav>
 
-        {/* Mobile Menu Button */}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="lg:hidden h-8 w-8 sm:h-9 sm:w-9 text-gray-800 dark:text-gray-200 hover:text-orange-500 transition-all duration-200"
-        >
-          {isMobileMenuOpen ? <X className="h-4 w-4 sm:h-5 sm:w-5" /> : <Menu className="h-4 w-4 sm:h-5 sm:w-5" />}
-        </Button>
-
-        {/* Search Bar */}
+        {/* Search Bar - Desktop only */}
         <div className="hidden md:flex items-center gap-2 sm:gap-3 flex-1 max-w-sm mx-2">
           <div className="relative flex-1 group">
             <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 h-3 w-3 group-focus-within:text-orange-500 transition-colors duration-200" />
@@ -250,14 +253,27 @@ export function Header() {
           </Button>
         </div>
 
-        {/* Right Side Actions */}
-        <div className="flex items-center gap-2 sm:gap-3">
-          {/* WhatsApp AI Chat */}
+        {/* Right Side Actions - Optimized for mobile */}
+        <div className="flex items-center gap-1 sm:gap-2 md:gap-3 flex-shrink-0">
+          {/* Mobile Search Button - Only show on mobile when menu is closed */}
+          {!isMobileMenuOpen && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => router.push('/listings')}
+              className="md:hidden h-9 w-9 text-gray-800 dark:text-gray-200 hover:text-orange-500 transition-all duration-200"
+              title="Search"
+            >
+              <Search className="h-5 w-5" />
+            </Button>
+          )}
+
+          {/* WhatsApp AI Chat - Hidden on smallest screens, show on sm+ */}
           <a
             href="https://wa.me/254112081866?text=Hi%20Leli%20Rentals%20AI%20Assistant"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center h-8 w-8 sm:h-9 sm:w-9 rounded-md text-gray-800 dark:text-gray-200 hover:text-green-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 cursor-pointer"
+            className="hidden sm:inline-flex items-center justify-center h-9 w-9 rounded-md text-gray-800 dark:text-gray-200 hover:text-green-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 cursor-pointer"
             title="Chat with AI Assistant"
             onClick={(e) => {
               console.log('WhatsApp button clicked')
@@ -266,13 +282,14 @@ export function Header() {
             <WhatsAppIcon className="h-4 w-4" />
           </a>
 
-          {/* Theme Toggle */}
+          {/* Theme Toggle - Smaller on mobile */}
           {mounted && (
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-              className="h-8 w-8 sm:h-9 sm:w-9 text-gray-800 dark:text-gray-200 hover:text-orange-500 transition-all duration-200 btn-animate"
+              className="h-9 w-9 text-gray-800 dark:text-gray-200 hover:text-orange-500 transition-all duration-200 btn-animate flex-shrink-0"
+              title="Toggle theme"
             >
               <Sun className="h-4 w-4 rotate-0 scale-100 transition-all duration-300 dark:-rotate-90 dark:scale-0 text-yellow-500" />
               <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all duration-300 dark:rotate-0 dark:scale-100 text-blue-400" />
@@ -281,49 +298,50 @@ export function Header() {
           )}
 
           <SignedIn>
-            {/* Authenticated user section */}
-            <div className="flex items-center gap-2 sm:gap-3">
-              {/* Notification Bell */}
-              <div className="relative">
+            {/* Authenticated user section - Compact on mobile */}
+            <div className="flex items-center gap-1 sm:gap-2">
+              {/* Notification Bell - Always visible */}
+              <div className="relative flex-shrink-0">
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={() => setIsNotificationPanelOpen(true)}
-                  className={`h-8 w-8 sm:h-9 sm:w-9 transition-colors relative ${
+                  className={`h-9 w-9 transition-colors relative ${
                     displayUnreadCount > 0 
                       ? 'text-orange-500 hover:text-orange-600' 
                       : 'text-gray-700 dark:text-gray-300 hover:text-orange-500'
                   }`}
+                  title="Notifications"
                 >
                   <Bell className={`h-4 w-4 ${displayUnreadCount > 0 ? 'animate-pulse' : ''} ${hasNewNotification ? 'animate-bounce' : ''}`} />
                   {displayUnreadCount > 0 && (
-                    <span className={`absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium ${hasNewNotification ? 'animate-bounce' : 'animate-pulse'}`}>
+                    <span className={`absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center font-medium ${hasNewNotification ? 'animate-bounce' : 'animate-pulse'}`}>
                       {displayUnreadCount > 99 ? '99+' : displayUnreadCount}
                     </span>
                   )}
                 </Button>
               </div>
 
-              {/* User Profile Dropdown */}
+              {/* User Profile - Avatar only on mobile, full on desktop */}
               {mounted && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
                       variant="ghost"
-                      className="flex items-center gap-1 sm:gap-2 px-1 sm:px-2 py-1 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                      className="flex items-center gap-1 sm:gap-2 px-1 sm:px-2 py-1 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex-shrink-0"
                     >
                       <Link href="/profile">
-                        <Avatar className="h-7 w-7 sm:h-8 sm:w-8 cursor-pointer hover:ring-2 hover:ring-orange-500 transition-all">
+                        <Avatar className="h-8 w-8 sm:h-9 sm:w-9 cursor-pointer hover:ring-2 hover:ring-orange-500 transition-all">
                           <AvatarImage src={user?.imageUrl || ""} />
                           <AvatarFallback className="bg-purple-500 text-white text-xs sm:text-sm font-medium">
                             {user?.firstName?.charAt(0) || user?.emailAddresses?.[0]?.emailAddress?.charAt(0) || "U"}
                           </AvatarFallback>
                         </Avatar>
                       </Link>
-                      <span className="hidden md:block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      <span className="hidden lg:block text-sm font-medium text-gray-700 dark:text-gray-300">
                         {user?.firstName || user?.emailAddresses?.[0]?.emailAddress?.split("@")[0] || "User"}
                       </span>
-                      <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4 text-gray-500" />
+                      <ChevronDown className="hidden lg:block h-3 w-3 sm:h-4 sm:w-4 text-gray-500" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-64">

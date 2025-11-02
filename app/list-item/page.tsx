@@ -505,74 +505,118 @@ export default function CreateListingPage() {
           </div>
         )}
 
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-4">
-            <Button variant="outline" onClick={() => router.back()}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back
+        {/* Header - Mobile responsive */}
+        <div className="mb-6 md:mb-8">
+          {/* Top row: Back button and Action buttons */}
+          <div className="flex items-center justify-between mb-3 md:mb-4 gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => router.back()}
+              className="flex-shrink-0 h-9 md:h-10"
+            >
+              <ArrowLeft className="h-4 w-4 mr-1 md:mr-2" />
+              <span className="hidden sm:inline">Back</span>
             </Button>
-            <div>
-                <div className="flex items-center gap-3">
-                  <h1 className="text-3xl font-bold text-gray-900">
-                    {formData.id ? 'Edit Listing' : 'Create New Listing'}
-                  </h1>
-                  {formData.status === 'draft' && (
-                    <Badge variant="outline" className="bg-yellow-50 text-yellow-700">
-                      <FileText className="h-3 w-3 mr-1" />
-                      Draft
-                    </Badge>
-                  )}
-                </div>
-              <p className="text-gray-600">List your item for rent and start earning</p>
-                {lastSaved && (
-                  <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
-                    <Clock className="h-3 w-3" />
-                    Last saved: {lastSaved.toLocaleTimeString()}
-                  </p>
-                )}
-              </div>
-            </div>
-            <div className="flex gap-2">
+            
+            {/* Action buttons - wrap on mobile */}
+            <div className="flex gap-2 flex-shrink-0">
               <Button
                 variant="outline"
                 onClick={() => handleSaveDraft(false)}
                 disabled={isSavingDraft || !formData.title}
+                className="h-9 md:h-10 px-2 md:px-4 text-xs md:text-sm"
               >
                 {isSavingDraft ? (
                   <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600 mr-2"></div>
-                    Saving...
+                    <div className="animate-spin rounded-full h-3 w-3 md:h-4 md:w-4 border-b-2 border-gray-600 mr-1 md:mr-2"></div>
+                    <span className="hidden sm:inline">Saving...</span>
+                    <span className="sm:hidden">...</span>
                   </>
                 ) : (
                   <>
-                    <Save className="h-4 w-4 mr-2" />
-                    Save Draft
+                    <Save className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
+                    <span className="hidden sm:inline">Save Draft</span>
+                    <span className="sm:hidden">Draft</span>
                   </>
                 )}
               </Button>
               <Button
                 onClick={handlePreview}
                 disabled={!formData.title || !formData.description}
-                className="bg-blue-600 hover:bg-blue-700"
+                className="bg-blue-600 hover:bg-blue-700 h-9 md:h-10 px-2 md:px-4 text-xs md:text-sm"
               >
-                <Eye className="h-4 w-4 mr-2" />
-                Preview & Publish
+                <Eye className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
+                <span className="hidden sm:inline">Preview & Publish</span>
+                <span className="sm:hidden">Publish</span>
               </Button>
             </div>
           </div>
+          
+          {/* Title and status row */}
+          <div className="mb-2">
+            <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-2">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 flex-1 min-w-0">
+                {formData.id ? 'Edit Listing' : 'Create New Listing'}
+              </h1>
+              {formData.status === 'draft' && (
+                <Badge variant="outline" className="bg-yellow-50 text-yellow-700 flex-shrink-0 text-xs md:text-sm">
+                  <FileText className="h-3 w-3 mr-1" />
+                  Draft
+                </Badge>
+              )}
+            </div>
+            <p className="text-sm md:text-base text-gray-600 mb-1">List your item for rent and start earning</p>
+            {lastSaved && (
+              <p className="text-xs text-gray-500 flex items-center gap-1">
+                <Clock className="h-3 w-3" />
+                Last saved: {lastSaved.toLocaleTimeString()}
+              </p>
+            )}
+          </div>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
-            <TabsTrigger value="basic">Basic Info</TabsTrigger>
-            <TabsTrigger value="details">Details</TabsTrigger>
-            <TabsTrigger value="owner">Owner Info</TabsTrigger>
-            <TabsTrigger value="policy">Return Policy</TabsTrigger>
-            <TabsTrigger value="availability">Availability</TabsTrigger>
-            <TabsTrigger value="review">Review</TabsTrigger>
-          </TabsList>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 md:space-y-6">
+          {/* Mobile: Horizontal scrollable tabs, Desktop: Grid */}
+          <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
+            <TabsList className="inline-flex md:grid w-full md:grid-cols-3 lg:grid-cols-6 h-auto min-w-max md:min-w-0 gap-1 md:gap-2 p-1 md:p-1">
+              <TabsTrigger 
+                value="basic" 
+                className="flex-shrink-0 whitespace-nowrap text-xs md:text-sm px-3 md:px-4 py-2 md:py-2.5"
+              >
+                Basic Info
+              </TabsTrigger>
+              <TabsTrigger 
+                value="details" 
+                className="flex-shrink-0 whitespace-nowrap text-xs md:text-sm px-3 md:px-4 py-2 md:py-2.5"
+              >
+                Details
+              </TabsTrigger>
+              <TabsTrigger 
+                value="owner" 
+                className="flex-shrink-0 whitespace-nowrap text-xs md:text-sm px-3 md:px-4 py-2 md:py-2.5"
+              >
+                Owner Info
+              </TabsTrigger>
+              <TabsTrigger 
+                value="policy" 
+                className="flex-shrink-0 whitespace-nowrap text-xs md:text-sm px-3 md:px-4 py-2 md:py-2.5"
+              >
+                Return Policy
+              </TabsTrigger>
+              <TabsTrigger 
+                value="availability" 
+                className="flex-shrink-0 whitespace-nowrap text-xs md:text-sm px-3 md:px-4 py-2 md:py-2.5"
+              >
+                Availability
+              </TabsTrigger>
+              <TabsTrigger 
+                value="review" 
+                className="flex-shrink-0 whitespace-nowrap text-xs md:text-sm px-3 md:px-4 py-2 md:py-2.5"
+              >
+                Review
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           {/* Basic Information Tab */}
           <TabsContent value="basic" className="space-y-6">
