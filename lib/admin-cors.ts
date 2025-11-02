@@ -2,53 +2,56 @@ import { NextRequest, NextResponse } from 'next/server'
 
 /**
  * Get the allowed origin for CORS requests
- * Allows requests from admin dashboard subdomain and main domain (www.leli.rentals)
+ * Allows requests from admin dashboard (admin.leli.rentals) to main app APIs (www.leli.rentals/api)
  */
 function getAllowedOrigin(req: NextRequest): string | null {
   const origin = req.headers.get('origin')
   const adminDashboardUrl = process.env.NEXT_PUBLIC_ADMIN_DASHBOARD_URL || 'http://localhost:3001'
-  const mainSiteUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  const mainSiteUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_MAIN_API_URL || 'http://localhost:3000'
   
-  // Production domains - comprehensive list including www.leli.rentals
+  // Production domains
   const productionDomains = [
     'https://www.leli.rentals',
     'https://leli.rentals',
     'http://www.leli.rentals',
-    'http://leli.rentals',
-    'https://admin.leli.rentals',
-    'http://admin.leli.rentals',
-    // Support with and without www prefix
-    'www.leli.rentals',
-    'leli.rentals',
-    'admin.leli.rentals'
+    'http://leli.rentals'
   ]
   
-  // Check if origin matches any production domain (with protocol)
-  if (origin && productionDomains.some(domain => {
-    return origin === `https://${domain}` || 
-           origin === `http://${domain}` ||
-           origin.includes(domain) ||
-           origin.startsWith(`https://${domain}/`) ||
-           origin.startsWith(`http://${domain}/`)
-  })) {
-    return origin
-  }
+  const adminDomains = [
+    'https://admin.leli.rentals',
+    'http://admin.leli.rentals'
+  ]
   
-  // Allow requests from admin dashboard
-  if (origin === adminDashboardUrl || origin?.includes('admin.leli.rentals')) {
-    return origin
-  }
-  
-  // Allow same-origin requests from main site (www.leli.rentals)
-  if (origin === mainSiteUrl || 
-      origin?.includes('www.leli.rentals') || 
-      origin?.includes('leli.rentals')) {
-    return origin
-  }
-  
-  // For development, allow localhost
-  if (origin?.includes('localhost') || origin?.includes('127.0.0.1')) {
-    return origin
+  // Allow requests from admin dashboard (admin.leli.rentals) to main app APIs
+  if (origin) {
+    // Check admin dashboard domains first (production)
+    for (const adminDomain of adminDomains) {
+      if (origin === adminDomain || origin.startsWith(`${adminDomain}/`)) {
+        return origin
+      }
+    }
+    
+    // Check production main site domains
+    for (const domain of productionDomains) {
+      if (origin === domain || origin.startsWith(`${domain}/`)) {
+        return origin
+      }
+    }
+    
+    // Check admin dashboard from environment variable
+    if (origin === adminDashboardUrl || origin.startsWith(`${adminDashboardUrl}/`)) {
+      return origin
+    }
+    
+    // Check main site from environment variable
+    if (origin === mainSiteUrl || origin.startsWith(`${mainSiteUrl}/`)) {
+      return origin
+    }
+    
+    // For development, allow localhost
+    if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
+      return origin
+    }
   }
   
   return null

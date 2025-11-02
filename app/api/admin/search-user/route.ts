@@ -9,7 +9,7 @@ export async function OPTIONS(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const { email, emailAddress } = await req.json()
-    
+
     // Support both 'email' and 'emailAddress' for backward compatibility
     const emailToSearch = email || emailAddress
 
