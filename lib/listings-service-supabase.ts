@@ -64,7 +64,20 @@ export const listingsServiceSupabase = {
           .select()
           .single()
 
-        if (error) throw error
+        if (error) {
+          console.error('Error updating draft:', {
+            code: error.code,
+            message: error.message,
+            details: error.details,
+            hint: error.hint
+          })
+          throw new Error(error.message || `Failed to update draft: ${error.code || 'Unknown error'}`)
+        }
+        
+        if (!data) {
+          throw new Error('No data returned after update')
+        }
+        
         return { id: data.id }
       }
 
@@ -75,11 +88,41 @@ export const listingsServiceSupabase = {
         .select()
         .single()
 
-      if (error) throw error
+      if (error) {
+        console.error('Error creating draft:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          dataToSave: Object.keys(dataToSave)
+        })
+        // Provide more specific error messages
+        if (error.code === '23505') {
+          throw new Error('A listing with this ID already exists')
+        } else if (error.code === '23502') {
+          throw new Error(`Missing required field: ${error.message}`)
+        } else if (error.code === '23514') {
+          throw new Error(`Invalid data: ${error.message}`)
+        } else if (error.code === '42P01') {
+          throw new Error('Listings table does not exist. Please run the database migration scripts.')
+        } else if (error.message?.includes('relation') && error.message?.includes('does not exist')) {
+          throw new Error('Database table not found. Please ensure your database is properly set up.')
+        }
+        throw new Error(error.message || `Failed to create draft: ${error.code || 'Unknown error'}`)
+      }
+      
+      if (!data) {
+        throw new Error('No data returned after insert')
+      }
+      
       return { id: data.id }
     } catch (error: any) {
       console.error('Error saving draft:', error)
-      throw new Error(error.message || 'Failed to save draft')
+      // Don't wrap the error if it's already an Error with a message
+      if (error instanceof Error) {
+        throw error
+      }
+      throw new Error(error?.message || 'Failed to save draft')
     }
   },
 

@@ -363,10 +363,28 @@ export default function CreateListingPage() {
 
     setIsSavingDraft(true)
     try {
+      // Ensure we have at least a title for the draft
+      if (!formData.title || formData.title.trim() === '') {
+        throw new Error('Please enter a title before saving the draft')
+      }
+
       // Upload new images if any
       let newImageUrls: string[] = []
       if (formData.images.length > 0) {
-        newImageUrls = await uploadImages(formData.images)
+        try {
+          newImageUrls = await uploadImages(formData.images)
+        } catch (uploadError: any) {
+          console.error('Error uploading images:', uploadError)
+          // Continue without images if upload fails - don't block draft saving
+          if (!isAutoSave) {
+            toast({
+              title: "⚠️ Image Upload Failed",
+              description: "Draft will be saved without new images. " + (uploadError?.message || "Please try uploading images again."),
+              variant: "default",
+              duration: 4000
+            })
+          }
+        }
       }
 
       const allImageUrls = [...formData.imageUrls, ...newImageUrls]
@@ -375,17 +393,17 @@ export default function CreateListingPage() {
         id: formData.id,
         user_id: user.id,
         title: formData.title,
-        description: formData.description,
-        category: formData.category,
-        subcategory: formData.subcategory,
-        price: parseFloat(formData.price) || 0,
-        priceType: formData.priceType,
-        location: formData.location,
-        availability: formData.availability,
-        features: formData.features,
-        images: allImageUrls,
-        rules: formData.rules,
-        contactInfo: formData.contactInfo,
+        description: formData.description || '',
+        category: formData.category || null,
+        subcategory: formData.subcategory || null,
+        price: formData.price ? parseFloat(formData.price) : null,
+        priceType: formData.priceType || 'per_day',
+        location: formData.location || null,
+        availability: formData.availability || null,
+        features: Array.isArray(formData.features) ? formData.features : [],
+        images: Array.isArray(allImageUrls) ? allImageUrls : [],
+        rules: Array.isArray(formData.rules) ? formData.rules : [],
+        contactInfo: formData.contactInfo || null,
       }
 
       const { id } = await listingsServiceSupabase.saveDraft(user.id, listingData)
@@ -394,8 +412,8 @@ export default function CreateListingPage() {
       setLastSaved(new Date())
 
       if (!isAutoSave) {
-      toast({
-          title: "Draft saved",
+        toast({
+          title: "✅ Draft saved",
           description: "Your listing has been saved as a draft"
         })
       }
@@ -403,14 +421,19 @@ export default function CreateListingPage() {
       console.error('Error saving draft:', error)
       if (!isAutoSave) {
         const errorMessage = error?.message || "Failed to save draft"
-        const isDatabaseError = errorMessage.includes('Database not configured') || errorMessage.includes('Supabase')
+        const isDatabaseError = errorMessage.includes('Database not configured') || 
+                               errorMessage.includes('Supabase') ||
+                               errorMessage.includes('table') ||
+                               errorMessage.includes('does not exist') ||
+                               errorMessage.includes('migration')
         
         toast({
-          title: isDatabaseError ? "⚠️ Database Not Configured" : "❌ Error",
+          title: isDatabaseError ? "⚠️ Database Not Configured" : "❌ Error Saving Draft",
           description: isDatabaseError 
-            ? "Supabase is not set up. Please configure your database credentials to save drafts." 
+            ? "Supabase is not set up or database tables are missing. Please configure your database credentials and run migration scripts to save drafts." 
             : errorMessage,
-          variant: "destructive"
+          variant: "destructive",
+          duration: 6000
         })
       }
     } finally {

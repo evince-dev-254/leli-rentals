@@ -250,22 +250,31 @@ export default function VerificationPage() {
       // TODO: Upload documents to Supabase storage and save verification data
       // For now, we'll just update the metadata
       
+      // Wait a bit for Clerk to update the session, then reload
+      await user?.reload() // Refresh the user session
+      
       toast({
-        title: "✅ Verification Submitted!",
-        description: "Your verification is under review. Redirecting...",
+        title: "✅ Documents Submitted!",
+        description: "Your verification is pending review. Redirecting to subscription selection...",
         duration: 3000,
       })
 
-      // Wait a bit for Clerk to update the session, then reload and redirect
-      await user?.reload() // Refresh the user session
+      // Check account type and redirect to billing for owners
+      const accountType = (user?.unsafeMetadata?.accountType as string) || 
+                         (user?.publicMetadata?.accountType as string)
       
-      // After submission, stay on page to show pending status
-      // Admin will approve and redirect will happen via the useEffect above
-      toast({
-        title: "✅ Documents Submitted!",
-        description: "Your verification is pending review. You'll be redirected to choose a subscription plan once approved.",
-        duration: 5000,
-      })
+      // For owners, redirect to billing page to choose subscription
+      if (accountType === 'owner') {
+        // Small delay to ensure metadata is updated
+        setTimeout(() => {
+          router.push('/profile/billing')
+        }, 1000)
+      } else {
+        // For renters or others, redirect to dashboard
+        setTimeout(() => {
+          router.push('/listings')
+        }, 1000)
+      }
       
     } catch (error) {
       console.error('Error submitting verification:', error)
@@ -275,7 +284,7 @@ export default function VerificationPage() {
         variant: "destructive",
       })
     } finally {
-    setIsSubmitting(false)
+      setIsSubmitting(false)
     }
   }
 
