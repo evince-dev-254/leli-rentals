@@ -32,8 +32,8 @@ Create a `.env.local` file in your project root and add:
 
 ```bash
 # Paystack Configuration
-NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=pk_test_your_public_key_here
-PAYSTACK_SECRET_KEY=sk_test_your_secret_key_here
+NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=pk_test_6b5af019feb0a47dc1c2cfdbb6c8ed6fc5eecf85
+PAYSTACK_SECRET_KEY=sk_test_493eee98186340a114551307307fbd2be958af4c
 ```
 
 **Important Notes:**
@@ -41,7 +41,19 @@ PAYSTACK_SECRET_KEY=sk_test_your_secret_key_here
 - The secret key should NOT have `NEXT_PUBLIC_` prefix for security
 - Never commit your `.env.local` file to version control
 
-### 4. Test the Integration
+### 4. Enable Mobile Money in Paystack Dashboard
+
+1. Log in to your Paystack dashboard
+2. Go to Settings → Payment Methods
+3. Enable the following mobile money options:
+   - ✅ M-Pesa (Kenya)
+   - ✅ Airtel Money (Kenya)
+   - ✅ Pesapal (Kenya)
+4. Save your settings
+
+The app is already configured to use these mobile money channels when users select "Mobile Money" as their payment method.
+
+### 5. Test the Integration
 
 1. Start your development server: `npm run dev`
 2. Go to the pricing page: `/profile/billing`
@@ -53,7 +65,7 @@ PAYSTACK_SECRET_KEY=sk_test_your_secret_key_here
    - **Declined**: 4084084084084086
    - **Insufficient Funds**: 4084084084084087
 
-### 5. Go Live
+### 6. Go Live
 
 When ready for production:
 
@@ -66,7 +78,7 @@ When ready for production:
 
 ### Payment Methods Supported
 - ✅ Credit/Debit Cards
-- ✅ Mobile Money (M-Pesa, Airtel Money)
+- ✅ Mobile Money (M-Pesa, Airtel Money, Pesapal)
 - ✅ Bank Transfers
 - ✅ USSD
 - ✅ QR Code

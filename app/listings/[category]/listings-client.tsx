@@ -270,7 +270,7 @@ export function ListingsClient({
                       )}
                     >
                       <img
-                        src={listing.image || "/placeholder.svg"}
+                        src={listing.image || listing.images?.[0] || "/placeholder.svg"}
                         alt={listing.title || 'Listing image'}
                         loading="lazy"
                         decoding="async"
@@ -280,8 +280,7 @@ export function ListingsClient({
                         onError={(e) => {
                           const t = e.target as HTMLImageElement
                           t.onerror = null
-                          const fallback = `/images/${listing.category || 'placeholder'}/${listing.category || 'placeholder'}-1.svg`
-                          t.src = fallback
+                          t.src = "/placeholder.svg"
                           t.alt = listing.title ? `${listing.title} - image not available` : 'Image not available'
                         }}
                       />

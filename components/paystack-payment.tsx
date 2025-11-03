@@ -60,7 +60,7 @@ export function PaystackPayment({
       id: 'mobile_money',
       name: 'Mobile Money',
       icon: <Smartphone className="h-5 w-5" />,
-      description: 'M-Pesa, Airtel Money, MTN Mobile Money',
+      description: 'M-Pesa, Airtel Money, Pesapal',
       available: true
     },
     {
@@ -104,12 +104,29 @@ export function PaystackPayment({
       const amountInKobo = paystackService.convertToKobo(amount, currency)
       const reference = paystackService.generateReference()
 
+      // Determine channels based on selected payment method
+      let channels: string[] = []
+      if (selectedMethod === 'mobile_money') {
+        // Enable all mobile money channels for Kenya
+        channels = ['mobile_money', 'mpesa', 'airtel', 'pesapal']
+      } else if (selectedMethod === 'card') {
+        channels = ['card']
+      } else if (selectedMethod === 'bank_transfer') {
+        channels = ['bank']
+      } else if (selectedMethod === 'qr') {
+        channels = ['qr']
+      } else {
+        // Default: enable all channels
+        channels = ['card', 'bank', 'ussd', 'qr', 'mobile_money', 'mpesa', 'airtel', 'pesapal']
+      }
+
       const config: PaystackConfig = {
         publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || '',
         email: customerEmail,
         amount: amountInKobo,
         currency: currency,
         reference: reference,
+        channels: channels, // Enable mobile money channels
         metadata: {
           description: description,
           phone: customerPhone,
@@ -313,7 +330,7 @@ export function PaystackPayment({
 
       {/* Payment Methods Info */}
       <div className="text-center text-sm text-muted-foreground">
-        <p>Supported payment methods: Card, Mobile Money, Bank Transfer, QR Code</p>
+        <p>Supported payment methods: Card, M-Pesa, Airtel Money, Pesapal, Bank Transfer, QR Code</p>
         <p className="mt-1">Powered by Paystack • Secure & Reliable</p>
       </div>
     </div>

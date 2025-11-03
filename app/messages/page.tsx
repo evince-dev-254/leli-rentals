@@ -719,8 +719,8 @@ export default function MessagesPage() {
           </div>
           
           <Badge variant="secondary" className="px-3 md:px-4 py-2 text-sm md:text-base flex-shrink-0 w-full sm:w-auto text-center sm:text-left">
-            {chatSessions.reduce((sum, chat) => sum + chat.unreadCount, 0)} unread
-          </Badge>
+              {chatSessions.reduce((sum, chat) => sum + chat.unreadCount, 0)} unread
+            </Badge>
         </div>
 
         {/* Main Grid Layout - Mobile-first responsive */}
@@ -894,7 +894,7 @@ export default function MessagesPage() {
                     
                     <div className="flex items-center gap-2 flex-shrink-0">
                       <Link href={`/profile/${currentChat.participantId}`} target="_blank" rel="noopener noreferrer">
-                        <Button
+                      <Button
                           size="default"
                           variant="outline"
                           className="h-10 md:h-11 px-3 md:px-4 text-sm md:text-base font-medium"
@@ -1052,7 +1052,7 @@ export default function MessagesPage() {
                     >
                       ×
                     </Button>
-                  </div>
+        </div>
                 </CardHeader>
                 <CardContent className="p-4 md:p-6 space-y-4 md:space-y-6">
                   {loadingOwnerData ? (
@@ -1079,7 +1079,7 @@ export default function MessagesPage() {
                           {(ownerProfile?.verified || currentChat.participantVerified) && (
                             <Verified className="h-4 w-4 md:h-5 md:w-5 text-blue-500" />
                           )}
-                        </div>
+    </div>
                         <div className="flex items-center justify-center gap-2 mb-3 md:mb-4">
                           <Star className="h-4 w-4 text-yellow-400 fill-current" />
                           <span className="text-sm md:text-base font-medium text-gray-700 dark:text-gray-300">

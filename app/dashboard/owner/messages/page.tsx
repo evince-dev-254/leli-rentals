@@ -83,41 +83,52 @@ export default function OwnerMessagesPage() {
       
       setIsLoading(true)
       try {
-        // Fetch chat sessions where current user is the owner (receiver)
+        // Fetch chat sessions where current user is the owner (user_id field)
         const { data: sessions, error } = await supabase
           .from('chat_sessions')
           .select('*')
-          .eq('owner_id', user.id)
+          .eq('user_id', user.id)
+          .eq('status', 'active')
           .order('updated_at', { ascending: false })
 
-        if (error) throw error
+        if (error) {
+          console.error('Supabase error:', error)
+          throw error
+        }
 
         // Transform and enrich with renter details
         const enrichedSessions: ChatSession[] = await Promise.all(
           (sessions || []).map(async (session: any) => {
-            // Fetch renter details from Clerk or database
-            // For now, we'll use session data
-            const renterId = session.renter_id
+            // Fetch renter details from session data
+            // The participant_id is the renter
+            const renterId = session.participant_id
             
-            // Try to get renter details from users table or Clerk
-            let renterName = session.renter_name || 'Renter'
-            let renterAvatar = session.renter_avatar || '/placeholder-user.jpg'
-            let renterPhone = session.renter_phone
-            let renterEmail = session.renter_email
+            // Get renter details from session data
+            let renterName = session.participant_name || 'Renter'
+            let renterAvatar = session.participant_avatar || '/placeholder-user.jpg'
+            let renterPhone = session.participant_phone
+            let renterEmail = session.participant_email || null
 
             // Fetch listing details if available
-            let listingTitle = ''
-            let listingImage = ''
-            if (session.listing_id) {
-              const { data: listing } = await supabase
-                .from('listings')
-                .select('title, images')
-                .eq('id', session.listing_id)
-                .single()
-              
-              if (listing) {
-                listingTitle = listing.title
-                listingImage = listing.images?.[0] || '/placeholder.jpg'
+            let listingTitle = session.listing_title || ''
+            let listingImage = session.listing_image || '/placeholder.jpg'
+            let listingId = session.listing_id || null
+            
+            // Try to fetch listing details if we have listing_id but not title
+            if (session.listing_id && !listingTitle) {
+              try {
+                const { data: listing } = await supabase
+                  .from('listings')
+                  .select('title, images')
+                  .eq('id', session.listing_id)
+                  .maybeSingle()
+                
+                if (listing) {
+                  listingTitle = listing.title || ''
+                  listingImage = listing.images?.[0] || '/placeholder.jpg'
+                }
+              } catch (err) {
+                console.error('Error fetching listing:', err)
               }
             }
 
@@ -152,18 +163,18 @@ export default function OwnerMessagesPage() {
 
             return {
               id: session.id,
-              renterId,
+              renterId: renterId || session.participant_id,
               renterName,
               renterAvatar,
               renterPhone,
               renterEmail,
-              renterRating: 4.5, // Default, can be fetched from reviews
-              renterVerified: true, // Default
+              renterRating: session.participant_rating || 4.5,
+              renterVerified: session.participant_verified || false,
               lastMessage,
-              unreadCount: unreadCount || 0,
+              unreadCount: unreadCount || session.unread_count || 0,
               listingTitle,
               listingImage,
-              listingId: session.listing_id,
+              listingId: listingId || session.listing_id,
               bookingId: session.booking_id,
               createdAt: new Date(session.created_at),
               updatedAt: new Date(session.updated_at || session.created_at)

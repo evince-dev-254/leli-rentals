@@ -372,7 +372,7 @@ export default function CreateListingPage() {
       let newImageUrls: string[] = []
       if (formData.images.length > 0) {
         try {
-          newImageUrls = await uploadImages(formData.images)
+        newImageUrls = await uploadImages(formData.images)
         } catch (uploadError: any) {
           console.error('Error uploading images:', uploadError)
           // Continue without images if upload fails - don't block draft saving
@@ -412,7 +412,7 @@ export default function CreateListingPage() {
       setLastSaved(new Date())
 
       if (!isAutoSave) {
-        toast({
+      toast({
           title: "✅ Draft saved",
           description: "Your listing has been saved as a draft"
         })
@@ -638,7 +638,7 @@ export default function CreateListingPage() {
               >
                 Review
               </TabsTrigger>
-            </TabsList>
+          </TabsList>
           </div>
 
           {/* Basic Information Tab */}

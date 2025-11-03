@@ -50,6 +50,7 @@ import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { listingsService } from "@/lib/listings-service"
 import { getUserAccountType } from "@/lib/account-type-utils"
+import { useCloudinaryUpload } from "@/hooks/use-cloudinary-upload"
 import Image from "next/image"
 
 const CATEGORIES = [
@@ -121,6 +122,11 @@ export default function CreateListingPage() {
   const router = useRouter()
   const { toast } = useToast()
   
+  const { uploadFiles, isUploading: isUploadingImages } = useCloudinaryUpload({
+    folder: 'property-listings',
+    tags: ['property', 'listing']
+  })
+  
   const [currentStep, setCurrentStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSavingDraft, setIsSavingDraft] = useState(false)
@@ -147,7 +153,6 @@ export default function CreateListingPage() {
   
   const [uploadedImages, setUploadedImages] = useState<File[]>([])
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([])
-  const [isUploadingImages, setIsUploadingImages] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   
   // Calculate completion percentage
@@ -202,8 +207,6 @@ export default function CreateListingPage() {
     const files = event.target.files
     if (!files || !user) return
     
-    setIsUploadingImages(true)
-    
     try {
       const validFiles: File[] = []
       const previewUrls: string[] = []
@@ -237,12 +240,14 @@ export default function CreateListingPage() {
       
       if (validFiles.length === 0) return
       
-      // Simulate image upload (replace with actual upload logic)
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      // Upload images to Cloudinary
+      const uploadResults = await uploadFiles(validFiles, {
+        folder: `property-listings/${user.id}/${Date.now()}`,
+        tags: ['property-listing', 'owner-upload']
+      })
       
-      const uploadedUrls = validFiles.map((_, index) => 
-        `https://picsum.photos/800/600?random=${Date.now()}-${index}`
-      )
+      // Extract secure URLs from upload results
+      const uploadedUrls = uploadResults.map(result => result.secure_url)
       
       setUploadedImages(prev => [...prev, ...validFiles])
       setImagePreviewUrls(prev => [...prev, ...previewUrls])
@@ -262,11 +267,9 @@ export default function CreateListingPage() {
       console.error("Error uploading images:", error)
       toast({
         title: "Upload failed",
-        description: "Failed to upload images. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to upload images. Please try again.",
         variant: "destructive"
       })
-    } finally {
-      setIsUploadingImages(false)
     }
   }
   

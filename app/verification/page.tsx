@@ -271,9 +271,9 @@ export default function VerificationPage() {
         }, 1000)
       } else {
         // For renters or others, redirect to dashboard
-        setTimeout(() => {
+      setTimeout(() => {
           router.push('/listings')
-        }, 1000)
+      }, 1000)
       }
       
     } catch (error) {
@@ -284,7 +284,7 @@ export default function VerificationPage() {
         variant: "destructive",
       })
     } finally {
-      setIsSubmitting(false)
+    setIsSubmitting(false)
     }
   }
 

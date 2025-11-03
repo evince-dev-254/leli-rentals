@@ -34,23 +34,23 @@ function getAllowedOrigin(req: NextRequest): string | null {
     // Check production main site domains
     for (const domain of productionDomains) {
       if (origin === domain || origin.startsWith(`${domain}/`)) {
-        return origin
+    return origin
       }
-    }
-    
+  }
+  
     // Check admin dashboard from environment variable
     if (origin === adminDashboardUrl || origin.startsWith(`${adminDashboardUrl}/`)) {
-      return origin
-    }
-    
+    return origin
+  }
+  
     // Check main site from environment variable
     if (origin === mainSiteUrl || origin.startsWith(`${mainSiteUrl}/`)) {
-      return origin
-    }
-    
-    // For development, allow localhost
+    return origin
+  }
+  
+  // For development, allow localhost
     if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
-      return origin
+    return origin
     }
   }
   

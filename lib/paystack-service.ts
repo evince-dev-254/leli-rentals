@@ -8,6 +8,7 @@ export interface PaystackConfig {
   currency?: string
   reference?: string
   metadata?: Record<string, any>
+  channels?: string[] // Payment channels: 'card', 'bank', 'ussd', 'qr', 'mobile_money', 'mpesa', 'airtel', 'pesapal'
   callback?: (response: PaystackResponse) => void
   onClose?: () => void
 }
@@ -90,6 +91,14 @@ class PaystackService {
 
   // Process payment with Paystack
   private processPayment(config: PaystackConfig): void {
+    // Default channels: card and mobile money for Kenya
+    const defaultChannels = ['card', 'bank', 'ussd', 'qr', 'mobile_money', 'mpesa']
+    
+    // Use provided channels or default to all available channels
+    const channels = config.channels && config.channels.length > 0 
+      ? config.channels 
+      : defaultChannels
+
     const handler = window.PaystackPop.setup({
       key: this.publicKey,
       email: config.email,
@@ -97,6 +106,7 @@ class PaystackService {
       currency: config.currency || 'KES',
       ref: config.reference || this.generateReference(),
       metadata: config.metadata || {},
+      channels: channels, // Enable mobile money channels
       callback: (response: PaystackResponse) => {
         console.log('Paystack payment response:', response)
         if (config.callback) {

@@ -103,30 +103,37 @@ export default function ListingsPage() {
 
       if (data && data.length > 0) {
         // Transform Supabase data to Listing format
-        const transformedListings: Listing[] = data.map((item: any) => ({
-          id: item.id,
-          title: item.title,
-          description: item.description || '',
-          fullDescription: item.description || '',
-          price: item.price,
-          location: item.location || '',
-          rating: 4.5, // Default rating
-          reviews: Math.floor(Math.random() * 200) + 10,
-          image: item.images?.[0] || '/placeholder.jpg',
-          images: item.images || ['/placeholder.jpg'],
-          amenities: item.features || [],
-          available: true,
-          category: item.category,
-          owner: {
-            id: item.user_id,
-            name: item.contact_info?.name || 'Owner',
-            rating: 4.8,
-            verified: true,
-            phone: item.contact_info?.phone || ''
-          },
-          createdAt: new Date(item.created_at),
-          updatedAt: new Date(item.updated_at || item.created_at)
-        }))
+        const transformedListings: Listing[] = data.map((item: any) => {
+          // Handle images: use database images if available, only fallback if truly missing
+          const dbImages = Array.isArray(item.images) && item.images.length > 0
+            ? item.images.filter((img: any) => img && typeof img === 'string' && img.trim() !== '')
+            : null
+          
+          return {
+            id: item.id,
+            title: item.title,
+            description: item.description || '',
+            fullDescription: item.description || '',
+            price: item.price,
+            location: item.location || '',
+            rating: 4.5, // Default rating
+            reviews: Math.floor(Math.random() * 200) + 10,
+            image: dbImages?.[0] || '/placeholder.svg',
+            images: dbImages || ['/placeholder.svg'],
+            amenities: item.features || [],
+            available: true,
+            category: item.category,
+            owner: {
+              id: item.user_id,
+              name: item.contact_info?.name || 'Owner',
+              rating: 4.8,
+              verified: true,
+              phone: item.contact_info?.phone || ''
+            },
+            createdAt: new Date(item.created_at),
+            updatedAt: new Date(item.updated_at || item.created_at)
+          }
+        })
 
         setListings(transformedListings)
 
@@ -282,12 +289,14 @@ export default function ListingsPage() {
     // Use a demo user ID if not signed in
     const userId = user?.id || 'demo_user'
     
+    // Check the current liked state BEFORE toggling
+    const wasLiked = interactions[listingId]?.liked
+    
     try {
       await toggleLike(listingId)
-      const isLiked = interactions[listingId]?.liked
       toast({
-        title: isLiked ? "Liked!" : "Unliked",
-        description: isLiked ? "Added to your liked listings" : "Removed from liked listings"
+        title: wasLiked ? "Unliked" : "Liked!",
+        description: wasLiked ? "Removed from liked listings" : "Added to your liked listings"
       })
     } catch (error) {
       toast({
@@ -805,9 +814,14 @@ export default function ListingsPage() {
               >
                 <div className="aspect-video relative overflow-hidden">
                   <img
-                    src={listing.image}
+                    src={listing.image || listing.images?.[0] || "/placeholder.svg"}
                     alt={listing.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    onError={(e) => {
+                      const t = e.target as HTMLImageElement
+                      t.onerror = null
+                      t.src = "/placeholder.svg"
+                    }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                   

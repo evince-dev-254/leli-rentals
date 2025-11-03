@@ -42,7 +42,6 @@ import {
   CreditCard,
   Smartphone,
   Building2,
-  Wallet,
   Banknote,
   Download
 } from "lucide-react"
@@ -55,6 +54,7 @@ import { useInteractions } from "@/lib/hooks/use-interactions"
 import { useToast } from "@/hooks/use-toast"
 import { bookingsDB } from "@/lib/interactions-database-service"
 import { paystackService } from "@/lib/paystack-service"
+import { paymentService } from "@/lib/payment-service"
 import { notificationService } from "@/lib/notification-service"
 import { supabase } from "@/lib/supabase"
 
@@ -127,6 +127,19 @@ export default function ListingDetailsPage() {
         }
 
         // Transform Supabase data to Listing format
+        // Handle images: use database images if available, only fallback to placeholder if truly missing
+        const dbImages = Array.isArray(data.images) && data.images.length > 0 
+          ? data.images.filter((img: any) => img && typeof img === 'string' && img.trim() !== '')
+          : null
+        
+        console.log('Listing images from database:', {
+          listingId: data.id,
+          title: data.title,
+          rawImages: data.images,
+          filteredImages: dbImages,
+          imageCount: dbImages?.length || 0
+        })
+        
         const transformedListing: Listing = {
           id: data.id,
           title: data.title,
@@ -136,8 +149,8 @@ export default function ListingDetailsPage() {
           location: data.location || '',
           rating: 4.5, // Default rating
           reviews: Math.floor(Math.random() * 200) + 10,
-          image: data.images?.[0] || '/placeholder.jpg',
-          images: data.images || ['/placeholder.jpg'],
+          image: dbImages?.[0] || '/placeholder.svg',
+          images: dbImages && dbImages.length > 0 ? dbImages : ['/placeholder.svg'],
           amenities: data.features || [],
           available: data.availability?.available !== false,
           category: data.category || 'other',
@@ -167,30 +180,37 @@ export default function ListingDetailsPage() {
           .limit(4)
 
         if (relatedData && relatedData.length > 0) {
-          const related: Listing[] = relatedData.map((item: any) => ({
-            id: item.id,
-            title: item.title,
-            description: item.description || '',
-            fullDescription: item.description || '',
-            price: item.price || 0,
-            location: item.location || '',
-            rating: 4.5,
-            reviews: Math.floor(Math.random() * 200) + 10,
-            image: item.images?.[0] || '/placeholder.jpg',
-            images: item.images || ['/placeholder.jpg'],
-            amenities: item.features || [],
-            available: item.availability?.available !== false,
-            category: item.category || 'other',
-            owner: {
-              id: item.user_id,
-              name: item.contact_info?.name || 'Owner',
-              rating: 4.8,
-              verified: true,
-              phone: item.contact_info?.phone || ''
-            },
-            createdAt: new Date(item.created_at),
-            updatedAt: new Date(item.updated_at || item.created_at)
-          }))
+          const related: Listing[] = relatedData.map((item: any) => {
+            // Handle images: use database images if available
+            const dbImages = Array.isArray(item.images) && item.images.length > 0
+              ? item.images.filter((img: any) => img && typeof img === 'string' && img.trim() !== '')
+              : null
+            
+            return {
+              id: item.id,
+              title: item.title,
+              description: item.description || '',
+              fullDescription: item.description || '',
+              price: item.price || 0,
+              location: item.location || '',
+              rating: 4.5,
+              reviews: Math.floor(Math.random() * 200) + 10,
+              image: dbImages?.[0] || '/placeholder.svg',
+              images: dbImages || ['/placeholder.svg'],
+              amenities: item.features || [],
+              available: item.availability?.available !== false,
+              category: item.category || 'other',
+              owner: {
+                id: item.user_id,
+                name: item.contact_info?.name || 'Owner',
+                rating: 4.8,
+                verified: true,
+                phone: item.contact_info?.phone || ''
+              },
+              createdAt: new Date(item.created_at),
+              updatedAt: new Date(item.updated_at || item.created_at)
+            }
+          })
           setRelatedListings(related)
         } else {
           // Fallback to mock related listings
@@ -230,12 +250,14 @@ export default function ListingDetailsPage() {
   const handleLike = async () => {
     if (!listing?.id) return
     
+    // Check the current liked state BEFORE toggling
+    const wasLiked = interactions[listing.id]?.liked
+    
     try {
       await toggleLike(listing.id)
-      const isLiked = interactions[listing.id]?.liked
       toast({
-        title: isLiked ? "Liked!" : "Unliked",
-        description: isLiked ? "Added to your liked listings" : "Removed from liked listings"
+        title: wasLiked ? "Unliked" : "Liked!",
+        description: wasLiked ? "Removed from liked listings" : "Added to your liked listings"
       })
     } catch (error) {
       toast({
@@ -419,13 +441,14 @@ export default function ListingDetailsPage() {
       const duration = Math.ceil((tomorrow.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
       const totalAmount = listing.price * duration
 
-      // Initialize Paystack payment
+      // Initialize Paystack payment with mobile money support
       paystackService.initializePayment({
         publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || '',
         email: paymentDetails.walletAddress,
         amount: paystackService.convertToKobo(totalAmount, 'KES'),
         currency: 'KES',
         reference: paystackService.generateReference(),
+        channels: ['card', 'bank', 'ussd', 'qr', 'mobile_money', 'mpesa', 'airtel', 'pesapal'], // Enable mobile money
         metadata: {
           listingId: id,
           listingTitle: listing.title,
@@ -505,6 +528,122 @@ export default function ListingDetailsPage() {
           })
         }
       })
+      return
+    }
+
+    // Handle Mobile Banking (M-Pesa STK Push)
+    if (selectedPaymentMethod === "mobile_banking") {
+      if (!paymentDetails.phoneNumber) {
+        toast({
+          title: "Phone number required",
+          description: "Please enter your M-Pesa phone number to continue.",
+          variant: "destructive",
+        })
+        return
+      }
+
+      // Validate phone number format (should be 254XXXXXXXXX or 0XXXXXXXXX)
+      const cleanPhone = paymentDetails.phoneNumber.replace(/\s+/g, '')
+      let mpesaPhoneNumber = cleanPhone.startsWith('0') ? `254${cleanPhone.slice(1)}` : (cleanPhone.startsWith('254') ? cleanPhone : `254${cleanPhone}`)
+      
+      // Remove any non-digit characters for validation
+      mpesaPhoneNumber = mpesaPhoneNumber.replace(/\D/g, '')
+      
+      // Validate: should be 254 followed by 9 digits (total 12 digits)
+      if (mpesaPhoneNumber.length !== 12 || !mpesaPhoneNumber.startsWith('254')) {
+        toast({
+          title: "Invalid phone number",
+          description: "Please enter a valid Kenyan phone number (e.g., 254 700 000 000 or 0700 000 000)",
+          variant: "destructive",
+        })
+        return
+      }
+
+      setBookingLoading(true)
+
+      try {
+        const today = new Date()
+        const tomorrow = new Date(today)
+        tomorrow.setDate(tomorrow.getDate() + 1)
+        const duration = Math.ceil((tomorrow.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+        const totalAmount = listing.price * duration
+
+        // Generate booking reference
+        const bookingReference = `LELI-${Date.now()}`
+
+        // Process M-Pesa STK Push payment
+        const paymentResult = await paymentService.processMpesaPayment({
+          amount: totalAmount,
+          phoneNumber: mpesaPhoneNumber,
+          accountReference: bookingReference,
+          transactionDesc: `Payment for ${listing.title}`
+        })
+
+        if (paymentResult.success) {
+          toast({
+            title: "📱 M-Pesa STK Push Sent!",
+            description: paymentResult.message || "Please check your phone and enter your M-Pesa PIN to complete the payment.",
+            duration: 8000,
+          })
+
+          // Create booking with pending payment status
+          const bookingData = {
+            user_id: user.id,
+            listing_id: id,
+            owner_id: listing.owner?.id || 'unknown',
+            start_date: today.toISOString(),
+            end_date: tomorrow.toISOString(),
+            total_price: totalAmount,
+            status: 'pending' as const,
+            payment_status: 'pending' as const,
+            payment_id: paymentResult.transactionId || bookingReference,
+            notes: `Booked via Mobile Banking (M-Pesa). Transaction ID: ${paymentResult.transactionId || bookingReference}. Bank: Consolidated Bank of Kenya Ltd, Account: 10071212000587`
+          }
+
+          const renterName = user.fullName || user.firstName || 'User'
+          const result = await bookingsDB.createBooking(bookingData, renterName, listing.title)
+          
+          if (!result.success) {
+            throw new Error('Failed to create booking in database')
+          }
+
+          // Close modal and reset form
+          setShowBookingModal(false)
+          setSelectedPaymentMethod("")
+          setPaymentDetails({
+            cardNumber: "",
+            expiryDate: "",
+            cvv: "",
+            cardName: "",
+            phoneNumber: "",
+            mpesaCode: "",
+            bankAccount: "",
+            walletAddress: ""
+          })
+
+          // Redirect to bookings page after a delay
+          setTimeout(() => {
+            router.push('/profile/bookings')
+          }, 3000)
+        } else {
+          toast({
+            title: "❌ Payment Failed",
+            description: paymentResult.message || "Failed to initiate M-Pesa payment. Please try again.",
+            variant: "destructive",
+            duration: 5000,
+          })
+        }
+      } catch (error) {
+        console.error('Error processing mobile banking payment:', error)
+        toast({
+          title: "❌ Payment Error",
+          description: "An error occurred while processing your payment. Please try again.",
+          variant: "destructive",
+          duration: 5000,
+        })
+      } finally {
+        setBookingLoading(false)
+      }
       return
     }
 
@@ -707,10 +846,15 @@ export default function ListingDetailsPage() {
             <Card className="overflow-hidden card-animate">
               <div className="aspect-video relative group">
                 <img
-                  src={listing.images?.[currentImageIndex] || listing.image}
+                  src={listing.images?.[currentImageIndex] || listing.image || "/placeholder.svg"}
                   alt={listing.title}
                   className="w-full h-full object-cover cursor-pointer"
                   onClick={() => setShowImageModal(true)}
+                  onError={(e) => {
+                    const t = e.target as HTMLImageElement
+                    t.onerror = null
+                    t.src = "/placeholder.svg"
+                  }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                 
@@ -812,10 +956,15 @@ export default function ListingDetailsPage() {
                             : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
                         }`}
                       >
-                        <img
-                          src={image}
-                          alt={`${listing.title} ${index + 1}`}
-                          className="w-full h-full object-cover"
+                      <img
+                        src={image || "/placeholder.svg"}
+                        alt={`${listing.title} ${index + 1}`}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          const t = e.target as HTMLImageElement
+                          t.onerror = null
+                          t.src = "/placeholder.svg"
+                        }}
                         />
                       </button>
                     ))}
@@ -1085,9 +1234,14 @@ export default function ListingDetailsPage() {
         <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
           <div className="relative max-w-4xl max-h-full">
             <img
-              src={listing.images?.[currentImageIndex] || listing.image}
+              src={listing.images?.[currentImageIndex] || listing.image || "/placeholder.svg"}
               alt={listing.title}
               className="max-w-full max-h-full object-contain"
+              onError={(e) => {
+                const t = e.target as HTMLImageElement
+                t.onerror = null
+                t.src = "/placeholder.svg"
+              }}
             />
             <Button
               size="icon"
@@ -1187,26 +1341,14 @@ export default function ListingDetailsPage() {
                     </Label>
                   </div>
 
-                  {/* Bank Transfer */}
+                  {/* Mobile Banking */}
                   <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                    <RadioGroupItem value="bank_transfer" id="bank_transfer" />
-                    <Label htmlFor="bank_transfer" className="flex items-center gap-3 cursor-pointer flex-1">
-                      <Building2 className="h-6 w-6 text-purple-600" />
+                    <RadioGroupItem value="mobile_banking" id="mobile_banking" />
+                    <Label htmlFor="mobile_banking" className="flex items-center gap-3 cursor-pointer flex-1">
+                      <Smartphone className="h-6 w-6 text-green-600" />
                       <div>
-                        <p className="font-medium">Bank Transfer</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Direct bank transfer</p>
-                      </div>
-                    </Label>
-                  </div>
-
-                  {/* Digital Wallet */}
-                  <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                    <RadioGroupItem value="digital_wallet" id="digital_wallet" />
-                    <Label htmlFor="digital_wallet" className="flex items-center gap-3 cursor-pointer flex-1">
-                      <Wallet className="h-6 w-6 text-orange-600" />
-                      <div>
-                        <p className="font-medium">Digital Wallet</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">PayPal, Apple Pay, Google Pay</p>
+                        <p className="font-medium">Mobile Banking</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">M-Pesa payment with bank details</p>
                       </div>
                     </Label>
                   </div>
@@ -1309,44 +1451,34 @@ export default function ListingDetailsPage() {
               </div>
             )}
 
-            {selectedPaymentMethod === "bank_transfer" && (
+            {selectedPaymentMethod === "mobile_banking" && (
               <div className="space-y-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
-                <h4 className="font-medium">Bank Transfer Details</h4>
+                <h4 className="font-medium">Mobile Banking Payment</h4>
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="bankAccount">Bank Account Number</Label>
+                    <Label htmlFor="mpesaPhoneNumber">M-Pesa Phone Number</Label>
                     <Input
-                      id="bankAccount"
-                      placeholder="Enter bank account number"
-                      value={paymentDetails.bankAccount}
-                      onChange={(e) => setPaymentDetails(prev => ({ ...prev, bankAccount: e.target.value }))}
+                      id="mpesaPhoneNumber"
+                      placeholder="254 700 000 000"
+                      value={paymentDetails.phoneNumber}
+                      onChange={(e) => setPaymentDetails(prev => ({ ...prev, phoneNumber: e.target.value }))}
                     />
+                    <p className="text-xs text-gray-500 mt-1">Enter your M-Pesa registered phone number</p>
                   </div>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
-                    <p className="text-sm text-blue-800 dark:text-blue-200">
-                      <strong>Bank Details:</strong><br />
-                      Bank: Kenya Commercial Bank<br />
-                      Account Name: Leli Rentals Ltd<br />
-                      Account Number: 1234567890<br />
-                      Branch: Nairobi CBD
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {selectedPaymentMethod === "digital_wallet" && (
-              <div className="space-y-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
-                <h4 className="font-medium">Digital Wallet Details</h4>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="walletAddress">Wallet Address/Email</Label>
-                    <Input
-                      id="walletAddress"
-                      placeholder="Enter wallet address or email"
-                      value={paymentDetails.walletAddress}
-                      onChange={(e) => setPaymentDetails(prev => ({ ...prev, walletAddress: e.target.value }))}
-                    />
+                  <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg space-y-2">
+                    <p className="text-sm font-semibold text-blue-800 dark:text-blue-200">Bank Details for Reference:</p>
+                    <div className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
+                      <p><strong>Bank Name:</strong> Consolidated Bank of Kenya Ltd</p>
+                      <p><strong>Branch Code:</strong> 006</p>
+                      <p><strong>Account Number:</strong> 10071212000587</p>
+                      <p><strong>Account Name:</strong> Paul Gitonga Kihiu</p>
+                    </div>
+                    <div className="mt-3 pt-3 border-t border-blue-200 dark:border-blue-800">
+                      <p className="text-xs text-blue-600 dark:text-blue-400">
+                        <strong>Note:</strong> When you confirm payment, you will receive an M-Pesa prompt on your phone to enter your PIN. 
+                        The payment will be processed through M-Pesa and the bank details above are for your records.
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>

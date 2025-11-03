@@ -189,12 +189,12 @@ export function Header() {
           <img 
             src="/default-monochrome-black.svg" 
             alt="Leli Rentals Logo" 
-              className="h-6 w-auto sm:h-8 md:h-10 object-contain dark:hidden hover:opacity-80 transition-opacity duration-200"
+              className="h-5 w-auto sm:h-6 md:h-7 object-contain dark:hidden hover:opacity-80 transition-opacity duration-200"
           />
           <img 
             src="/default-monochrome-white.svg" 
             alt="Leli Rentals Logo" 
-              className="h-6 w-auto sm:h-8 md:h-10 object-contain hidden dark:block hover:opacity-80 transition-opacity duration-200"
+              className="h-5 w-auto sm:h-6 md:h-7 object-contain hidden dark:block hover:opacity-80 transition-opacity duration-200"
           />
         </Link>
         </div>
