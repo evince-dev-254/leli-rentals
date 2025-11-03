@@ -36,10 +36,40 @@ import {
 import { useUser } from '@clerk/nextjs'
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
-import { bookingsService, Booking } from "@/lib/bookings-service"
+import { bookingsDB, Booking as DBBooking } from "@/lib/interactions-database-service"
 import { hybridSavedBookingsService } from "@/lib/hybrid-saved-bookings-service"
 import { SavedBooking } from "@/lib/types/saved-booking"
 import LocationSelector from "@/components/location-selector"
+import { supabase } from "@/lib/supabase"
+
+// Booking interface matching the display format
+interface Booking {
+  id?: string
+  listingId: string
+  userId: string
+  ownerId: string
+  listingTitle: string
+  listingImage: string
+  ownerName: string
+  ownerAvatar: string
+  ownerRating: number
+  dates: {
+    start: Date
+    end: Date
+    duration: number
+  }
+  totalPrice: number
+  bookingFee: number
+  subtotal: number
+  status: "pending" | "confirmed" | "completed" | "cancelled"
+  category: string
+  location: string
+  createdAt?: Date
+  updatedAt?: Date
+  paymentStatus: "pending" | "paid" | "refunded"
+  specialRequests?: string
+  cancellationPolicy?: string
+}
 
 export default function BookingsPage() {
   const { user, isLoaded } = useUser()
@@ -54,15 +84,95 @@ export default function BookingsPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [isLoadingSaved, setIsLoadingSaved] = useState(false)
 
-  // Load user bookings
+  // Load user bookings from Supabase
   useEffect(() => {
     const loadBookings = async () => {
       if (!user) return
       
       setIsLoading(true)
       try {
-        const userBookings = await bookingsService.getUserBookings(user.id)
-        setBookings(userBookings)
+        // Get bookings from Supabase
+        const dbBookings = await bookingsDB.getUserBookings(user.id)
+        
+        // Transform and enrich bookings with listing details
+        const enrichedBookings: Booking[] = await Promise.all(
+          dbBookings.map(async (dbBooking: DBBooking) => {
+            // Fetch listing details to enrich booking data
+            let listingTitle = 'Unknown Listing'
+            let listingImage = '/placeholder.svg'
+            let category = 'other'
+            let location = ''
+            let ownerName = 'Owner'
+            let ownerAvatar = '/placeholder-user.jpg'
+            let ownerRating = 4.5
+            
+            try {
+              // Get listing details
+              const { data: listing } = await supabase
+                .from('listings')
+                .select('title, images, category, location, contact_info, user_id')
+                .eq('id', dbBooking.listing_id)
+                .single()
+              
+              if (listing) {
+                listingTitle = listing.title || 'Unknown Listing'
+                listingImage = Array.isArray(listing.images) && listing.images.length > 0 
+                  ? listing.images[0] 
+                  : '/placeholder.svg'
+                category = listing.category || 'other'
+                location = listing.location || ''
+                
+                // Get owner details if available
+                if (listing.contact_info) {
+                  ownerName = listing.contact_info.name || 'Owner'
+                  ownerAvatar = listing.contact_info.avatar || '/placeholder-user.jpg'
+                }
+              }
+            } catch (error) {
+              console.error('Error fetching listing details:', error)
+            }
+            
+            // Calculate booking fee (10% service fee)
+            const subtotal = dbBooking.total_price || 0
+            const bookingFee = Math.round(subtotal * 0.1)
+            const totalPrice = subtotal + bookingFee
+            
+            // Calculate duration
+            const startDate = new Date(dbBooking.start_date)
+            const endDate = new Date(dbBooking.end_date)
+            const duration = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) || 1
+            
+            return {
+              id: dbBooking.id,
+              listingId: dbBooking.listing_id,
+              userId: dbBooking.user_id,
+              ownerId: dbBooking.owner_id,
+              listingTitle,
+              listingImage,
+              ownerName,
+              ownerAvatar,
+              ownerRating,
+              dates: {
+                start: startDate,
+                end: endDate,
+                duration
+              },
+              subtotal,
+              bookingFee,
+              totalPrice,
+              status: dbBooking.status,
+              category,
+              location,
+              paymentStatus: dbBooking.payment_status,
+              createdAt: dbBooking.created_at ? new Date(dbBooking.created_at) : new Date(),
+              updatedAt: dbBooking.updated_at ? new Date(dbBooking.updated_at) : new Date(),
+              specialRequests: dbBooking.notes || undefined,
+              cancellationPolicy: 'Free cancellation up to 24 hours before booking starts.'
+            }
+          })
+        )
+        
+        setBookings(enrichedBookings)
       } catch (error) {
         console.error("Error loading bookings:", error)
         toast({
@@ -200,9 +310,11 @@ Location: ${booking.location}
 
 PRICING:
 --------
-Daily Rate: KSh ${booking.totalPrice / booking.dates.duration}
+Daily Rate: KSh ${(booking.subtotal / booking.dates.duration).toFixed(2)}
 Total Duration: ${booking.dates.duration} day(s)
-Total Amount: KSh ${booking.totalPrice}
+Subtotal: KSh ${booking.subtotal.toLocaleString('en-KE')}
+Booking Fee (10%): KSh ${booking.bookingFee.toLocaleString('en-KE')}
+Total Amount: KSh ${booking.totalPrice.toLocaleString('en-KE')}
 
 STATUS:
 -------
@@ -401,7 +513,7 @@ For support, contact: support@lelirentals.com
                 </div>
                 <div>
                   <div className="text-lg sm:text-xl md:text-2xl font-bold text-purple-600 dark:text-purple-400">
-                    ${bookings.reduce((sum, b) => sum + b.totalPrice, 0).toFixed(0)}
+                    KSh {bookings.reduce((sum, b) => sum + b.totalPrice, 0).toLocaleString('en-KE')}
                   </div>
                   <div className="text-xs sm:text-sm text-muted-foreground">Total Spent</div>
                 </div>
@@ -515,7 +627,7 @@ For support, contact: support@lelirentals.com
                         <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
                           <div className="space-y-2">
                             <h3 className="text-xl font-semibold">{booking.listingTitle}</h3>
-                            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                              <div className="flex items-center gap-4 text-sm text-muted-foreground">
                               <div className="flex items-center gap-1">
                                 <MapPin className="h-4 w-4" />
                                 {booking.location}
@@ -526,7 +638,23 @@ For support, contact: support@lelirentals.com
                               </div>
                               <div className="flex items-center gap-1">
                                 <DollarSign className="h-4 w-4" />
-                                ${booking.totalPrice.toFixed(2)} total
+                                <span>KSh {booking.totalPrice.toLocaleString('en-KE')} total</span>
+                              </div>
+                            </div>
+                            
+                            {/* Price Breakdown */}
+                            <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg text-sm">
+                              <div className="flex justify-between mb-1">
+                                <span className="text-muted-foreground">Subtotal ({booking.dates.duration} day{booking.dates.duration > 1 ? 's' : ''}):</span>
+                                <span className="font-medium">KSh {booking.subtotal.toLocaleString('en-KE')}</span>
+                              </div>
+                              <div className="flex justify-between mb-1">
+                                <span className="text-muted-foreground">Booking Fee (10%):</span>
+                                <span className="font-medium">KSh {booking.bookingFee.toLocaleString('en-KE')}</span>
+                              </div>
+                              <div className="flex justify-between pt-2 border-t border-gray-200 dark:border-gray-600 mt-2">
+                                <span className="font-semibold">Total:</span>
+                                <span className="font-bold text-blue-600 dark:text-blue-400">KSh {booking.totalPrice.toLocaleString('en-KE')}</span>
                               </div>
                             </div>
                             

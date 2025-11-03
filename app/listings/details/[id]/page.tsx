@@ -73,6 +73,8 @@ export default function ListingDetailsPage() {
   const [showBookingModal, setShowBookingModal] = useState(false)
   const [relatedListings, setRelatedListings] = useState<Listing[]>([])
   const [bookingLoading, setBookingLoading] = useState(false)
+  const [listingStatus, setListingStatus] = useState<'draft' | 'published' | 'pending' | 'archived' | null>(null)
+  const [isOwner, setIsOwner] = useState(false)
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("")
   const [paymentDetails, setPaymentDetails] = useState({
     cardNumber: "",
@@ -94,13 +96,29 @@ export default function ListingDetailsPage() {
     
     const fetchListing = async () => {
       try {
-        // Fetch listing from Supabase
-        const { data, error } = await supabase
+        // First, try to fetch published listing (for public access)
+        let { data, error } = await supabase
           .from('listings')
           .select('*')
           .eq('id', id)
           .eq('status', 'published')
           .single()
+
+        // If not found and user is logged in, try to fetch regardless of status
+        // (allows owners to view their own drafts/pending listings)
+        if ((error || !data) && user?.id) {
+          const { data: userListing, error: userError } = await supabase
+            .from('listings')
+            .select('*')
+            .eq('id', id)
+            .single()
+          
+          // If found and user is the owner, allow viewing
+          if (userListing && userListing.user_id === user.id) {
+            data = userListing
+            error = null
+          }
+        }
 
         if (error || !data) {
           // Fallback to mock data if not found in database
@@ -166,6 +184,8 @@ export default function ListingDetailsPage() {
         }
 
         setListing(transformedListing)
+        setListingStatus(data.status || 'published')
+        setIsOwner(user?.id === data.user_id)
         
         // Track view
         trackView(id, { source: 'listing_details' })
@@ -439,7 +459,9 @@ export default function ListingDetailsPage() {
       const tomorrow = new Date(today)
       tomorrow.setDate(tomorrow.getDate() + 1)
       const duration = Math.ceil((tomorrow.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
-      const totalAmount = listing.price * duration
+      const subtotal = listing.price * duration
+      const bookingFee = Math.round(subtotal * 0.1) // 10% booking fee
+      const totalAmount = subtotal + bookingFee
 
       // Initialize Paystack payment with mobile money support
       paystackService.initializePayment({
@@ -464,11 +486,11 @@ export default function ListingDetailsPage() {
                 owner_id: listing.owner?.id || 'unknown',
                 start_date: today.toISOString(),
                 end_date: tomorrow.toISOString(),
-                total_price: totalAmount,
+                total_price: totalAmount, // Includes booking fee
                 status: 'confirmed' as const,
                 payment_status: 'paid' as const,
                 payment_id: response.reference,
-                notes: `Booked via Paystack. Transaction: ${response.transaction}`
+                notes: `Booked via Paystack. Transaction: ${response.transaction}. Subtotal: KSh ${subtotal}, Booking Fee: KSh ${bookingFee}, Total: KSh ${totalAmount}`
               }
 
               const renterName = user.fullName || user.firstName || 'User'
@@ -531,121 +553,6 @@ export default function ListingDetailsPage() {
       return
     }
 
-    // Handle Mobile Banking (M-Pesa STK Push)
-    if (selectedPaymentMethod === "mobile_banking") {
-      if (!paymentDetails.phoneNumber) {
-        toast({
-          title: "Phone number required",
-          description: "Please enter your M-Pesa phone number to continue.",
-          variant: "destructive",
-        })
-        return
-      }
-
-      // Validate phone number format (should be 254XXXXXXXXX or 0XXXXXXXXX)
-      const cleanPhone = paymentDetails.phoneNumber.replace(/\s+/g, '')
-      let mpesaPhoneNumber = cleanPhone.startsWith('0') ? `254${cleanPhone.slice(1)}` : (cleanPhone.startsWith('254') ? cleanPhone : `254${cleanPhone}`)
-      
-      // Remove any non-digit characters for validation
-      mpesaPhoneNumber = mpesaPhoneNumber.replace(/\D/g, '')
-      
-      // Validate: should be 254 followed by 9 digits (total 12 digits)
-      if (mpesaPhoneNumber.length !== 12 || !mpesaPhoneNumber.startsWith('254')) {
-        toast({
-          title: "Invalid phone number",
-          description: "Please enter a valid Kenyan phone number (e.g., 254 700 000 000 or 0700 000 000)",
-          variant: "destructive",
-        })
-        return
-      }
-
-      setBookingLoading(true)
-
-      try {
-        const today = new Date()
-        const tomorrow = new Date(today)
-        tomorrow.setDate(tomorrow.getDate() + 1)
-        const duration = Math.ceil((tomorrow.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
-        const totalAmount = listing.price * duration
-
-        // Generate booking reference
-        const bookingReference = `LELI-${Date.now()}`
-
-        // Process M-Pesa STK Push payment
-        const paymentResult = await paymentService.processMpesaPayment({
-          amount: totalAmount,
-          phoneNumber: mpesaPhoneNumber,
-          accountReference: bookingReference,
-          transactionDesc: `Payment for ${listing.title}`
-        })
-
-        if (paymentResult.success) {
-          toast({
-            title: "📱 M-Pesa STK Push Sent!",
-            description: paymentResult.message || "Please check your phone and enter your M-Pesa PIN to complete the payment.",
-            duration: 8000,
-          })
-
-          // Create booking with pending payment status
-          const bookingData = {
-            user_id: user.id,
-            listing_id: id,
-            owner_id: listing.owner?.id || 'unknown',
-            start_date: today.toISOString(),
-            end_date: tomorrow.toISOString(),
-            total_price: totalAmount,
-            status: 'pending' as const,
-            payment_status: 'pending' as const,
-            payment_id: paymentResult.transactionId || bookingReference,
-            notes: `Booked via Mobile Banking (M-Pesa). Transaction ID: ${paymentResult.transactionId || bookingReference}. Bank: Consolidated Bank of Kenya Ltd, Account: 10071212000587`
-          }
-
-          const renterName = user.fullName || user.firstName || 'User'
-          const result = await bookingsDB.createBooking(bookingData, renterName, listing.title)
-          
-          if (!result.success) {
-            throw new Error('Failed to create booking in database')
-          }
-
-          // Close modal and reset form
-          setShowBookingModal(false)
-          setSelectedPaymentMethod("")
-          setPaymentDetails({
-            cardNumber: "",
-            expiryDate: "",
-            cvv: "",
-            cardName: "",
-            phoneNumber: "",
-            mpesaCode: "",
-            bankAccount: "",
-            walletAddress: ""
-          })
-
-          // Redirect to bookings page after a delay
-          setTimeout(() => {
-            router.push('/profile/bookings')
-          }, 3000)
-        } else {
-          toast({
-            title: "❌ Payment Failed",
-            description: paymentResult.message || "Failed to initiate M-Pesa payment. Please try again.",
-            variant: "destructive",
-            duration: 5000,
-          })
-        }
-      } catch (error) {
-        console.error('Error processing mobile banking payment:', error)
-        toast({
-          title: "❌ Payment Error",
-          description: "An error occurred while processing your payment. Please try again.",
-          variant: "destructive",
-          duration: 5000,
-        })
-      } finally {
-        setBookingLoading(false)
-      }
-      return
-    }
 
     // Handle other payment methods
     setBookingLoading(true)
@@ -656,6 +563,9 @@ export default function ListingDetailsPage() {
       tomorrow.setDate(tomorrow.getDate() + 1)
       
       const duration = Math.ceil((tomorrow.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+      const subtotal = listing.price * duration
+      const bookingFee = Math.round(subtotal * 0.1) // 10% booking fee
+      const totalPrice = subtotal + bookingFee
 
       const bookingData = {
         user_id: user.id,
@@ -663,10 +573,10 @@ export default function ListingDetailsPage() {
         owner_id: listing.owner?.id || 'unknown',
         start_date: today.toISOString(),
         end_date: tomorrow.toISOString(),
-        total_price: listing.price * duration,
+        total_price: totalPrice, // Include booking fee in total
         status: 'confirmed' as const,
         payment_status: 'paid' as const,
-        notes: `Booked via ${selectedPaymentMethod}`
+        notes: `Booked via ${selectedPaymentMethod}. Subtotal: KSh ${subtotal}, Booking Fee: KSh ${bookingFee}, Total: KSh ${totalPrice}`
       }
 
       const renterName = user.fullName || user.firstName || 'User'
@@ -858,14 +768,27 @@ export default function ListingDetailsPage() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                 
-                {/* Category Badge */}
-                <div className="absolute top-4 left-4">
+                {/* Category Badge and Status Badge */}
+                <div className="absolute top-4 left-4 flex flex-col gap-2">
                   <div className="flex items-center gap-2 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg px-3 py-2">
                     <IconComponent className="h-5 w-5 text-blue-600" />
                     <span className="text-sm font-medium text-gray-800 dark:text-gray-200 capitalize">
                       {listing.category}
                     </span>
                   </div>
+                  {isOwner && listingStatus && listingStatus !== 'published' && (
+                    <Badge 
+                      className={`${
+                        listingStatus === 'draft' 
+                          ? 'bg-yellow-500 text-white hover:bg-yellow-600' 
+                          : listingStatus === 'pending'
+                          ? 'bg-orange-500 text-white hover:bg-orange-600'
+                          : 'bg-gray-500 text-white hover:bg-gray-600'
+                      }`}
+                    >
+                      {listingStatus === 'draft' ? 'Draft' : listingStatus === 'pending' ? 'Pending' : 'Archived'}
+                    </Badge>
+                  )}
                 </div>
 
                 {/* Image Navigation */}
@@ -1290,9 +1213,14 @@ export default function ListingDetailsPage() {
               <CardContent className="p-4">
                 <div className="flex items-center gap-4">
                   <img 
-                    src={listing?.image} 
+                    src={listing?.images?.[0] || listing?.image || "/placeholder.svg"} 
                     alt={listing?.title}
                     className="w-16 h-16 rounded-lg object-cover"
+                    onError={(e) => {
+                      const t = e.target as HTMLImageElement
+                      t.onerror = null
+                      t.src = "/placeholder.svg"
+                    }}
                   />
                   <div className="flex-1">
                     <h3 className="font-semibold text-lg">{listing?.title}</h3>
@@ -1317,42 +1245,6 @@ export default function ListingDetailsPage() {
               <RadioGroup value={selectedPaymentMethod} onValueChange={setSelectedPaymentMethod}>
                 <div className="grid grid-cols-1 gap-4">
                   
-                  {/* Credit/Debit Card */}
-                  <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                    <RadioGroupItem value="credit_card" id="credit_card" />
-                    <Label htmlFor="credit_card" className="flex items-center gap-3 cursor-pointer flex-1">
-                      <CreditCard className="h-6 w-6 text-blue-600" />
-                      <div>
-                        <p className="font-medium">Credit/Debit Card</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Visa, Mastercard, American Express</p>
-                      </div>
-                    </Label>
-                  </div>
-
-                  {/* M-Pesa */}
-                  <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                    <RadioGroupItem value="mpesa" id="mpesa" />
-                    <Label htmlFor="mpesa" className="flex items-center gap-3 cursor-pointer flex-1">
-                      <Smartphone className="h-6 w-6 text-green-600" />
-                      <div>
-                        <p className="font-medium">M-Pesa</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Mobile money payment</p>
-                      </div>
-                    </Label>
-                  </div>
-
-                  {/* Mobile Banking */}
-                  <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                    <RadioGroupItem value="mobile_banking" id="mobile_banking" />
-                    <Label htmlFor="mobile_banking" className="flex items-center gap-3 cursor-pointer flex-1">
-                      <Smartphone className="h-6 w-6 text-green-600" />
-                      <div>
-                        <p className="font-medium">Mobile Banking</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">M-Pesa payment with bank details</p>
-                      </div>
-                    </Label>
-                  </div>
-
                   {/* Paystack */}
                   <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                     <RadioGroupItem value="paystack" id="paystack" />
@@ -1360,19 +1252,19 @@ export default function ListingDetailsPage() {
                       <CreditCard className="h-6 w-6 text-blue-600" />
                       <div>
                         <p className="font-medium">Paystack (Recommended)</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Cards, Mobile Money, Bank Transfer</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Cards, Mobile Money (M-Pesa, Airtel), Bank Transfer</p>
                       </div>
                     </Label>
                   </div>
 
-                  {/* Cash Payment */}
+                  {/* Pay on Delivery */}
                   <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                     <RadioGroupItem value="cash" id="cash" />
                     <Label htmlFor="cash" className="flex items-center gap-3 cursor-pointer flex-1">
                       <Banknote className="h-6 w-6 text-green-600" />
                       <div>
-                        <p className="font-medium">Cash Payment</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Pay on pickup/delivery</p>
+                        <p className="font-medium">Pay on Delivery</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Pay in cash when you pick up or receive the item</p>
                       </div>
                     </Label>
                   </div>
@@ -1380,110 +1272,31 @@ export default function ListingDetailsPage() {
               </RadioGroup>
             </div>
 
+            {/* Booking Fee Summary */}
+            {listing && (
+              <Card className="border-2 border-blue-200 dark:border-blue-800">
+                <CardContent className="p-4">
+                  <h4 className="font-semibold mb-3">Price Breakdown</h4>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600 dark:text-gray-400">1 day rental:</span>
+                      <span className="font-medium">KSh {listing.price.toLocaleString('en-KE')}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600 dark:text-gray-400">Booking Fee (10%):</span>
+                      <span className="font-medium">KSh {Math.round(listing.price * 0.1).toLocaleString('en-KE')}</span>
+                    </div>
+                    <Separator />
+                    <div className="flex justify-between text-lg font-bold">
+                      <span>Total:</span>
+                      <span className="text-blue-600 dark:text-blue-400">KSh {(listing.price + Math.round(listing.price * 0.1)).toLocaleString('en-KE')}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Payment Details Forms */}
-            {selectedPaymentMethod === "credit_card" && (
-              <div className="space-y-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
-                <h4 className="font-medium">Card Details</h4>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="col-span-2">
-                    <Label htmlFor="cardNumber">Card Number</Label>
-                    <Input
-                      id="cardNumber"
-                      placeholder="1234 5678 9012 3456"
-                      value={paymentDetails.cardNumber}
-                      onChange={(e) => setPaymentDetails(prev => ({ ...prev, cardNumber: e.target.value }))}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="expiryDate">Expiry Date</Label>
-                    <Input
-                      id="expiryDate"
-                      placeholder="MM/YY"
-                      value={paymentDetails.expiryDate}
-                      onChange={(e) => setPaymentDetails(prev => ({ ...prev, expiryDate: e.target.value }))}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="cvv">CVV</Label>
-                    <Input
-                      id="cvv"
-                      placeholder="123"
-                      value={paymentDetails.cvv}
-                      onChange={(e) => setPaymentDetails(prev => ({ ...prev, cvv: e.target.value }))}
-                    />
-                  </div>
-                  <div className="col-span-2">
-                    <Label htmlFor="cardName">Cardholder Name</Label>
-                    <Input
-                      id="cardName"
-                      placeholder="John Doe"
-                      value={paymentDetails.cardName}
-                      onChange={(e) => setPaymentDetails(prev => ({ ...prev, cardName: e.target.value }))}
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {selectedPaymentMethod === "mpesa" && (
-              <div className="space-y-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
-                <h4 className="font-medium">M-Pesa Details</h4>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="phoneNumber">Phone Number</Label>
-                    <Input
-                      id="phoneNumber"
-                      placeholder="+254 700 000 000"
-                      value={paymentDetails.phoneNumber}
-                      onChange={(e) => setPaymentDetails(prev => ({ ...prev, phoneNumber: e.target.value }))}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="mpesaCode">M-Pesa Code (if available)</Label>
-                    <Input
-                      id="mpesaCode"
-                      placeholder="Enter M-Pesa transaction code"
-                      value={paymentDetails.mpesaCode}
-                      onChange={(e) => setPaymentDetails(prev => ({ ...prev, mpesaCode: e.target.value }))}
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {selectedPaymentMethod === "mobile_banking" && (
-              <div className="space-y-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
-                <h4 className="font-medium">Mobile Banking Payment</h4>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="mpesaPhoneNumber">M-Pesa Phone Number</Label>
-                    <Input
-                      id="mpesaPhoneNumber"
-                      placeholder="254 700 000 000"
-                      value={paymentDetails.phoneNumber}
-                      onChange={(e) => setPaymentDetails(prev => ({ ...prev, phoneNumber: e.target.value }))}
-                    />
-                    <p className="text-xs text-gray-500 mt-1">Enter your M-Pesa registered phone number</p>
-                  </div>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg space-y-2">
-                    <p className="text-sm font-semibold text-blue-800 dark:text-blue-200">Bank Details for Reference:</p>
-                    <div className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
-                      <p><strong>Bank Name:</strong> Consolidated Bank of Kenya Ltd</p>
-                      <p><strong>Branch Code:</strong> 006</p>
-                      <p><strong>Account Number:</strong> 10071212000587</p>
-                      <p><strong>Account Name:</strong> Paul Gitonga Kihiu</p>
-                    </div>
-                    <div className="mt-3 pt-3 border-t border-blue-200 dark:border-blue-800">
-                      <p className="text-xs text-blue-600 dark:text-blue-400">
-                        <strong>Note:</strong> When you confirm payment, you will receive an M-Pesa prompt on your phone to enter your PIN. 
-                        The payment will be processed through M-Pesa and the bank details above are for your records.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
             {selectedPaymentMethod === "paystack" && (
               <div className="space-y-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
                 <h4 className="font-medium">Paystack Payment</h4>

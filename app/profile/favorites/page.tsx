@@ -29,6 +29,8 @@ import { useUser } from '@clerk/nextjs'
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { favoritesService, Favorite } from "@/lib/favorites-service"
+import { favoritesDB } from "@/lib/interactions-database-service"
+import { supabase } from "@/lib/supabase"
 
 const categories = [
   { value: "all", label: "All Categories" },
@@ -58,42 +60,129 @@ export default function FavoritesPage() {
     }
   }, [isLoaded, user, router])
 
-  // Load user favorites
+  // Load user favorites from both database and localStorage
   useEffect(() => {
     const loadFavorites = async () => {
       if (!user) return
       
       setIsLoading(true)
       try {
-        // Use API route instead of direct service call
-        const response = await fetch('/api/profile/favorites')
-        if (!response.ok) {
-          throw new Error('Failed to fetch favorites')
+        const allFavorites: Favorite[] = []
+        
+        // 1. Load favorites from Supabase database
+        try {
+          const dbFavorites = await favoritesDB.getUserFavorites(user.id)
+          
+          // Enrich database favorites with listing details
+          const enrichedDbFavorites = await Promise.all(
+            dbFavorites.map(async (fav) => {
+              try {
+                const { data: listing } = await supabase
+                  .from('listings')
+                  .select('id, title, description, price, category, images, location, contact_info, status')
+                  .eq('id', fav.listing_id)
+                  .single()
+                
+                if (listing && listing.status === 'published') {
+                  const dbImages = Array.isArray(listing.images) && listing.images.length > 0
+                    ? listing.images.filter((img: any) => img && typeof img === 'string' && img.trim() !== '')
+                    : null
+                  
+                  return {
+                    id: fav.id || `db_${fav.listing_id}`,
+                    userId: user.id,
+                    listingId: fav.listing_id,
+                    title: listing.title || 'Untitled',
+                    description: listing.description || '',
+                    price: listing.price || 0,
+                    category: listing.category || 'misc',
+                    image: dbImages?.[0] || '/placeholder.svg',
+                    location: listing.location || '',
+                    ownerName: listing.contact_info?.name || 'Unknown',
+                    rating: 4.5,
+                    reviews: 0,
+                    addedDate: fav.created_at ? new Date(fav.created_at) : new Date(),
+                    isAvailable: true,
+                  } as Favorite
+                }
+                return null
+              } catch (error) {
+                console.error('Error enriching favorite:', error)
+                return null
+              }
+            })
+          )
+          
+          allFavorites.push(...enrichedDbFavorites.filter(f => f !== null) as Favorite[])
+        } catch (error) {
+          console.error('Error loading database favorites:', error)
         }
-        const data = await response.json()
-        // Transform API response to match Favorite interface
-        const userFavorites: Favorite[] = Array.isArray(data) 
-          ? data.filter((fav: any) => fav.userId === user.id).map((fav: any) => ({
-              id: fav.id,
-              userId: fav.userId || user.id,
-              listingId: fav.listingId || fav.id,
-              title: fav.title || 'Untitled',
-              description: fav.description || '',
-              price: typeof fav.price === 'number' ? fav.price : 0,
-              category: fav.category || 'misc',
-              image: fav.image || '/placeholder.svg',
-              location: fav.location || '',
-              ownerName: fav.owner || fav.ownerName || 'Unknown',
-              rating: typeof fav.rating === 'number' ? fav.rating : 0,
-              reviews: typeof fav.reviews === 'number' ? fav.reviews : 0,
-              addedDate: fav.createdAt ? new Date(fav.createdAt) : new Date(),
-              isAvailable: fav.isAvailable !== undefined ? fav.isAvailable : true,
-            }))
-          : []
-        setFavorites(userFavorites)
+        
+        // 2. Load liked items from localStorage
+        if (typeof window !== 'undefined') {
+          try {
+            const likedItems = JSON.parse(localStorage.getItem('likedItems') || '[]') as string[]
+            
+            // Fetch listing details for liked items
+            const likedFavorites = await Promise.all(
+              likedItems.map(async (listingId) => {
+                try {
+                  const { data: listing } = await supabase
+                    .from('listings')
+                    .select('id, title, description, price, category, images, location, contact_info, status')
+                    .eq('id', listingId)
+                    .single()
+                  
+                  if (listing && listing.status === 'published') {
+                    const dbImages = Array.isArray(listing.images) && listing.images.length > 0
+                      ? listing.images.filter((img: any) => img && typeof img === 'string' && img.trim() !== '')
+                      : null
+                    
+                    return {
+                      id: `local_${listingId}`,
+                      userId: user.id,
+                      listingId: listing.id,
+                      title: listing.title || 'Untitled',
+                      description: listing.description || '',
+                      price: listing.price || 0,
+                      category: listing.category || 'misc',
+                      image: dbImages?.[0] || '/placeholder.svg',
+                      location: listing.location || '',
+                      ownerName: listing.contact_info?.name || 'Unknown',
+                      rating: 4.5,
+                      reviews: 0,
+                      addedDate: new Date(), // Use current date as we don't know when it was liked
+                      isAvailable: true,
+                    } as Favorite
+                  }
+                  return null
+                } catch (error) {
+                  console.error('Error fetching liked listing:', error)
+                  return null
+                }
+              })
+            )
+            
+            // Filter out duplicates (items that are already in database favorites)
+            const existingListingIds = new Set(allFavorites.map(f => f.listingId))
+            const uniqueLikedFavorites = likedFavorites.filter(
+              f => f !== null && !existingListingIds.has(f!.listingId)
+            ) as Favorite[]
+            
+            allFavorites.push(...uniqueLikedFavorites)
+          } catch (error) {
+            console.error('Error loading localStorage favorites:', error)
+          }
+        }
+        
+        // Sort by added date (newest first)
+        allFavorites.sort((a, b) => 
+          new Date(b.addedDate).getTime() - new Date(a.addedDate).getTime()
+        )
+        
+        setFavorites(allFavorites)
       } catch (error) {
         console.error("Error loading favorites:", error)
-        // Set empty array as fallback instead of showing error for empty state
         setFavorites([])
       } finally {
         setIsLoading(false)
@@ -126,9 +215,22 @@ export default function FavoritesPage() {
     if (!user) return
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      await favoritesService.removeFromFavorites(user.id, listingId)
+      // Remove from database favorites (try both ways - by ID and by listing ID)
+      // If it has a real database ID or starts with 'db_', try to remove from DB
+      if (favoriteId && (!favoriteId.startsWith('local_'))) {
+        await favoritesDB.removeFavorite(user.id, listingId)
+      }
+      
+      // Remove from localStorage if it exists there
+      if (typeof window !== 'undefined') {
+        try {
+          const likedItems = JSON.parse(localStorage.getItem('likedItems') || '[]') as string[]
+          const updatedItems = likedItems.filter(id => id !== listingId)
+          localStorage.setItem('likedItems', JSON.stringify(updatedItems))
+        } catch (error) {
+          console.error('Error updating localStorage:', error)
+        }
+      }
       
       // Update local state
       setFavorites(prev => prev.filter(fav => fav.id !== favoriteId))
@@ -290,7 +392,7 @@ export default function FavoritesPage() {
                 </div>
                 <div>
                   <div className="text-xl sm:text-2xl font-bold text-blue-600">
-                    ${favorites.length > 0 ? Math.round(favorites.reduce((sum, f) => sum + (f.price || 0), 0) / favorites.length) : 0}
+                    KSh {favorites.length > 0 ? Math.round(favorites.reduce((sum, f) => sum + (f.price || 0), 0) / favorites.length).toLocaleString('en-KE') : '0'}
                   </div>
                   <div className="text-xs sm:text-sm text-muted-foreground">Avg. Price</div>
                 </div>
@@ -413,7 +515,7 @@ export default function FavoritesPage() {
                     <span className="text-sm text-muted-foreground">({favorite.reviews})</span>
                   </div>
                   <div className="text-lg font-bold text-green-600">
-                    ${favorite.price}/day
+                    KSh {favorite.price.toLocaleString('en-KE')}/day
                   </div>
                 </div>
 
