@@ -23,18 +23,26 @@ export function VideoBackground({
   const [showVideo, setShowVideo] = useState(false)
 
   useEffect(() => {
-    // Check if device is mobile - temporarily disable mobile check to test video
-    const checkMobile = () => {
-      const mobile = window.innerWidth < 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-      setIsMobile(mobile)
-      // Always show video for testing - remove this later
-      setShowVideo(true)
+    // Always show video by default, only disable for very slow connections
+    const checkConnection = () => {
+      if ('connection' in navigator) {
+        const conn = (navigator as any).connection;
+        const slowConnection = conn?.saveData || conn?.effectiveType?.includes('2g');
+        setShowVideo(!slowConnection);
+      } else {
+        setShowVideo(true);
+      }
     }
 
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
+    checkConnection()
+    setIsMobile(window.innerWidth < 768)
+    
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
 
-    return () => window.removeEventListener('resize', checkMobile)
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
   }, [])
 
   useEffect(() => {
@@ -44,6 +52,21 @@ export function VideoBackground({
     const handleCanPlay = () => {
       console.log('Video can play:', src)
       setIsVideoLoaded(true)
+      // Start playing only when in viewport
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              video.play().catch(console.error)
+            } else {
+              video.pause()
+            }
+          })
+        },
+        { threshold: 0.1 }
+      )
+      observer.observe(video)
+      return () => observer.disconnect()
     }
 
     const handleError = (e: Event) => {
@@ -54,7 +77,8 @@ export function VideoBackground({
     video.addEventListener('canplay', handleCanPlay)
     video.addEventListener('error', handleError)
 
-    // Let the source tag handle the src, just trigger load
+    // Preload metadata only
+    video.preload = 'metadata'
     video.load()
 
     return () => {
@@ -79,6 +103,7 @@ export function VideoBackground({
           playsInline
           preload="auto"
           className="absolute inset-0 w-full h-full object-cover video-bg-layer opacity-100"
+          poster={fallbackImage}
         >
           <source src={src} type="video/mp4" />
           Your browser does not support the video tag.
@@ -87,21 +112,20 @@ export function VideoBackground({
 
       {/* Fallback Image Background - Mobile or when video fails */}
       {!showVideo && (
-        <div 
-          className="absolute inset-0 w-full h-full object-cover bg-cover bg-center bg-no-repeat video-bg-layer"
-          style={{ 
-            backgroundImage: `url(${fallbackImage})`
-          }}
+        <img 
+          src={fallbackImage}
+          alt="Background"
+          className="absolute inset-0 w-full h-full object-cover video-bg-layer"
         />
       )}
 
       {/* Loading state background - show immediately */}
       {showVideo && (
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-900 via-blue-700 to-purple-900 video-bg-layer opacity-50" />
+        <div className="absolute inset-0 bg-linear-to-br from-blue-900 via-blue-700 to-purple-900 video-bg-layer opacity-50" />
       )}
 
       {/* Gradient Overlay for better text readability */}
-      <div className="absolute inset-0 bg-gradient-to-br from-black/50 via-black/30 to-black/60 dark:from-black/70 dark:via-black/50 dark:to-black/80 transition-all duration-500 video-overlay-layer" />
+      <div className="absolute inset-0 bg-linear-to-br from-black/50 via-black/30 to-black/60 dark:from-black/70 dark:via-black/50 dark:to-black/80 transition-all duration-500 video-overlay-layer" />
 
       {/* Content */}
       <div className="relative z-10">

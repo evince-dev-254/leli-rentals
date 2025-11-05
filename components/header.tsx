@@ -170,8 +170,8 @@ export function Header() {
   }
 
   return (
-    <header className="w-full bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/90 dark:bg-gray-900/95 dark:supports-[backdrop-filter]:bg-gray-900/90 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50 transition-all duration-300 shadow-theme">
-      <div className="container mx-auto flex h-14 sm:h-16 items-center justify-between px-2 sm:px-4 md:px-6 max-w-7xl gap-2">
+        <header className="w-full bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/90 dark:bg-gray-900/95 dark:supports-[backdrop-filter]:bg-gray-900/90 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50 transition-all duration-300 shadow-theme">
+      <div className="container mx-auto flex h-12 sm:h-14 items-center justify-between px-3 sm:px-4 max-w-7xl gap-2">
         {/* Left: Logo and Mobile Menu */}
         <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
           {/* Mobile Menu Button - Only on mobile */}
@@ -185,16 +185,16 @@ export function Header() {
           </Button>
 
           {/* Logo - Smaller on mobile */}
-          <Link href="/" className="flex items-center group flex-shrink-0">
+          <Link href="/" className="flex items-center group shrink-0">
           <img 
             src="/default-monochrome-black.svg" 
             alt="Leli Rentals Logo" 
-              className="h-5 w-auto sm:h-6 md:h-7 object-contain dark:hidden hover:opacity-80 transition-opacity duration-200"
+            className="h-4 w-auto sm:h-5 md:h-6 object-contain dark:hidden hover:opacity-80 transition-opacity duration-200"
           />
           <img 
             src="/default-monochrome-white.svg" 
             alt="Leli Rentals Logo" 
-              className="h-5 w-auto sm:h-6 md:h-7 object-contain hidden dark:block hover:opacity-80 transition-opacity duration-200"
+            className="h-4 w-auto sm:h-5 md:h-6 object-contain hidden dark:block hover:opacity-80 transition-opacity duration-200"
           />
         </Link>
         </div>
@@ -247,46 +247,37 @@ export function Header() {
         </nav>
 
         {/* Search Bar - Desktop only */}
-        <div className="hidden md:flex items-center gap-2 sm:gap-3 flex-1 max-w-sm mx-2">
+        <div className="hidden md:flex items-center gap-1 flex-1 max-w-[200px] mx-2">
           <div className="relative flex-1 group">
-            <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 h-3 w-3 group-focus-within:text-orange-500 transition-colors duration-200" />
+            <Search className="absolute left-1.5 top-1/2 transform -translate-y-1/2 text-gray-400 h-3 w-3 group-focus-within:text-orange-500 transition-colors duration-200" />
             <Input
               placeholder="Search Rentals"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={handleKeyDown}
-              className="pl-8 h-8 sm:h-9 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-600 focus:border-orange-500 focus:ring-orange-500 transition-all duration-200 focus-enhanced text-sm"
+              className="pl-6 h-6 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-600 focus:border-orange-500 focus:ring-orange-500 transition-all duration-200 focus-enhanced text-xs rounded-md w-full"
             />
           </div>
           <Button
             onClick={handleSearch}
-            className="h-8 sm:h-9 px-2 sm:px-3 bg-orange-500 hover:bg-orange-600 text-white transition-all duration-200 btn-animate"
+            variant="ghost"
+            size="sm"
+            className="h-6 w-6 p-0 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 transition-all duration-200"
           >
             <Search className="h-3 w-3" />
           </Button>
         </div>
 
         {/* Right Side Actions - Optimized for mobile */}
-        <div className="flex items-center gap-1 sm:gap-2 md:gap-3 flex-shrink-0">
-          {/* Mobile Search Button - Only show on mobile when menu is closed */}
-          {!isMobileMenuOpen && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => router.push('/listings')}
-              className="md:hidden h-9 w-9 text-gray-800 dark:text-gray-200 hover:text-orange-500 transition-all duration-200"
-              title="Search"
-            >
-              <Search className="h-5 w-5" />
-            </Button>
-          )}
+        <div className="flex items-center gap-1 sm:gap-2 md:gap-3 shrink-0">
+          {/* Mobile Menu Indicator */}
 
-          {/* WhatsApp AI Chat - Hidden on smallest screens, show on sm+ */}
+          {/* WhatsApp AI Chat - Desktop only */}
           <a
             href="https://wa.me/254112081866?text=Hi%20Leli%20Rentals%20AI%20Assistant"
             target="_blank"
             rel="noopener noreferrer"
-            className="hidden sm:inline-flex items-center justify-center h-9 w-9 rounded-md text-gray-800 dark:text-gray-200 hover:text-green-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 cursor-pointer"
+            className="hidden lg:inline-flex items-center justify-center h-8 w-8 rounded-md text-gray-800 dark:text-gray-200 hover:text-green-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 cursor-pointer"
             title="Chat with AI Assistant"
             onClick={(e) => {
               console.log('WhatsApp button clicked')
@@ -301,7 +292,7 @@ export function Header() {
               variant="ghost"
               size="icon"
               onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-              className="h-9 w-9 text-gray-800 dark:text-gray-200 hover:text-orange-500 transition-all duration-200 btn-animate flex-shrink-0"
+              className="h-8 w-8 text-gray-800 dark:text-gray-200 hover:text-orange-500 transition-all duration-200 flex-shrink-0 hidden sm:flex"
               title="Toggle theme"
             >
               <Sun className="h-4 w-4 rotate-0 scale-100 transition-all duration-300 dark:-rotate-90 dark:scale-0 text-yellow-500" />
@@ -487,17 +478,17 @@ export function Header() {
 
           <SignedOut>
             {/* Non-authenticated user section */}
-            <div className="flex items-center gap-2 sm:gap-3">
+            <div className="flex items-center gap-1">
               <Link href="/sign-in">
                 <Button
-                  className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white transition-all rounded-lg text-xs sm:text-sm px-3 sm:px-4 py-2 shadow-md hover:shadow-lg font-medium"
+                  className="h-6 px-2 bg-linear-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-md text-xs font-medium transition-all shadow-sm hover:shadow-md"
                 >
                   Log in
                 </Button>
               </Link>
-              <Link href="/sign-up">
+              <Link href="/sign-up" className="hidden sm:block">
                 <Button
-                  className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white transition-all rounded-lg text-xs sm:text-sm px-3 sm:px-4 py-2 shadow-md hover:shadow-lg font-medium"
+                  className="h-6 px-2 bg-linear-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-md text-xs font-medium transition-all shadow-sm hover:shadow-md"
                 >
                   Sign up
                 </Button>
@@ -509,9 +500,35 @@ export function Header() {
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shadow-lg">
+        <div className="lg:hidden bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shadow-lg overflow-y-auto max-h-[calc(100vh-3.5rem)]">
           <div className="container mx-auto px-4 py-4 max-w-7xl">
-            <nav className="flex flex-col space-y-4">
+            {/* Mobile Search - Top Priority */}
+            <div className="mb-6">
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Input
+                    placeholder="Search Rentals"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    className="pl-10 h-10 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-600 focus:border-orange-500 focus:ring-orange-500 transition-all duration-200"
+                  />
+                </div>
+                <Button
+                  onClick={() => {
+                    handleSearch();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="h-10 px-4 bg-orange-500 hover:bg-orange-600 text-white transition-all duration-200"
+                >
+                  <Search className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Main Navigation */}
+            <nav className="flex flex-col space-y-2">
               <Link 
                 href="/" 
                 className="text-base font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors duration-200 py-2"
@@ -638,15 +655,26 @@ export function Header() {
 
             {/* Mobile Search */}
             <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input
-                  placeholder="Search Rentals"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  className="pl-10 h-10 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-600 focus:border-orange-500 focus:ring-orange-500 transition-all duration-200"
-                />
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Input
+                    placeholder="Search Rentals"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    className="pl-10 h-10 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-600 focus:border-orange-500 focus:ring-orange-500 transition-all duration-200"
+                  />
+                </div>
+                <Button
+                  onClick={() => {
+                    handleSearch();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="h-10 px-4 bg-orange-500 hover:bg-orange-600 text-white transition-all duration-200"
+                >
+                  <Search className="h-4 w-4" />
+                </Button>
               </div>
             </div>
           </div>

@@ -16,7 +16,6 @@ const dmSans = DM_Sans({
 export const metadata: Metadata = {
   title: "Leli Rentals - Modern Tech-Inspired Rental Marketplace",
   description: "Discover the perfect rental for every occasion with our modern, user-friendly platform",
-  generator: "v0.app",
   icons: {
     icon: [
       { url: "/default.svg", type: "image/svg+xml" },
@@ -29,8 +28,8 @@ export const metadata: Metadata = {
 export const viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 5,
-  userScalable: true,
+  maximumScale: 1,
+  userScalable: false,
   viewportFit: "cover",
 }
 
@@ -131,10 +130,17 @@ export default function RootLayout({
     >
       <html lang="en" suppressHydrationWarning>
         <head>
+          <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
           <script
             dangerouslySetInnerHTML={{
               __html: `
-                // Application scripts
+                // Prevent zoom on input focus for mobile devices
+                if (/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+                  const viewport = document.querySelector('meta[name=viewport]');
+                  if (viewport) {
+                    viewport.setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover');
+                  }
+                }
               `,
             }}
           />

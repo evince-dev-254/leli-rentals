@@ -404,11 +404,14 @@
     -webkit-text-size-adjust: 100%;
     -ms-text-size-adjust: 100%;
   }
-  
+
   body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    /* Prevent zoom on input focus */
+    -webkit-text-size-adjust: none;
+    text-size-adjust: none;
   }
   
   /* Mobile-friendly touch targets */
@@ -421,11 +424,14 @@
   }
   
   /* Mobile-friendly form inputs */
-  input, 
-  textarea, 
+  input,
+  textarea,
   select {
     font-size: 16px; /* Prevents zoom on iOS */
     border-radius: 8px;
+    /* Prevent zoom on focus */
+    -webkit-appearance: none;
+    -webkit-text-size-adjust: 100%;
   }
   
   /* Mobile-friendly cards */
@@ -581,12 +587,18 @@
   input, textarea, select {
     background-color: #ffffff;
     border: 2px solid #e5e7eb;
+    /* Prevent zoom on focus */
+    font-size: 16px !important;
+    -webkit-text-size-adjust: 100%;
   }
-  
+
   .dark input, .dark textarea, .dark select {
     background-color: #1e293b;
     border: 2px solid #475569;
     color: #ffffff;
+    /* Prevent zoom on focus */
+    font-size: 16px !important;
+    -webkit-text-size-adjust: 100%;
   }
   
   .dark input::placeholder,

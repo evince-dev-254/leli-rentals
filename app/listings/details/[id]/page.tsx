@@ -175,6 +175,7 @@ export default function ListingDetailsPage() {
           owner: {
             id: data.user_id,
             name: data.contact_info?.name || 'Owner',
+            avatar: '/placeholder.svg',
             rating: 4.8,
             verified: true,
             phone: data.contact_info?.phone || ''
@@ -223,6 +224,7 @@ export default function ListingDetailsPage() {
               owner: {
                 id: item.user_id,
                 name: item.contact_info?.name || 'Owner',
+                avatar: '/placeholder.svg',
                 rating: 4.8,
                 verified: true,
                 phone: item.contact_info?.phone || ''
@@ -356,7 +358,7 @@ export default function ListingDetailsPage() {
   const handleContactOwner = async (ownerName: string) => {
     try {
       // Get ownerId from listing - check if listing has user_id or ownerId
-      let ownerId = listing?.ownerId || (listing as any)?.user_id || (listing as any)?.owner_id
+      let ownerId = listing?.owner?.id || (listing as any)?.user_id || (listing as any)?.owner_id
       
       // If ownerId not in listing, try to fetch from Supabase
       if (!ownerId && listing?.id) {
@@ -719,7 +721,7 @@ export default function ListingDetailsPage() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-all duration-500">
       <Header />
 
-      <div className="container mx-auto px-4 sm:px-6 max-w-7xl py-6 sm:py-8">
+      <div className="container mx-auto px-4 sm:px-6 max-w-7xl py-4 sm:py-6 lg:py-8">
         {/* Breadcrumb Navigation */}
         <nav className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400 mb-6">
           <button 
@@ -749,7 +751,7 @@ export default function ListingDetailsPage() {
           Back
         </Button>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Image Gallery */}
@@ -904,7 +906,7 @@ export default function ListingDetailsPage() {
                     <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
                       {listing.title}
                     </h1>
-                    <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-sm text-gray-600 dark:text-gray-400 mb-4">
                       <div className="flex items-center gap-1">
                         <MapPin className="h-4 w-4" />
                         <span>{listing.location}</span>
@@ -931,7 +933,7 @@ export default function ListingDetailsPage() {
                   {/* Amenities */}
                   <div>
                     <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">What's Included</h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                       {listing.amenities.map((amenity, index) => (
                         <div key={index} className="flex items-center gap-2">
                           <CheckCircle className="h-4 w-4 text-green-500" />
@@ -963,18 +965,20 @@ export default function ListingDetailsPage() {
                           <Star className="h-4 w-4 text-yellow-400 fill-current" />
                           <span>{listing.owner.rating} Host Rating</span>
                         </div>
-                        <div className="flex gap-2">
-                          <Button 
-                            size="sm" 
+                        <div className="flex flex-col sm:flex-row gap-2">
+                          <Button
+                            size="sm"
                             variant="outline"
+                            className="w-full sm:w-auto"
                             onClick={() => handleContactOwner(listing.owner.name)}
                           >
                             <MessageCircle className="h-4 w-4 mr-1" />
                             Message
                           </Button>
-                          <Button 
-                            size="sm" 
+                          <Button
+                            size="sm"
                             variant="outline"
+                            className="w-full sm:w-auto"
                             onClick={() => handleCallOwner(listing.owner.phone || '+254112081866')}
                           >
                             <Phone className="h-4 w-4 mr-1" />
@@ -1031,7 +1035,7 @@ export default function ListingDetailsPage() {
               <Card className="card-animate">
                 <CardContent className="p-6">
                   <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">More from this category</h2>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     {relatedListings.map((relatedListing) => (
                       <div
                         key={relatedListing.id}
@@ -1081,24 +1085,24 @@ export default function ListingDetailsPage() {
                   </div>
 
                   <div className="space-y-3">
-                    <Button 
-                      size="lg" 
-                      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white btn-animate shadow-lg hover:shadow-xl transition-all duration-200"
+                    <Button
+                      size="lg"
+                      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white btn-animate shadow-lg hover:shadow-xl transition-all duration-200 text-base sm:text-lg"
                       onClick={handleBookNow}
                       disabled={bookingLoading}
                     >
                       <Calendar className="h-5 w-5 mr-2" />
                       {bookingLoading ? "Booking..." : "Book Now"}
                     </Button>
-                    
-                    <Button 
-                      variant="outline" 
+
+                    <Button
+                      variant="outline"
                       size="lg"
                       onClick={handleSave}
                       disabled={interactions[id]?.loading}
-                      className={`w-full btn-animate transition-all duration-200 ${
-                        interactions[id]?.saved 
-                          ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700 text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/30' 
+                      className={`w-full btn-animate transition-all duration-200 text-base sm:text-lg ${
+                        interactions[id]?.saved
+                          ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700 text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/30'
                           : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
                       }`}
                     >
@@ -1130,16 +1134,12 @@ export default function ListingDetailsPage() {
 
                   <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
                     <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-3">Quick Actions</h3>
-                    <div className="space-y-2">
-                      <Button variant="outline" size="sm" className="w-full justify-start">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <Button variant="outline" size="sm" className="w-full justify-start text-sm">
                         <Download className="h-4 w-4 mr-2" />
                         Download Details
                       </Button>
-                      <Button variant="outline" size="sm" className="w-full justify-start">
-                        <Download className="h-4 w-4 mr-2" />
-                        Download Listing
-                      </Button>
-                      <Button variant="outline" size="sm" className="w-full justify-start">
+                      <Button variant="outline" size="sm" className="w-full justify-start text-sm sm:col-span-2">
                         <Share2 className="h-4 w-4 mr-2" />
                         Share Listing
                       </Button>
@@ -1200,7 +1200,7 @@ export default function ListingDetailsPage() {
 
       {/* Booking Modal */}
       <Dialog open={showBookingModal} onOpenChange={setShowBookingModal}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto mx-4">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-center">
               Complete Your Booking
@@ -1341,18 +1341,18 @@ export default function ListingDetailsPage() {
             )}
 
             {/* Action Buttons */}
-            <div className="flex gap-3 pt-4">
+            <div className="flex flex-col sm:flex-row gap-3 pt-4">
               <Button
                 variant="outline"
                 onClick={() => setShowBookingModal(false)}
-                className="flex-1"
+                className="flex-1 order-2 sm:order-1"
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleConfirmBooking}
                 disabled={bookingLoading || !selectedPaymentMethod}
-                className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 order-1 sm:order-2"
               >
                 {bookingLoading ? (
                   <>

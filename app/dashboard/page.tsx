@@ -284,8 +284,8 @@ export default function DashboardPage() {
       
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         {/* Verification Banner for Owner Accounts */}
-        <VerificationBanner 
-          accountType={userAccountType} 
+        <VerificationBanner
+          accountType={userAccountType || 'renter'}
           verificationStatus={verificationStatus}
         />
         {/* Welcome Section */}
@@ -307,7 +307,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -371,11 +371,11 @@ export default function DashboardPage() {
 
         {/* Main Content Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="bookings">My Bookings</TabsTrigger>
-            <TabsTrigger value="listings">My Listings</TabsTrigger>
-            <TabsTrigger value="account">Account</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
+            <TabsTrigger value="overview" className="text-xs sm:text-sm">Overview</TabsTrigger>
+            <TabsTrigger value="bookings" className="text-xs sm:text-sm">My Bookings</TabsTrigger>
+            <TabsTrigger value="listings" className="text-xs sm:text-sm">My Listings</TabsTrigger>
+            <TabsTrigger value="account" className="text-xs sm:text-sm">Account</TabsTrigger>
           </TabsList>
 
           {/* Overview Tab */}
@@ -387,7 +387,7 @@ export default function DashboardPage() {
                 <CardDescription>Get started with these common tasks</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                   {quickActions.map((action, index) => (
                     <Link key={index} href={action.href}>
                       <Card className="hover:shadow-lg transition-shadow cursor-pointer">
@@ -416,7 +416,7 @@ export default function DashboardPage() {
                   {recentBookings.map((booking) => {
                     const CategoryIcon = getCategoryIcon(booking.category)
                     return (
-                      <div key={booking.id} className="flex items-center gap-4 p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                      <div key={booking.id} className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 border rounded-lg hover:bg-gray-50 transition-colors">
                         <div className="h-12 w-12 bg-gray-100 rounded-lg flex items-center justify-center">
                           <CategoryIcon className="h-6 w-6 text-gray-600" />
                         </div>
@@ -425,7 +425,7 @@ export default function DashboardPage() {
                           <p className="text-sm text-gray-600">{booking.category} • {booking.owner}</p>
                           <p className="text-sm text-gray-500">{booking.date}</p>
                         </div>
-                        <div className="text-right">
+                        <div className="text-right sm:ml-auto flex-shrink-0">
                           <p className="font-semibold text-gray-900">${booking.amount}/day</p>
                           <Badge className={getStatusColor(booking.status)}>
                             {booking.status}
@@ -456,26 +456,26 @@ export default function DashboardPage() {
                   {recentBookings.map((booking) => {
                     const CategoryIcon = getCategoryIcon(booking.category)
                     return (
-                      <div key={booking.id} className="flex items-center gap-4 p-4 border rounded-lg">
+                      <div key={booking.id} className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 border rounded-lg">
                         <div className="h-12 w-12 bg-gray-100 rounded-lg flex items-center justify-center">
                           <CategoryIcon className="h-6 w-6 text-gray-600" />
                         </div>
                         <div className="flex-1">
                           <h4 className="font-semibold text-gray-900">{booking.item}</h4>
                           <p className="text-sm text-gray-600">{booking.category} • {booking.owner}</p>
-                          <p className="text-sm text-gray-500">{booking.date}</p>
+                          <p className="text-sm text-gray-500 mt-1">{booking.date}</p>
                         </div>
                         <div className="text-right space-y-2">
                           <p className="font-semibold text-gray-900">${booking.amount}/day</p>
                           <Badge className={getStatusColor(booking.status)}>
                             {booking.status}
                           </Badge>
-                          <div className="flex gap-2">
-                            <Button size="sm" variant="outline">
+                          <div className="flex flex-col sm:flex-row gap-2">
+                            <Button size="sm" variant="outline" className="w-full sm:w-auto">
                               <MessageCircle className="h-4 w-4 mr-1" />
                               Message
                             </Button>
-                            <Button size="sm" variant="outline">
+                            <Button size="sm" variant="outline" className="w-full sm:w-auto">
                               <Heart className="h-4 w-4 mr-1" />
                               Save
                             </Button>
@@ -509,17 +509,17 @@ export default function DashboardPage() {
               <CardContent>
                 <div className="space-y-4">
                   {myListings.map((listing) => (
-                    <div key={listing.id} className="flex items-center gap-4 p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                    <div key={listing.id} className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 border rounded-lg hover:bg-gray-50 transition-colors">
                       <div className="h-16 w-16 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
                         <Home className="h-8 w-8 text-gray-600" />
                       </div>
                       <div className="flex-1">
-                        <div className="flex items-start justify-between mb-2">
+                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-2 gap-2">
                           <div>
                             <h4 className="font-semibold text-gray-900">{listing.title}</h4>
                             <p className="text-sm text-gray-600">{listing.category}</p>
                           </div>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-shrink-0">
                             <Badge className={listing.status === "active" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}>
                               {listing.status}
                             </Badge>
@@ -529,7 +529,7 @@ export default function DashboardPage() {
                             </Button>
                           </div>
                         </div>
-                        <div className="flex items-center gap-4 text-sm text-gray-600">
+                        <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600">
                           <span>KES {listing.price}/day</span>
                           <span>•</span>
                           <span>{listing.views} views</span>
@@ -556,7 +556,7 @@ export default function DashboardPage() {
             </Card>
 
             {/* Performance Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
               <Card>
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
@@ -603,7 +603,7 @@ export default function DashboardPage() {
 
           {/* Account Tab */}
           <TabsContent value="account" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               <Card>
                 <CardHeader>
                   <CardTitle>Account Information</CardTitle>
@@ -675,7 +675,3 @@ export default function DashboardPage() {
     </div>
   )
 }
-
-
-
-
