@@ -1,31 +1,21 @@
 /** @type {import('next').NextConfig} */
+import { fileURLToPath } from 'url'
+import { dirname } from 'path'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+
 const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  experimental: {
+    turbopack: {
+      root: __dirname,
+    },
+  },
   images: {
     unoptimized: true,
-  },
-  // Removed output: 'export' to enable API routes
-  trailingSlash: true,
-  skipTrailingSlashRedirect: true,
-  // Ensure proper headers for video files
-  async headers() {
-    return [
-      {
-        source: '/videos/:path*',
-        headers: [
-          {
-            key: 'Content-Type',
-            value: 'video/mp4',
-          },
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
-          },
-        ],
-      },
-    ]
   },
 }
 

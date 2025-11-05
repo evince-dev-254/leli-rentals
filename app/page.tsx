@@ -77,7 +77,7 @@ function HomePageContent() {
       <VideoBackground 
         src="/videos/rental-hero-video.mp4" 
         fallbackImage="/modern-rental-marketplace-hero-with-cars--apartmen.jpg"
-        className="h-[60vh] sm:h-[70vh] md:h-[80vh] lg:h-screen flex items-center justify-center"
+        className="h-[60vh] sm:h-[70vh] md:h-[80vh] lg:h-screen flex items-center justify-center relative"
         overlayStyle="hero"
       >
         <div className="text-center text-white max-w-4xl mx-auto px-4 sm:px-6">
