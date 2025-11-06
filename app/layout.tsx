@@ -44,14 +44,9 @@ export default function RootLayout({
     <ClerkProvider
       publishableKey={publishableKey}
       clerkJSUrl={clerkJsUrl}
-<<<<<<< HEAD
       // Replace deprecated `afterSignInUrl`/`afterSignUpUrl` with new redirect props
       fallbackRedirectUrl="/get-started"
       signUpFallbackRedirectUrl="/get-started"
-=======
-      afterSignInUrl="/get-started"
-      afterSignUpUrl="/get-started"
->>>>>>> 3d8eda87a4cf7f1e64fb62a98c6776c97b4964a1
       signInUrl="/sign-in"
       signUpUrl="/sign-up"
       appearance={{

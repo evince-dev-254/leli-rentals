@@ -8,10 +8,7 @@ const isPublicRoute = createRouteMatcher([
   '/sign-in(.*)',
   '/sign-up(.*)',
   '/about',
-<<<<<<< HEAD
   '/videos(.*)',
-=======
->>>>>>> 3d8eda87a4cf7f1e64fb62a98c6776c97b4964a1
   '/contact',
   '/help',
   '/listings(.*)',
@@ -109,12 +106,8 @@ export default clerkMiddleware(async (auth, request: NextRequest) => {
 export const config = {
   matcher: [
     // Skip Next.js internals and all static files, unless found in search params
-<<<<<<< HEAD
-  // Added mp4 to the exclusion list so video files (e.g. /videos/*.mp4) are served without hitting Clerk middleware
-  '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|mp4|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-=======
-    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
->>>>>>> 3d8eda87a4cf7f1e64fb62a98c6776c97b4964a1
+    // Added mp4 to the exclusion list so video files (e.g. /videos/*.mp4) are served without hitting Clerk middleware
+    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|mp4|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
     // Always run for API routes
     '/(api|trpc)(.*)',
   ],

@@ -10,9 +10,7 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   experimental: {
-    turbopack: {
-      root: __dirname,
-    },
+    // Remove turbopack config as it's enabled by default in Next.js 16
   },
   images: {
     unoptimized: true,
