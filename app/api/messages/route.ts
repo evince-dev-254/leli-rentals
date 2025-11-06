@@ -3,7 +3,10 @@ import { messagingServiceSupabase } from '@/lib/messaging-service-supabase'
 
 export async function GET(request: NextRequest) {
   try {
+<<<<<<< HEAD
     console.log('[messages API] GET request URL:', request.url)
+=======
+>>>>>>> 3d8eda87a4cf7f1e64fb62a98c6776c97b4964a1
     const { searchParams } = new URL(request.url)
     const action = searchParams.get('action')
     const userId = searchParams.get('userId') || 'user1' // Default for demo
@@ -35,9 +38,13 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+<<<<<<< HEAD
     console.log('[messages API] POST request URL:', request.url)
     const body = await request.json()
     console.log('[messages API] POST body:', JSON.stringify(body).slice(0, 1000))
+=======
+    const body = await request.json()
+>>>>>>> 3d8eda87a4cf7f1e64fb62a98c6776c97b4964a1
     const { action, userId = 'user1' } = body // Default for demo
 
     switch (action) {
@@ -93,11 +100,15 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
     }
   } catch (error) {
+<<<<<<< HEAD
   console.error('Messages API POST error:', (error as any)?.stack || error)
     // Return error details in development to help debugging (non-sensitive)
     if (process.env.NODE_ENV === 'development') {
       return NextResponse.json({ error: String(error) }, { status: 500 })
     }
+=======
+    console.error('Messages API POST error:', error)
+>>>>>>> 3d8eda87a4cf7f1e64fb62a98c6776c97b4964a1
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

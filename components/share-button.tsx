@@ -2,7 +2,10 @@
 
 import { Share2, Copy, Facebook, Twitter, Linkedin, Mail } from "lucide-react"
 import { Button } from "@/components/ui/button"
+<<<<<<< HEAD
 import { useEffect, useState } from 'react'
+=======
+>>>>>>> 3d8eda87a4cf7f1e64fb62a98c6776c97b4964a1
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,11 +25,14 @@ interface ShareButtonProps {
 
 export function ShareButton({ itemId, itemTitle, itemDescription, className, size = "sm" }: ShareButtonProps) {
   const { toast } = useToast()
+<<<<<<< HEAD
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
     setMounted(true)
   }, [])
+=======
+>>>>>>> 3d8eda87a4cf7f1e64fb62a98c6776c97b4964a1
 
   const shareUrl = (typeof window !== "undefined" && window.location && window.location.origin)
     ? `${window.location.origin}/listings/${itemId}`
@@ -85,6 +91,7 @@ export function ShareButton({ itemId, itemTitle, itemDescription, className, siz
   }
 
   return (
+<<<<<<< HEAD
     // Render dropdown only after mount to avoid SSR/client id mismatches from Radix
     mounted ? (
       <DropdownMenu>
@@ -149,5 +156,58 @@ export function ShareButton({ itemId, itemTitle, itemDescription, className, siz
         {size !== "sm" && <span className="text-sm font-medium">Share</span>}
       </Button>
     )
+=======
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="secondary"
+          size={size}
+          className={`${className} ${size === "sm" ? "h-8 w-8 p-0" : "gap-2"} bg-white/90 hover:bg-white transition-all`}
+        >
+          <Share2 className={`${size === "sm" ? "h-4 w-4" : "h-5 w-5"} text-gray-600`} />
+          {size !== "sm" && <span className="text-sm font-medium">Share</span>}
+        </Button>
+      </DropdownMenuTrigger>
+
+      <DropdownMenuContent align="end" className="w-48">
+        {navigator.share && (
+          <>
+            <DropdownMenuItem onClick={handleNativeShare} className="cursor-pointer">
+              <Share2 className="h-4 w-4 mr-2" />
+              Share via...
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        )}
+
+        <DropdownMenuItem onClick={handleCopyLink} className="cursor-pointer">
+          <Copy className="h-4 w-4 mr-2" />
+          Copy Link
+        </DropdownMenuItem>
+
+        <DropdownMenuSeparator />
+
+        <DropdownMenuItem onClick={() => handleSocialShare("facebook")} className="cursor-pointer">
+          <Facebook className="h-4 w-4 mr-2" />
+          Facebook
+        </DropdownMenuItem>
+
+        <DropdownMenuItem onClick={() => handleSocialShare("twitter")} className="cursor-pointer">
+          <Twitter className="h-4 w-4 mr-2" />
+          Twitter
+        </DropdownMenuItem>
+
+        <DropdownMenuItem onClick={() => handleSocialShare("linkedin")} className="cursor-pointer">
+          <Linkedin className="h-4 w-4 mr-2" />
+          LinkedIn
+        </DropdownMenuItem>
+
+        <DropdownMenuItem onClick={() => handleSocialShare("email")} className="cursor-pointer">
+          <Mail className="h-4 w-4 mr-2" />
+          Email
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+>>>>>>> 3d8eda87a4cf7f1e64fb62a98c6776c97b4964a1
   )
 }

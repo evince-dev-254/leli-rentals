@@ -18,7 +18,11 @@ import { useState, useEffect, useRef } from "react"
 import { useToast } from "@/hooks/use-toast"
 import type { RealtimeChannel } from '@supabase/supabase-js'
 import {
+<<<<<<< HEAD
   DropdownMenu, 
+=======
+  DropdownMenu,
+>>>>>>> 3d8eda87a4cf7f1e64fb62a98c6776c97b4964a1
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
