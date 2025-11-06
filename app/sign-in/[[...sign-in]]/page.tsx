@@ -110,12 +110,8 @@ export default function SignInPage() {
             routing="path"
             path="/sign-in"
             signUpUrl="/sign-up"
-<<<<<<< HEAD
             // use new prop name instead of deprecated `afterSignInUrl`
             fallbackRedirectUrl="/"
-=======
-            afterSignInUrl="/"
->>>>>>> 3d8eda87a4cf7f1e64fb62a98c6776c97b4964a1
             redirectUrl="/"
           />
         </div>
