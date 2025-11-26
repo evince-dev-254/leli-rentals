@@ -1,0 +1,52 @@
+# ============================================
+# PRODUCTION ENVIRONMENT VARIABLES
+# Main App: https://leli.rentals / https://lelirentals.vercel.app
+# ============================================
+# Add these to Vercel Dashboard > Project Settings > Environment Variables
+
+# SITE CONFIGURATION
+NEXT_PUBLIC_SITE_URL=https://leli.rentals
+NEXT_PUBLIC_ADMIN_URL=https://admin.leli.rentals
+
+# SUPABASE DATABASE (REQUIRED)
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+
+# CLERK AUTHENTICATION (REQUIRED)
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
+CLERK_SECRET_KEY=your_clerk_secret_key
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/onboarding
+NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/onboarding
+
+# ADMIN DASHBOARD SHARED SECRET (REQUIRED - must match admin app)
+ADMIN_INTERNAL_TOKEN=your_secure_random_string_here
+
+# GOOGLE MAPS (REQUIRED for location features)
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_google_maps_api_key
+
+# CLOUDINARY (REQUIRED for image uploads)
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET=your_cloudinary_upload_preset
+
+# RESEND (REQUIRED for emails)
+RESEND_API_KEY=your_resend_api_key
+RESEND_FROM_EMAIL=noreply@leli.rentals
+
+# PAYSTACK (Payment Gateway - LIVE MODE)
+NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=your_paystack_live_public_key
+PAYSTACK_SECRET_KEY=your_paystack_live_secret_key
+
+# M-PESA (Mobile Money Payment - Optional)
+NEXT_PUBLIC_MPESA_CONSUMER_KEY=your_mpesa_consumer_key
+NEXT_PUBLIC_MPESA_CONSUMER_SECRET=your_mpesa_consumer_secret
+NEXT_PUBLIC_MPESA_SHORTCODE=your_mpesa_shortcode
+
+# STRIPE (Optional - if using Stripe)
+STRIPE_SECRET_KEY=your_stripe_secret_key
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
+
+# BUILD CONFIGURATION
+NEXT_TELEMETRY_DISABLED=1
