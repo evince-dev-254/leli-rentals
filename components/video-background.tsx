@@ -10,8 +10,8 @@ interface VideoBackgroundProps {
   overlayStyle?: string
 }
 
-export function VideoBackground({ 
-  src, 
+export function VideoBackground({
+  src,
   fallbackImage = '/modern-rental-marketplace-hero-with-cars--apartmen.jpg',
   className = '',
   children,
@@ -77,9 +77,8 @@ export function VideoBackground({
       <img
         src={fallbackImage}
         alt="Background"
-        className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${
-          isPlaying ? 'opacity-0' : 'opacity-100'
-        }`}
+        className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${isPlaying ? 'opacity-0' : 'opacity-100'
+          }`}
       />
 
       {/* Video Layer */}
@@ -91,9 +90,8 @@ export function VideoBackground({
           loop
           muted
           preload="metadata"
-          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${
-            isPlaying ? 'opacity-100' : 'opacity-0'
-          }`}
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${isPlaying ? 'opacity-100' : 'opacity-0'
+            }`}
           poster={fallbackImage}
         >
           <source src={src} type="video/mp4" />
@@ -111,7 +109,7 @@ export function VideoBackground({
       <div className={`absolute inset-0 bg-linear-to-br from-black/50 via-black/30 to-black/60 dark:from-black/70 dark:via-black/50 dark:to-black/80 transition-all duration-500 ${overlayStyle}`} />
 
       {/* Content Layer */}
-      <div className="relative z-10">
+      <div className="relative z-10 h-full">
         {children}
       </div>
     </div>

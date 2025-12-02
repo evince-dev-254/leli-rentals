@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
+import { GlassCard } from "@/components/glass-card"
+import { GradientText } from "@/components/gradient-text"
 import {
   Car, Home, Camera, Dumbbell, Laptop, Shirt, Music, Gamepad2,
   Wrench, Palette, Book, Heart, Search, Filter, Star, Users,
@@ -16,6 +18,7 @@ import {
 import Link from "next/link"
 import { useUser } from '@clerk/nextjs'
 import { useRouter } from "next/navigation"
+import { motion } from "framer-motion"
 
 // Comprehensive category data for Leli Rentals with images
 const categories = [
@@ -163,57 +166,91 @@ export default function CategoriesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-50 dark:from-pink-950/20 dark:via-purple-950/20 dark:to-indigo-950/20">
       <Header />
 
       {/* Hero Section */}
-      <section className="py-12 sm:py-16 md:py-20">
-        <div className="container mx-auto px-3 sm:px-4 md:px-6 max-w-6xl">
-          <div className="text-center mb-8 sm:mb-12">
-            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-full text-sm font-medium mb-4">
+      <section className="py-12 sm:py-16 md:py-20 relative overflow-hidden">
+        {/* Animated background elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-400/20 rounded-full blur-3xl" />
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-400/20 rounded-full blur-3xl" />
+        </div>
+
+        <div className="container mx-auto px-3 sm:px-4 md:px-6 max-w-6xl relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-8 sm:mb-12"
+          >
+            <motion.div
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2 }}
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-full text-sm font-medium mb-6 shadow-lg"
+            >
               <Sparkles className="h-4 w-4" />
               Discover Amazing Rentals
-            </div>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 sm:mb-6">
+            </motion.div>
+
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6">
               What would you like to{" "}
-              <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <GradientText from="from-blue-600" to="to-purple-600">
                 rent today?
-              </span>
+              </GradientText>
             </h1>
-            <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto mb-8">
+
+            <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto mb-8">
               Choose from thousands of items across multiple categories.
               From vehicles to equipment, find exactly what you need for your next adventure.
             </p>
 
             {/* Search Bar */}
-            <div className="max-w-2xl mx-auto mb-8">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="max-w-2xl mx-auto mb-8"
+            >
               <div className="relative">
                 <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
                 <Input
                   placeholder="Search categories or items..."
-                  className="pl-12 h-12 sm:h-14 text-base sm:text-lg border-2 border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                  className="pl-12 h-12 sm:h-14 text-base sm:text-lg border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
-            </div>
+            </motion.div>
 
             {/* Quick Stats */}
-            <div className="flex flex-wrap justify-center gap-6 sm:gap-8 mb-8">
-              <div className="flex items-center gap-2 text-gray-600">
-                <Users className="h-5 w-5 text-blue-600" />
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6 }}
+              className="flex flex-wrap justify-center gap-6 sm:gap-8 mb-8"
+            >
+              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                  <Users className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                </div>
                 <span className="text-sm sm:text-base font-medium">10,000+ Active Users</span>
               </div>
-              <div className="flex items-center gap-2 text-gray-600">
-                <TrendingUp className="h-5 w-5 text-green-600" />
+              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                  <TrendingUp className="h-5 w-5 text-green-600 dark:text-green-400" />
+                </div>
                 <span className="text-sm sm:text-base font-medium">8,000+ Items Available</span>
               </div>
-              <div className="flex items-center gap-2 text-gray-600">
-                <Shield className="h-5 w-5 text-purple-600" />
+              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                  <Shield className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                </div>
                 <span className="text-sm sm:text-base font-medium">100% Secure</span>
               </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
       </section>
 

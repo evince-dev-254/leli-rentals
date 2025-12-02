@@ -4,10 +4,11 @@ import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Facebook, Twitter, Instagram, Linkedin, Youtube, Mail, Phone, MapPin, ArrowRight } from "lucide-react"
+import { Facebook, Twitter, Instagram, Linkedin, Youtube, Mail, Phone, MapPin, ArrowRight, Sparkles } from "lucide-react"
 import { useTheme } from "next-themes"
 import { useState, useEffect } from "react"
 import { useToast } from "@/hooks/use-toast"
+import { motion } from "framer-motion"
 
 export function Footer() {
   const { theme } = useTheme()
@@ -77,219 +78,157 @@ export function Footer() {
   }
 
   return (
-    <footer className="bg-muted/50 border-t border-border">
+    <footer className="relative bg-white dark:bg-gray-950 border-t border-gray-200 dark:border-gray-800 overflow-hidden">
+      {/* Background decoration */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] bg-blue-500/5 rounded-full blur-3xl" />
+        <div className="absolute top-[20%] -right-[10%] w-[40%] h-[40%] bg-purple-500/5 rounded-full blur-3xl" />
+      </div>
+
       {/* Newsletter Section */}
-      <div className="bg-primary/5 py-16">
-        <div className="container mx-auto px-6 max-w-7xl">
-          <div className="text-center max-w-3xl mx-auto">
-            <h3 className="text-3xl font-bold text-foreground mb-4">Stay Updated</h3>
-            <p className="text-lg text-muted-foreground mb-8">
-              Get the latest rental deals, new listings, and platform updates delivered to your inbox.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
-              <Input
-                placeholder="Enter your email"
-                className="flex-1 h-12 rounded-xl bg-background border-border"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && handleSubscribe()}
-              />
-              <Button
-                className="bg-primary hover:bg-primary/90 text-primary-foreground h-12 px-8 rounded-xl font-semibold"
-                onClick={handleSubscribe}
-              >
-                Subscribe
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
+      <div className="relative border-b border-gray-200 dark:border-gray-800">
+        <div className="container mx-auto px-6 py-16 max-w-7xl">
+          <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
+            <div className="max-w-2xl text-center lg:text-left">
+              <h3 className="font-heading text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+                Stay ahead of the curve
+              </h3>
+              <p className="text-lg text-gray-600 dark:text-gray-400">
+                Join our newsletter for exclusive deals, new listings, and rental tips delivered straight to your inbox.
+              </p>
+            </div>
+            <div className="w-full max-w-md">
+              <div className="flex gap-2 p-1.5 bg-gray-100 dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all">
+                <Input
+                  placeholder="Enter your email address"
+                  className="flex-1 border-none bg-transparent h-12 px-4 focus-visible:ring-0 text-base"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  onKeyPress={(e) => e.key === "Enter" && handleSubscribe()}
+                />
+                <Button
+                  className="h-12 px-8 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-lg shadow-blue-500/20 transition-all hover:scale-105 active:scale-95"
+                  onClick={handleSubscribe}
+                >
+                  Subscribe
+                </Button>
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-500 mt-3 text-center lg:text-left">
+                We respect your privacy. Unsubscribe at any time.
+              </p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Main Footer Content */}
-      <div className="py-16">
+      <div className="relative pt-16 pb-8">
         <div className="container mx-auto px-6 max-w-7xl">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
-            {/* Company Info */}
-            <div className="lg:col-span-2">
-              <Link href="/" className="flex items-center mb-6">
-                <Image
-                  src={mounted && theme === "dark" ? "/logo-white.svg" : "/logo-black.svg"}
-                  alt="Leli Rentals"
-                  width={150}
-                  height={50}
-                  className="h-12 w-auto"
-                />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-8 mb-16">
+            {/* Brand Column */}
+            <div className="lg:col-span-4 space-y-6">
+              <Link href="/" className="flex items-center group w-fit">
+                <div className="relative h-10 w-10 mr-3">
+                  <div className="absolute inset-0 bg-gradient-to-tr from-blue-600 to-purple-600 rounded-xl rotate-3 group-hover:rotate-6 transition-transform duration-300"></div>
+                  <div className="absolute inset-0 bg-white dark:bg-gray-900 rounded-xl flex items-center justify-center border border-gray-200 dark:border-gray-700">
+                    <Sparkles className="h-6 w-6 text-transparent bg-clip-text bg-gradient-to-tr from-blue-600 to-purple-600 fill-current" />
+                  </div>
+                </div>
+                <span className="font-heading font-bold text-2xl tracking-tight text-gray-900 dark:text-white">
+                  Leli<span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Rentals</span>
+                </span>
               </Link>
-              <p className="text-muted-foreground text-lg leading-relaxed mb-6 max-w-md">
-                The premier destination for all your rental needs. From homes to vehicles, equipment to event spaces -
-                we've got you covered.
+              <p className="text-gray-600 dark:text-gray-400 text-lg leading-relaxed max-w-sm">
+                The premier destination for all your rental needs. Experience seamless booking, verified listings, and premium support.
               </p>
-              <div className="flex space-x-4">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="rounded-full hover:bg-primary hover:text-primary-foreground transition-colors bg-transparent"
-                  onClick={() => handleSocialClick("facebook")}
-                >
-                  <Facebook className="h-5 w-5" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="rounded-full hover:bg-primary hover:text-primary-foreground transition-colors bg-transparent"
-                  onClick={() => handleSocialClick("twitter")}
-                >
-                  <Twitter className="h-5 w-5" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="rounded-full hover:bg-primary hover:text-primary-foreground transition-colors bg-transparent"
-                  onClick={() => handleSocialClick("instagram")}
-                >
-                  <Instagram className="h-5 w-5" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="rounded-full hover:bg-primary hover:text-primary-foreground transition-colors bg-transparent"
-                  onClick={() => handleSocialClick("linkedin")}
-                >
-                  <Linkedin className="h-5 w-5" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="rounded-full hover:bg-primary hover:text-primary-foreground transition-colors bg-transparent"
-                  onClick={() => handleSocialClick("youtube")}
-                >
-                  <Youtube className="h-5 w-5" />
-                </Button>
+              <div className="flex gap-3">
+                {['facebook', 'twitter', 'instagram', 'linkedin', 'youtube'].map((platform) => (
+                  <Button
+                    key={platform}
+                    variant="outline"
+                    size="icon"
+                    className="rounded-full h-10 w-10 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-all hover:-translate-y-1"
+                    onClick={() => handleSocialClick(platform)}
+                  >
+                    {platform === 'facebook' && <Facebook className="h-5 w-5" />}
+                    {platform === 'twitter' && <Twitter className="h-5 w-5" />}
+                    {platform === 'instagram' && <Instagram className="h-5 w-5" />}
+                    {platform === 'linkedin' && <Linkedin className="h-5 w-5" />}
+                    {platform === 'youtube' && <Youtube className="h-5 w-5" />}
+                  </Button>
+                ))}
               </div>
             </div>
 
-            {/* Quick Links */}
-            <div>
-              <h4 className="text-lg font-bold text-foreground mb-6">Quick Links</h4>
+            {/* Links Columns */}
+            <div className="lg:col-span-2">
+              <h4 className="font-heading font-bold text-gray-900 dark:text-white mb-6">Platform</h4>
               <ul className="space-y-4">
-                <li>
-                  <Link href="/" className="text-muted-foreground hover:text-primary transition-colors">
-                    Home
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/about" className="text-muted-foreground hover:text-primary transition-colors">
-                    About Us
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/profile/billing" className="text-muted-foreground hover:text-primary transition-colors">
-                    Pricing & Plans
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/contact" className="text-muted-foreground hover:text-primary transition-colors">
-                    Contact
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/profile" className="text-muted-foreground hover:text-primary transition-colors">
-                    My Account
-                  </Link>
-                </li>
+                <li><Link href="/" className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Home</Link></li>
+                <li><Link href="/about" className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">About Us</Link></li>
+                <li><Link href="/pricing" className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Pricing</Link></li>
+                <li><Link href="/contact" className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Contact</Link></li>
               </ul>
             </div>
 
-            {/* Categories */}
-            <div>
-              <h4 className="text-lg font-bold text-foreground mb-6">Categories</h4>
+            <div className="lg:col-span-2">
+              <h4 className="font-heading font-bold text-gray-900 dark:text-white mb-6">Categories</h4>
               <ul className="space-y-4">
-                <li>
-                  <Link href="/listings/homes" className="text-muted-foreground hover:text-primary transition-colors">
-                    Homes & Apartments
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/listings/vehicles"
-                    className="text-muted-foreground hover:text-primary transition-colors"
-                  >
-                    Vehicles
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/listings/equipment"
-                    className="text-muted-foreground hover:text-primary transition-colors"
-                  >
-                    Equipment
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/listings/events" className="text-muted-foreground hover:text-primary transition-colors">
-                    Event Spaces
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/listings/fashion" className="text-muted-foreground hover:text-primary transition-colors">
-                    Fashion
-                  </Link>
-                </li>
+                <li><Link href="/listings/homes" className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Homes</Link></li>
+                <li><Link href="/listings/vehicles" className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Vehicles</Link></li>
+                <li><Link href="/listings/equipment" className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Equipment</Link></li>
+                <li><Link href="/listings/events" className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Event Spaces</Link></li>
               </ul>
             </div>
 
-            {/* Contact Info */}
-            <div>
-              <h4 className="text-lg font-bold text-foreground mb-6">Contact Info</h4>
+            <div className="lg:col-span-4">
+              <h4 className="font-heading font-bold text-gray-900 dark:text-white mb-6">Contact Us</h4>
               <ul className="space-y-4">
-                <li className="flex items-start space-x-3">
-                  <MapPin className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                  <span className="text-muted-foreground">
-                    123 Rental Street
-                    <br />
-                    Nairobi, Kenya 00100
-                  </span>
+                <li className="flex items-start gap-4">
+                  <div className="h-10 w-10 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center shrink-0">
+                    <MapPin className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900 dark:text-white">Headquarters</p>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">123 Rental Street, Nairobi, Kenya 00100</p>
+                  </div>
                 </li>
-                <li className="flex items-center space-x-3">
-                  <Phone className="h-5 w-5 text-primary flex-shrink-0" />
-                  <a href="tel:+254112081866" className="text-muted-foreground hover:text-primary transition-colors">
-                    +254112081866
-                  </a>
+                <li className="flex items-start gap-4">
+                  <div className="h-10 w-10 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center shrink-0">
+                    <Phone className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900 dark:text-white">Phone</p>
+                    <a href="tel:+254112081866" className="text-gray-600 dark:text-gray-400 text-sm mt-1 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">+254 112 081 866</a>
+                  </div>
                 </li>
-                <li className="flex items-center space-x-3">
-                  <Mail className="h-5 w-5 text-primary flex-shrink-0" />
-                  <a
-                    href="mailto:lelirentalsmail@gmail.com"
-                    className="text-muted-foreground hover:text-primary transition-colors"
-                  >
-                    lelirentalsmail@gmail.com
-                  </a>
+                <li className="flex items-start gap-4">
+                  <div className="h-10 w-10 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center shrink-0">
+                    <Mail className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900 dark:text-white">Email</p>
+                    <a href="mailto:info@leli.rentals" className="text-gray-600 dark:text-gray-400 text-sm mt-1 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">info@leli.rentals</a>
+                  </div>
                 </li>
               </ul>
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Bottom Bar */}
-      <div className="border-t border-border py-8">
-        <div className="container mx-auto px-6 max-w-7xl">
-          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <div className="text-center md:text-left">
-              <p className="text-muted-foreground">© 2025 Leli Rentals. All rights reserved.</p>
-              <p className="text-muted-foreground text-sm mt-1">Developed by Gurugrafts Agency</p>
+          {/* Bottom Bar */}
+          <div className="pt-8 border-t border-gray-200 dark:border-gray-800 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div className="text-center md:text-left space-y-1">
+              <p className="text-gray-500 dark:text-gray-500 text-sm">
+                © 2025 Leli Rentals. All rights reserved.
+              </p>
+              <p className="text-gray-400 dark:text-gray-600 text-xs">
+                Developed by <a href="https://gurucrafts.agency" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">GuruCrafts Agency</a>
+              </p>
             </div>
-            <div className="flex space-x-6">
-              <Link href="/privacy" className="text-muted-foreground hover:text-primary transition-colors">
-                Privacy Policy
-              </Link>
-              <Link href="/terms" className="text-muted-foreground hover:text-primary transition-colors">
-                Terms of Service
-              </Link>
-              <Link href="/cookies" className="text-muted-foreground hover:text-primary transition-colors">
-                Cookie Policy
-              </Link>
+            <div className="flex gap-6 text-sm">
+              <Link href="/privacy" className="text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors">Privacy</Link>
+              <Link href="/terms" className="text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors">Terms</Link>
+              <Link href="/cookies" className="text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors">Cookies</Link>
             </div>
           </div>
         </div>
@@ -297,3 +236,4 @@ export function Footer() {
     </footer>
   )
 }
+

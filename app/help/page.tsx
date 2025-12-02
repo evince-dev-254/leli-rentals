@@ -5,6 +5,7 @@ import { useState } from "react"
 import { Header } from "@/components/header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { GradientText } from "@/components/gradient-text"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
@@ -19,10 +20,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { 
-  Search, MessageCircle, Phone, Mail, Clock, CheckCircle, 
-  AlertCircle, HelpCircle, BookOpen, Users, Shield, 
-  CreditCard, Truck, Star, MessageSquare, Send, 
+import {
+  Search, MessageCircle, Phone, Mail, Clock, CheckCircle,
+  AlertCircle, HelpCircle, BookOpen, Users, Shield,
+  CreditCard, Truck, Star, MessageSquare, Send,
   ThumbsUp, ThumbsDown, FileText, Download
 } from "lucide-react"
 import { useUser } from '@clerk/nextjs'
@@ -43,7 +44,7 @@ const faqCategories = [
         answer: "To create your first listing, go to your profile and click 'Create Listing'. Fill in the details about your item, add photos, set your price, and publish. Make sure to provide accurate descriptions and high-quality photos to attract more renters.",
       },
       {
-        id: "faq-2", 
+        id: "faq-2",
         question: "What are the fees for using Leli Rentals?",
         answer: "Leli Rentals charges a small service fee on each successful booking. The fee is typically 5-10% of the rental amount, which helps us maintain the platform, provide customer support, and ensure secure transactions.",
       },
@@ -149,7 +150,7 @@ export default function HelpPage() {
   const { user, isLoaded } = useUser()
   const router = useRouter()
   const { toast } = useToast()
-  
+
   const [activeTab, setActiveTab] = useState("faq")
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("all")
@@ -166,7 +167,7 @@ export default function HelpPage() {
     .filter(category => selectedCategory === "all" || category.id === selectedCategory)
     .map(category => ({
       ...category,
-      questions: category.questions.filter(q => 
+      questions: category.questions.filter(q =>
         q.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
         q.answer.toLowerCase().includes(searchQuery.toLowerCase())
       )
@@ -175,7 +176,7 @@ export default function HelpPage() {
 
   const handleCreateTicket = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!newTicket.subject || !newTicket.category || !newTicket.message) {
       toast({
         title: "Missing information",
@@ -184,16 +185,16 @@ export default function HelpPage() {
       })
       return
     }
-    
+
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 2000))
-      
+
       toast({
         title: "Support ticket created!",
         description: "We've received your request and will respond within 24 hours.",
       })
-      
+
       setIsCreatingTicket(false)
       setNewTicket({
         subject: "",
@@ -239,7 +240,7 @@ export default function HelpPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-50 dark:from-pink-950/20 dark:via-purple-950/20 dark:to-indigo-950/20">
       <Header />
 
       <div className="container mx-auto px-4 py-8">
@@ -247,14 +248,14 @@ export default function HelpPage() {
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Help & Support
+              <h1 className="text-3xl font-bold mb-2">
+                <GradientText from="from-blue-600" to="to-purple-600">Help & Support</GradientText>
               </h1>
               <p className="text-muted-foreground mt-2">
                 Find answers to common questions or get help from our support team
               </p>
             </div>
-            <Button 
+            <Button
               onClick={() => router.back()}
               variant="outline"
             >
@@ -388,7 +389,7 @@ export default function HelpPage() {
                   <p className="text-muted-foreground mb-4">
                     Try adjusting your search terms or browse all categories.
                   </p>
-                  <Button 
+                  <Button
                     onClick={() => {
                       setSearchQuery("")
                       setSelectedCategory("all")
@@ -519,9 +520,8 @@ export default function HelpPage() {
 
                     <div className="space-y-3">
                       {ticket.messages.slice(0, 2).map((message) => (
-                        <div key={message.id} className={`p-3 rounded-lg ${
-                          message.sender === 'user' ? 'bg-blue-50' : 'bg-gray-50'
-                        }`}>
+                        <div key={message.id} className={`p-3 rounded-lg ${message.sender === 'user' ? 'bg-blue-50' : 'bg-gray-50'
+                          }`}>
                           <div className="flex items-center gap-2 mb-1">
                             <span className="text-sm font-medium">
                               {message.sender === 'user' ? 'You' : 'Support Team'}

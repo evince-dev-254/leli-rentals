@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { VideoBackground } from "@/components/video-background"
+import { GradientText } from "@/components/gradient-text"
 import { Users, Shield, Star, Globe, Heart, CheckCircle, Zap, Target, Lightbulb } from "lucide-react"
 import Link from "next/link"
 
@@ -92,11 +93,11 @@ export default function AboutPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-50 dark:from-pink-950/20 dark:via-purple-950/20 dark:to-indigo-950/20">
       <Header />
 
       {/* Hero Section with Video Background */}
-      <VideoBackground 
+      <VideoBackground
         src="/videos/about-hero-video.mp4"
         fallbackImage="/modern-rental-marketplace-hero-with-cars--apartmen.jpg"
         className="py-20 flex items-center justify-center min-h-[60vh]"
@@ -185,7 +186,7 @@ export default function AboutPage() {
                 </div>
               </div>
             </div>
-            
+
             {/* Additional Story Images */}
             <div className="mt-20 grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="relative group">
@@ -206,7 +207,7 @@ export default function AboutPage() {
                   <p className="text-sm opacity-90">Curated selection of high-quality rentals</p>
                 </div>
               </div>
-              
+
               <div className="relative group">
                 <img
                   src="/modern-apartment-city-view.png"

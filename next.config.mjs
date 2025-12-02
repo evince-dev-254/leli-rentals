@@ -14,8 +14,8 @@ const nextConfig = {
       bodySizeLimit: '50mb',
       allowedOrigins: ['localhost:3000', 'localhost:3001'],
     },
-    // Increase middleware body size limit to avoid "stream ended unexpectedly"
-    middlewareClientMaxBodySize: '50mb',
+    // Increase proxy body size limit to avoid "stream ended unexpectedly"
+    proxyClientMaxBodySize: '50mb',
   },
   serverExternalPackages: ['cloudinary'],
   images: {

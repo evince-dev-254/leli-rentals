@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { clerkClient } from '@clerk/nextjs/server'
 import { supabase } from '@/lib/supabase'
 import { addCorsHeaders, createOptionsResponse } from '@/lib/admin-cors'
 import { verifyAdminRequest } from '@/lib/admin-auth'
@@ -18,51 +19,49 @@ export async function GET(req: NextRequest) {
       return addCorsHeaders(errorResponse, req)
     }
 
-    // Get query params
-    const { searchParams } = new URL(req.url)
-    const page = parseInt(searchParams.get('page') || '1')
-    const limit = parseInt(searchParams.get('limit') || '50')
-    const search = searchParams.get('search') || ''
-    const role = searchParams.get('role') || ''
+    // Fetch all users from Clerk
+    const clerkUsers = await clerkClient.users.getUserList({
+      limit: 500 // Adjust as needed
+    })
 
-    // Calculate pagination
-    const from = (page - 1) * limit
-    const to = from + limit - 1
-
-    // Build query
-    let query = supabase
+    // Fetch user profiles from Supabase
+    const { data: profiles } = await supabase
       .from('user_profiles')
-      .select('*', { count: 'exact' })
+      .select('*')
 
-    // Apply filters
-    if (search) {
-      query = query.or(`user_id.ilike.%${search}%,phone.ilike.%${search}%,location.ilike.%${search}%`)
-    }
+    // Create a map of Supabase profiles by user_id
+    const profilesMap = new Map()
+    profiles?.forEach(profile => {
+      profilesMap.set(profile.user_id, profile)
+    })
 
-    if (role && ['user', 'admin', 'super_admin'].includes(role)) {
-      query = query.eq('role', role)
-    }
+    // Merge Clerk users with Supabase profiles
+    const mergedUsers = clerkUsers.map(clerkUser => {
+      const profile = profilesMap.get(clerkUser.id)
 
-    // Apply pagination and ordering
-    query = query
-      .range(from, to)
-      .order('created_at', { ascending: false })
-
-    const { data, error, count } = await query
-
-    if (error) {
-      throw error
-    }
+      return {
+        id: clerkUser.id,
+        name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || 'N/A',
+        email: clerkUser.emailAddresses[0]?.emailAddress || 'N/A',
+        accountType: (clerkUser.publicMetadata as any)?.accountType ||
+          (clerkUser.unsafeMetadata as any)?.accountType ||
+          profile?.account_type ||
+          'renter',
+        role: (clerkUser.publicMetadata as any)?.role ||
+          (clerkUser.unsafeMetadata as any)?.role ||
+          profile?.role,
+        status: profile?.status || 'active',
+        verificationStatus: profile?.verification_status,
+        createdAt: clerkUser.createdAt,
+        phone: profile?.phone,
+        location: profile?.location
+      }
+    })
 
     const response = NextResponse.json({
       success: true,
-      users: data || [],
-      pagination: {
-        page,
-        limit,
-        total: count || 0,
-        totalPages: Math.ceil((count || 0) / limit)
-      }
+      users: mergedUsers,
+      total: mergedUsers.length
     })
 
     return addCorsHeaders(response, req)

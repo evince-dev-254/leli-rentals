@@ -1,6 +1,6 @@
 import { useRouter } from 'next/navigation'
 
-export type AccountType = 'renter' | 'owner' | null
+export type AccountType = 'renter' | 'owner' | 'affiliate' | null
 
 export const ACCOUNT_TYPE_KEY = 'userAccountType'
 
@@ -39,6 +39,8 @@ export const getRedirectUrl = (accountType: AccountType): string => {
       return '/listings'
     case 'owner':
       return '/dashboard/owner/verification' // Owners must verify first
+    case 'affiliate':
+      return '/dashboard/affiliate'
     default:
       return '/get-started'
   }

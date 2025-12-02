@@ -11,6 +11,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { StatCard } from "@/components/stat-card"
+import { GradientText } from "@/components/gradient-text"
 import {
   Dialog,
   DialogContent,
@@ -413,7 +415,7 @@ export default function ListingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-50 dark:from-pink-950/20 dark:via-purple-950/20 dark:to-indigo-950/20">
       <Header />
 
       <div className="container mx-auto px-3 sm:px-4 md:px-6 py-6 sm:py-8">
@@ -421,8 +423,8 @@ export default function ListingsPage() {
         <div className="mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                My Listings
+              <h1 className="text-2xl sm:text-3xl font-bold">
+                <GradientText from="from-blue-600" to="to-purple-600">My Listings</GradientText>
               </h1>
               <p className="text-muted-foreground mt-1 sm:mt-2 text-sm sm:text-base">
                 Manage your rental listings and track their performance
@@ -595,67 +597,33 @@ export default function ListingsPage() {
 
         {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="border-0 shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <TrendingUp className="h-5 w-5 text-blue-600" />
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-blue-600">{listings.length}</div>
-                  <div className="text-sm text-muted-foreground">Total Listings</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <StatCard
+            title="Total Listings"
+            value={listings.length.toString()}
+            icon={<TrendingUp className="h-5 w-5" />}
+            color="blue"
+          />
 
-          <Card className="border-0 shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <CheckCircle className="h-5 w-5 text-green-600" />
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-green-600">
-                    {listings.filter(l => l.available).length}
-                  </div>
-                  <div className="text-sm text-muted-foreground">Active</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <StatCard
+            title="Active"
+            value={listings.filter(l => l.available).length.toString()}
+            icon={<CheckCircle className="h-5 w-5" />}
+            color="green"
+          />
 
-          <Card className="border-0 shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-purple-100 rounded-lg">
-                  <Users className="h-5 w-5 text-purple-600" />
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-purple-600">
-                    0
-                  </div>
-                  <div className="text-sm text-muted-foreground">Total Bookings</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <StatCard
+            title="Total Bookings"
+            value="0"
+            icon={<Users className="h-5 w-5" />}
+            color="purple"
+          />
 
-          <Card className="border-0 shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-orange-100 rounded-lg">
-                  <Eye className="h-5 w-5 text-orange-600" />
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-orange-600">
-                    {listings.reduce((sum, l) => sum + l.reviews, 0)}
-                  </div>
-                  <div className="text-sm text-muted-foreground">Total Views</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <StatCard
+            title="Total Views"
+            value={listings.reduce((sum, l) => sum + l.reviews, 0).toString()}
+            icon={<Eye className="h-5 w-5" />}
+            color="orange"
+          />
         </div>
 
         {/* Filters and Search */}

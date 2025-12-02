@@ -9,6 +9,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { GlassCard } from "@/components/glass-card"
+import { StatCard } from "@/components/stat-card"
+import { GradientText } from "@/components/gradient-text"
+import { motion } from "framer-motion"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,8 +24,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { 
-  Heart, Search, Filter, Calendar, DollarSign, Star, MapPin, 
+import {
+  Heart, Search, Filter, Calendar, DollarSign, Star, MapPin,
   Eye, Trash2, Share2, MessageCircle, Clock, CheckCircle,
   TrendingUp, Users, Award, ShoppingCart
 } from "lucide-react"
@@ -31,6 +35,8 @@ import { useToast } from "@/hooks/use-toast"
 import { favoritesService, Favorite } from "@/lib/favorites-service"
 import { favoritesDB } from "@/lib/interactions-database-service"
 import { supabase } from "@/lib/supabase"
+import { Listing } from "@/lib/listings-service"
+import { ListingCard } from "@/components/listing-card"
 
 const categories = [
   { value: "all", label: "All Categories" },
@@ -45,13 +51,14 @@ export default function FavoritesPage() {
   const { user, isLoaded } = useUser()
   const router = useRouter()
   const { toast } = useToast()
-  
+
   const [activeTab, setActiveTab] = useState("all")
   const [searchQuery, setSearchQuery] = useState("")
   const [categoryFilter, setCategoryFilter] = useState("all")
   const [sortBy, setSortBy] = useState("recent")
   const [favorites, setFavorites] = useState<Favorite[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [itemToRemove, setItemToRemove] = useState<{ id: string, listingId: string, title: string } | null>(null)
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -64,15 +71,15 @@ export default function FavoritesPage() {
   useEffect(() => {
     const loadFavorites = async () => {
       if (!user) return
-      
+
       setIsLoading(true)
       try {
         const allFavorites: Favorite[] = []
-        
+
         // 1. Load favorites from Supabase database
         try {
           const dbFavorites = await favoritesDB.getUserFavorites(user.id)
-          
+
           // Enrich database favorites with listing details
           const enrichedDbFavorites = await Promise.all(
             dbFavorites.map(async (fav) => {
@@ -82,12 +89,12 @@ export default function FavoritesPage() {
                   .select('id, title, description, price, category, images, location, contact_info, status')
                   .eq('id', fav.listing_id)
                   .single()
-                
+
                 if (listing && listing.status === 'published') {
                   const dbImages = Array.isArray(listing.images) && listing.images.length > 0
                     ? listing.images.filter((img: any) => img && typeof img === 'string' && img.trim() !== '')
                     : null
-                  
+
                   return {
                     id: fav.id || `db_${fav.listing_id}`,
                     userId: user.id,
@@ -112,17 +119,17 @@ export default function FavoritesPage() {
               }
             })
           )
-          
+
           allFavorites.push(...enrichedDbFavorites.filter(f => f !== null) as Favorite[])
         } catch (error) {
           console.error('Error loading database favorites:', error)
         }
-        
+
         // 2. Load liked items from localStorage
         if (typeof window !== 'undefined') {
           try {
             const likedItems = JSON.parse(localStorage.getItem('likedItems') || '[]') as string[]
-            
+
             // Fetch listing details for liked items
             const likedFavorites = await Promise.all(
               likedItems.map(async (listingId) => {
@@ -132,12 +139,12 @@ export default function FavoritesPage() {
                     .select('id, title, description, price, category, images, location, contact_info, status')
                     .eq('id', listingId)
                     .single()
-                  
+
                   if (listing && listing.status === 'published') {
                     const dbImages = Array.isArray(listing.images) && listing.images.length > 0
                       ? listing.images.filter((img: any) => img && typeof img === 'string' && img.trim() !== '')
                       : null
-                    
+
                     return {
                       id: `local_${listingId}`,
                       userId: user.id,
@@ -162,24 +169,24 @@ export default function FavoritesPage() {
                 }
               })
             )
-            
+
             // Filter out duplicates (items that are already in database favorites)
             const existingListingIds = new Set(allFavorites.map(f => f.listingId))
             const uniqueLikedFavorites = likedFavorites.filter(
               f => f !== null && !existingListingIds.has(f!.listingId)
             ) as Favorite[]
-            
+
             allFavorites.push(...uniqueLikedFavorites)
           } catch (error) {
             console.error('Error loading localStorage favorites:', error)
           }
         }
-        
+
         // Sort by added date (newest first)
-        allFavorites.sort((a, b) => 
+        allFavorites.sort((a, b) =>
           new Date(b.addedDate).getTime() - new Date(a.addedDate).getTime()
         )
-        
+
         setFavorites(allFavorites)
       } catch (error) {
         console.error("Error loading favorites:", error)
@@ -193,7 +200,7 @@ export default function FavoritesPage() {
 
   const filteredFavorites = favorites.filter(favorite => {
     const matchesSearch = favorite.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                        favorite.description.toLowerCase().includes(searchQuery.toLowerCase())
+      favorite.description.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesCategory = categoryFilter === "all" || favorite.category === categoryFilter
     return matchesSearch && matchesCategory
   }).sort((a, b) => {
@@ -213,14 +220,14 @@ export default function FavoritesPage() {
 
   const handleRemoveFavorite = async (favoriteId: string, listingId: string) => {
     if (!user) return
-    
+
     try {
       // Remove from database favorites (try both ways - by ID and by listing ID)
       // If it has a real database ID or starts with 'db_', try to remove from DB
       if (favoriteId && (!favoriteId.startsWith('local_'))) {
         await favoritesDB.removeFavorite(user.id, listingId)
       }
-      
+
       // Remove from localStorage if it exists there
       if (typeof window !== 'undefined') {
         try {
@@ -231,10 +238,10 @@ export default function FavoritesPage() {
           console.error('Error updating localStorage:', error)
         }
       }
-      
+
       // Update local state
       setFavorites(prev => prev.filter(fav => fav.id !== favoriteId))
-      
+
       toast({
         title: "Removed from favorites",
         description: "This item has been removed from your favorites.",
@@ -253,12 +260,12 @@ export default function FavoritesPage() {
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000))
-      
+
       toast({
         title: "Redirecting to booking",
         description: "Taking you to the booking page...",
       })
-      
+
       // In a real app, this would redirect to the booking page
       router.push(`/items/${listingId}`)
     } catch (error) {
@@ -327,7 +334,7 @@ export default function FavoritesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-50 dark:from-pink-950/20 dark:via-purple-950/20 dark:to-indigo-950/20">
       <Header />
 
       <div className="container mx-auto px-4 py-8">
@@ -335,14 +342,14 @@ export default function FavoritesPage() {
         <div className="mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                My Favorites
+              <h1 className="text-2xl sm:text-3xl font-bold">
+                <GradientText from="from-blue-600" to="to-purple-600">My Favorites</GradientText>
               </h1>
               <p className="text-sm sm:text-base text-muted-foreground mt-1 sm:mt-2">
                 Items you've saved for later rental
               </p>
             </div>
-            <Button 
+            <Button
               onClick={() => router.back()}
               variant="outline"
               className="w-full sm:w-auto"
@@ -354,67 +361,33 @@ export default function FavoritesPage() {
 
         {/* Stats Overview */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
-          <Card className="border-0 shadow-lg">
-            <CardContent className="p-3 sm:p-6">
-              <div className="flex items-center gap-2 sm:gap-3">
-                <div className="p-1.5 sm:p-2 bg-red-100 rounded-lg">
-                  <Heart className="h-4 w-4 sm:h-5 sm:w-5 text-red-600" />
-                </div>
-                <div>
-                  <div className="text-xl sm:text-2xl font-bold text-red-600">{favorites.length}</div>
-                  <div className="text-xs sm:text-sm text-muted-foreground">Total Favorites</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <StatCard
+            title="Total Favorites"
+            value={favorites.length.toString()}
+            icon={<Heart className="h-5 w-5" />}
+            color="red"
+          />
 
-          <Card className="border-0 shadow-lg">
-            <CardContent className="p-3 sm:p-6">
-              <div className="flex items-center gap-2 sm:gap-3">
-                <div className="p-1.5 sm:p-2 bg-green-100 rounded-lg">
-                  <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
-                </div>
-                <div>
-                  <div className="text-xl sm:text-2xl font-bold text-green-600">
-                    {favorites.filter(f => f.isAvailable).length}
-                  </div>
-                  <div className="text-xs sm:text-sm text-muted-foreground">Available</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <StatCard
+            title="Available"
+            value={favorites.filter(f => f.isAvailable).length.toString()}
+            icon={<CheckCircle className="h-5 w-5" />}
+            color="green"
+          />
 
-          <Card className="border-0 shadow-lg">
-            <CardContent className="p-3 sm:p-6">
-              <div className="flex items-center gap-2 sm:gap-3">
-                <div className="p-1.5 sm:p-2 bg-blue-100 rounded-lg">
-                  <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
-                </div>
-                <div>
-                  <div className="text-xl sm:text-2xl font-bold text-blue-600">
-                    KSh {favorites.length > 0 ? Math.round(favorites.reduce((sum, f) => sum + (f.price || 0), 0) / favorites.length).toLocaleString('en-KE') : '0'}
-                  </div>
-                  <div className="text-xs sm:text-sm text-muted-foreground">Avg. Price</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <StatCard
+            title="Avg. Price"
+            value={`KSh ${favorites.length > 0 ? Math.round(favorites.reduce((sum, f) => sum + (f.price || 0), 0) / favorites.length).toLocaleString('en-KE') : '0'}`}
+            icon={<TrendingUp className="h-5 w-5" />}
+            color="blue"
+          />
 
-          <Card className="border-0 shadow-lg">
-            <CardContent className="p-3 sm:p-6">
-              <div className="flex items-center gap-2 sm:gap-3">
-                <div className="p-1.5 sm:p-2 bg-purple-100 rounded-lg">
-                  <Award className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
-                </div>
-                <div>
-                  <div className="text-xl sm:text-2xl font-bold text-purple-600">
-                    {favorites.length > 0 ? (Math.round(favorites.reduce((sum, f) => sum + (f.rating || 0), 0) / favorites.length * 10) / 10) : 0}
-                  </div>
-                  <div className="text-xs sm:text-sm text-muted-foreground">Avg. Rating</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <StatCard
+            title="Avg. Rating"
+            value={(favorites.length > 0 ? (Math.round(favorites.reduce((sum, f) => sum + (f.rating || 0), 0) / favorites.length * 10) / 10) : 0).toString()}
+            icon={<Award className="h-5 w-5" />}
+            color="purple"
+          />
         </div>
 
         {/* Filters and Search */}
@@ -466,113 +439,52 @@ export default function FavoritesPage() {
         </Card>
 
         {/* Favorites Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-          {filteredFavorites.map((favorite) => (
-            <Card key={favorite.id} className="border-0 shadow-lg hover:shadow-xl transition-shadow">
-              <div className="aspect-[4/3] overflow-hidden rounded-t-lg relative">
-                <img
-                  src={favorite.image || "/placeholder.svg"}
-                  alt={favorite.title}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement
-                    target.src = "/placeholder.svg"
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {filteredFavorites.map((favorite) => {
+            // Map Favorite to Listing
+            const listing: Listing = {
+              id: favorite.listingId,
+              title: favorite.title,
+              description: favorite.description,
+              fullDescription: favorite.description,
+              price: favorite.price,
+              location: favorite.location,
+              rating: favorite.rating,
+              reviews: favorite.reviews,
+              image: favorite.image,
+              images: [favorite.image],
+              amenities: [],
+              available: favorite.isAvailable,
+              category: favorite.category,
+              owner: {
+                id: "unknown",
+                name: favorite.ownerName,
+                avatar: "/placeholder.svg",
+                rating: 4.5,
+                verified: true
+              }
+            }
+
+            return (
+              <div key={favorite.id} className="relative group">
+                <ListingCard
+                  listing={listing}
+                  isSaved={true}
+                  onSave={() => {
+                    // Trigger remove dialog
+                    // We need to find the trigger button or manage state
+                    // Since ListingCard onSave is a direct action, we'll wrap it
+                    // But here we want to show the dialog. 
+                    // Let's use a state for 'itemToRemove' and open dialog manually
+                    setItemToRemove({ id: favorite.id || '', listingId: favorite.listingId, title: favorite.title })
                   }}
+                  onBook={() => handleBookNow(favorite.listingId)}
+                  onViewDetails={(id) => router.push(`/listings/details/${id}`)}
+                  onShare={(id, title) => handleShareListing(id)}
                 />
-                <div className="absolute top-3 right-3">
-                  <Badge className={getCategoryColor(favorite.category)}>
-                    {getCategoryLabel(favorite.category)}
-                  </Badge>
-                </div>
-                <div className="absolute top-3 left-3">
-                  <Heart className="h-6 w-6 text-red-500 fill-red-500" />
-                </div>
-                {!favorite.isAvailable && (
-                  <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                    <Badge className="bg-red-100 text-red-800 border-red-200">
-                      <Clock className="h-3 w-3 mr-1" />
-                      Unavailable
-                    </Badge>
-                  </div>
-                )}
               </div>
-
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg font-semibold line-clamp-1">{favorite.title}</CardTitle>
-                <CardDescription className="line-clamp-2">{favorite.description}</CardDescription>
-              </CardHeader>
-
-              <CardContent className="pt-0">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
-                  <MapPin className="h-4 w-4" />
-                  {favorite.location}
-                </div>
-
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-1">
-                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                    <span className="font-medium">{favorite.rating}</span>
-                    <span className="text-sm text-muted-foreground">({favorite.reviews})</span>
-                  </div>
-                  <div className="text-lg font-bold text-green-600">
-                    KSh {favorite.price.toLocaleString('en-KE')}/day
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 text-xs text-muted-foreground mb-4">
-                  <span>Added {new Date(favorite.addedDate).toLocaleDateString()}</span>
-                  <span>•</span>
-                  <span>Last viewed {favorite.lastViewed ? new Date(favorite.lastViewed).toLocaleDateString() : 'Never'}</span>
-                </div>
-
-                <div className="flex gap-2">
-                  <Button 
-                    size="sm" 
-                    className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-                    onClick={() => handleBookNow(favorite.listingId)}
-                    disabled={!favorite.isAvailable}
-                  >
-                    <ShoppingCart className="h-4 w-4 mr-1" />
-                    {favorite.isAvailable ? "Book Now" : "Unavailable"}
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => handleShareListing(favorite.listingId)}
-                  >
-                    <Share2 className="h-4 w-4" />
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    <MessageCircle className="h-4 w-4" />
-                  </Button>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Remove from Favorites</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Are you sure you want to remove "{favorite.title}" from your favorites?
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => handleRemoveFavorite(favorite.id || '', favorite.listingId)}
-                          className="bg-red-600 hover:bg-red-700"
-                        >
-                          Remove
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+            )
+          })}
         </div>
 
         {filteredFavorites.length === 0 && (
@@ -581,13 +493,13 @@ export default function FavoritesPage() {
               <Heart className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2">No favorites found</h3>
               <p className="text-muted-foreground mb-4">
-                {searchQuery || categoryFilter !== "all" 
+                {searchQuery || categoryFilter !== "all"
                   ? "Try adjusting your search or filter criteria."
                   : "Start exploring and save items you'd like to rent later."
                 }
               </p>
               {!searchQuery && categoryFilter === "all" && (
-                <Button 
+                <Button
                   onClick={() => router.push('/listings')}
                   className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                 >

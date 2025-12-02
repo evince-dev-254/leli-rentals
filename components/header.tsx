@@ -11,7 +11,7 @@ import { notificationsServiceRealtime } from "@/lib/notifications-service-realti
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useTheme } from "next-themes"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 import { useState, useEffect, useRef } from "react"
@@ -30,6 +30,8 @@ import { NotificationPanel } from "@/components/notification-panel"
 export function Header() {
   const { theme, setTheme } = useTheme()
   const router = useRouter()
+  const pathname = usePathname()
+  const isHomePage = pathname === "/"
   const { toast } = useToast()
   const { signOut } = useClerk()
   const [searchQuery, setSearchQuery] = useState("")
@@ -44,9 +46,9 @@ export function Header() {
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
   // Get user account type from Clerk metadata
-  const userAccountType = (user?.unsafeMetadata?.accountType as string) || 
-                          (user?.publicMetadata?.accountType as string) || 
-                          'renter'
+  const userAccountType = (user?.unsafeMetadata?.accountType as string) ||
+    (user?.publicMetadata?.accountType as string) ||
+    'renter'
 
   useEffect(() => {
     setMounted(true)
@@ -83,28 +85,28 @@ export function Header() {
         user.id,
         (notification) => {
           console.log('New notification received via real-time:', notification)
-          
+
           // Update unread count
           setRealtimeUnreadCount(prev => prev + 1)
           setHasNewNotification(true)
-          
+
           // Show toast notification
           toast({
             title: notification.title,
             description: notification.message || '',
             duration: 5000,
           })
-          
+
           // Play notification sound (optional)
           try {
             audioRef.current?.play().catch(err => console.log('Audio play failed:', err))
           } catch (error) {
             console.log('Error playing notification sound:', error)
           }
-          
+
           // Trigger animation by resetting after a short delay
           setTimeout(() => setHasNewNotification(false), 300)
-          
+
           // Refresh notifications list
           refreshNotifications()
         }
@@ -127,7 +129,7 @@ export function Header() {
   // Load initial unread count
   const loadUnreadCount = async () => {
     if (!user?.id) return
-    
+
     try {
       const count = await notificationsServiceRealtime.getUnreadCount(user.id)
       setRealtimeUnreadCount(count)
@@ -170,7 +172,7 @@ export function Header() {
   }
 
   return (
-        <header className="w-full bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/90 dark:bg-gray-900/95 dark:supports-[backdrop-filter]:bg-gray-900/90 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50 transition-all duration-300 shadow-theme">
+    <header className="w-full bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/90 dark:bg-gray-900/95 dark:supports-[backdrop-filter]:bg-gray-900/90 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50 transition-all duration-300 shadow-theme">
       <div className="container mx-auto flex h-12 sm:h-14 items-center justify-between px-3 sm:px-4 max-w-7xl gap-2">
         {/* Left: Logo and Mobile Menu */}
         <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
@@ -186,29 +188,29 @@ export function Header() {
 
           {/* Logo - Smaller on mobile */}
           <Link href="/" className="flex items-center group shrink-0">
-          <img 
-            src="/default-monochrome-black.svg" 
-            alt="Leli Rentals Logo" 
-            className="h-4 w-auto sm:h-5 md:h-6 object-contain dark:hidden hover:opacity-80 transition-opacity duration-200"
-          />
-          <img 
-            src="/default-monochrome-white.svg" 
-            alt="Leli Rentals Logo" 
-            className="h-4 w-auto sm:h-5 md:h-6 object-contain hidden dark:block hover:opacity-80 transition-opacity duration-200"
-          />
-        </Link>
+            <img
+              src="/default-monochrome-black.svg"
+              alt="Leli Rentals Logo"
+              className="h-4 w-auto sm:h-5 md:h-6 object-contain dark:hidden hover:opacity-80 transition-opacity duration-200"
+            />
+            <img
+              src="/default-monochrome-white.svg"
+              alt="Leli Rentals Logo"
+              className="h-4 w-auto sm:h-5 md:h-6 object-contain hidden dark:block hover:opacity-80 transition-opacity duration-200"
+            />
+          </Link>
         </div>
 
         {/* Navigation Links - Desktop only */}
         <nav className="hidden lg:flex items-center gap-4 xl:gap-6 flex-1 justify-center">
-          <Link 
-            href="/" 
+          <Link
+            href="/"
             className="text-sm xl:text-base font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors duration-200"
           >
             Home
           </Link>
-          <Link 
-            href="/categories" 
+          <Link
+            href="/categories"
             className="text-sm xl:text-base font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors duration-200"
           >
             Categories
@@ -273,18 +275,20 @@ export function Header() {
           {/* Mobile Menu Indicator */}
 
           {/* WhatsApp AI Chat - Desktop only */}
-          <a
-            href="https://wa.me/254112081866?text=Hi%20Leli%20Rentals%20AI%20Assistant"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hidden lg:inline-flex items-center justify-center h-8 w-8 rounded-md text-gray-800 dark:text-gray-200 hover:text-green-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 cursor-pointer"
-            title="Chat with AI Assistant"
-            onClick={(e) => {
-              console.log('WhatsApp button clicked')
-            }}
-          >
-            <WhatsAppIcon className="h-4 w-4" />
-          </a>
+          {!isHomePage && (
+            <a
+              href="https://wa.me/254112081866?text=Hi%20Leli%20Rentals%20AI%20Assistant"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden lg:inline-flex items-center justify-center h-8 w-8 rounded-md text-gray-800 dark:text-gray-200 hover:text-green-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 cursor-pointer"
+              title="Chat with AI Assistant"
+              onClick={(e) => {
+                console.log('WhatsApp button clicked')
+              }}
+            >
+              <WhatsAppIcon className="h-4 w-4" />
+            </a>
+          )}
 
           {/* Theme Toggle - Smaller on mobile */}
           {mounted && (
@@ -310,11 +314,10 @@ export function Header() {
                   variant="ghost"
                   size="icon"
                   onClick={() => setIsNotificationPanelOpen(true)}
-                  className={`h-9 w-9 transition-colors relative ${
-                    displayUnreadCount > 0 
-                      ? 'text-orange-500 hover:text-orange-600' 
+                  className={`h-9 w-9 transition-colors relative ${displayUnreadCount > 0
+                      ? 'text-orange-500 hover:text-orange-600'
                       : 'text-gray-700 dark:text-gray-300 hover:text-orange-500'
-                  }`}
+                    }`}
                   title="Notifications"
                 >
                   <Bell className={`h-4 w-4 ${displayUnreadCount > 0 ? 'animate-pulse' : ''} ${hasNewNotification ? 'animate-bounce' : ''}`} />
@@ -463,7 +466,7 @@ export function Header() {
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem 
+                    <DropdownMenuItem
                       onClick={() => signOut(() => router.push('/'))}
                       className="cursor-pointer text-red-600 dark:text-red-400 focus:text-red-600 dark:focus:text-red-400"
                     >
@@ -529,36 +532,36 @@ export function Header() {
 
             {/* Main Navigation */}
             <nav className="flex flex-col space-y-2">
-              <Link 
-                href="/" 
+              <Link
+                href="/"
                 className="text-base font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors duration-200 py-2"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Home
               </Link>
-              <Link 
-                href="/categories" 
+              <Link
+                href="/categories"
                 className="text-base font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors duration-200 py-2"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Categories
               </Link>
-              <Link 
-                href="/get-started" 
+              <Link
+                href="/get-started"
                 className="text-base font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors duration-200 py-2"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Get Started
               </Link>
-              <Link 
-                href="/about" 
+              <Link
+                href="/about"
                 className="text-base font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors duration-200 py-2"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 About
               </Link>
-              <Link 
-                href="/contact" 
+              <Link
+                href="/contact"
                 className="text-base font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors duration-200 py-2"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
@@ -572,15 +575,15 @@ export function Header() {
                 <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                   <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase">My Account</p>
                   <div className="flex flex-col space-y-2">
-                    <Link 
-                      href="/profile" 
+                    <Link
+                      href="/profile"
                       className="text-base font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors duration-200 py-2"
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
                       My Profile
                     </Link>
-                    <Link 
-                      href="/profile/bookings" 
+                    <Link
+                      href="/profile/bookings"
                       className="text-base font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors duration-200 py-2"
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
@@ -588,22 +591,22 @@ export function Header() {
                     </Link>
                     {userAccountType === 'owner' && (
                       <>
-                        <Link 
-                          href="/dashboard/owner" 
+                        <Link
+                          href="/dashboard/owner"
                           className="text-base font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors duration-200 py-2"
                           onClick={() => setIsMobileMenuOpen(false)}
                         >
                           Owner Dashboard
                         </Link>
-                        <Link 
-                          href="/profile/listings" 
+                        <Link
+                          href="/profile/listings"
                           className="text-base font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors duration-200 py-2"
                           onClick={() => setIsMobileMenuOpen(false)}
                         >
                           My Listings
                         </Link>
-                        <Link 
-                          href="/list-item" 
+                        <Link
+                          href="/list-item"
                           className="text-base font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors duration-200 py-2"
                           onClick={() => setIsMobileMenuOpen(false)}
                         >
@@ -611,22 +614,22 @@ export function Header() {
                         </Link>
                       </>
                     )}
-                    <Link 
-                      href="/profile/favorites" 
+                    <Link
+                      href="/profile/favorites"
                       className="text-base font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors duration-200 py-2"
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
                       Favorites
                     </Link>
-                    <Link 
-                      href="/profile/settings" 
+                    <Link
+                      href="/profile/settings"
                       className="text-base font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors duration-200 py-2"
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
                       Account Settings
                     </Link>
-                    <Link 
-                      href="/profile/billing" 
+                    <Link
+                      href="/profile/billing"
                       className="text-base font-medium text-gray-700 dark:text-gray-300 hover:text-orange-500 transition-colors duration-200 py-2"
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
@@ -636,22 +639,24 @@ export function Header() {
                 </div>
               </>
             )}
-            
+
             {/* WhatsApp AI Chat - Mobile */}
-            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-              <a
-                href="https://wa.me/254112081866?text=Hi%20Leli%20Rentals%20AI%20Assistant"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full flex items-center gap-2 px-3 py-2 text-green-600 border border-green-200 rounded-md hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
-                onClick={(e) => {
-                  console.log('Mobile WhatsApp button clicked')
-                }}
-              >
-                <WhatsAppIcon className="h-4 w-4" />
-                Chat with AI Assistant
-              </a>
-            </div>
+            {!isHomePage && (
+              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <a
+                  href="https://wa.me/254112081866?text=Hi%20Leli%20Rentals%20AI%20Assistant"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-green-600 border border-green-200 rounded-md hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
+                  onClick={(e) => {
+                    console.log('Mobile WhatsApp button clicked')
+                  }}
+                >
+                  <WhatsAppIcon className="h-4 w-4" />
+                  Chat with AI Assistant
+                </a>
+              </div>
+            )}
 
             {/* Mobile Search */}
             <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
@@ -680,9 +685,9 @@ export function Header() {
           </div>
         </div>
       )}
-      
+
       {/* Notification Panel */}
-      <NotificationPanel 
+      <NotificationPanel
         isOpen={isNotificationPanelOpen}
         onClose={handleNotificationPanelClose}
       />

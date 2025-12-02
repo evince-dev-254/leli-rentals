@@ -10,6 +10,8 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useToast } from "@/hooks/use-toast"
 import { useUser } from '@clerk/nextjs'
+import { StatCard } from "@/components/stat-card"
+import { GradientText } from "@/components/gradient-text"
 import { ownerDashboardClientService, OwnerStats, OwnerListing, OwnerBooking, OwnerActivity } from "@/lib/owner-dashboard-client-service"
 import { getUserAccountType } from "@/lib/account-type-utils"
 import { listingsServiceSupabase, ListingData } from "@/lib/listings-service-supabase"
@@ -246,7 +248,7 @@ export default function OwnerDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-50 dark:from-pink-950/20 dark:via-purple-950/20 dark:to-indigo-950/20">
       <Header />
 
       <div className="container mx-auto px-4 sm:px-6 max-w-7xl py-8">
@@ -281,8 +283,8 @@ export default function OwnerDashboard() {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-              Owner Dashboard
+            <h1 className="text-3xl font-bold mb-2">
+              <GradientText from="from-blue-600" to="to-purple-600">Owner Dashboard</GradientText>
             </h1>
             <p className="text-gray-600 dark:text-gray-400">
               Manage your listings, bookings, and earnings
@@ -299,61 +301,33 @@ export default function OwnerDashboard() {
 
         {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="card-animate">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Earnings</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                    {formatCurrency(stats.totalEarnings)}
-                  </p>
-                </div>
-                <DollarSign className="h-8 w-8 text-green-600" />
-              </div>
-            </CardContent>
-          </Card>
+          <StatCard
+            title="Total Earnings"
+            value={formatCurrency(stats.totalEarnings)}
+            icon={<DollarSign className="h-5 w-5" />}
+            color="green"
+          />
 
-          <Card className="card-animate">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Bookings</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                    {stats.totalBookings}
-                  </p>
-                </div>
-                <Calendar className="h-8 w-8 text-blue-600" />
-              </div>
-            </CardContent>
-          </Card>
+          <StatCard
+            title="Total Bookings"
+            value={stats.totalBookings.toString()}
+            icon={<Calendar className="h-5 w-5" />}
+            color="blue"
+          />
 
-          <Card className="card-animate">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Active Listings</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                    {stats.activeListings}
-                  </p>
-                </div>
-                <Package className="h-8 w-8 text-purple-600" />
-              </div>
-            </CardContent>
-          </Card>
+          <StatCard
+            title="Active Listings"
+            value={stats.activeListings.toString()}
+            icon={<Package className="h-5 w-5" />}
+            color="purple"
+          />
 
-          <Card className="card-animate">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Average Rating</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                    {stats.rating}★
-                  </p>
-                </div>
-                <Star className="h-8 w-8 text-yellow-600" />
-              </div>
-            </CardContent>
-          </Card>
+          <StatCard
+            title="Average Rating"
+            value={`${stats.rating}★`}
+            icon={<Star className="h-5 w-5" />}
+            color="orange"
+          />
         </div>
 
         {/* Main Content Tabs */}

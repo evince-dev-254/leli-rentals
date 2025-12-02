@@ -1,675 +1,343 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
-import { DatabaseService } from '@/lib/database-service'
+import { useState, useEffect } from "react"
+import { useUser } from "@clerk/nextjs"
 import { Header } from "@/components/header"
-import { LoadingSpinner } from "@/components/loading-spinner"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
+import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useUser } from "@clerk/nextjs"
-import { useRouter } from "next/navigation"
 import {
-  User,
-  Mail,
-  Phone,
-  MapPin,
-  Calendar,
-  Shield,
-  CreditCard,
-  Bell,
-  Camera,
-  Save,
-  Edit,
-  Check,
-  X,
-  AlertTriangle,
-  CheckCircle,
-  Upload,
-  FileText,
-  Star,
-  Activity,
-  TrendingUp,
-  Package,
-  Heart,
-  MessageSquare,
-  Globe,
-  Twitter,
-  Facebook,
-  Instagram,
-  Linkedin,
-  Crown,
-  ArrowLeft,
-  Sparkles
+  User, MapPin, Phone, Globe, Twitter, Facebook, Linkedin,
+  Calendar, Star, MessageSquare, List, Settings, CreditCard,
+  Bell, Shield, CheckCircle2, AlertCircle
 } from "lucide-react"
 import Link from "next/link"
-import CloudinaryProfileUpload from "@/components/cloudinary-profile-upload"
+import { format } from "date-fns"
 
 export default function ProfilePage() {
   const { user, isLoaded } = useUser()
-  const router = useRouter()
-  const [isEditing, setIsEditing] = useState(false)
-  const [activeTab, setActiveTab] = useState("personal")
-  const [profileData, setProfileData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '+254700000000',
-    location: 'Nairobi, Kenya',
-    bio: 'I love renting items and sharing my own!',
-    dateJoined: '',
-    verified: true,
-    website: '',
-    twitter: '',
-    facebook: '',
-    instagram: '',
-    linkedin: '',
-    accountType: 'renter',
-    subscriptionStatus: 'free',
-    rating: 4.8,
-    totalReviews: 24,
-    totalBookings: 15,
-    totalListings: 0
-  })
-  const [profilePicture, setProfilePicture] = useState("")
+  const [mounted, setMounted] = useState(false)
 
-  // Calculate membership duration
-  const getMembershipDuration = (createdAt: number) => {
-    const now = new Date()
-    const created = new Date(createdAt)
-    const diffTime = Math.abs(now.getTime() - created.getTime())
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-    const diffMonths = Math.floor(diffDays / 30)
-    const diffYears = Math.floor(diffDays / 365)
-
-    if (diffDays < 1) return 'Today'
-    if (diffDays === 1) return '1 day'
-    if (diffDays < 30) return `${diffDays} days`
-    if (diffMonths === 1) return '1 month'
-    if (diffMonths < 12) return `${diffMonths} months`
-    if (diffYears === 1) return '1 year'
-    return `${diffYears} years`
-  }
-
-  const getJoinDate = (createdAt: number) => {
-    const date = new Date(createdAt)
-    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
-  }
-
-  // Update profile data when user loads
   useEffect(() => {
-    if (user) {
-      setProfileData(prev => ({
-        ...prev,
-        firstName: user.firstName || '',
-        lastName: user.lastName || '',
-        email: user.emailAddresses?.[0]?.emailAddress || '',
-        dateJoined: getJoinDate(user.createdAt),
-        accountType: (user.unsafeMetadata?.accountType as string) ||
-          (user.publicMetadata?.accountType as string) ||
-          'not_selected',
-        subscriptionStatus: (user.unsafeMetadata?.subscriptionStatus as string) ||
-          (user.publicMetadata?.subscriptionStatus as string) ||
-          'free',
-        verified: (user.unsafeMetadata?.isVerified as boolean) ||
-          (user.publicMetadata?.isVerified as boolean) ||
-          (user.unsafeMetadata?.verificationStatus as string) === 'approved' ||
-          (user.publicMetadata?.verificationStatus as string) === 'approved' ||
-          false,
-      }))
-      setProfilePicture(user.imageUrl || '')
-    }
-  }, [user])
+    setMounted(true)
+  }, [])
 
-  // Redirect if not authenticated
-  useEffect(() => {
-    if (isLoaded && !user) {
-      router.push("/sign-in")
-    }
-  }, [isLoaded, user, router])
-
-  // Get user account type and verification status from user metadata or cookies
-  // Check both unsafeMetadata and publicMetadata for account type
-  const userAccountType = (user?.unsafeMetadata?.accountType as string) ||
-    (user?.publicMetadata?.accountType as string) ||
-    'renter'
-
-  const subscriptionStatus = (user?.unsafeMetadata?.subscriptionStatus as string) ||
-    (user?.publicMetadata?.subscriptionStatus as string) ||
-    'free'
-
-  const verificationStatusRaw = (user?.unsafeMetadata?.verificationStatus as string) ||
-    (user?.publicMetadata?.verificationStatus as string) ||
-    'not_verified'
-
-  const verificationStatus = {
-    status: verificationStatusRaw,
-    isVerified: verificationStatusRaw === 'approved',
-    isPending: verificationStatusRaw === 'pending',
-    isNotVerified: verificationStatusRaw === 'not_verified' || !verificationStatusRaw,
-    documentsSubmitted: verificationStatusRaw === 'pending' || verificationStatusRaw === 'approved',
-    pendingReview: verificationStatusRaw === 'pending',
-    rejectionReason: (user?.unsafeMetadata?.verificationRejectionReason as string) ||
-      (user?.publicMetadata?.verificationRejectionReason as string)
+  if (!isLoaded || !mounted) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <Header />
+        <div className="container mx-auto px-4 py-8 flex justify-center items-center h-[calc(100vh-64px)]">
+          <div className="animate-pulse flex flex-col items-center">
+            <div className="h-12 w-12 bg-gray-200 dark:bg-gray-800 rounded-full mb-4"></div>
+            <div className="h-4 w-48 bg-gray-200 dark:bg-gray-800 rounded"></div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
-  const subscriptionEndsAt = (user?.unsafeMetadata?.subscriptionEndsAt as string) ||
-    (user?.publicMetadata?.subscriptionEndsAt as string)
+  if (!user) return null
 
-  const getDaysRemaining = () => {
-    if (!subscriptionEndsAt) return 0
-    const now = new Date()
-    const endDate = new Date(subscriptionEndsAt)
-    const days = Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
-    return Math.max(0, days)
-  }
-
-  const trialDaysRemaining = subscriptionStatus === 'trial' ? getDaysRemaining() : 0
-
-  // Load profile data when component mounts
-  useEffect(() => {
-    if (user && isLoaded) {
-      loadProfileFromDatabase()
-    }
-  }, [user, isLoaded])
-
-  // Show loading state
-  if (!isLoaded) {
-    return <LoadingSpinner message="Loading profile..." variant="profile" />
-  }
-
-  // Show loading while redirecting
-  if (!user) {
-    return <LoadingSpinner message="Redirecting..." variant="profile" />
-  }
-
-  const handleSave = async () => {
-    // Save profile to database
-    await saveProfileToDatabase()
-    setIsEditing(false)
-  }
-
-  const handleCancel = () => {
-    setIsEditing(false)
-  }
-
-  const handleProfilePictureChange = async (imageUrl: string) => {
-    setProfilePicture(imageUrl)
-
-    // Auto-save profile picture to database
-    if (user) {
-      try {
-        await DatabaseService.updateUser(user.id, {
-          avatar: imageUrl
-        })
-        console.log('Profile picture saved to database:', imageUrl)
-      } catch (error) {
-        console.error('Error saving profile picture:', error)
-      }
-    }
-  }
-
-  const handleProfilePictureRemove = () => {
-    setProfilePicture("")
-    // Here you would typically remove from your backend/database
-    console.log('Profile picture removed')
-  }
-
-  // Database integration functions
-  const saveProfileToDatabase = async () => {
-    if (!user) return
-
-    try {
-      const userData = {
-        id: user.id,
-        email: profileData.email,
-        name: `${profileData.firstName} ${profileData.lastName}`,
-        avatar: profilePicture
-      }
-
-      const savedUser = await DatabaseService.createUser(userData)
-      console.log('Profile saved to database:', savedUser)
-
-      // Show success message
-      alert('Profile saved successfully!')
-    } catch (error) {
-      console.error('Error saving profile:', error)
-      alert('Error saving profile. Please try again.')
-    }
-  }
-
-  const loadProfileFromDatabase = async () => {
-    if (!user) return
-
-    try {
-      const userData = await DatabaseService.getUserById(user.id)
-      if (userData) {
-        // Update profile data with database values
-        setProfileData(prev => ({
-          ...prev,
-          firstName: userData.name?.split(' ')[0] || prev.firstName,
-          lastName: userData.name?.split(' ')[1] || prev.lastName,
-          email: userData.email || prev.email
-        }))
-
-        if (userData.avatar) {
-          setProfilePicture(userData.avatar)
-        }
-
-        console.log('Profile loaded from database:', userData)
-      }
-    } catch (error) {
-      console.error('Error loading profile:', error)
-    }
-  }
+  // Get user metadata
+  const accountType = (user.unsafeMetadata?.accountType as string) || 'renter'
+  const subscription = (user.unsafeMetadata?.subscription as string) || 'free'
+  const isVerified = (user.unsafeMetadata?.verified as boolean) || false
+  const joinedDate = user.createdAt ? format(new Date(user.createdAt), 'MMMM d, yyyy') : 'Unknown'
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Header />
 
       <div className="container mx-auto px-4 py-8 max-w-6xl">
-        {/* Back Button */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => router.back()}
-          className="mb-4 hover:bg-purple-100 dark:hover:bg-purple-900"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back
-        </Button>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-        {/* Profile Header */}
-        <Card className="mb-8">
-          <CardContent className="p-8">
-            <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-              <div className="flex flex-col items-center gap-4">
-                <CloudinaryProfileUpload
-                  currentImageUrl={profilePicture}
-                  userName={user?.displayName || "User"}
-                  onImageChange={handleProfilePictureChange}
-                  onImageRemove={handleProfilePictureRemove}
-                  className="w-full max-w-xs"
-                />
-                <Link href="/profile/avatar">
-                  <Button variant="outline" size="sm" className="w-full">
-                    <Camera className="h-4 w-4 mr-2" />
-                    Manage Avatar
-                  </Button>
-                </Link>
-              </div>
+          {/* Left Sidebar - Profile Overview */}
+          <div className="lg:col-span-4 space-y-6">
+            <Card className="overflow-hidden border-none shadow-lg">
+              <div className="h-32 bg-linear-to-r from-pink-500 to-purple-600"></div>
+              <CardContent className="pt-0 relative">
+                <div className="flex justify-center -mt-16 mb-4">
+                  <Avatar className="h-32 w-32 border-4 border-white dark:border-gray-800 shadow-md">
+                    <AvatarImage src={user.imageUrl} />
+                    <AvatarFallback className="text-4xl bg-purple-100 text-purple-600">
+                      {user.firstName?.charAt(0) || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                </div>
 
-              <div className="flex-1">
-                <div className="flex flex-wrap items-center gap-3 mb-3">
-                  <h1 className="text-3xl font-bold text-gray-900">
-                    {profileData.firstName} {profileData.lastName}
+                <div className="text-center mb-6">
+                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                    {user.firstName} {user.lastName}
                   </h1>
-                  {/* Verification Status Badge */}
-                  {verificationStatus.isVerified ? (
-                    <Badge className="bg-green-100 text-green-800">
-                      <CheckCircle className="h-3 w-3 mr-1" />
-                      Verified
+                  <p className="text-gray-500 dark:text-gray-400 text-sm mb-2">
+                    {user.primaryEmailAddress?.emailAddress}
+                  </p>
+                  <div className="flex items-center justify-center gap-2 flex-wrap">
+                    <Badge variant="secondary" className="capitalize">
+                      {accountType}
                     </Badge>
-                  ) : verificationStatus.isPending ? (
-                    <Badge className="bg-yellow-100 text-yellow-800">
-                      <Shield className="h-3 w-3 mr-1" />
-                      Verification Pending
-                    </Badge>
-                  ) : userAccountType === 'owner' ? (
-                    <Badge className="bg-orange-100 text-orange-800">
-                      <AlertTriangle className="h-3 w-3 mr-1" />
-                      Not Verified
-                    </Badge>
-                  ) : null}
-
-                  {/* Account Type Badge */}
-                  <Badge variant="outline" className="capitalize">
-                    {userAccountType === 'not_selected' ? 'Not Selected' : userAccountType}
-                  </Badge>
-
-                  {/* Subscription Badge */}
-                  {subscriptionStatus === 'trial' ? (
-                    <Badge className="bg-cyan-100 text-cyan-800 border-cyan-200">
-                      <Sparkles className="h-3 w-3 mr-1" />
-                      Free Trial: {trialDaysRemaining} days left
-                    </Badge>
-                  ) : subscriptionStatus !== 'free' && subscriptionStatus !== 'none' && (
-                    <Badge className="bg-purple-500 text-white">
-                      <Crown className="h-3 w-3 mr-1" />
-                      {subscriptionStatus.charAt(0).toUpperCase() + subscriptionStatus.slice(1)}
-                    </Badge>
-                  )}
+                    {isVerified && (
+                      <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800">
+                        <CheckCircle2 className="w-3 h-3 mr-1" /> Verified
+                      </Badge>
+                    )}
+                  </div>
                 </div>
 
-                <div className="space-y-2 mb-4">
-                  <p className="text-gray-600 flex items-center gap-2">
-                    <Mail className="h-4 w-4" />
-                    {profileData.email}
-                  </p>
-                  <p className="text-gray-600 flex items-center gap-2">
-                    <MapPin className="h-4 w-4" />
-                    {profileData.location}
-                  </p>
-                  <p className="text-sm text-gray-500 flex items-center gap-2">
-                    <Calendar className="h-4 w-4" />
-                    {user && profileData.dateJoined && (
-                      <>
-                        Member for {getMembershipDuration(user.createdAt)} · Joined {profileData.dateJoined}
-                      </>
-                    )}
-                    {user && !profileData.dateJoined && (
-                      <>Loading...</>
-                    )}
-                    {!user && profileData.dateJoined && `Member since ${profileData.dateJoined}`}
-                  </p>
-                </div>
+                <Separator className="my-4" />
 
-                {/* Stats */}
-                <div className="flex flex-wrap gap-4">
-                  <div className="flex items-center gap-2">
-                    <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
-                    <span className="font-semibold">{profileData.rating}</span>
-                    <span className="text-gray-600 text-sm">({profileData.totalReviews} reviews)</span>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-gray-500 dark:text-gray-400">Member Since</span>
+                    <span className="font-medium">{joinedDate}</span>
                   </div>
-                  <div className="text-gray-600 text-sm">
-                    • {profileData.totalBookings} bookings
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-gray-500 dark:text-gray-400">Account Status</span>
+                    <span className="flex items-center text-green-600 dark:text-green-400 font-medium">
+                      <div className="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
+                      Active
+                    </span>
                   </div>
-                  {userAccountType === 'owner' && (
-                    <div className="text-gray-600 text-sm">
-                      • {profileData.totalListings} listings
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-gray-500 dark:text-gray-400">Subscription</span>
+                    <span className="capitalize font-medium">{subscription} Plan</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Account Management Menu */}
+            <Card className="border-none shadow-md">
+              <CardHeader>
+                <CardTitle className="text-lg">Account Management</CardTitle>
+                <CardDescription>Manage your settings and preferences</CardDescription>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="flex flex-col">
+                  <Link href="/profile/settings" className="flex items-center px-6 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors border-l-2 border-transparent hover:border-pink-500">
+                    <Settings className="w-5 h-5 text-gray-500 mr-3" />
+                    <div>
+                      <p className="font-medium text-sm">Account Settings</p>
+                      <p className="text-xs text-gray-500">Security, Privacy & More</p>
                     </div>
+                  </Link>
+                  <Separator />
+                  <Link href="/profile/billing" className="flex items-center px-6 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors border-l-2 border-transparent hover:border-pink-500">
+                    <CreditCard className="w-5 h-5 text-gray-500 mr-3" />
+                    <div>
+                      <p className="font-medium text-sm">Billing & Plans</p>
+                      <p className="text-xs text-gray-500">Manage subscription</p>
+                    </div>
+                  </Link>
+                  <Separator />
+                  <Link href="/profile/notifications" className="flex items-center px-6 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors border-l-2 border-transparent hover:border-pink-500">
+                    <Bell className="w-5 h-5 text-gray-500 mr-3" />
+                    <div>
+                      <p className="font-medium text-sm">Notifications</p>
+                      <p className="text-xs text-gray-500">Configure alerts</p>
+                    </div>
+                  </Link>
+
+                  {accountType === 'affiliate' && (
+                    <>
+                      <Separator />
+                      <Link href="/dashboard/affiliate" className="flex items-center px-6 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors border-l-2 border-transparent hover:border-pink-500">
+                        <Shield className="w-5 h-5 text-gray-500 mr-3" />
+                        <div>
+                          <p className="font-medium text-sm">Affiliate Dashboard</p>
+                          <p className="text-xs text-gray-500">Track earnings & referrals</p>
+                        </div>
+                      </Link>
+                    </>
                   )}
                 </div>
-              </div>
+              </CardContent>
+            </Card>
+          </div>
 
-              <div className="flex gap-2">
-                {isEditing ? (
-                  <>
-                    <Button onClick={handleSave} className="bg-green-600 hover:bg-green-700">
-                      <Check className="h-4 w-4 mr-2" />
-                      Save
-                    </Button>
-                    <Button variant="outline" onClick={handleCancel}>
-                      <X className="h-4 w-4 mr-2" />
-                      Cancel
-                    </Button>
-                  </>
-                ) : (
-                  <Button onClick={() => setIsEditing(true)}>
-                    <Edit className="h-4 w-4 mr-2" />
-                    Edit Profile
-                  </Button>
-                )}
-              </div>
+          {/* Right Content - Forms & Stats */}
+          <div className="lg:col-span-8 space-y-6">
+
+            {/* Activity Summary */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <Card className="bg-white dark:bg-gray-800 border-none shadow-sm hover:shadow-md transition-shadow">
+                <CardContent className="p-4 flex flex-col items-center justify-center text-center">
+                  <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mb-2 text-blue-600 dark:text-blue-400">
+                    <Calendar className="h-5 w-5" />
+                  </div>
+                  <span className="text-2xl font-bold text-gray-900 dark:text-white">15</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mt-1">Total Bookings</span>
+                </CardContent>
+              </Card>
+              <Card className="bg-white dark:bg-gray-800 border-none shadow-sm hover:shadow-md transition-shadow">
+                <CardContent className="p-4 flex flex-col items-center justify-center text-center">
+                  <div className="h-10 w-10 rounded-full bg-pink-100 dark:bg-pink-900/30 flex items-center justify-center mb-2 text-pink-600 dark:text-pink-400">
+                    <Star className="h-5 w-5" />
+                  </div>
+                  <span className="text-2xl font-bold text-gray-900 dark:text-white">32</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mt-1">Favorites</span>
+                </CardContent>
+              </Card>
+              <Card className="bg-white dark:bg-gray-800 border-none shadow-sm hover:shadow-md transition-shadow">
+                <CardContent className="p-4 flex flex-col items-center justify-center text-center">
+                  <div className="h-10 w-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-2 text-purple-600 dark:text-purple-400">
+                    <MessageSquare className="h-5 w-5" />
+                  </div>
+                  <span className="text-2xl font-bold text-gray-900 dark:text-white">24</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mt-1">Reviews</span>
+                </CardContent>
+              </Card>
+              <Card className="bg-white dark:bg-gray-800 border-none shadow-sm hover:shadow-md transition-shadow">
+                <CardContent className="p-4 flex flex-col items-center justify-center text-center">
+                  <div className="h-10 w-10 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center mb-2 text-orange-600 dark:text-orange-400">
+                    <List className="h-5 w-5" />
+                  </div>
+                  <span className="text-2xl font-bold text-gray-900 dark:text-white">0</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mt-1">Listings</span>
+                </CardContent>
+              </Card>
             </div>
-          </CardContent>
-        </Card>
 
-        {/* Profile Information */}
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Personal Information</CardTitle>
-              <CardDescription>Update your personal details and profile information</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="firstName">First Name</Label>
-                  <Input
-                    id="firstName"
-                    value={profileData.firstName}
-                    onChange={(e) => setProfileData(prev => ({ ...prev, firstName: e.target.value }))}
-                    disabled={!isEditing}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lastName">Last Name</Label>
-                  <Input
-                    id="lastName"
-                    value={profileData.lastName}
-                    onChange={(e) => setProfileData(prev => ({ ...prev, lastName: e.target.value }))}
-                    disabled={!isEditing}
-                  />
-                </div>
-              </div>
+            <Tabs defaultValue="personal" className="w-full">
+              <TabsList className="w-full justify-start bg-white dark:bg-gray-800 p-1 rounded-lg border border-gray-200 dark:border-gray-700 mb-6">
+                <TabsTrigger value="personal" className="flex-1 md:flex-none">Personal Information</TabsTrigger>
+                <TabsTrigger value="social" className="flex-1 md:flex-none">Social Media</TabsTrigger>
+                <TabsTrigger value="preferences" className="flex-1 md:flex-none">Preferences</TabsTrigger>
+              </TabsList>
 
-              <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={profileData.email}
-                  disabled
-                  className="bg-gray-50"
-                />
-                <p className="text-sm text-gray-500">Email cannot be changed</p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number</Label>
-                <Input
-                  id="phone"
-                  value={profileData.phone}
-                  onChange={(e) => setProfileData(prev => ({ ...prev, phone: e.target.value }))}
-                  disabled={!isEditing}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="location">Location</Label>
-                <Input
-                  id="location"
-                  value={profileData.location}
-                  onChange={(e) => setProfileData(prev => ({ ...prev, location: e.target.value }))}
-                  disabled={!isEditing}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="bio">Bio</Label>
-                <Textarea
-                  id="bio"
-                  value={profileData.bio}
-                  onChange={(e) => setProfileData(prev => ({ ...prev, bio: e.target.value }))}
-                  disabled={!isEditing}
-                  rows={4}
-                  placeholder="Tell us about yourself..."
-                />
-              </div>
-
-              {/* Social Media Links */}
-              <div className="space-y-4 pt-4 border-t">
-                <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-                  <Globe className="h-5 w-5" />
-                  Social Media & Website
-                </h3>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="website" className="flex items-center gap-2">
-                      <Globe className="h-4 w-4" />
-                      Website
-                    </Label>
-                    <Input
-                      id="website"
-                      value={profileData.website}
-                      onChange={(e) => setProfileData(prev => ({ ...prev, website: e.target.value }))}
-                      disabled={!isEditing}
-                      placeholder="https://yourwebsite.com"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="twitter" className="flex items-center gap-2">
-                      <Twitter className="h-4 w-4" />
-                      Twitter
-                    </Label>
-                    <Input
-                      id="twitter"
-                      value={profileData.twitter}
-                      onChange={(e) => setProfileData(prev => ({ ...prev, twitter: e.target.value }))}
-                      disabled={!isEditing}
-                      placeholder="@yourusername"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="facebook" className="flex items-center gap-2">
-                      <Facebook className="h-4 w-4" />
-                      Facebook
-                    </Label>
-                    <Input
-                      id="facebook"
-                      value={profileData.facebook}
-                      onChange={(e) => setProfileData(prev => ({ ...prev, facebook: e.target.value }))}
-                      disabled={!isEditing}
-                      placeholder="facebook.com/yourprofile"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="instagram" className="flex items-center gap-2">
-                      <Instagram className="h-4 w-4" />
-                      Instagram
-                    </Label>
-                    <Input
-                      id="instagram"
-                      value={profileData.instagram}
-                      onChange={(e) => setProfileData(prev => ({ ...prev, instagram: e.target.value }))}
-                      disabled={!isEditing}
-                      placeholder="@yourusername"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="linkedin" className="flex items-center gap-2">
-                      <Linkedin className="h-4 w-4" />
-                      LinkedIn
-                    </Label>
-                    <Input
-                      id="linkedin"
-                      value={profileData.linkedin}
-                      onChange={(e) => setProfileData(prev => ({ ...prev, linkedin: e.target.value }))}
-                      disabled={!isEditing}
-                      placeholder="linkedin.com/in/yourprofile"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Activity Summary */}
-              <div className="space-y-4 pt-4 border-t">
-                <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-                  <Activity className="h-5 w-5" />
-                  Activity Summary
-                </h3>
-
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <Card>
-                    <CardContent className="p-4 text-center">
-                      <Package className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-                      <div className="text-2xl font-bold">{profileData.totalBookings}</div>
-                      <div className="text-sm text-gray-600">Total Bookings</div>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardContent className="p-4 text-center">
-                      <Heart className="h-8 w-8 text-red-600 mx-auto mb-2" />
-                      <div className="text-2xl font-bold">32</div>
-                      <div className="text-sm text-gray-600">Favorites</div>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardContent className="p-4 text-center">
-                      <MessageSquare className="h-8 w-8 text-green-600 mx-auto mb-2" />
-                      <div className="text-2xl font-bold">{profileData.totalReviews}</div>
-                      <div className="text-sm text-gray-600">Reviews</div>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardContent className="p-4 text-center">
-                      <TrendingUp className="h-8 w-8 text-purple-600 mx-auto mb-2" />
-                      <div className="text-2xl font-bold">{profileData.totalListings}</div>
-                      <div className="text-sm text-gray-600">Listings</div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Quick Links to Settings */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Account Management</CardTitle>
-              <CardDescription>Manage your account settings and preferences</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Button
-                  variant="outline"
-                  className="justify-start h-auto p-4"
-                  onClick={() => router.push('/profile/settings')}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="bg-purple-100 dark:bg-purple-900 p-2 rounded-lg">
-                      <Shield className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+              <TabsContent value="personal">
+                <Card className="border-none shadow-md">
+                  <CardHeader>
+                    <CardTitle>Personal Information</CardTitle>
+                    <CardDescription>Update your personal details and profile information</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="firstName">First Name</Label>
+                        <div className="relative">
+                          <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                          <Input id="firstName" defaultValue={user.firstName || ""} className="pl-10" />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="lastName">Last Name</Label>
+                        <div className="relative">
+                          <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                          <Input id="lastName" defaultValue={user.lastName || ""} className="pl-10" />
+                        </div>
+                      </div>
                     </div>
-                    <div className="text-left">
-                      <div className="font-medium">Account Settings</div>
-                      <div className="text-xs text-muted-foreground">Security, Privacy & More</div>
-                    </div>
-                  </div>
-                </Button>
 
-                <Button
-                  variant="outline"
-                  className="justify-start h-auto p-4"
-                  onClick={() => router.push('/profile/billing')}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="bg-green-100 dark:bg-green-900 p-2 rounded-lg">
-                      <CreditCard className="h-5 w-5 text-green-600 dark:text-green-400" />
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Email Address</Label>
+                      <Input id="email" defaultValue={user.primaryEmailAddress?.emailAddress || ""} disabled className="bg-gray-50 dark:bg-gray-800 text-gray-500" />
+                      <p className="text-xs text-gray-500 flex items-center mt-1">
+                        <AlertCircle className="h-3 w-3 mr-1" /> Email cannot be changed
+                      </p>
                     </div>
-                    <div className="text-left">
-                      <div className="font-medium">Billing & Plans</div>
-                      <div className="text-xs text-muted-foreground">Manage subscription</div>
-                    </div>
-                  </div>
-                </Button>
 
-                <Button
-                  variant="outline"
-                  className="justify-start h-auto p-4"
-                  onClick={() => router.push('/profile/settings?tab=notifications')}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="bg-blue-100 dark:bg-blue-900 p-2 rounded-lg">
-                      <Bell className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="phone">Phone Number</Label>
+                        <div className="relative">
+                          <Phone className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                          <Input id="phone" defaultValue="+254700000000" className="pl-10" />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="location">Location</Label>
+                        <div className="relative">
+                          <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                          <Input id="location" defaultValue="Nairobi, Kenya" className="pl-10" />
+                        </div>
+                      </div>
                     </div>
-                    <div className="text-left">
-                      <div className="font-medium">Notifications</div>
-                      <div className="text-xs text-muted-foreground">Configure alerts</div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="bio">Bio</Label>
+                      <Textarea
+                        id="bio"
+                        defaultValue="I love renting items and sharing my own!"
+                        className="min-h-[100px]"
+                      />
                     </div>
-                  </div>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+                  </CardContent>
+                  <CardFooter className="flex justify-end border-t pt-6">
+                    <Button className="bg-pink-600 hover:bg-pink-700 text-white">Save Changes</Button>
+                  </CardFooter>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="social">
+                <Card className="border-none shadow-md">
+                  <CardHeader>
+                    <CardTitle>Social Media & Website</CardTitle>
+                    <CardDescription>Add links to your social profiles and personal website</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="website">Website</Label>
+                      <div className="relative">
+                        <Globe className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                        <Input id="website" defaultValue="https://yourwebsite.com" className="pl-10" />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="twitter">Twitter (X)</Label>
+                      <div className="relative">
+                        <Twitter className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                        <Input id="twitter" defaultValue="@yourusername" className="pl-10" />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="facebook">Facebook</Label>
+                      <div className="relative">
+                        <Facebook className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                        <Input id="facebook" defaultValue="facebook.com/yourprofile" className="pl-10" />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="linkedin">LinkedIn</Label>
+                      <div className="relative">
+                        <Linkedin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                        <Input id="linkedin" defaultValue="linkedin.com/in/yourprofile" className="pl-10" />
+                      </div>
+                    </div>
+                  </CardContent>
+                  <CardFooter className="flex justify-end border-t pt-6">
+                    <Button className="bg-pink-600 hover:bg-pink-700 text-white">Save Changes</Button>
+                  </CardFooter>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="preferences">
+                <Card className="border-none shadow-md">
+                  <CardHeader>
+                    <CardTitle>Preferences</CardTitle>
+                    <CardDescription>Manage your notification and display preferences</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-center py-8 text-gray-500">
+                      <Settings className="h-12 w-12 mx-auto mb-4 opacity-20" />
+                      <p>Preference settings coming soon</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </div>
         </div>
-
       </div>
     </div>
   )
 }
-
-

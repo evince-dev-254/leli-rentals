@@ -7,6 +7,7 @@ import { useSearchParams } from "next/navigation"
 import { Header } from "@/components/header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import { GradientText } from "@/components/gradient-text"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
@@ -31,7 +32,7 @@ import {
 export default function ContactPage() {
   const searchParams = useSearchParams()
   const ownerParam = searchParams?.get('owner')
-  
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -51,7 +52,7 @@ export default function ContactPage() {
         subject: `Inquiry about rental from ${ownerParam}`,
         message: `Hello ${ownerParam},\n\nI'm interested in discussing a rental opportunity. Please let me know more details.\n\nBest regards,`
       }))
-      
+
       toast({
         title: "Contact form pre-filled",
         description: `Form has been pre-filled for contacting ${ownerParam}`,
@@ -249,7 +250,7 @@ export default function ContactPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-50 dark:from-pink-950/20 dark:via-purple-950/20 dark:to-indigo-950/20">
       <Header />
 
       {/* Hero Section */}
@@ -285,9 +286,8 @@ export default function ContactPage() {
               {contactMethods.map((method, index) => (
                 <Card
                   key={index}
-                  className={`border-2 hover:border-primary/50 transition-all duration-300 hover:shadow-lg cursor-pointer ${
-                    method.method === "chat" ? "ring-2 ring-purple-200 bg-gradient-to-br from-purple-50 to-blue-50" : ""
-                  }`}
+                  className={`border-2 hover:border-primary/50 transition-all duration-300 hover:shadow-lg cursor-pointer ${method.method === "chat" ? "ring-2 ring-purple-200 bg-gradient-to-br from-purple-50 to-blue-50" : ""
+                    }`}
                   onClick={() => handleContactMethod(method.method, method.contact)}
                 >
                   <CardContent className="p-6 text-center">

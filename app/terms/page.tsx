@@ -9,7 +9,7 @@ import { FileText, Users, Shield, CreditCard, AlertTriangle, CheckCircle, Calend
 
 export default function TermsPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-50 dark:from-pink-950/20 dark:via-purple-950/20 dark:to-indigo-950/20">
       <Header />
 
       <div className="container mx-auto px-4 py-12 max-w-4xl">
@@ -39,7 +39,7 @@ export default function TermsPage() {
           <CardContent className="space-y-4">
             <div className="space-y-3">
               <p className="text-sm text-gray-600">
-                By accessing or using Leli Rentals ("the Platform"), you agree to be bound by these Terms of Service ("Terms"). 
+                By accessing or using Leli Rentals ("the Platform"), you agree to be bound by these Terms of Service ("Terms").
                 If you do not agree to these Terms, please do not use our Platform.
               </p>
               <p className="text-sm text-gray-600">
@@ -61,7 +61,7 @@ export default function TermsPage() {
           <CardContent className="space-y-4">
             <div className="space-y-3">
               <p className="text-sm text-gray-600">
-                Leli Rentals is a peer-to-peer rental marketplace that connects people who want to rent items with people who have items to rent. 
+                Leli Rentals is a peer-to-peer rental marketplace that connects people who want to rent items with people who have items to rent.
                 Our Platform facilitates transactions between users but does not own, sell, or rent the items listed.
               </p>
               <p className="text-sm text-gray-600">
@@ -98,7 +98,7 @@ export default function TermsPage() {
                   <li>• Respect other users and their property</li>
                   <li>• Report any suspicious or illegal activity</li>
                   <li>• Follow our community guidelines</li>
-              </ul>
+                </ul>
               </div>
             </div>
           </CardContent>
@@ -118,14 +118,14 @@ export default function TermsPage() {
               <div>
                 <h4 className="font-semibold text-gray-900 mb-2">Rental Agreements</h4>
                 <p className="text-sm text-gray-600">
-                  Each rental transaction is subject to a separate rental agreement between the renter and item owner. 
+                  Each rental transaction is subject to a separate rental agreement between the renter and item owner.
                   Our platform facilitates these agreements but is not a party to them.
                 </p>
               </div>
               <div>
                 <h4 className="font-semibold text-gray-900 mb-2">Payment Terms</h4>
                 <p className="text-sm text-gray-600">
-                  All payments are processed through our secure payment system. We may hold funds until the rental period is complete 
+                  All payments are processed through our secure payment system. We may hold funds until the rental period is complete
                   and both parties confirm the transaction.
                 </p>
               </div>
@@ -166,7 +166,7 @@ export default function TermsPage() {
                   <li>• Spamming or harassing other users</li>
                   <li>• Attempting to circumvent platform fees</li>
                   <li>• Reverse engineering our technology</li>
-              </ul>
+                </ul>
               </div>
             </div>
           </CardContent>
@@ -186,14 +186,14 @@ export default function TermsPage() {
               <div>
                 <h4 className="font-semibold text-gray-900 mb-2">Platform Liability</h4>
                 <p className="text-sm text-gray-600">
-                  Leli Rentals acts as a platform connecting users and does not own, sell, or rent the items listed. 
+                  Leli Rentals acts as a platform connecting users and does not own, sell, or rent the items listed.
                   We are not responsible for the quality, safety, or condition of rented items.
                 </p>
               </div>
               <div>
                 <h4 className="font-semibold text-gray-900 mb-2">User Disputes</h4>
                 <p className="text-sm text-gray-600">
-                  Disputes between users are their responsibility to resolve. We may provide dispute resolution services 
+                  Disputes between users are their responsibility to resolve. We may provide dispute resolution services
                   but are not obligated to do so.
                 </p>
               </div>
@@ -221,14 +221,14 @@ export default function TermsPage() {
               <div>
                 <h4 className="font-semibold text-gray-900 mb-2">Platform Content</h4>
                 <p className="text-sm text-gray-600">
-                  All content on our platform, including text, graphics, logos, and software, is owned by Leli Rentals 
+                  All content on our platform, including text, graphics, logos, and software, is owned by Leli Rentals
                   or our licensors and is protected by copyright and other intellectual property laws.
                 </p>
               </div>
               <div>
                 <h4 className="font-semibold text-gray-900 mb-2">User Content</h4>
                 <p className="text-sm text-gray-600">
-                  You retain ownership of content you post on our platform, but grant us a license to use, display, 
+                  You retain ownership of content you post on our platform, but grant us a license to use, display,
                   and distribute it in connection with our services.
                 </p>
               </div>
@@ -262,7 +262,7 @@ export default function TermsPage() {
               <div>
                 <h4 className="font-semibold text-gray-900 mb-2">Effect of Termination</h4>
                 <p className="text-sm text-gray-600">
-                  Upon termination, your right to use the platform ceases immediately. We may retain certain information 
+                  Upon termination, your right to use the platform ceases immediately. We may retain certain information
                   as required by law or for legitimate business purposes.
                 </p>
               </div>
@@ -290,7 +290,7 @@ export default function TermsPage() {
               <div>
                 <h4 className="font-semibold text-gray-900 mb-2">Dispute Resolution</h4>
                 <p className="text-sm text-gray-600">
-                  We encourage users to resolve disputes amicably. If necessary, disputes may be resolved through 
+                  We encourage users to resolve disputes amicably. If necessary, disputes may be resolved through
                   mediation or arbitration before resorting to court proceedings.
                 </p>
               </div>
@@ -324,19 +324,19 @@ export default function TermsPage() {
                     <p className="text-sm text-gray-600">+254112081866</p>
                   </div>
                 </div>
-                      </div>
+              </div>
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
                   <Calendar className="h-5 w-5 text-purple-600" />
-                      <div>
+                  <div>
                     <h4 className="font-semibold text-gray-900">Response Time</h4>
                     <p className="text-sm text-gray-600">We respond to inquiries within 48 hours</p>
                   </div>
                 </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Changes to Terms */}
         <Card className="mb-8">
@@ -353,7 +353,7 @@ export default function TermsPage() {
                 We may update these Terms to reflect changes in our services, legal requirements, or business practices.
               </p>
               <p className="text-sm text-gray-600">
-                We will notify you of any material changes by email or through our platform. Your continued use of our services 
+                We will notify you of any material changes by email or through our platform. Your continued use of our services
                 after any changes constitutes acceptance of the updated Terms.
               </p>
               <p className="text-sm text-gray-600">

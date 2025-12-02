@@ -1,20 +1,21 @@
 "use client"
 
-import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Header } from "@/components/header"
+import { ListingCard } from "@/components/listing-card"
+import { SearchBar } from "@/components/search-bar"
+import { FilterPanel } from "@/components/filter-panel"
+import { PageHeader } from "@/components/page-header"
+import { LoadingState } from "@/components/loading-state"
+import { EmptyState } from "@/components/empty-state"
 import {
   Search,
   SlidersHorizontal,
   Grid,
   List,
-  Heart,
-  Share2,
-  MapPin,
-  Star,
+  Calendar,
   Car,
   Home,
   Wrench,
@@ -22,10 +23,7 @@ import {
   Shirt,
   Laptop,
   Dumbbell,
-  Camera,
-  Bookmark,
-  Calendar,
-  MessageCircle
+  Camera
 } from "lucide-react"
 import { useState, useEffect } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
@@ -266,13 +264,18 @@ export default function ListingsPage() {
       })
     }
 
+
     // Sort listings
     filteredListings.sort((a, b) => {
       switch (sortBy) {
         case "newest":
-          return (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0)
+          const aDate = a.created_at ? new Date(a.created_at).getTime() : 0
+          const bDate = b.created_at ? new Date(b.created_at).getTime() : 0
+          return bDate - aDate
         case "oldest":
-          return (a.createdAt?.getTime() || 0) - (b.createdAt?.getTime() || 0)
+          const aDateOld = a.created_at ? new Date(a.created_at).getTime() : 0
+          const bDateOld = b.created_at ? new Date(b.created_at).getTime() : 0
+          return aDateOld - bDateOld
         case "price-low":
           return a.price - b.price
         case "price-high":
@@ -286,13 +289,14 @@ export default function ListingsPage() {
       }
     })
 
+
     setListings(filteredListings)
   }, [selectedCategory, searchQuery, sortBy, priceRange, availabilityFilter, ratingFilter, locationFilter])
 
   // Show account type reminder if not set - BLOCK ACCESS
   if (isLoaded && user && !hasAccountType) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-50 dark:from-pink-950/20 dark:via-purple-950/20 dark:to-indigo-950/20">
         <Header />
         <AccountTypeRequiredDropdown blocking={true} />
         <div className="container mx-auto px-4 py-8 pt-24">
@@ -568,7 +572,7 @@ export default function ListingsPage() {
 
   if (!mounted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-50 dark:from-pink-950/20 dark:via-purple-950/20 dark:to-indigo-950/20">
         <Header />
         <div className="container mx-auto px-4 sm:px-6 max-w-7xl py-8 sm:py-12">
           <div className="animate-pulse">
@@ -586,474 +590,194 @@ export default function ListingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-all duration-500">
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-50 dark:from-pink-950/20 dark:via-purple-950/20 dark:to-indigo-950/20 transition-all duration-500">
       <Header />
 
-      {/* Hero Section */}
-      <section className="py-12 sm:py-16 bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 text-white relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/95 via-purple-600/95 to-indigo-700/95"></div>
-        <div className="absolute inset-0 bg-[url('/luxury-cars-in-modern-showroom.jpg')] bg-cover bg-center opacity-20"></div>
-        <div className="container mx-auto px-4 sm:px-6 max-w-6xl relative z-10">
-          <div className="text-center mb-12 fade-in-up">
-            <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-4 sm:mb-6 bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent leading-tight px-4">
-              Discover Amazing Rentals
-            </h1>
-            <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-blue-100 max-w-3xl mx-auto opacity-90 leading-relaxed mb-6 sm:mb-8 px-4">
-              Find the perfect rental for your needs. From luxury vehicles to premium equipment,
-              beautiful homes to cutting-edge electronics.
-            </p>
-            <div className="flex flex-wrap justify-center gap-2 sm:gap-4 text-xs sm:text-sm md:text-base px-4">
-              <div className="flex items-center gap-1 sm:gap-2 bg-white/20 backdrop-blur-sm rounded-full px-2 sm:px-4 py-1 sm:py-2">
-                <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-400 rounded-full animate-pulse"></div>
-                <span className="hidden xs:inline">140+ Items Available</span>
-                <span className="xs:hidden">140+ Items</span>
-              </div>
-              <div className="flex items-center gap-1 sm:gap-2 bg-white/20 backdrop-blur-sm rounded-full px-2 sm:px-4 py-1 sm:py-2">
-                <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-blue-400 rounded-full animate-pulse"></div>
-                <span className="hidden xs:inline">7 Categories</span>
-                <span className="xs:hidden">7 Cats</span>
-              </div>
-              <div className="flex items-center gap-1 sm:gap-2 bg-white/20 backdrop-blur-sm rounded-full px-2 sm:px-4 py-1 sm:py-2">
-                <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-purple-400 rounded-full animate-pulse"></div>
-                <span className="hidden xs:inline">Instant Booking</span>
-                <span className="xs:hidden">Instant</span>
-              </div>
-            </div>
+      <main className="container mx-auto px-4 py-8 max-w-7xl">
+        {/* Page Header */}
+        <PageHeader
+          title="Browse Listings"
+          description="Find the perfect rental from thousands of verified listings"
+          breadcrumbs={[{ label: "Listings" }]}
+          className="mb-8"
+        />
+
+        {/* Search Bar */}
+        <SearchBar
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          locationFilter={locationFilter}
+          onLocationChange={setLocationFilter}
+          onFilterClick={() => setShowFilters(!showFilters)}
+          showFilters={true}
+          className="mb-8"
+        />
+
+        {/* Category Tabs */}
+        <div className="mb-8 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide">
+          <div className="flex gap-2 sm:gap-3 min-w-max">
+            {categories.map((category, index) => {
+              const IconComponent = getCategoryIcon(category.id)
+              return (
+                <Button
+                  key={category.id}
+                  variant={selectedCategory === category.id ? "default" : "outline"}
+                  onClick={() => setSelectedCategory(category.id)}
+                  className={cn(
+                    "h-10 sm:h-12 rounded-full px-4 sm:px-6 transition-all duration-300",
+                    selectedCategory === category.id
+                      ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md hover:shadow-lg scale-105 border-0"
+                      : "bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-700"
+                  )}
+                >
+                  <IconComponent className="h-4 w-4 mr-2" />
+                  {category.name}
+                  <Badge
+                    variant="secondary"
+                    className={cn(
+                      "ml-2 text-xs py-0.5 px-1.5 rounded-full",
+                      selectedCategory === category.id
+                        ? "bg-white/20 text-white"
+                        : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
+                    )}
+                  >
+                    {category.count}
+                  </Badge>
+                </Button>
+              )
+            })}
           </div>
         </div>
-      </section>
 
-      {/* Main Content */}
-      <div className="container mx-auto px-4 sm:px-6 max-w-7xl py-6 sm:py-8">
-        {/* Search and Filters */}
-        <div className="mb-8 sm:mb-12 fade-in-up stagger-1">
-          <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-4 sm:p-6 mb-6 sm:mb-8">
-            <div className="flex flex-col lg:flex-row gap-3 sm:gap-4 mb-4 sm:mb-6">
-              <div className="relative flex-1 group">
-                <Search className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 sm:h-5 sm:w-5 group-focus-within:text-blue-500 transition-colors duration-200" />
-                <Input
-                  placeholder="Search rentals, locations..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 sm:pl-12 h-10 sm:h-12 md:h-14 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 focus-enhanced rounded-lg sm:rounded-xl text-sm sm:text-base"
-                />
-              </div>
-              <div className="flex gap-2 sm:gap-3">
-                <Button
-                  variant="outline"
-                  onClick={() => setShowFilters(!showFilters)}
-                  className="h-10 sm:h-12 md:h-14 btn-animate bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 rounded-lg sm:rounded-xl px-3 sm:px-6"
-                >
-                  <SlidersHorizontal className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" />
-                  <span className="hidden sm:inline text-sm sm:text-base">Advanced Filters</span>
-                  <span className="sm:hidden text-sm">Filters</span>
-                  {(locationFilter || availabilityFilter !== "any" || ratingFilter !== "any" || priceRange.min > 0 || priceRange.max < 100000) && (
-                    <span className="ml-1 sm:ml-2 bg-blue-500 text-white text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full">
-                      {[locationFilter, availabilityFilter !== "any" ? "avail" : "", ratingFilter !== "any" ? "rating" : "", priceRange.min > 0 || priceRange.max < 100000 ? "price" : ""].filter(Boolean).length}
-                    </span>
-                  )}
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => setViewMode(viewMode === "grid" ? "list" : "grid")}
-                  className="h-10 sm:h-12 md:h-14 btn-animate bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 rounded-lg sm:rounded-xl px-3 sm:px-4"
-                >
-                  {viewMode === "grid" ? <List className="h-4 w-4 sm:h-5 sm:w-5" /> : <Grid className="h-4 w-4 sm:h-5 sm:w-5" />}
-                </Button>
-              </div>
+        <div className="flex flex-col lg:flex-row gap-8 relative">
+          {/* Filter Panel - Sidebar on Desktop, Modal on Mobile */}
+          <div className={cn(
+            "lg:w-80 flex-shrink-0 transition-all duration-300 ease-in-out",
+            showFilters ? "lg:block" : "lg:hidden"
+          )}>
+            <div className="sticky top-24">
+              <FilterPanel
+                isOpen={showFilters}
+                onClose={() => setShowFilters(false)}
+                priceRange={priceRange}
+                onPriceChange={setPriceRange}
+                sortBy={sortBy}
+                onSortChange={setSortBy}
+                ratingFilter={ratingFilter}
+                onRatingChange={setRatingFilter}
+                availabilityFilter={availabilityFilter}
+                onAvailabilityChange={setAvailabilityFilter}
+                onReset={() => {
+                  setLocationFilter("")
+                  setAvailabilityFilter("any")
+                  setDateRange(undefined)
+                  setRatingFilter("any")
+                  setPriceRange({ min: 0, max: 100000 })
+                  setSortBy("newest")
+                }}
+                className="h-full"
+              />
             </div>
           </div>
 
-          {/* Category Tabs */}
-          <div className="mb-6 sm:mb-8">
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4 sm:mb-6 text-center px-4">Browse by Category</h2>
-            <div className="flex flex-wrap justify-center gap-2 sm:gap-3 fade-in-up stagger-2 px-2 sm:px-0">
-              {categories.map((category, index) => {
-                const IconComponent = getCategoryIcon(category.id)
-                return (
+          {/* Listings Grid */}
+          <div className="flex-1 min-w-0">
+            {/* Results Header */}
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+                {listings.length} {listings.length === 1 ? 'Result' : 'Results'} Found
+              </h2>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-500 dark:text-gray-400 hidden sm:inline">View:</span>
+                <div className="flex bg-white dark:bg-gray-800 p-1 rounded-lg border border-gray-200 dark:border-gray-700">
                   <Button
-                    key={category.id}
-                    variant={selectedCategory === category.id ? "default" : "outline"}
-                    onClick={() => setSelectedCategory(category.id)}
-                    className={`h-10 sm:h-12 md:h-14 text-xs sm:text-sm md:text-base btn-animate transition-all duration-300 rounded-lg sm:rounded-xl px-2 sm:px-4 md:px-6 ${selectedCategory === category.id
-                        ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl scale-105'
-                        : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-blue-300 dark:hover:border-blue-500'
-                      }`}
-                    style={{ animationDelay: `${index * 0.1}s` }}
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setViewMode("grid")}
+                    className={cn(
+                      "h-8 w-8 p-0 rounded-md",
+                      viewMode === "grid" ? "bg-gray-100 dark:bg-gray-700 text-blue-600 dark:text-blue-400" : "text-gray-500"
+                    )}
                   >
-                    <IconComponent className="h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5 mr-1 sm:mr-2 md:mr-3 transition-transform duration-200 group-hover:scale-110" />
-                    <span className="hidden sm:inline">{category.name}</span>
-                    <span className="sm:hidden text-xs">{category.name.split(' ')[0]}</span>
-                    <Badge
-                      variant="secondary"
-                      className={`ml-1 sm:ml-2 md:ml-3 text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 transition-colors duration-200 ${selectedCategory === category.id
-                          ? 'bg-white/20 text-white border-white/30'
-                          : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600'
-                        }`}
-                    >
-                      {category.count}
-                    </Badge>
+                    <Grid className="h-4 w-4" />
                   </Button>
-                )
-              })}
-            </div>
-          </div>
-
-          {/* Advanced Filters */}
-          {showFilters && (
-            <div className="bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 mb-8 fade-in-up">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">Advanced Filters</h3>
-                <div className="flex gap-2">
                   <Button
-                    variant="outline"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setViewMode("list")}
+                    className={cn(
+                      "h-8 w-8 p-0 rounded-md",
+                      viewMode === "list" ? "bg-gray-100 dark:bg-gray-700 text-blue-600 dark:text-blue-400" : "text-gray-500"
+                    )}
+                  >
+                    <List className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {isLoading ? (
+              <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
+                {[...Array(6)].map((_, i) => (
+                  <LoadingState key={i} className="h-[400px] rounded-2xl" />
+                ))}
+              </div>
+            ) : listings.length > 0 ? (
+              <div className={cn(
+                "grid gap-6",
+                viewMode === "grid"
+                  ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3"
+                  : "grid-cols-1"
+              )}>
+                {listings.map((listing, index) => (
+                  <ListingCard
+                    key={listing.id}
+                    listing={listing}
+                    isLiked={listing.id ? interactions[listing.id]?.liked : false}
+                    isSaved={listing.id ? interactions[listing.id]?.saved : false}
+                    isLoadingInteraction={listing.id ? interactions[listing.id]?.loading : false}
+                    onLike={handleLike}
+                    onSave={handleSave}
+                    onShare={handleShare}
+                    onBook={handleBookNow}
+                    onViewDetails={handleViewDetails}
+                    onMessageOwner={(l) => {
+                      const messagesUrl = `/messages?owner=${encodeURIComponent(l.owner?.name || 'Unknown')}&listing=${encodeURIComponent(l.title)}&ownerId=${l.owner?.id || 'unknown'}`
+                      router.push(messagesUrl)
+                    }}
+                    className={cn(
+                      "h-full fade-in-up",
+                      viewMode === "list" ? "flex-row" : ""
+                    )}
+                    priority={index < 4}
+                  />
+                ))}
+              </div>
+            ) : (
+              <EmptyState
+                icon={<Search className="h-10 w-10" />}
+                title="No listings found"
+                description="Try adjusting your search criteria or browse all categories."
+                action={
+                  <Button
                     onClick={() => {
+                      setSearchQuery("")
+                      setSelectedCategory("all")
                       setLocationFilter("")
                       setAvailabilityFilter("any")
-                      setDateRange(undefined)
                       setRatingFilter("any")
                       setPriceRange({ min: 0, max: 100000 })
-                      setSortBy("newest")
                     }}
-                    className="text-sm px-3 py-1 h-8"
                   >
-                    Clear All
+                    Clear Filters
                   </Button>
-                  <Button
-                    variant="ghost"
-                    onClick={() => setShowFilters(false)}
-                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                  >
-                    ×
-                  </Button>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div>
-                  <label className="block text-sm font-semibold mb-3 text-gray-900 dark:text-gray-100">Price Range (KSh)</label>
-                  <div className="flex gap-3">
-                    <Input
-                      type="number"
-                      placeholder="Min"
-                      value={priceRange.min}
-                      onChange={(e) => setPriceRange({ ...priceRange, min: Number(e.target.value) })}
-                      className="h-12 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-500/20 rounded-xl"
-                    />
-                    <Input
-                      type="number"
-                      placeholder="Max"
-                      value={priceRange.max}
-                      onChange={(e) => setPriceRange({ ...priceRange, max: Number(e.target.value) })}
-                      className="h-12 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-500/20 rounded-xl"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <GoogleMapsAutocomplete
-                    label="Location"
-                    placeholder="Search for city or area..."
-                    defaultValue={locationFilter}
-                    onPlaceSelect={(place) => {
-                      setLocationFilter(place.formatted_address)
-                    }}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold mb-3 text-gray-900 dark:text-gray-100">Availability Dates</label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant={"outline"}
-                        className={cn(
-                          "w-full h-12 justify-start text-left font-normal border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700",
-                          !dateRange && "text-muted-foreground"
-                        )}
-                      >
-                        <Calendar className="mr-2 h-4 w-4" />
-                        {dateRange?.from ? (
-                          dateRange.to ? (
-                            <>
-                              {format(dateRange.from, "LLL dd, y")} -{" "}
-                              {format(dateRange.to, "LLL dd, y")}
-                            </>
-                          ) : (
-                            format(dateRange.from, "LLL dd, y")
-                          )
-                        ) : (
-                          <span>Pick dates</span>
-                        )}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <CalendarComponent
-                        initialFocus
-                        mode="range"
-                        defaultMonth={dateRange?.from}
-                        selected={dateRange}
-                        onSelect={setDateRange}
-                        numberOfMonths={2}
-                        disabled={(date) => date < new Date()}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold mb-3 text-gray-900 dark:text-gray-100">Rating</label>
-                  <select
-                    value={ratingFilter}
-                    onChange={(e) => setRatingFilter(e.target.value)}
-                    className="w-full h-12 px-4 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:border-blue-500 focus:ring-blue-500/20"
-                    aria-label="Filter by rating"
-                  >
-                    <option value="any">Any Rating</option>
-                    <option value="4">4+ Stars</option>
-                    <option value="4.5">4.5+ Stars</option>
-                    <option value="5">5 Stars</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold mb-3 text-gray-900 dark:text-gray-100">Sort By</label>
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
-                    className="w-full h-12 px-4 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:border-blue-500 focus:ring-blue-500/20"
-                    aria-label="Sort results"
-                  >
-                    <option value="newest">Newest First</option>
-                    <option value="oldest">Oldest First</option>
-                    <option value="price-low">Price: Low to High</option>
-                    <option value="price-high">Price: High to Low</option>
-                    <option value="rating">Highest Rated</option>
-                    <option value="popularity">Most Popular</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Sort Options */}
-          <div className="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
-            <div className="flex items-center gap-3">
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Sort by:</span>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="h-12 px-4 pr-8 border border-gray-300 rounded-xl bg-white text-sm dark:bg-gray-700 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-500/20 transition-all duration-200"
-                aria-label="Sort listings by"
-              >
-                <option value="newest">Newest First</option>
-                <option value="oldest">Oldest First</option>
-                <option value="price-low">Price: Low to High</option>
-                <option value="price-high">Price: High to Low</option>
-                <option value="rating">Highest Rated</option>
-              </select>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Showing <span className="font-bold text-blue-600 dark:text-blue-400">{listings.length}</span> results
-              </div>
-              <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-                <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                <span>Live Results</span>
-              </div>
-            </div>
+                }
+                className="py-12"
+              />
+            )}
           </div>
         </div>
-
-        {/* Listings Grid */}
-        <div className={`grid gap-3 sm:gap-4 md:gap-6 ${viewMode === "grid"
-            ? "grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4"
-            : "grid-cols-1"
-          }`}>
-          {listings.map((listing, index) => {
-            const IconComponent = getCategoryIcon(listing.category)
-            return (
-              <Card
-                key={listing.id}
-                className={`group cursor-pointer border-2 hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-300 hover:shadow-xl hover:-translate-y-2 overflow-hidden card-animate bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 ${index < 8 ? 'fade-in-up' : ''
-                  }`}
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <div className="aspect-video relative overflow-hidden">
-                  <img
-                    src={listing.image || listing.images?.[0] || "/placeholder.svg"}
-                    alt={listing.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    onError={(e) => {
-                      const t = e.target as HTMLImageElement
-                      t.onerror = null
-                      t.src = "/placeholder.svg"
-                    }}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-
-                  {/* Category Badge */}
-                  <div className="absolute top-3 left-3">
-                    <div className="flex items-center gap-2 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg px-2 py-1">
-                      <IconComponent className="h-4 w-4 text-blue-600" />
-                      <span className="text-xs font-medium text-gray-800 dark:text-gray-200 capitalize">
-                        {listing.category}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Like Button */}
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    onClick={() => listing.id && handleLike(listing.id)}
-                    disabled={listing.id ? interactions[listing.id]?.loading : false}
-                    className={`absolute top-3 right-3 h-8 w-8 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm hover:bg-white dark:hover:bg-gray-800 ${listing.id && interactions[listing.id]?.liked ? 'text-red-500' : 'text-gray-600 dark:text-gray-400'
-                      }`}
-                  >
-                    <Heart className={`h-4 w-4 ${listing.id && interactions[listing.id]?.liked ? 'fill-current' : ''}`} />
-                  </Button>
-
-                  {/* Price */}
-                  <div className="absolute bottom-3 left-3">
-                    <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg px-2 py-1">
-                      <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
-                        KSh {listing.price.toLocaleString()}/day
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Share Button */}
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    onClick={() => listing.id && listing.title && handleShare(listing.id, listing.title)}
-                    className="absolute bottom-3 right-3 h-8 w-8 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm hover:bg-white dark:hover:bg-gray-800"
-                  >
-                    <Share2 className="h-4 w-4" />
-                  </Button>
-                </div>
-
-                <CardContent className="p-3 sm:p-4 md:p-6">
-                  <div className="space-y-2 sm:space-y-3">
-                    <div>
-                      <h3 className="font-semibold text-sm sm:text-base md:text-lg text-gray-900 dark:text-gray-100 mb-1 line-clamp-2">
-                        {listing.title}
-                      </h3>
-                    </div>
-
-                    <div className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                      <MapPin className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
-                      <span className="truncate">{listing.location}</span>
-                    </div>
-
-                    <div className="flex items-center gap-1 sm:gap-2">
-                      <div className="flex items-center gap-0.5 sm:gap-1">
-                        {[...Array(5)].map((_, i) => (
-                          <Star
-                            key={i}
-                            className={`h-3 w-3 sm:h-4 sm:w-4 ${i < Math.floor(listing.rating)
-                                ? "text-yellow-400 fill-current"
-                                : "text-gray-300 dark:text-gray-600"
-                              }`}
-                          />
-                        ))}
-                      </div>
-                      <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                        {listing.rating} ({listing.reviews})
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-1 sm:gap-2">
-                      <Avatar className="h-5 w-5 sm:h-6 sm:w-6">
-                        <AvatarImage src={listing.owner.avatar} alt={listing.owner.name} />
-                        <AvatarFallback className="text-xs">{listing.owner.name.charAt(0)}</AvatarFallback>
-                      </Avatar>
-                      <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate">
-                        {listing.owner.name}
-                      </span>
-                      {listing.owner.verified && (
-                        <Badge variant="secondary" className="text-xs px-1 py-0 hidden sm:inline-flex">
-                          Verified
-                        </Badge>
-                      )}
-                    </div>
-
-                    <div className="flex flex-wrap gap-1">
-                      {listing.amenities.slice(0, 2).map((amenity, index) => (
-                        <Badge key={index} variant="outline" className="text-xs px-1.5 sm:px-2 py-0.5 sm:py-1">
-                          {amenity}
-                        </Badge>
-                      ))}
-                      {listing.amenities.length > 2 && (
-                        <Badge variant="outline" className="text-xs px-1.5 sm:px-2 py-0.5 sm:py-1">
-                          +{listing.amenities.length - 2}
-                        </Badge>
-                      )}
-                    </div>
-
-                    <div className="flex gap-1 sm:gap-2 flex-wrap">
-                      <Button
-                        size="sm"
-                        className="bg-blue-600 hover:bg-blue-700 text-white btn-animate shadow-lg hover:shadow-xl transition-all duration-200 text-xs sm:text-sm px-2 sm:px-3"
-                        onClick={() => listing.id && handleViewDetails(listing.id)}
-                      >
-                        <span className="hidden sm:inline">View Details</span>
-                        <span className="sm:hidden">View</span>
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          // Navigate directly to messages page with owner info
-                          const messagesUrl = `/messages?owner=${encodeURIComponent(listing.owner?.name || 'Unknown')}&listing=${encodeURIComponent(listing.title)}&ownerId=${listing.owner?.id || 'unknown'}`
-                          router.push(messagesUrl)
-                        }}
-                        className="btn-animate transition-all duration-200 text-xs sm:text-sm px-2 sm:px-3 bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700 text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/30"
-                      >
-                        <MessageCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-                        <span className="hidden sm:inline">Message Owner</span>
-                        <span className="sm:hidden">Message</span>
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => listing.id && handleSave(listing.id)}
-                        disabled={listing.id ? interactions[listing.id]?.loading : false}
-                        className={`btn-animate transition-all duration-200 text-xs sm:text-sm px-2 sm:px-3 ${listing.id && interactions[listing.id]?.saved
-                            ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700 text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/30'
-                            : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
-                          }`}
-                      >
-                        <Heart className={`h-3 w-3 sm:h-4 sm:w-4 mr-1 transition-transform duration-200 ${listing.id && interactions[listing.id]?.saved ? 'fill-current text-green-600 dark:text-green-400' : ''}`} />
-                        <span className="hidden sm:inline">{listing.id && interactions[listing.id]?.saved ? 'Saved' : 'Save'}</span>
-                      </Button>
-                      <Button
-                        size="sm"
-                        onClick={() => handleBookNow(listing)}
-                        className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white btn-animate shadow-lg hover:shadow-xl transition-all duration-200 text-xs sm:text-sm px-2 sm:px-3"
-                      >
-                        <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-                        <span className="hidden sm:inline">Book Now</span>
-                        <span className="sm:hidden">Book</span>
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )
-          })}
-        </div>
-
-        {listings.length === 0 && (
-          <div className="text-center py-12">
-            <div className="text-gray-500 dark:text-gray-400">
-              <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <h3 className="text-lg font-medium mb-2">No listings found</h3>
-              <p className="text-sm">Try adjusting your search criteria or browse all categories.</p>
-            </div>
-          </div>
-        )}
-      </div>
+      </main>
     </div>
   )
 }
-
-
-
-

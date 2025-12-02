@@ -1,16 +1,23 @@
 import type { Metadata } from "next"
 import { ReactNode } from "react"
-import { DM_Sans } from "next/font/google"
+import { DM_Sans, Outfit } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { ClerkProvider } from '@clerk/nextjs'
 import "./globals.css"
 import { ClientLayout } from "@/components/client-layout"
 import { UIShell } from "@/lib/ui-shell"
+import { SmoothScroll } from "@/components/smooth-scroll"
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
   variable: "--font-dm-sans",
   weight: ["400", "500", "600", "700"],
+})
+
+const outfit = Outfit({
+  subsets: ["latin"],
+  variable: "--font-outfit",
+  weight: ["400", "500", "600", "700", "800"],
 })
 
 export const metadata: Metadata = {
@@ -146,10 +153,12 @@ export default function RootLayout({
             }}
           />
         </head>
-        <body className={`font-sans ${dmSans.variable} antialiased`}>
-          <ClientLayout>
-            <UIShell>{children}</UIShell>
-          </ClientLayout>
+        <body className={`font-sans ${dmSans.variable} ${outfit.variable} antialiased`}>
+          <SmoothScroll>
+            <ClientLayout>
+              <UIShell>{children}</UIShell>
+            </ClientLayout>
+          </SmoothScroll>
           <Analytics />
         </body>
       </html>

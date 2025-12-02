@@ -1,6 +1,7 @@
 "use client"
 
 import { Suspense, useState, ReactNode } from "react"
+import { usePathname } from "next/navigation"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/toaster"
 import { AccountTypeReminder } from "@/components/account-type-reminder"
@@ -16,24 +17,28 @@ interface ClientLayoutProps {
 
 export function ClientLayout({ children }: ClientLayoutProps) {
   const [isAIChatOpen, setIsAIChatOpen] = useState(false)
+  const pathname = usePathname()
+  const isHomePage = pathname === "/"
 
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
       <NotificationProvider>
         {/* Verification Reminder Banner - Top of page for owners */}
         <VerificationReminderBanner />
-        
+
         {/* Account Type Reminder Banner - Top for skipped users */}
         <AccountTypeReminder variant="banner" />
-        
+
         {children}
         <Toaster />
 
-        {/* Global AI Chat - Available on all pages */}
-        <ProfessionalAIChat
-          isOpen={isAIChatOpen}
-          onToggle={() => setIsAIChatOpen(!isAIChatOpen)}
-        />
+        {/* Global AI Chat - Available on all pages except Home */}
+        {!isHomePage && (
+          <ProfessionalAIChat
+            isOpen={isAIChatOpen}
+            onToggle={() => setIsAIChatOpen(!isAIChatOpen)}
+          />
+        )}
       </NotificationProvider>
     </ThemeProvider>
   )

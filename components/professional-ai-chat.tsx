@@ -19,11 +19,15 @@ import {
   Phone,
   Mail,
   HelpCircle,
-  MessageSquare
+  MessageSquare,
+  Maximize2,
+  Minimize2
 } from "lucide-react"
 import { professionalAIChatService, ChatMessage, ChatSession, AIResponse } from "@/lib/professional-ai-chat-service"
 import { enhancedAIChatService } from "@/lib/enhanced-ai-chat-service"
 import { useUser } from "@clerk/nextjs"
+import { cn } from "@/lib/utils"
+import { motion, AnimatePresence } from "framer-motion"
 
 interface ProfessionalAIChatProps {
   isOpen: boolean
@@ -39,6 +43,7 @@ export default function ProfessionalAIChat({ isOpen, onToggle }: ProfessionalAIC
   const [quickReplies, setQuickReplies] = useState<string[]>([])
   const [suggestedActions, setSuggestedActions] = useState<string[]>([])
   const [showWelcome, setShowWelcome] = useState(true)
+  const [isExpanded, setIsExpanded] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   // Initialize session
@@ -51,13 +56,13 @@ export default function ProfessionalAIChat({ isOpen, onToggle }: ProfessionalAIC
   const initializeSession = async () => {
     try {
       const sessionId = await professionalAIChatService.createSession(user?.id)
-      
+
       // Load previous conversation history if exists
       const previousMessages = enhancedAIChatService.loadConversationHistory(sessionId)
-      
+
       // Get user context for personalization
       const userContext = await enhancedAIChatService.getUserContext(user?.id)
-      
+
       const contextData = {
         currentPage: typeof window !== 'undefined' ? window.location.pathname : '/',
         deviceType: typeof window !== 'undefined' ?
@@ -91,7 +96,7 @@ export default function ProfessionalAIChat({ isOpen, onToggle }: ProfessionalAIC
           userContext,
           user?.firstName
         )
-        
+
         const contextualSuggestions = enhancedAIChatService.getContextualSuggestions(userContext)
 
         const welcomeMessage: ChatMessage = {
@@ -184,10 +189,10 @@ What can I help you with today?`,
 
     } catch (error) {
       console.error('Error sending message:', error)
-      
+
       // Enhanced error handling with different messages based on error type
       let errorContent = 'I apologize, but I\'m experiencing technical difficulties. Let me connect you with our human support team.'
-      
+
       if (error instanceof Error) {
         if (error.message.includes('network') || error.message.includes('fetch')) {
           errorContent = 'I\'m having trouble connecting to our servers. Please check your internet connection and try again.'
@@ -197,7 +202,7 @@ What can I help you with today?`,
           errorContent = 'I need to verify your account to continue. Please make sure you\'re logged in and try again.'
         }
       }
-      
+
       const errorMessage: ChatMessage = {
         id: `error_${Date.now()}`,
         sender: 'ai',
@@ -205,14 +210,14 @@ What can I help you with today?`,
         role: 'assistant',
         content: errorContent,
         timestamp: new Date(),
-        metadata: { 
+        metadata: {
           shouldEscalate: true,
           errorType: 'technical',
           retryable: true
         }
       }
       setMessages(prev => [...prev, errorMessage])
-      
+
       // Add retry option for certain errors
       if (errorMessage.metadata?.retryable) {
         setQuickReplies(['Try again', 'Contact human support', '💬 Chat on WhatsApp'])
@@ -228,23 +233,20 @@ What can I help you with today?`,
     } else {
       handleSendMessage(reply)
     }
-    // Track interaction removed - method not implemented
   }
 
   const handleSuggestedAction = (action: string) => {
-    // This would navigate to the relevant page or perform the action
     console.log('Suggested action:', action)
-    // Track interaction removed - method not implemented
   }
 
   const handleFeedback = async (messageId: string, feedback: 'positive' | 'negative') => {
     if (session) {
       try {
         await professionalAIChatService.submitFeedback(session.id, messageId, feedback)
-        
+
         // Show feedback confirmation
         const feedbackMessage = feedback === 'positive' ? 'Thank you for your positive feedback!' : 'Thank you for your feedback. We\'ll use it to improve our service.'
-        
+
         // Add a temporary feedback confirmation message
         const feedbackConfirmation: ChatMessage = {
           id: `feedback_${Date.now()}`,
@@ -255,17 +257,16 @@ What can I help you with today?`,
           timestamp: new Date(),
           metadata: { isFeedbackConfirmation: true }
         }
-        
+
         setMessages(prev => [...prev, feedbackConfirmation])
-        
+
         // Remove the feedback confirmation after 3 seconds
         setTimeout(() => {
           setMessages(prev => prev.filter(msg => msg.id !== feedbackConfirmation.id))
         }, 3000)
-        
+
       } catch (error) {
         console.error('Error submitting feedback:', error)
-        // Don't show error to user for feedback failures
       }
     }
   }
@@ -279,8 +280,6 @@ What can I help you with today?`,
     if (typeof window !== 'undefined') {
       window.open(whatsappUrl, '_blank')
     }
-
-    // Track interaction removed - method not implemented
   }
 
   const handleWhatsAppDirect = () => {
@@ -294,259 +293,243 @@ What can I help you with today?`,
     }
   }
 
-  if (!isOpen) {
-    return (
-      <Button
-        onClick={onToggle}
-        className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 animate-pulse transition-all duration-300 hover:scale-110 z-50"
-        size="icon"
-        aria-label="Open AI Support Chat"
-      >
-        <MessageCircle className="h-6 w-6" />
-      </Button>
-    )
-  }
-
   return (
-    <div className="fixed bottom-6 right-6 w-96 h-[600px] z-50 animate-in slide-in-from-bottom-4 duration-300">
-      {/* Animated Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-100 via-white to-blue-100 dark:from-purple-950 dark:via-gray-900 dark:to-blue-950 rounded-lg overflow-hidden pointer-events-none">
-        {/* Background orbs */}
-        <div className="absolute -top-20 -right-20 w-40 h-40 bg-purple-400/20 dark:bg-purple-600/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-blue-400/20 dark:bg-blue-600/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-      </div>
-      
-      <Card className="relative h-full shadow-2xl flex flex-col border-2 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md">
-      {/* Header */}
-      <CardHeader className="pb-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-t-lg">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Avatar className="h-8 w-8">
-              <AvatarImage src="/logo-white.svg" alt="Leli AI" />
-              <AvatarFallback className="bg-white/20">
-                <Bot className="h-4 w-4" />
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-sm">Leli AI Assistant</span>
-                <Sparkles className="h-3 w-3" />
-              </div>
-              <div className="flex items-center gap-1">
-                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                <span className="text-xs opacity-90">Online</span>
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-white hover:bg-green-500/20"
-              onClick={handleWhatsAppDirect}
-              aria-label="Chat on WhatsApp"
-              title="Chat with AI Assistant on WhatsApp"
-            >
-              <MessageSquare className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-white hover:bg-white/20"
-              onClick={onToggle}
-              aria-label="Close Chat"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      </CardHeader>
-
-      {/* Quick Replies */}
-      {quickReplies.length > 0 && (
-        <div className="p-3 bg-gradient-to-r from-blue-50 to-purple-50 border-b">
-          <div className="flex flex-wrap gap-2">
-            {quickReplies.slice(0, 4).map((reply, index) => (
-              <Button
-                key={index}
-                variant="outline"
-                size="sm"
-                className="text-xs h-8 px-3 bg-white hover:bg-blue-50 border-blue-200 hover:border-blue-400 transition-all duration-200"
-                onClick={() => handleQuickReply(reply)}
-              >
-                {reply}
-              </Button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Messages */}
-      <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((message) => (
-          <div
-            key={message.id}
-            className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in-0 slide-in-from-bottom-2`}
+    <AnimatePresence>
+      {!isOpen ? (
+        <motion.div
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0, opacity: 0 }}
+          className="fixed bottom-6 right-6 z-50"
+        >
+          <Button
+            onClick={onToggle}
+            className="h-14 w-14 rounded-full shadow-lg bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 animate-pulse transition-all duration-300 hover:scale-110"
+            size="icon"
+            aria-label="Open AI Support Chat"
           >
-            <div className="flex items-start gap-2 max-w-[85%]">
-              {message.role === 'assistant' && (
-                <Avatar className="h-6 w-6 mt-1 flex-shrink-0">
-                  <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500">
-                    <Bot className="h-3 w-3" />
+            <MessageCircle className="h-6 w-6 text-white" />
+          </Button>
+        </motion.div>
+      ) : (
+        <motion.div
+          initial={{ opacity: 0, y: 20, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 20, scale: 0.95 }}
+          transition={{ duration: 0.2 }}
+          className={cn(
+            "fixed bottom-6 right-6 z-50 flex flex-col shadow-2xl rounded-2xl overflow-hidden border border-white/20",
+            isExpanded ? "w-[90vw] h-[80vh] max-w-4xl" : "w-[90vw] sm:w-96 h-[600px] max-h-[80vh]"
+          )}
+        >
+          {/* Glassmorphic Background */}
+          <div className="absolute inset-0 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl" />
+
+          {/* Animated Gradient Orbs */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute -top-20 -right-20 w-60 h-60 bg-purple-500/20 rounded-full blur-3xl animate-pulse" />
+            <div className="absolute -bottom-20 -left-20 w-60 h-60 bg-blue-500/20 rounded-full blur-3xl animate-pulse delay-1000" />
+          </div>
+
+          {/* Header */}
+          <div className="relative z-10 flex items-center justify-between p-4 bg-gradient-to-r from-blue-600/90 to-purple-600/90 backdrop-blur-md border-b border-white/10">
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <div className="absolute inset-0 bg-white/20 rounded-full animate-pulse" />
+                <Avatar className="h-10 w-10 border-2 border-white/20 relative z-10">
+                  <AvatarImage src="/logo-white.svg" alt="Leli AI" />
+                  <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white">
+                    <Bot className="h-5 w-5" />
                   </AvatarFallback>
                 </Avatar>
-              )}
+                <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 border-2 border-blue-600 rounded-full z-20" />
+              </div>
+              <div>
+                <h3 className="font-bold text-white flex items-center gap-2">
+                  Leli Assistant
+                  <Sparkles className="h-3 w-3 text-yellow-300 animate-pulse" />
+                </h3>
+                <p className="text-xs text-blue-100">Always here to help</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-white hover:bg-white/20 rounded-full"
+                onClick={() => setIsExpanded(!isExpanded)}
+                title={isExpanded ? "Minimize" : "Maximize"}
+              >
+                {isExpanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-white hover:bg-white/20 rounded-full"
+                onClick={onToggle}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
 
-              <div className="flex flex-col">
-                <div
-                  className={`rounded-lg px-3 py-2 text-sm ${
-                    message.role === 'user'
-                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white ml-auto'
-                      : 'bg-gray-100 text-gray-900'
-                  }`}
-                >
-                  {message.role === 'assistant' && (
-                    <div className="flex items-center gap-1 mb-1">
-                      <Sparkles className="h-3 w-3 text-blue-600" />
-                      <span className="text-xs text-blue-600 font-medium">Leli AI</span>
-                      {message.metadata?.confidence && (
-                        <Badge variant="secondary" className="text-xs h-4 px-1 ml-1">
-                          {Math.round(message.metadata.confidence * 100)}%
-                        </Badge>
+          {/* Messages Area */}
+          <div className="relative z-10 flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
+            {messages.map((message) => (
+              <motion.div
+                key={message.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+              >
+                <div className={`flex items-end gap-2 max-w-[85%] ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                  {/* Avatar */}
+                  <Avatar className="h-8 w-8 flex-shrink-0 border border-white/10 shadow-sm">
+                    {message.role === 'assistant' ? (
+                      <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white">
+                        <Bot className="h-4 w-4" />
+                      </AvatarFallback>
+                    ) : (
+                      <AvatarFallback className="bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+                        {user?.firstName?.charAt(0) || <User className="h-4 w-4" />}
+                      </AvatarFallback>
+                    )}
+                  </Avatar>
+
+                  {/* Message Bubble */}
+                  <div className="flex flex-col gap-1">
+                    <div
+                      className={cn(
+                        "rounded-2xl px-4 py-3 text-sm shadow-sm relative group",
+                        message.role === 'user'
+                          ? "bg-gradient-to-br from-blue-600 to-purple-600 text-white rounded-br-none"
+                          : "bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 border border-gray-100 dark:border-gray-700 rounded-bl-none"
                       )}
+                    >
+                      <p className="whitespace-pre-wrap leading-relaxed">{message.content}</p>
+
+                      {/* Message Metadata */}
+                      <div className={cn(
+                        "flex items-center justify-between mt-1 text-[10px]",
+                        message.role === 'user' ? "text-blue-100" : "text-gray-400"
+                      )}>
+                        <span>{message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+
+                        {message.role === 'assistant' && message.metadata?.shouldEscalate && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-5 px-1.5 text-[10px] bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 ml-2"
+                            onClick={handleEscalate}
+                          >
+                            <Phone className="h-3 w-3 mr-1" />
+                            Escalate
+                          </Button>
+                        )}
+                      </div>
                     </div>
-                  )}
 
-                  <p className="leading-relaxed">{message.content}</p>
-
-                  <div className="flex items-center justify-between mt-2 text-xs opacity-70">
-                    <span>{message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-
-                    {message.role === 'assistant' && message.metadata?.shouldEscalate && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-6 px-2 text-xs bg-red-100 hover:bg-red-200 text-red-700"
-                        onClick={handleEscalate}
-                      >
-                        <Phone className="h-3 w-3 mr-1" />
-                        Get Human Help
-                      </Button>
+                    {/* Feedback Actions (AI only) */}
+                    {message.role === 'assistant' && !message.metadata?.shouldEscalate && (
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity px-1">
+                        <button
+                          onClick={() => handleFeedback(message.id, 'positive')}
+                          className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full text-gray-400 hover:text-green-500 transition-colors"
+                        >
+                          <ThumbsUp className="h-3 w-3" />
+                        </button>
+                        <button
+                          onClick={() => handleFeedback(message.id, 'negative')}
+                          className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full text-gray-400 hover:text-red-500 transition-colors"
+                        >
+                          <ThumbsDown className="h-3 w-3" />
+                        </button>
+                      </div>
                     )}
                   </div>
                 </div>
-
-                {message.role === 'assistant' && !message.metadata?.shouldEscalate && (
-                  <div className="flex gap-1 mt-1 ml-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 hover:bg-green-100"
-                      onClick={() => handleFeedback(message.id, 'positive')}
-                    >
-                      <ThumbsUp className="h-3 w-3 text-green-600" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 hover:bg-red-100"
-                      onClick={() => handleFeedback(message.id, 'negative')}
-                    >
-                      <ThumbsDown className="h-3 w-3 text-red-600" />
-                    </Button>
-                  </div>
-                )}
-              </div>
-
-              {message.role === 'user' && (
-                <Avatar className="h-6 w-6 mt-1 flex-shrink-0">
-                  <AvatarFallback className="bg-gradient-to-r from-gray-500 to-gray-600 text-white">
-                    {user?.displayName?.charAt(0) || 'U'}
-                  </AvatarFallback>
-                </Avatar>
-              )}
-            </div>
-          </div>
-        ))}
-
-        {/* Typing Indicator */}
-        {isTyping && (
-          <div className="flex justify-start animate-in fade-in-0">
-            <div className="flex items-start gap-2">
-              <Avatar className="h-6 w-6">
-                <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500">
-                  <Bot className="h-3 w-3" />
-                </AvatarFallback>
-              </Avatar>
-              <div className="bg-gray-100 rounded-lg px-3 py-2">
-                <div className="flex items-center gap-2">
-                  <Loader2 className="h-3 w-3 animate-spin text-blue-600" />
-                  <span className="text-xs text-gray-600">Leli is typing...</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div ref={messagesEndRef} />
-      </CardContent>
-
-      {/* Suggested Actions */}
-      {suggestedActions.length > 0 && (
-        <div className="p-3 bg-gray-50 border-t">
-          <div className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
-            <HelpCircle className="h-3 w-3" />
-            Suggested Actions
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {suggestedActions.slice(0, 3).map((action, index) => (
-              <Button
-                key={index}
-                variant="ghost"
-                size="sm"
-                className="text-xs h-7 px-3 bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 transition-all duration-200"
-                onClick={() => handleSuggestedAction(action)}
-              >
-                <ArrowRight className="h-3 w-3 mr-1" />
-                {action}
-              </Button>
+              </motion.div>
             ))}
-          </div>
-        </div>
-      )}
 
-      {/* Input */}
-      <div className="p-3 border-t bg-white rounded-b-lg">
-        <div className="flex items-center gap-2">
-          <input
-            type="text"
-            placeholder="Type your message..."
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleSendMessage(newMessage)}
-            className="flex-1 text-sm px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            disabled={isTyping}
-          />
-          <Button
-            onClick={() => handleSendMessage(newMessage)}
-            size="icon"
-            className="h-9 w-9 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-            disabled={!newMessage.trim() || isTyping}
-          >
-            <Send className="h-4 w-4" />
-          </Button>
-        </div>
-        <div className="flex items-center justify-between mt-2">
-          <span className="text-xs text-muted-foreground">
-            {isTyping ? 'AI is responding...' : 'Press Enter to send'}
-          </span>
-          <div className="flex items-center gap-1">
-            <Sparkles className="h-3 w-3 text-blue-600" />
-            <span className="text-xs text-blue-600 font-medium">AI Powered</span>
+            {/* Typing Indicator */}
+            {isTyping && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex justify-start"
+              >
+                <div className="flex items-end gap-2">
+                  <Avatar className="h-8 w-8 flex-shrink-0 border border-white/10">
+                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white">
+                      <Bot className="h-4 w-4" />
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl rounded-bl-none px-4 py-3 shadow-sm">
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+            <div ref={messagesEndRef} />
           </div>
-        </div>
-      </div>
-    </Card>
-    </div>
+
+          {/* Quick Actions / Suggestions */}
+          {(quickReplies.length > 0 || suggestedActions.length > 0) && (
+            <div className="relative z-10 p-3 bg-gray-50/80 dark:bg-gray-900/50 border-t border-gray-100 dark:border-gray-800 backdrop-blur-sm">
+              <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+                {[...quickReplies, ...suggestedActions].slice(0, 5).map((reply, index) => (
+                  <Button
+                    key={index}
+                    variant="outline"
+                    size="sm"
+                    className="flex-shrink-0 text-xs h-8 bg-white dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-700 transition-all rounded-full"
+                    onClick={() => handleQuickReply(reply)}
+                  >
+                    {reply}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Input Area */}
+          <div className="relative z-10 p-4 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800">
+            <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800/50 rounded-full border border-gray-200 dark:border-gray-700 px-4 py-2 focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all">
+              <input
+                type="text"
+                placeholder="Ask anything..."
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage(newMessage)}
+                className="flex-1 bg-transparent border-none focus:outline-none text-sm text-gray-800 dark:text-gray-100 placeholder:text-gray-400"
+                disabled={isTyping}
+              />
+              <Button
+                onClick={() => handleSendMessage(newMessage)}
+                size="icon"
+                className={cn(
+                  "h-8 w-8 rounded-full transition-all duration-200",
+                  newMessage.trim()
+                    ? "bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:scale-105"
+                    : "bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed"
+                )}
+                disabled={!newMessage.trim() || isTyping}
+              >
+                <Send className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="flex justify-center mt-2">
+              <span className="text-[10px] text-gray-400 flex items-center gap-1">
+                Powered by Leli AI <Sparkles className="h-2 w-2" />
+              </span>
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   )
 }
