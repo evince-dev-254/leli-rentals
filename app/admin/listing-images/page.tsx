@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Image } from 'lucide-react'
 
-export default function Listing ImagesPage() {
+export default function ListingImagesPage() {
     const { user, isLoaded } = useUser()
     const router = useRouter()
     const [isAdmin, setIsAdmin] = useState(false)

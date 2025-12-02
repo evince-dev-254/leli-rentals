@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase'
 
 export interface Booking {
     id: string
@@ -73,7 +73,7 @@ export async function createBooking(
     notes?: string
 ): Promise<{ success: boolean; booking?: Booking; error?: string }> {
     try {
-        const supabase = createClient()
+
 
         // Calculate costs
         const costs = calculateBookingCosts(startDate, endDate, pricePerDay)
@@ -110,7 +110,7 @@ export async function createBooking(
  */
 export async function getRenterBookings(renterId: string): Promise<Booking[]> {
     try {
-        const supabase = createClient()
+
 
         const { data, error } = await supabase
             .from('bookings')
@@ -132,7 +132,7 @@ export async function getRenterBookings(renterId: string): Promise<Booking[]> {
  */
 export async function getOwnerBookings(ownerId: string): Promise<Booking[]> {
     try {
-        const supabase = createClient()
+
 
         const { data, error } = await supabase
             .from('bookings')
@@ -154,7 +154,7 @@ export async function getOwnerBookings(ownerId: string): Promise<Booking[]> {
  */
 export async function getBookingById(bookingId: string): Promise<Booking | null> {
     try {
-        const supabase = createClient()
+
 
         const { data, error } = await supabase
             .from('bookings')
@@ -179,7 +179,7 @@ export async function updateBookingStatus(
     status: Booking['status']
 ): Promise<{ success: boolean; error?: string }> {
     try {
-        const supabase = createClient()
+
 
         const { error } = await supabase
             .from('bookings')
@@ -203,7 +203,7 @@ export async function cancelBooking(
     reason?: string
 ): Promise<{ success: boolean; error?: string }> {
     try {
-        const supabase = createClient()
+
 
         const { error } = await supabase
             .from('bookings')
@@ -232,7 +232,7 @@ export async function checkAvailability(
     endDate: Date
 ): Promise<boolean> {
     try {
-        const supabase = createClient()
+
 
         const { data, error } = await supabase
             .from('bookings')

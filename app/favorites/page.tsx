@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Heart, Trash2, ExternalLink } from 'lucide-react'
 import Link from 'next/link'
 import { getUserFavorites } from '@/lib/favorites'
-import { createClient } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase'
 
 interface FavoriteWithListing {
     id: string
@@ -44,7 +44,7 @@ export default function FavoritesPage() {
             const favs = await getUserFavorites(user!.id)
 
             // Fetch listing details for each favorite
-            const supabase = createClient()
+
             const favoritesWithListings = await Promise.all(
                 favs.map(async (fav) => {
                     const { data: listing } = await supabase

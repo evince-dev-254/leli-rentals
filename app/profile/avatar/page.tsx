@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import ImageUpload from "@/components/image-upload"
+import { ImageUpload } from "@/components/imagekit/image-upload"
 import { useUser } from "@clerk/nextjs"
 import { useRouter } from "next/navigation"
 import { Camera, ArrowLeft, Upload, Trash2, Save, CheckCircle, Info } from "lucide-react"
@@ -23,7 +23,7 @@ export default function AvatarManagementPage() {
   const { user, isLoaded } = useUser()
   const router = useRouter()
   const { toast } = useToast()
-  
+
   const [profilePicture, setProfilePicture] = useState<string>("")
   const [isLoading, setIsLoading] = useState(false)
   const [hasChanges, setHasChanges] = useState(false)
@@ -63,22 +63,22 @@ export default function AvatarManagementPage() {
   const handleImageChange = async (imageUrl: string) => {
     setProfilePicture(imageUrl)
     setHasChanges(true)
-    
+
     // Auto-save to database
     try {
       setIsLoading(true)
       await DatabaseService.updateUser(user.id, {
         avatar: imageUrl
       })
-      
+
       // Also update Clerk profile
       await user.setProfileImage({ file: imageUrl })
-      
+
       toast({
         title: "Success!",
         description: "Your profile picture has been updated.",
       })
-      
+
       setHasChanges(false)
     } catch (error) {
       console.error('Error saving profile picture:', error)
@@ -96,16 +96,16 @@ export default function AvatarManagementPage() {
     try {
       setIsLoading(true)
       setProfilePicture("")
-      
+
       await DatabaseService.updateUser(user.id, {
         avatar: ""
       })
-      
+
       toast({
         title: "Profile picture removed",
         description: "Your profile picture has been removed.",
       })
-      
+
       setHasChanges(false)
     } catch (error) {
       console.error('Error removing profile picture:', error)
@@ -131,7 +131,7 @@ export default function AvatarManagementPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <Header />
-      
+
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Header Section */}
         <div className="mb-8">
@@ -141,7 +141,7 @@ export default function AvatarManagementPage() {
               Back to Profile
             </Button>
           </Link>
-          
+
           <div className="flex items-center gap-4 mb-2">
             <Camera className="h-8 w-8 text-blue-600" />
             <h1 className="text-3xl font-bold text-gray-900">Profile Picture</h1>
@@ -156,7 +156,7 @@ export default function AvatarManagementPage() {
           <Info className="h-4 w-4 text-blue-600" />
           <AlertTitle className="text-blue-900">Profile Picture Guidelines</AlertTitle>
           <AlertDescription className="text-blue-800">
-            Use a clear photo where your face is visible. Recommended size: 400x400 pixels. 
+            Use a clear photo where your face is visible. Recommended size: 400x400 pixels.
             Maximum file size: 2MB. Accepted formats: JPG, PNG, GIF, WebP.
           </AlertDescription>
         </Alert>
@@ -177,12 +177,12 @@ export default function AvatarManagementPage() {
             <CardContent>
               <ImageUpload
                 currentImageUrl={profilePicture}
-                userName={user.fullName || user.username || "User"}
-                onImageChange={handleImageChange}
-                onImageRemove={handleImageRemove}
+                folder="/profile-images"
+                onUploadSuccess={(res) => handleImageChange(res.url)}
+                onRemove={handleImageRemove}
                 maxSize={2}
               />
-              
+
               {hasChanges && (
                 <div className="mt-4 flex items-center gap-2 text-green-600 text-sm">
                   <CheckCircle className="h-4 w-4" />
@@ -219,7 +219,7 @@ export default function AvatarManagementPage() {
                     </Badge>
                   )}
                 </div>
-                
+
                 <div className="text-center">
                   <h3 className="font-semibold text-lg text-gray-900">
                     {user.fullName || user.username}
@@ -233,7 +233,7 @@ export default function AvatarManagementPage() {
               {/* Small Previews */}
               <div className="space-y-3 pt-4 border-t">
                 <p className="text-sm font-medium text-gray-700">Preview Sizes:</p>
-                
+
                 <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                   <Avatar className="h-12 w-12">
                     <AvatarImage src={profilePicture} alt={user.fullName || "User"} />
