@@ -6,6 +6,7 @@ import { ClerkProvider } from '@clerk/nextjs'
 import "./globals.css"
 import { ClientLayout } from "@/components/client-layout"
 import { UIShell } from "@/lib/ui-shell"
+import { UserSyncer } from "@/components/auth/user-syncer"
 import { SmoothScroll } from "@/components/smooth-scroll"
 
 const dmSans = DM_Sans({
@@ -52,7 +53,7 @@ export default function RootLayout({
       publishableKey={publishableKey}
       clerkJSUrl={clerkJsUrl}
       // Replace deprecated `afterSignInUrl`/`afterSignUpUrl` with new redirect props
-      fallbackRedirectUrl="/get-started"
+      signInFallbackRedirectUrl="/get-started"
       signUpFallbackRedirectUrl="/get-started"
       signInUrl="/sign-in"
       signUpUrl="/sign-up"
@@ -168,6 +169,7 @@ export default function RootLayout({
         <body className={`font-sans ${dmSans.variable} ${outfit.variable} antialiased`}>
           <SmoothScroll>
             <ClientLayout>
+              <UserSyncer />
               <UIShell>{children}</UIShell>
             </ClientLayout>
           </SmoothScroll>

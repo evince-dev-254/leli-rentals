@@ -128,15 +128,16 @@ export function Footer() {
             {/* Brand Column */}
             <div className="lg:col-span-4 space-y-6">
               <Link href="/" className="flex items-center group w-fit">
-                <div className="relative h-10 w-10 mr-3">
-                  <div className="absolute inset-0 bg-gradient-to-tr from-blue-600 to-purple-600 rounded-xl rotate-3 group-hover:rotate-6 transition-transform duration-300"></div>
-                  <div className="absolute inset-0 bg-white dark:bg-gray-900 rounded-xl flex items-center justify-center border border-gray-200 dark:border-gray-700">
-                    <Sparkles className="h-6 w-6 text-transparent bg-clip-text bg-gradient-to-tr from-blue-600 to-purple-600 fill-current" />
-                  </div>
-                </div>
-                <span className="font-heading font-bold text-2xl tracking-tight text-gray-900 dark:text-white">
-                  Leli<span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Rentals</span>
-                </span>
+                <img
+                  src="/default-monochrome-black.svg"
+                  alt="Leli Rentals Logo"
+                  className="h-8 w-auto object-contain dark:hidden hover:opacity-80 transition-opacity"
+                />
+                <img
+                  src="/default-monochrome-white.svg"
+                  alt="Leli Rentals Logo"
+                  className="h-8 w-auto object-contain hidden dark:block hover:opacity-80 transition-opacity"
+                />
               </Link>
               <p className="text-gray-600 dark:text-gray-400 text-lg leading-relaxed max-w-sm">
                 The premier destination for all your rental needs. Experience seamless booking, verified listings, and premium support.
