@@ -1,6 +1,6 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 
 // Email configuration - Updated to use Gmail
 const FROM_EMAIL = 'Leli Rentals <lelirentalsmail@gmail.com>'

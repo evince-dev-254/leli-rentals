@@ -4,8 +4,7 @@ const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KE
 
 // Email configuration  
 const FROM_EMAIL = 'Leli Rentals <onboarding@resend.dev>'
-const SUPPORT_EMAIL = 'lelirentalsmail@gmail.com'
-
+const SUPPORT_EMAIL = 'lelirentalsmail@gmail.com ,info@leli.rentals'
 export interface EmailOptions {
   to: string
   subject: string
