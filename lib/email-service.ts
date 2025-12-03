@@ -1,6 +1,6 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 
 // Email configuration  
 const FROM_EMAIL = 'Leli Rentals <onboarding@resend.dev>'
@@ -18,7 +18,7 @@ export interface EmailOptions {
  */
 export async function sendEmail(options: EmailOptions) {
   try {
-    if (!process.env.RESEND_API_KEY) {
+    if (!process.env.RESEND_API_KEY || !resend) {
       console.warn('⚠️ RESEND_API_KEY not configured. Email would be sent:', options.subject)
       return { success: false, error: 'Email service not configured' }
     }
