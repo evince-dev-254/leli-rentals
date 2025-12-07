@@ -1,0 +1,20 @@
+{
+  "node": {
+    "000cfcf38d8ee44da2ec528fb72668c340e4ed9fb8": {
+      "workers": {
+        "app/admin/affiliates/page": {
+          "moduleId": 84569,
+          "async": false,
+          "exportedName": "getAllAffiliates",
+          "filename": "lib/actions/affiliate-actions.ts"
+        }
+      },
+      "layer": {
+        "app/admin/affiliates/page": "action-browser"
+      },
+      "exportedName": "getAllAffiliates",
+      "filename": "lib/actions/affiliate-actions.ts"
+    }
+  },
+  "edge": {}
+}

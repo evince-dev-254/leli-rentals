@@ -1,0 +1,20 @@
+{
+  "node": {
+    "7836f6554c113775f9349130d57af469f4e9914fb6": {
+      "workers": {
+        "app/dashboard/reviews/page": {
+          "moduleId": 38519,
+          "async": false,
+          "exportedName": "sendNewListingEmail",
+          "filename": "lib/actions/email-actions.ts"
+        }
+      },
+      "layer": {
+        "app/dashboard/reviews/page": "action-browser"
+      },
+      "exportedName": "sendNewListingEmail",
+      "filename": "lib/actions/email-actions.ts"
+    }
+  },
+  "edge": {}
+}

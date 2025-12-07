@@ -1,0 +1,20 @@
+{
+  "node": {
+    "7836f6554c113775f9349130d57af469f4e9914fb6": {
+      "workers": {
+        "app/admin/settings/page": {
+          "moduleId": 20470,
+          "async": false,
+          "exportedName": "sendNewListingEmail",
+          "filename": "lib/actions/email-actions.ts"
+        }
+      },
+      "layer": {
+        "app/admin/settings/page": "action-browser"
+      },
+      "exportedName": "sendNewListingEmail",
+      "filename": "lib/actions/email-actions.ts"
+    }
+  },
+  "edge": {}
+}

@@ -1,0 +1,20 @@
+{
+  "node": {
+    "78b4cbbb6f71363dd038a6a51722c197a353d0a886": {
+      "workers": {
+        "app/listings/[id]/page": {
+          "moduleId": 84012,
+          "async": false,
+          "exportedName": "createBooking",
+          "filename": "lib/actions/booking-actions.ts"
+        }
+      },
+      "layer": {
+        "app/listings/[id]/page": "action-browser"
+      },
+      "exportedName": "createBooking",
+      "filename": "lib/actions/booking-actions.ts"
+    }
+  },
+  "edge": {}
+}

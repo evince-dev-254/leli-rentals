@@ -1,0 +1,35 @@
+{
+  "node": {
+    "783e240da2f7100dad286219201564eacdcd73f0b2": {
+      "workers": {
+        "app/dashboard/affiliate/page": {
+          "moduleId": "[project]/.next-internal/server/app/dashboard/affiliate/page/actions.js { ACTIONS_MODULE0 => \"[project]/lib/actions/email-actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/lib/actions/affiliate-actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "sendNewListingEmail",
+          "filename": "lib/actions/email-actions.ts"
+        }
+      },
+      "layer": {
+        "app/dashboard/affiliate/page": "action-browser"
+      },
+      "exportedName": "sendNewListingEmail",
+      "filename": "lib/actions/email-actions.ts"
+    },
+    "60c59f7d5c7b1862236c427066c155477e51ed8e39": {
+      "workers": {
+        "app/dashboard/affiliate/page": {
+          "moduleId": "[project]/.next-internal/server/app/dashboard/affiliate/page/actions.js { ACTIONS_MODULE0 => \"[project]/lib/actions/email-actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/lib/actions/affiliate-actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "joinAffiliateProgram",
+          "filename": "lib/actions/affiliate-actions.ts"
+        }
+      },
+      "layer": {
+        "app/dashboard/affiliate/page": "action-browser"
+      },
+      "exportedName": "joinAffiliateProgram",
+      "filename": "lib/actions/affiliate-actions.ts"
+    }
+  },
+  "edge": {}
+}

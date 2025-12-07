@@ -1,0 +1,20 @@
+{
+  "node": {
+    "783e240da2f7100dad286219201564eacdcd73f0b2": {
+      "workers": {
+        "app/dashboard/affiliate/referrals/page": {
+          "moduleId": "[project]/.next-internal/server/app/dashboard/affiliate/referrals/page/actions.js { ACTIONS_MODULE0 => \"[project]/lib/actions/email-actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "sendNewListingEmail",
+          "filename": "lib/actions/email-actions.ts"
+        }
+      },
+      "layer": {
+        "app/dashboard/affiliate/referrals/page": "action-browser"
+      },
+      "exportedName": "sendNewListingEmail",
+      "filename": "lib/actions/email-actions.ts"
+    }
+  },
+  "edge": {}
+}

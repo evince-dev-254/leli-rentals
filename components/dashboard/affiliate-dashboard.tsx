@@ -47,12 +47,31 @@ export default function AffiliateDashboard() {
             }
 
             try {
+                // Also fetch user profile to check role
+                const { data: profile } = await supabase
+                    .from('user_profiles')
+                    .select('role')
+                    .eq('id', user.id)
+                    .single();
+
                 const [statsData, referralsData] = await Promise.all([
                     getAffiliateData(user.id),
                     getAffiliateReferrals(user.id)
                 ]);
+
                 setStats(statsData);
                 setReferrals(referralsData || []);
+
+                // If user role is affiliate but stats is null, they might have just joined
+                // Retry fetching stats once more
+                if (!statsData && profile?.role === 'affiliate') {
+                    // Wait a bit and retry
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    const retryStats = await getAffiliateData(user.id);
+                    if (retryStats) {
+                        setStats(retryStats);
+                    }
+                }
             } catch (e) {
                 console.error(e);
             } finally {

@@ -1,0 +1,35 @@
+{
+  "node": {
+    "7836f6554c113775f9349130d57af469f4e9914fb6": {
+      "workers": {
+        "app/dashboard/affiliate/page": {
+          "moduleId": 12842,
+          "async": false,
+          "exportedName": "sendNewListingEmail",
+          "filename": "lib/actions/email-actions.ts"
+        }
+      },
+      "layer": {
+        "app/dashboard/affiliate/page": "action-browser"
+      },
+      "exportedName": "sendNewListingEmail",
+      "filename": "lib/actions/email-actions.ts"
+    },
+    "601796f08834749640eff9c7237738fe2946987897": {
+      "workers": {
+        "app/dashboard/affiliate/page": {
+          "moduleId": 12842,
+          "async": false,
+          "exportedName": "joinAffiliateProgram",
+          "filename": "lib/actions/affiliate-actions.ts"
+        }
+      },
+      "layer": {
+        "app/dashboard/affiliate/page": "action-browser"
+      },
+      "exportedName": "joinAffiliateProgram",
+      "filename": "lib/actions/affiliate-actions.ts"
+    }
+  },
+  "edge": {}
+}

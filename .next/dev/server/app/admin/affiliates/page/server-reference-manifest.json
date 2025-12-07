@@ -1,0 +1,20 @@
+{
+  "node": {
+    "00ffb2132d27b65ae9cb4c4d7869d5d76be031738f": {
+      "workers": {
+        "app/admin/affiliates/page": {
+          "moduleId": "[project]/.next-internal/server/app/admin/affiliates/page/actions.js { ACTIONS_MODULE0 => \"[project]/lib/actions/affiliate-actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getAllAffiliates",
+          "filename": "lib/actions/affiliate-actions.ts"
+        }
+      },
+      "layer": {
+        "app/admin/affiliates/page": "action-browser"
+      },
+      "exportedName": "getAllAffiliates",
+      "filename": "lib/actions/affiliate-actions.ts"
+    }
+  },
+  "edge": {}
+}
