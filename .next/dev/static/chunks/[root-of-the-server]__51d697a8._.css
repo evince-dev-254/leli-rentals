@@ -1483,6 +1483,10 @@
     height: calc(var(--spacing) * 96);
   }
 
+  .h-\[1\.2rem\] {
+    height: 1.2rem;
+  }
+
   .h-\[1\.15rem\] {
     height: 1.15rem;
   }
@@ -1721,6 +1725,10 @@
 
   .w-96 {
     width: calc(var(--spacing) * 96);
+  }
+
+  .w-\[1\.2rem\] {
+    width: 1.2rem;
   }
 
   .w-\[80vw\] {

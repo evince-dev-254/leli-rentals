@@ -6,7 +6,8 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { Menu, ChevronDown, ShoppingBag, User, MessageCircle } from "lucide-react"
+import { Menu, ChevronDown, ShoppingBag, User, MessageCircle, Sun, Moon } from "lucide-react"
+import { useTheme } from "next-themes"
 import { supabase } from "@/lib/supabase" // Import Supabase client
 import { useRouter } from "next/navigation"
 
@@ -33,6 +34,7 @@ const moreLinks = [
 ]
 
 export function Header() {
+  const { theme, setTheme } = useTheme()
   const [isScrolled, setIsScrolled] = useState(false)
   const [user, setUser] = useState<any>(null)
   const router = useRouter()
@@ -125,8 +127,19 @@ export function Header() {
             </DropdownMenu>
           </nav>
 
-          {/* Right Side */}
           <div className="flex items-center gap-3">
+            {/* Theme Toggle */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              className="text-gray-200 hover:text-orange-400 hover:bg-white/10 relative"
+            >
+              <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+              <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+              <span className="sr-only">Toggle theme</span>
+            </Button>
+
             {/* Messages Icon */}
             <Link href="/messages">
               <Button
