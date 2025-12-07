@@ -56,7 +56,9 @@ if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelper
 
 __turbopack_context__.s([
     "DashboardSidebar",
-    ()=>DashboardSidebar
+    ()=>DashboardSidebar,
+    "allLinks",
+    ()=>allLinks
 ]);
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/jsx-dev-runtime.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/client/app-dir/link.js [app-client] (ecmascript)");
@@ -222,7 +224,7 @@ function DashboardSidebar() {
     }["DashboardSidebar.useEffect"], []);
     const filteredLinks = allLinks.filter((link)=>role && link.roles.includes(role));
     if (loading) return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-        className: "w-64 h-screen bg-card/50 border-r border-border"
+        className: "hidden md:block w-64 h-screen bg-card/50 border-r border-border"
     }, void 0, false, {
         fileName: "[project]/components/dashboard/dashboard-sidebar.tsx",
         lineNumber: 63,

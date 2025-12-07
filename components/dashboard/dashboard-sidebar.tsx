@@ -26,7 +26,7 @@ import { Badge } from "@/components/ui/badge"
 import { useState, useEffect } from "react"
 import { supabase } from "@/lib/supabase"
 
-const allLinks = [
+export const allLinks = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard, roles: ["owner", "renter", "affiliate", "admin"] },
   { href: "/dashboard/listings", label: "My Listings", icon: Package, roles: ["owner", "renter", "admin"] }, // Renters asked for this, though strange without create
   { href: "/dashboard/bookings", label: "Bookings", icon: CalendarCheck, roles: ["owner", "renter", "admin"] },
@@ -60,7 +60,7 @@ export function DashboardSidebar() {
 
   const filteredLinks = allLinks.filter(link => role && link.roles.includes(role))
 
-  if (loading) return <div className="w-64 h-screen bg-card/50 border-r border-border" /> // Simple skeleton
+  if (loading) return <div className="hidden md:block w-64 h-screen bg-card/50 border-r border-border" /> // Simple skeleton
 
   return (
     <aside

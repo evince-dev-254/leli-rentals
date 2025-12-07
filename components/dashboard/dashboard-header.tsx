@@ -1,8 +1,9 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { Bell, Search, Moon, Sun } from "lucide-react"
+import { useRouter, usePathname } from "next/navigation"
+import Link from "next/link"
+import { Bell, Search, Moon, Sun, Menu } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -18,10 +19,14 @@ import { Badge } from "@/components/ui/badge"
 import { useTheme } from "next-themes"
 import { supabase } from "@/lib/supabase"
 import { getNotifications, markNotificationAsRead } from "@/lib/actions/dashboard-actions"
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { allLinks } from "@/components/dashboard/dashboard-sidebar"
+import { cn } from "@/lib/utils"
 
 export function DashboardHeader() {
   const { theme, setTheme } = useTheme()
   const router = useRouter()
+  const pathname = usePathname()
   const [profile, setProfile] = useState<any>(null)
   const [notifications, setNotifications] = useState<any[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
@@ -81,7 +86,56 @@ export function DashboardHeader() {
       </div>
 
       {/* Logo/Title on mobile */}
-      <div className="md:hidden flex-1">
+      <div className="md:hidden flex items-center gap-4 flex-1">
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button variant="ghost" size="icon" className="-ml-2">
+              <Menu className="h-6 w-6" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="w-[80vw] sm:w-[350px] p-0">
+            <div className="p-6 border-b">
+              <h2 className="text-xl font-bold">Leli Rentals</h2>
+            </div>
+            <nav className="flex-1 overflow-y-auto py-4">
+              <ul className="grid gap-1 px-2">
+                {allLinks
+                  .filter(link => profile?.role && link.roles.includes(profile.role))
+                  .map((link) => {
+                    const isActive = pathname === link.href
+                    return (
+                      <li key={link.href}>
+                        <Link
+                          href={link.href}
+                          className={cn(
+                            "flex items-center gap-3 px-3 py-3 rounded-lg transition-colors",
+                            isActive
+                              ? "bg-primary text-primary-foreground"
+                              : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                          )}
+                        >
+                          <link.icon className="h-5 w-5 shrink-0" />
+                          <span>{link.label}</span>
+                        </Link>
+                      </li>
+                    )
+                  })}
+              </ul>
+            </nav>
+            <div className="p-4 border-t mt-auto">
+              <div className="flex items-center gap-3 px-3 py-2">
+                <Avatar className="h-9 w-9">
+                  <AvatarImage src={profile?.avatar_url} />
+                  <AvatarFallback>{profile?.full_name?.[0] || 'U'}</AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col overflow-hidden">
+                  <span className="text-sm font-medium truncate">{profile?.full_name}</span>
+                  <span className="text-xs text-muted-foreground truncate">{profile?.email}</span>
+                </div>
+              </div>
+            </div>
+          </SheetContent>
+        </Sheet>
         <h2 className="text-lg font-semibold">Dashboard</h2>
       </div>
 

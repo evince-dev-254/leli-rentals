@@ -1136,6 +1136,10 @@
     margin-bottom: 32px;
   }
 
+  .-ml-2 {
+    margin-left: calc(var(--spacing) * -2);
+  }
+
   .-ml-4 {
     margin-left: calc(var(--spacing) * -4);
   }
@@ -1633,6 +1637,10 @@
 
   .w-96 {
     width: calc(var(--spacing) * 96);
+  }
+
+  .w-\[80vw\] {
+    width: 80vw;
   }
 
   .w-\[100px\] {
@@ -7254,6 +7262,12 @@
   @media (min-width: 40rem) {
     .sm\:w-48 {
       width: calc(var(--spacing) * 48);
+    }
+  }
+
+  @media (min-width: 40rem) {
+    .sm\:w-\[350px\] {
+      width: 350px;
     }
   }
 
