@@ -1,0 +1,1 @@
+fr long time Insert the category data into the database first with proper UUIDs

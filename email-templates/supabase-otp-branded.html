@@ -1,0 +1,144 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Leli Rentals — Sign in</title>
+  <style>
+    :root {
+      --brand: #ea580c;
+      /* Leli Rentals primary brand color */
+      --brand-contrast: #ffffff;
+      --muted: #6b7280;
+      --bg: #f6f8fb;
+      --card: #ffffff;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+      background: var(--bg);
+      margin: 0;
+      padding: 24px;
+    }
+
+    .wrap {
+      max-width: 600px;
+      margin: 28px auto;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 28px;
+      box-shadow: 0 10px 30px rgba(2, 6, 23, 0.06);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      object-fit: contain;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 20px;
+      color: #0f172a;
+    }
+
+    p {
+      color: var(--muted);
+      margin: 10px 0 16px;
+      line-height: 1.5;
+    }
+
+    .code {
+      display: block;
+      text-align: center;
+      font-size: 28px;
+      letter-spacing: 6px;
+      padding: 18px;
+      border-radius: 10px;
+      background: #f3f4f6;
+      color: #0f172a;
+      font-weight: 700;
+      margin: 8px 0;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 12px 18px;
+      background: var(--brand);
+      color: var(--brand-contrast);
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    .muted {
+      color: #94a3b8;
+      font-size: 13px;
+      margin-top: 18px;
+    }
+
+    .footer {
+      font-size: 13px;
+      color: #94a3b8;
+      margin-top: 22px;
+      text-align: center;
+    }
+
+    @media (prefers-color-scheme:dark) {
+      :root {
+        --bg: #0b1020;
+        --card: #071024;
+        --muted: #9aa7bd;
+      }
+
+      body {
+        color: #e6eef9
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="card" role="article" aria-roledescription="email">
+      <div class="brand">
+        <!-- Logo: served from your site. Supabase templates often provide {{ .SiteURL }} or you can pass a LogoURL variable -->
+        <img class="logo" src="{{ .SiteURL }}/logo.png" alt="Leli Rentals logo" onerror="this.style.display='none'" />
+        <div>
+          <h1>Sign in to Leli Rentals</h1>
+          <div style="color:var(--muted); font-size:13px;">Quick sign-in — one-time code</div>
+        </div>
+      </div>
+
+      <p>Hi{{ if .User.Email }} {{ .User.Email }}{{ end }},</p>
+      <p>Use the code below to sign in to <strong>Leli Rentals</strong>. This code will expire in a few minutes.</p>
+
+      <div class="code">{{ .Token }}</div>
+
+      <p>If your app supports clickable sign-in links, you can also use the button below:</p>
+      <p><a class="btn" href="{{ .ConfirmationURL }}">Sign in to Leli Rentals</a></p>
+
+      <p class="muted">If you didn’t request this email, you can safely ignore it. For security, do not share your code
+        with anyone.</p>
+
+      <div class="footer">
+        <div>Leli Rentals • <a href="{{ .SiteURL }}" style="color:inherit; text-decoration:underline;">Visit site</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>

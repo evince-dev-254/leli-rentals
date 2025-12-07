@@ -1,0 +1,15 @@
+
+Sign in to Leli Rentals
+
+Hi{{ if .User.Email }} {{ .User.Email }}{{ end }},
+
+Use this code to sign in: {{ .Token }}
+
+Or open this link to sign in: {{ .ConfirmationURL }}
+
+If you didn't request this, ignore this email.
+
+— Leli Rentals
+{{ .SiteURL }}
+
+Logo: {{ .SiteURL }}/logo.png

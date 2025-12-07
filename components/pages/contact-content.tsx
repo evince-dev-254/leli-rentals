@@ -1,0 +1,235 @@
+"use client"
+
+import type React from "react"
+
+import { useState } from "react"
+import { Phone, Mail, MapPin, MessageCircle, Clock, Send } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+
+const contactMethods = [
+  {
+    icon: MessageCircle,
+    title: "WhatsApp",
+    value: "+254 700 123 456",
+    description: "Quick responses, 9am - 9pm",
+    action: "Chat Now",
+    href: "https://wa.me/254700123456",
+  },
+  {
+    icon: Mail,
+    title: "Email",
+    value: "support@leli.rentals",
+    description: "We reply within 24 hours",
+    action: "Send Email",
+    href: "mailto:support@leli.rentals",
+  },
+  {
+    icon: Phone,
+    title: "Phone",
+    value: "+254 700 123 456",
+    description: "Mon - Fri, 9am - 6pm",
+    action: "Call Us",
+    href: "tel:+254700123456",
+  },
+  {
+    icon: Clock,
+    title: "24/7 Emergency",
+    value: "+254 700 999 999",
+    description: "For urgent rental issues",
+    action: "Call Now",
+    href: "tel:+254700999999",
+  },
+]
+
+const offices = [
+  {
+    city: "Nairobi",
+    address: "Westlands Business Park, 4th Floor",
+    phone: "+254 700 123 456",
+  },
+  {
+    city: "Mombasa",
+    address: "Nyali Centre, 2nd Floor",
+    phone: "+254 700 123 457",
+  },
+  {
+    city: "Kisumu",
+    address: "Mega City Mall, Ground Floor",
+    phone: "+254 700 123 458",
+  },
+]
+
+export function ContactContent() {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    subject: "",
+    message: "",
+  })
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    // Handle form submission
+    console.log("Form submitted:", formData)
+  }
+
+  return (
+    <div className="relative">
+      {/* Hero Section */}
+      <section className="relative py-24 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-secondary/10" />
+
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="max-w-3xl mx-auto text-center">
+            <h1 className="text-4xl md:text-5xl font-bold mb-6 text-balance">
+              Get in <span className="text-primary">Touch</span>
+            </h1>
+            <p className="text-xl text-muted-foreground text-pretty">
+              Have questions? We're here to help. Reach out through any of our channels.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Contact Methods */}
+      <section className="py-16">
+        <div className="container mx-auto px-4">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {contactMethods.map((method, index) => (
+              <Card
+                key={index}
+                className="bg-card/50 backdrop-blur-sm border-border/50 hover:border-primary/50 transition-colors"
+              >
+                <CardContent className="pt-6">
+                  <div className="w-12 h-12 mb-4 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <method.icon className="h-6 w-6 text-primary" />
+                  </div>
+                  <h3 className="font-semibold text-lg mb-1">{method.title}</h3>
+                  <p className="text-foreground font-medium">{method.value}</p>
+                  <p className="text-sm text-muted-foreground mb-4">{method.description}</p>
+                  <Button asChild variant="outline" size="sm" className="w-full bg-transparent">
+                    <a href={method.href} target="_blank" rel="noopener noreferrer">
+                      {method.action}
+                    </a>
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Contact Form & Offices */}
+      <section className="py-16 bg-secondary/30">
+        <div className="container mx-auto px-4">
+          <div className="grid lg:grid-cols-2 gap-12">
+            {/* Contact Form */}
+            <Card className="bg-card/50 backdrop-blur-sm border-border/50">
+              <CardHeader>
+                <CardTitle>Send us a Message</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="name">Full Name</Label>
+                      <Input
+                        id="name"
+                        placeholder="John Doe"
+                        value={formData.name}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        className="bg-background/50"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Email</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="john@example.com"
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        className="bg-background/50"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="subject">Subject</Label>
+                    <Select onValueChange={(value) => setFormData({ ...formData, subject: value })}>
+                      <SelectTrigger className="bg-background/50">
+                        <SelectValue placeholder="Select a subject" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="general">General Inquiry</SelectItem>
+                        <SelectItem value="support">Technical Support</SelectItem>
+                        <SelectItem value="billing">Billing Question</SelectItem>
+                        <SelectItem value="verification">Verification Help</SelectItem>
+                        <SelectItem value="partnership">Partnership</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="message">Message</Label>
+                    <Textarea
+                      id="message"
+                      placeholder="How can we help you?"
+                      rows={5}
+                      value={formData.message}
+                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                      className="bg-background/50"
+                    />
+                  </div>
+
+                  <Button type="submit" className="w-full">
+                    <Send className="h-4 w-4 mr-2" />
+                    Send Message
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+
+            {/* Office Locations */}
+            <div className="space-y-6">
+              <h2 className="text-2xl font-bold">Our Offices</h2>
+              <div className="space-y-4">
+                {offices.map((office, index) => (
+                  <Card key={index} className="bg-card/50 backdrop-blur-sm border-border/50">
+                    <CardContent className="pt-6">
+                      <div className="flex items-start gap-4">
+                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                          <MapPin className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-lg">{office.city}</h3>
+                          <p className="text-muted-foreground">{office.address}</p>
+                          <p className="text-sm text-primary">{office.phone}</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              {/* Map Placeholder */}
+              <Card className="bg-card/50 backdrop-blur-sm border-border/50 overflow-hidden">
+                <div className="relative h-[200px] bg-secondary/50 flex items-center justify-center">
+                  <div className="text-center">
+                    <MapPin className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
+                    <p className="text-muted-foreground">Interactive map coming soon</p>
+                  </div>
+                </div>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  )
+}

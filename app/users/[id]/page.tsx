@@ -1,0 +1,220 @@
+import { supabase } from "@/lib/supabase"
+import { notFound } from "next/navigation"
+import Image from "next/image"
+import Link from "next/link"
+import { MapPin, Calendar, ShieldCheck, Star, Mail, Phone, Crown } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Separator } from "@/components/ui/separator"
+
+export const dynamic = 'force-dynamic'
+
+export default async function PublicProfilePage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params
+
+    // Fetch User Profile
+    const { data: profile, error: profileError } = await supabase
+        .from("user_profiles")
+        .select("*")
+        .eq("id", id)
+        .single()
+
+    if (profileError || !profile) {
+        notFound()
+    }
+
+    // Fetch Verification Status
+    const { data: verification } = await supabase
+        .from("verification_documents")
+        .select("status")
+        .eq("user_id", id)
+        .eq("status", "approved")
+        .limit(1)
+
+    const isVerified = verification && verification.length > 0
+
+    // Fetch Subscription Status
+    const { data: subscription } = await supabase
+        .from("subscriptions")
+        .select("status, plan_type")
+        .eq("user_id", id)
+        .in("status", ["active", "trialing"])
+        .order("end_date", { ascending: false })
+        .limit(1)
+        .single()
+
+    const isPremium = subscription?.plan_type === 'premium' || subscription?.plan_type === 'enterprise'
+
+    // Fetch Listings
+    const { data: listings } = await supabase
+        .from("listings")
+        .select("*")
+        .eq("owner_id", id)
+        .eq("status", "approved")
+        .eq("availability_status", "available")
+
+    return (
+        <div className="min-h-screen bg-background pt-24 pb-12 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-6xl mx-auto space-y-8">
+
+                {/* Profile Header Card */}
+                <Card className="glass-card overflow-hidden border-border/50">
+                    <div className="h-32 bg-gradient-to-r from-primary/20 via-primary/10 to-transparent"></div>
+                    <div className="px-8 pb-8">
+                        <div className="relative flex flex-col sm:flex-row items-start sm:items-end -mt-12 gap-6">
+                            <div className="relative">
+                                <div className="h-32 w-32 rounded-full border-4 border-background overflow-hidden bg-muted">
+                                    <Image
+                                        src={profile.avatar_url || "/african-man-portrait.png"}
+                                        alt={profile.full_name}
+                                        fill
+                                        className="object-cover"
+                                    />
+                                </div>
+                                {isVerified && (
+                                    <div className="absolute bottom-1 right-1 bg-green-500 text-white p-1 rounded-full border-2 border-background" title="Verified Owner">
+                                        <ShieldCheck className="w-4 h-4" />
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="flex-1 space-y-2 mb-2">
+                                <div className="flex items-center gap-3">
+                                    <h1 className="text-3xl font-bold">{profile.full_name}</h1>
+                                    {isPremium && (
+                                        <Badge variant="secondary" className="bg-amber-100 text-amber-800 hover:bg-amber-100 border-amber-200">
+                                            <Crown className="w-3 h-3 mr-1 fill-amber-800" />
+                                            Premium
+                                        </Badge>
+                                    )}
+                                    {isVerified && (
+                                        <Badge variant="outline" className="border-green-500/50 text-green-600 bg-green-50/50">
+                                            Verified
+                                        </Badge>
+                                    )}
+                                </div>
+
+                                <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                                    <div className="flex items-center gap-1">
+                                        <MapPin className="w-4 h-4" />
+                                        {profile.location || "Kenya"}
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                        <Calendar className="w-4 h-4" />
+                                        Joined {new Date(profile.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                        <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                                        4.8 (Reviews) {/* Placeholder for aggregated rating */}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="flex gap-3">
+                                <Button asChild>
+                                    <Link href={`/dashboard/messages?contact=${profile.id}&name=${encodeURIComponent(profile.full_name)}`}>
+                                        Contact Owner
+                                    </Link>
+                                </Button>
+                            </div>
+                        </div>
+
+                        <Separator className="my-6" />
+
+                        <div className="grid md:grid-cols-3 gap-8">
+                            <div className="md:col-span-2 space-y-6">
+                                <div>
+                                    <h3 className="text-lg font-semibold mb-2">About</h3>
+                                    <p className="text-muted-foreground leading-relaxed">
+                                        {profile.bio || `Hi, I'm ${profile.full_name}. I love providing great rentals on Leli.`}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-4">
+                                <Card className="bg-secondary/20 border-none shadow-none">
+                                    <CardContent className="p-4 space-y-3">
+                                        <h4 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">Verifications</h4>
+                                        <div className="space-y-2">
+                                            <div className="flex items-center gap-2 text-sm">
+                                                <ShieldCheck className={`w-4 h-4 ${isVerified ? 'text-green-600' : 'text-muted-foreground'}`} />
+                                                <span className={isVerified ? 'text-foreground' : 'text-muted-foreground'}>Identity Verified</span>
+                                            </div>
+                                            <div className="flex items-center gap-2 text-sm">
+                                                <Mail className={`w-4 h-4 ${profile.email_verified ? 'text-green-600' : 'text-muted-foreground'}`} />
+                                                <span className={profile.email_verified ? 'text-foreground' : 'text-muted-foreground'}>Email Confirmed</span>
+                                            </div>
+                                            <div className="flex items-center gap-2 text-sm">
+                                                <Phone className={`w-4 h-4 ${profile.phone_verified ? 'text-green-600' : 'text-muted-foreground'}`} />
+                                                <span className={profile.phone_verified ? 'text-foreground' : 'text-muted-foreground'}>Phone Confirmed</span>
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </div>
+                        </div>
+                    </div>
+                </Card>
+
+                {/* Listings Section */}
+                <div className="space-y-6">
+                    <h2 className="text-2xl font-bold">Listings by {profile.full_name?.split(' ')[0]}</h2>
+
+                    {listings && listings.length > 0 ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {listings.map((listing: any) => (
+                                <Link href={`/listings/${listing.id}`} key={listing.id} className="group block">
+                                    <Card className="h-full overflow-hidden border-border/50 hover:border-primary/50 transition-all duration-300 hover:shadow-lg glass-card">
+                                        <div className="relative aspect-[4/3] bg-muted overflow-hidden">
+                                            {listing.images && listing.images[0] ? (
+                                                <Image
+                                                    src={listing.images[0]}
+                                                    alt={listing.title}
+                                                    fill
+                                                    className="object-cover transition-transform group-hover:scale-105"
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                                                    No Image
+                                                </div>
+                                            )}
+                                            <div className="absolute top-2 right-2">
+                                                <Badge className="bg-background/80 backdrop-blur text-foreground hover:bg-background/90">
+                                                    {listing.category_id} {/* Could look up category name if needed */}
+                                                </Badge>
+                                            </div>
+                                        </div>
+                                        <CardContent className="p-4">
+                                            <div className="flex justify-between items-start mb-2">
+                                                <h3 className="font-semibold truncate pr-2 group-hover:text-primary transition-colors">{listing.title}</h3>
+                                                <span className="flex items-center text-xs font-medium bg-secondary px-2 py-1 rounded">
+                                                    <Star className="w-3 h-3 mr-1 fill-primary text-primary" />
+                                                    {listing.rating_average || "New"}
+                                                </span>
+                                            </div>
+                                            <div className="text-muted-foreground text-sm mb-3 line-clamp-2">
+                                                {listing.description}
+                                            </div>
+                                            <div className="flex items-center justify-between mt-auto">
+                                                <p className="font-bold text-lg">
+                                                    {listing.currency} {listing.price_per_day} <span className="text-sm font-normal text-muted-foreground">/ day</span>
+                                                </p>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                </Link>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center py-12 bg-secondary/10 rounded-xl">
+                            <p className="text-muted-foreground">No active listings yet.</p>
+                        </div>
+                    )}
+                </div>
+
+            </div>
+        </div>
+    )
+}

@@ -1,0 +1,109 @@
+import { NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+
+const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey)
+
+export async function POST(req: Request) {
+    try {
+        const { reference, planId, userId, amount, email } = await req.json()
+
+        // 1. Verify with Paystack
+        const secretKey = process.env.PAYSTACK_SECRET_KEY
+        if (!secretKey) throw new Error("Paystack secret key missing")
+
+        const verifyRes = await fetch(`https://api.paystack.co/transaction/verify/${reference}`, {
+            headers: {
+                Authorization: `Bearer ${secretKey}`
+            }
+        })
+
+        const verifyData = await verifyRes.json()
+
+        if (!verifyData.status || verifyData.data.status !== 'success') {
+            return NextResponse.json({ error: 'Payment verification failed' }, { status: 400 })
+        }
+
+        // 2. Map Plan ID to DB Schema types
+        let dbPlanType = 'basic'
+        if (planId === 'monthly') dbPlanType = 'premium'
+        if (planId === 'weekly') dbPlanType = 'basic'
+
+        // 3. Calculate billing cycle and dates
+        const startDate = new Date()
+        const endDate = new Date()
+
+        if (planId === 'weekly') {
+            endDate.setDate(startDate.getDate() + 7)
+        } else if (planId === 'monthly') {
+            endDate.setDate(startDate.getDate() + 30)
+        }
+
+        // 4. Update Supabase
+
+        // Attempt to insert Transaction (if table exists)
+        // We try/catch this part so it doesn't block subscription update if table is missing or different
+        try {
+            await supabaseAdmin.from('transactions').insert({
+                user_id: userId,
+                amount: amount,
+                currency: 'KES',
+                status: 'completed',
+                reference: reference,
+                description: `Subscription - ${planId}`,
+                provider: 'paystack',
+                metadata: verifyData.data,
+                type: 'subscription_payment'
+            })
+        } catch (txErr) {
+            console.warn("Transaction insert failed (non-critical):", txErr)
+        }
+
+        // Insert/Update Subscription
+        const { data: existingSub } = await supabaseAdmin.from('subscriptions')
+            .select('*')
+            .eq('user_id', userId)
+            .single()
+
+        let subError;
+        const subData = {
+            plan_type: dbPlanType,
+            status: 'active',
+            start_date: startDate.toISOString(),
+            end_date: endDate.toISOString(),
+            price: amount,
+            currency: 'KES',
+            billing_cycle: planId === 'monthly' ? 'monthly' : 'monthly', // default to monthly for schema constraint? or needs 'weekly' if added? Schema said 'monthly', 'yearly'. Weekly might be invalid.
+            // If schema limits billing_cycle to monthly/yearly, we might need to force 'monthly' or update schema.
+            // For now we set 'monthly' even for weekly plan to satisfy constraint if it exists.
+            // Actually earlier 'subscriptions' table showed CHECK (billing_cycle IN ('monthly', 'yearly')).
+            // So 'weekly' plan needs to store 'monthly' or we update schema.
+            updated_at: new Date().toISOString()
+        }
+
+        if (existingSub) {
+            const { error } = await supabaseAdmin.from('subscriptions').update(subData).eq('id', existingSub.id)
+            subError = error
+        } else {
+            const { error } = await supabaseAdmin.from('subscriptions').insert({
+                user_id: userId,
+                ...subData,
+                created_at: new Date().toISOString()
+            })
+            subError = error
+        }
+
+        if (subError) {
+            console.error("Subscription update error:", subError)
+            throw new Error("Failed to update subscription record")
+        }
+
+        return NextResponse.json({ success: true, endDate })
+
+    } catch (error: any) {
+        console.error("Verification Error:", error)
+        return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+}
