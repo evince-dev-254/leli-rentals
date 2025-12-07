@@ -1,12 +1,6 @@
 {
-  "/(auth)/login/page": "app/(auth)/login/page.js",
-  "/_not-found/page": "app/_not-found/page.js",
-  "/admin/affiliates/page": "app/admin/affiliates/page.js",
-  "/admin/users/page": "app/admin/users/page.js",
+  "/api/ai/route": "app/api/ai/route.js",
   "/dashboard/affiliate/page": "app/dashboard/affiliate/page.js",
-  "/dashboard/affiliate/referrals/page": "app/dashboard/affiliate/referrals/page.js",
-  "/dashboard/listings/page": "app/dashboard/listings/page.js",
-  "/dashboard/page": "app/dashboard/page.js",
-  "/dashboard/verification/page": "app/dashboard/verification/page.js",
+  "/messages/page": "app/messages/page.js",
   "/page": "app/page.js"
 }

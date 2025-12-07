@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { GoogleAnalytics } from '@next/third-parties/google'
 import { CookieConsent } from "@/components/cookie-consent"
+import { AiAssistant } from "@/components/ai-assistant"
 import { FavoritesProvider } from "@/lib/favorites-context"
 import { MessagesProvider } from "@/lib/messages-context"
 import { ThemeProvider } from "@/components/theme-provider"
@@ -37,6 +38,7 @@ export default function RootLayout({
           <FavoritesProvider>
             <MessagesProvider>
               {children}
+              <AiAssistant />
               <CookieConsent />
               <Analytics />
               <GoogleAnalytics gaId="G-7MHZ00M71E" />

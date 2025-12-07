@@ -18,6 +18,7 @@
   "/api/imagekit/auth/route": "app/api/imagekit/auth/route.js",
   "/api/paystack/verify/route": "app/api/paystack/verify/route.js",
   "/auth/callback/route": "app/auth/callback/route.js",
+  "/auth/confirm/route": "app/auth/confirm/route.js",
   "/become-owner/page": "app/become-owner/page.js",
   "/careers/page": "app/careers/page.js",
   "/categories/[category]/page": "app/categories/[category]/page.js",
@@ -48,5 +49,6 @@
   "/privacy/page": "app/privacy/page.js",
   "/select-role/page": "app/select-role/page.js",
   "/terms/page": "app/terms/page.js",
+  "/test-otp/page": "app/test-otp/page.js",
   "/users/[id]/page": "app/users/[id]/page.js"
 }

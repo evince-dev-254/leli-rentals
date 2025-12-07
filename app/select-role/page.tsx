@@ -73,21 +73,50 @@ export default function SelectRolePage() {
         setLoading(true)
 
         try {
-            // Upsert user profile with selected role (covers case where profile row doesn't exist)
-            const res = await supabase
+            // First, check if user profile exists
+            const { data: existingProfile, error: checkError } = await supabase
                 .from('user_profiles')
-                .upsert({ id: user.id, role: selectedRole, email: user.email }, { onConflict: 'id' })
-                .select()
+                .select('id')
+                .eq('id', user.id)
                 .single()
 
-            // Supabase client returns an object with 'data' and 'error'
-            // Log the full response to help debug the original empty-object error
-            // (previously you only destructured 'error' which can sometimes be an empty object in dev stack traces)
-            // eslint-disable-next-line no-console
+            if (checkError && checkError.code !== 'PGRST116') { // PGRST116 = no rows returned
+                console.error('Error checking profile:', checkError)
+                alert('Failed to check account status. Please try again.')
+                return
+            }
+
+            let res
+            if (!existingProfile) {
+                // Profile doesn't exist, create it
+                console.log('Creating new profile for user:', user.id)
+                res = await supabase
+                    .from('user_profiles')
+                    .insert({
+                        id: user.id,
+                        user_id: user.id, // Explicitly add user_id to fix "null value in column user_id" error
+                        email: user.email,
+                        role: selectedRole,
+                        full_name: user.user_metadata?.full_name || 'Unknown User',
+                        phone: user.user_metadata?.phone || '',
+                        date_of_birth: user.user_metadata?.date_of_birth || null
+                    })
+                    .select()
+                    .single()
+            } else {
+                // Profile exists, update role
+                console.log('Updating existing profile for user:', user.id)
+                res = await supabase
+                    .from('user_profiles')
+                    .update({ role: selectedRole })
+                    .eq('id', user.id)
+                    .select()
+                    .single()
+            }
+
             console.debug('Role update response:', res)
 
             if (res.error) {
-                // Include the message and details if present
                 const errObj = {
                     message: res.error.message,
                     details: (res.error as any).details ?? null,
@@ -102,8 +131,6 @@ export default function SelectRolePage() {
             const redirectUrl = getRoleRedirect(selectedRole)
             router.push(redirectUrl)
         } catch (err) {
-            // Catch unexpected exceptions (network, runtime)
-            // eslint-disable-next-line no-console
             console.error('Exception while updating role:', err)
             alert('Failed to update account type due to a network error. Please try again.')
         } finally {
@@ -113,7 +140,6 @@ export default function SelectRolePage() {
 
     return (
         <div className="min-h-screen flex flex-col">
-            <Header />
             <main className="flex-1 flex items-center justify-center py-12 px-4">
                 <div className="w-full max-w-4xl">
                     <Card className="glass-card">

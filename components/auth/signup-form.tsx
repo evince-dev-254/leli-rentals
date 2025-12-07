@@ -1,11 +1,11 @@
 "use client"
 
-import type React from "react"
-import { useEffect, useState } from "react"
+import React from "react"
+import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { useRouter } from "next/navigation"
-import { Eye, EyeOff, Loader2, User, Store, Users } from "lucide-react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { Loader2, User, Store, Users, Mail, ArrowRight, CheckCircle2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -17,14 +17,13 @@ import { DateOfBirthInput, validateAge } from "@/components/ui/date-of-birth-inp
 import { Message } from "@/components/ui/message"
 import { OTPInput } from "@/components/ui/otp-input"
 import { supabase } from "@/lib/supabase"
-import { sendWelcomeEmail } from "@/lib/actions/email-actions"
-import { sendCustomOtp, verifyCustomOtp } from "@/lib/actions/verify-actions"
-import { registerUser } from "@/lib/actions/auth-actions"
 
 type AccountType = "renter" | "owner" | "affiliate"
 
 export function SignupForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const refCode = searchParams.get("ref")
   const [step, setStep] = useState(1)
   const [accountType, setAccountType] = useState<AccountType>("renter")
 
@@ -33,37 +32,26 @@ export function SignupForm() {
   const [email, setEmail] = useState("")
   const [phone, setPhone] = useState("")
   const [dateOfBirth, setDateOfBirth] = useState("")
-  const [password, setPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [acceptedTerms, setAcceptedTerms] = useState(false)
 
-  // OTP verification states
-  const [showOtpStep, setShowOtpStep] = useState(false)
+  // OTP State
+  const [showOtpInput, setShowOtpInput] = useState(false)
   const [otp, setOtp] = useState("")
-  const [otpError, setOtpError] = useState("")
-  const [isVerifying, setIsVerifying] = useState(false)
-  const [isResending, setIsResending] = useState(false)
-  const [userId, setUserId] = useState<string | null>(null)
+  const [timeLeft, setTimeLeft] = useState(0)
 
-  // Loading states
+  React.useEffect(() => {
+    if (timeLeft <= 0) return
+
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => prev - 1)
+    }, 1000)
+
+    return () => clearInterval(timer)
+  }, [timeLeft])
+
+  // Loading & Error States
   const [isLoading, setIsLoading] = useState(false)
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
-  const [resendTimer, setResendTimer] = useState(0)
-
-  // Timer effect
-  useEffect(() => {
-    let interval: NodeJS.Timeout
-    if (resendTimer > 0) {
-      interval = setInterval(() => {
-        setResendTimer((prev) => prev - 1)
-      }, 1000)
-    }
-    return () => clearInterval(interval)
-  }, [resendTimer])
-
-  // Error states
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [generalError, setGeneralError] = useState("")
   const [successMessage, setSuccessMessage] = useState("")
@@ -71,9 +59,7 @@ export function SignupForm() {
   const validateStep1 = () => {
     const newErrors: Record<string, string> = {}
 
-    if (!fullName.trim()) {
-      newErrors.fullName = "Full name is required"
-    }
+    if (!fullName.trim()) newErrors.fullName = "Full name is required"
 
     if (!email.trim()) {
       newErrors.email = "Email is required"
@@ -91,24 +77,6 @@ export function SignupForm() {
       newErrors.dateOfBirth = ageValidation.error || "Invalid date of birth"
     }
 
-    if (!password) {
-      newErrors.password = "Password is required"
-    } else if (password.length < 8) {
-      newErrors.password = "Password must be at least 8 characters"
-    } else if (!/(?=.*[a-z])/.test(password)) {
-      newErrors.password = "Password must include a lowercase letter"
-    } else if (!/(?=.*[A-Z])/.test(password)) {
-      newErrors.password = "Password must include an uppercase letter"
-    } else if (!/(?=.*\d)/.test(password)) {
-      newErrors.password = "Password must include a number"
-    } else if (!/(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~])/.test(password)) {
-      newErrors.password = "Password must include a special character"
-    }
-
-    if (password !== confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match"
-    }
-
     if (!acceptedTerms) {
       newErrors.terms = "You must accept the terms and conditions"
     }
@@ -122,10 +90,10 @@ export function SignupForm() {
     setGeneralError("")
 
     try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: `${window.location.origin}/auth/callback?role=${accountType}&ref=${refCode || ''}`,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
@@ -140,85 +108,6 @@ export function SignupForm() {
     }
   }
 
-  // OTP Verification function
-  const verifyOtp = async () => {
-    if (otp.length !== 6) {
-      setOtpError("Please enter a 6-digit code")
-      return
-    }
-
-    setIsVerifying(true)
-    setOtpError("")
-
-    try {
-      // Use Custom OTP Verification
-      const { success, error } = await verifyCustomOtp(email, otp, password, fullName)
-
-      if (!success) throw new Error(error || "Invalid verification code")
-
-      // If successful, we need to sign the user in manually
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
-
-      if (signInError) throw signInError
-
-      // Send welcome email after verification
-      await sendWelcomeEmail(email, fullName.split(" ")[0])
-
-      setSuccessMessage(`Welcome to Leli Rentals, ${fullName.split(" ")[0]}! 🎉`)
-
-      // Redirect based on account type
-      setTimeout(() => {
-        if (accountType === "renter") {
-          router.push("/categories")
-        } else if (accountType === "owner") {
-          router.push("/dashboard/owner")
-        } else if (accountType === "affiliate") {
-          router.push("/dashboard/affiliate")
-        }
-      }, 2000)
-    } catch (error: any) {
-      console.error('OTP verification error:', error)
-
-      let msg = error.message || "Invalid verification code. Please try again."
-
-      if (msg.includes("Password should contain at least one character")) {
-        msg = "Weak password. Please use a stronger password (A-Z, a-z, 0-9, symbol)."
-        // If we hit this, we should ideally send them back to step 1, but for now just show the error
-        setGeneralError(msg)
-        setOtpError("Password update failed. Please restart signup with a stronger password.")
-      } else {
-        setOtpError(msg)
-      }
-    } finally {
-      setIsVerifying(false)
-    }
-  }
-
-  // Resend OTP function
-  const resendOtp = async () => {
-    setIsResending(true)
-    setOtpError("")
-
-    try {
-      // Use Custom OTP Resend
-      const { success, error } = await sendCustomOtp(email)
-
-      if (!success) throw new Error(error || "Failed to resend code")
-
-      setSuccessMessage("📧 New verification code sent!")
-      setOtp("") // Clear current OTP
-      setResendTimer(60) // Start cooldown
-    } catch (error: any) {
-      console.error('Resend OTP error:', error)
-      setOtpError("Failed to resend code. Please try again.")
-    } finally {
-      setIsResending(false)
-    }
-  }
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -229,74 +118,154 @@ export function SignupForm() {
       return
     }
 
-    // Step 2: Create account
+    // Final Submission
+    setIsLoading(true)
+    setGeneralError("")
+    setSuccessMessage("")
+
+    try {
+      // Use Magic Link/OTP for Signup
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/confirm`,
+          shouldCreateUser: true,
+          data: {
+            full_name: fullName,
+            phone: phone,
+            date_of_birth: dateOfBirth,
+            role: accountType,
+            ref_code: refCode, // Store referral code in metadata
+          }
+        },
+      })
+
+      if (error) throw error
+
+      setShowOtpInput(true)
+      setTimeLeft(60) // Start timer on first show
+      setSuccessMessage(`We've sent a code to ${email}. Enter it below or click the link in your email.`)
+
+    } catch (error: any) {
+      setGeneralError(error.message || "Failed to sign up")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleVerifyOtp = async () => {
+    if (otp.length !== 8) return
     setIsLoading(true)
     setGeneralError("")
 
     try {
-      // Sign up with Supabase using Server Action to avoid default email sending issues
-      const { success, user, error } = await registerUser({
+      const { data, error } = await supabase.auth.verifyOtp({
         email,
-        password,
-        data: {
-          full_name: fullName,
-          phone: phone,
-          date_of_birth: dateOfBirth,
-          role: accountType,
-        },
+        token: otp,
+        type: 'signup', // Use 'signup' type for new user verification
       })
 
-      if (!success) throw new Error(error)
-
-      const data = { user, session: null } // Mimic response structure for below logic
+      if (error) throw error
 
       if (data.session) {
-        setSuccessMessage("Account created successfully! Redirecting...")
-        setTimeout(() => {
-          if (accountType === "renter") router.push("/categories")
-          else if (accountType === "owner") router.push("/dashboard/owner")
-          else if (accountType === "affiliate") router.push("/dashboard/affiliate")
-        }, 1500)
-        return
-      }
-
-      if (data.user) {
-        // User profile creation is now handled by a Database Trigger on auth.users
-        // This prevents RLS issues and ensures atomicity.
-
-        // Store user ID for OTP verification
-        setUserId(data.user.id)
-
-        // Send Custom OTP immediately
-        await sendCustomOtp(email)
-
-        // Show OTP verification step
-        setShowOtpStep(true)
-        setSuccessMessage(`📧 Verification code sent to ${email}`)
+        // Redirection based on role
+        if (accountType === 'renter') router.push('/categories')
+        else if (accountType === 'owner') router.push('/dashboard/owner')
+        else if (accountType === 'affiliate') router.push('/dashboard/affiliate')
+        else router.push('/categories') // Default
       }
     } catch (error: any) {
-      // Better error messages
-      console.error('Signup error:', error)
-      if (typeof error === 'object') {
-        console.error('Error details:', JSON.stringify(error, null, 2))
-        console.error('Error message:', (error as any)?.message)
-      }
-      let errorMessage = "Failed to create account"
-
-      if (error.message?.includes("429") || error.message?.includes("Too Many Requests") || error.message?.includes("after 30 seconds")) {
-        errorMessage = "⏱️ Too many signup attempts. Please wait 30 seconds and try again."
-      } else if (error.message?.includes("row-level security policy") || error.message?.includes("violates row-level security")) {
-        errorMessage = "⚠️ Database configuration error. Please contact support."
-      } else if (error.message?.includes("already registered") || error.message?.includes("already exists")) {
-        errorMessage = "📧 This email is already registered. Please sign in instead."
-      } else if (error.message) {
-        errorMessage = error.message
-      }
-
-      setGeneralError(errorMessage)
+      setGeneralError(error.message || "Invalid or expired code")
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const handleResendCode = async () => {
+    setIsLoading(true)
+    setGeneralError("")
+    setSuccessMessage("")
+
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/confirm`,
+          shouldCreateUser: true,
+          data: {
+            full_name: fullName,
+            phone: phone,
+            date_of_birth: dateOfBirth,
+            role: accountType,
+            ref_code: refCode,
+          }
+        },
+      })
+
+      if (error) throw error
+
+      setSuccessMessage(`Code resent to ${email}!`)
+      setTimeLeft(60) // Reset timer
+    } catch (error: any) {
+      setGeneralError(error.message || "Failed to resend code")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  if (showOtpInput) {
+    return (
+      <div className="w-full max-w-md">
+        <div className="glass-card rounded-2xl p-8 text-center animate-in zoom-in-95 duration-300">
+          <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Mail className="h-8 w-8 text-primary" />
+          </div>
+          <h2 className="text-2xl font-bold mb-2">Verify Account</h2>
+          <p className="text-muted-foreground mb-6">
+            Enter the 8-digit code sent to <strong>{email}</strong>
+          </p>
+
+          {generalError && <Message type="error" message={generalError} className="mb-6" />}
+          {successMessage && <Message type="success" message={successMessage} className="mb-6" />}
+
+          <div className="flex justify-center mb-6">
+            <OTPInput
+              value={otp}
+              onChange={setOtp}
+              length={8}
+              disabled={isLoading}
+            />
+          </div>
+
+          <Button
+            className="w-full h-12 bg-primary text-primary-foreground mb-4"
+            onClick={handleVerifyOtp}
+            disabled={isLoading || otp.length !== 8}
+          >
+            {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Verify Code"}
+          </Button>
+
+          <div className="flex justify-between items-center px-2">
+            <Button
+              variant="link"
+              onClick={() => setShowOtpInput(false)}
+              disabled={isLoading}
+              className="text-sm text-muted-foreground hover:text-primary h-auto p-0"
+            >
+              Change Email
+            </Button>
+            <Button
+              variant="link"
+              onClick={handleResendCode}
+              disabled={isLoading || timeLeft > 0}
+              className="text-sm text-primary h-auto p-0"
+            >
+              {timeLeft > 0 ? `Resend in ${timeLeft}s` : "Resend Code"}
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -307,123 +276,21 @@ export function SignupForm() {
           <Link href="/" className="inline-block mb-6">
             <Image src="/logo.png" alt="Leli Rentals" width={150} height={40} className="h-10 w-auto dark:invert" />
           </Link>
-          <h1 className="text-2xl font-bold mb-2">
-            {showOtpStep ? "Verify Your Email" : "Create Account"}
-          </h1>
+          <h1 className="text-2xl font-bold mb-2">Create Account</h1>
           <p className="text-muted-foreground">
-            {showOtpStep
-              ? "Enter the 6-digit code sent to your email"
-              : step === 1
-                ? "Enter your details to get started"
-                : "Choose your account type"}
+            {step === 1 ? "Enter your details" : "Choose your account type"}
           </p>
         </div>
 
-        {/* Step Indicator - Only show if not in OTP step */}
-        {!showOtpStep && (
-          <div className="flex items-center justify-center gap-2 mb-8">
-            <div className={`h-2 w-12 rounded-full ${step >= 1 ? "bg-primary" : "bg-muted"}`} />
-            <div className={`h-2 w-12 rounded-full ${step >= 2 ? "bg-primary" : "bg-muted"}`} />
-          </div>
-        )}
+        {/* Step Indicator */}
+        <div className="flex items-center justify-center gap-2 mb-8">
+          <div className={`h-2 w-12 rounded-full ${step >= 1 ? "bg-primary" : "bg-muted"}`} />
+          <div className={`h-2 w-12 rounded-full ${step >= 2 ? "bg-primary" : "bg-muted"}`} />
+        </div>
 
-        {/* Success Message */}
-        {successMessage && (
-          <Message type="success" message={successMessage} className="mb-6" />
-        )}
+        {generalError && <Message type="error" message={generalError} className="mb-6" />}
 
-        {/* General Error */}
-        {generalError && (
-          <Message type="error" message={generalError} className="mb-6" />
-        )}
-
-        {/* OTP Verification Step */}
-        {showOtpStep ? (
-          <div className="space-y-6">
-            <div className="text-center">
-              <p className="text-sm text-muted-foreground mb-4">
-                We sent a code to <span className="font-medium text-foreground">{email}</span>
-              </p>
-            </div>
-
-            <div className="py-4">
-              <OTPInput
-                value={otp}
-                onChange={setOtp}
-                length={6}
-                disabled={isVerifying}
-                error={!!otpError}
-              />
-              {otpError && (
-                <p className="text-sm text-destructive text-center mt-2">{otpError}</p>
-              )}
-            </div>
-
-            <Button
-              className="w-full h-12 bg-primary text-primary-foreground"
-              onClick={verifyOtp}
-              disabled={isVerifying || otp.length !== 6}
-            >
-              {isVerifying ? (
-                <>
-                  <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                  Verifying...
-                </>
-              ) : (
-                "Verify Email"
-              )}
-            </Button>
-
-            <div className="text-center space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Didn't receive the code?{" "}
-                <button
-                  type="button"
-                  className="text-primary hover:underline font-medium disabled:opacity-50"
-                  onClick={resendOtp}
-                  disabled={isResending || resendTimer > 0}
-                >
-                  {isResending ? "Sending..." : resendTimer > 0 ? `Resend in ${resendTimer}s` : "Resend Code"}
-                </button>
-              </p>
-
-              <div className="pt-2 border-t border-border/50">
-                <Button
-                  variant="link"
-                  className="text-sm text-muted-foreground hover:text-foreground h-auto p-0"
-                  onClick={async () => {
-                    // Try to log in immediately (in case 'Allow unverified logins' is enabled)
-                    setIsLoading(true)
-                    try {
-                      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-                        email,
-                        password,
-                      })
-
-                      if (signInData.session) {
-                        // Login successful - redirect to dashboard
-                        if (accountType === "renter") router.push("/categories")
-                        else if (accountType === "owner") router.push("/dashboard/owner")
-                        else if (accountType === "affiliate") router.push("/dashboard/affiliate")
-                      } else {
-                        // Login failed (likely due to verification) - send to sign in
-                        throw new Error("Verification required")
-                      }
-                    } catch (err) {
-                      // If login fails (standard behavior for unverified accounts), redirect to Sign In
-                      router.push('/sign-in')
-                    } finally {
-                      setIsLoading(false)
-                    }
-                  }}
-                  disabled={isLoading}
-                >
-                  {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Verify later via email"}
-                </Button>
-              </div>
-            </div>
-          </div>
-        ) : step === 1 ? (
+        {step === 1 ? (
           <>
             {/* Google Signup */}
             <Button
@@ -457,21 +324,18 @@ export function SignupForm() {
               Continue with Google
             </Button>
 
-            {/* Divider */}
             <div className="relative mb-6">
               <Separator />
               <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-card px-4 text-sm text-muted-foreground">
-                or
+                or use email
               </span>
             </div>
 
-            {/* Email Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="fullName">Full Name *</Label>
+                <Label htmlFor="fullName">Full Name</Label>
                 <Input
                   id="fullName"
-                  type="text"
                   placeholder="John Doe"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
@@ -481,7 +345,7 @@ export function SignupForm() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email *</Label>
+                <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
                   type="email"
@@ -506,56 +370,7 @@ export function SignupForm() {
                 error={errors.dateOfBirth}
               />
 
-              <div className="space-y-2">
-                <Label htmlFor="password">Password *</Label>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Create a strong password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className={errors.password ? 'border-destructive' : ''}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-0 top-0 h-full px-3"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </Button>
-                </div>
-                {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
-                <p className="text-xs text-muted-foreground">Must be at least 8 characters</p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm Password *</Label>
-                <div className="relative">
-                  <Input
-                    id="confirmPassword"
-                    type={showConfirmPassword ? "text" : "password"}
-                    placeholder="Confirm your password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className={errors.confirmPassword ? 'border-destructive' : ''}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-0 top-0 h-full px-3"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  >
-                    {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </Button>
-                </div>
-                {errors.confirmPassword && <p className="text-sm text-destructive">{errors.confirmPassword}</p>}
-              </div>
-
-              <div className="space-y-3">
+              <div className="space-y-3 pt-2">
                 <div className="flex items-start space-x-3">
                   <Checkbox
                     id="terms"
@@ -568,110 +383,69 @@ export function SignupForm() {
                       I agree to Leli Rentals'
                     </Label>
                     <div className="flex flex-wrap gap-x-2 gap-y-1 mt-1">
-                      <Link
-                        href="/terms"
-                        className="text-sm text-primary hover:underline font-medium inline-flex items-center gap-1"
-                        target="_blank"
-                      >
-                        Terms of Service
-                      </Link>
+                      <Link href="/terms" className="text-sm text-primary hover:underline font-medium">Terms</Link>
                       <span className="text-sm text-muted-foreground">•</span>
-                      <Link
-                        href="/privacy"
-                        className="text-sm text-primary hover:underline font-medium inline-flex items-center gap-1"
-                        target="_blank"
-                      >
-                        Privacy Policy
-                      </Link>
+                      <Link href="/privacy" className="text-sm text-primary hover:underline font-medium">Privacy</Link>
                       <span className="text-sm text-muted-foreground">•</span>
-                      <Link
-                        href="/cookies"
-                        className="text-sm text-primary hover:underline font-medium inline-flex items-center gap-1"
-                        target="_blank"
-                      >
-                        Cookie Policy
-                      </Link>
+                      <Link href="/cookies" className="text-sm text-primary hover:underline font-medium">Cookies</Link>
                     </div>
                   </div>
                 </div>
                 {errors.terms && <p className="text-sm text-destructive pl-9">{errors.terms}</p>}
               </div>
 
-              <Button type="submit" className="w-full h-12 bg-primary text-primary-foreground">
-                Continue
+              <Button type="submit" className="w-full h-12 bg-primary text-primary-foreground mt-4">
+                Next Step <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </form>
           </>
         ) : (
-          <>
-            {/* Account Type Selection */}
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <Label className="text-base mb-4 block">Select Account Type</Label>
-                <RadioGroup value={accountType} onValueChange={(value) => setAccountType(value as AccountType)}>
-                  <div className="space-y-3">
-                    <Label
-                      htmlFor="renter"
-                      className="flex items-center gap-4 p-4 rounded-lg border-2 cursor-pointer hover:bg-accent transition-colors"
-                    >
-                      <RadioGroupItem value="renter" id="renter" />
-                      <User className="h-6 w-6 text-primary" />
-                      <div className="flex-1">
-                        <p className="font-semibold">Renter</p>
-                        <p className="text-sm text-muted-foreground">Browse and rent items</p>
-                      </div>
-                    </Label>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <Label className="text-base mb-4 block">Select Account Type</Label>
+              <RadioGroup value={accountType} onValueChange={(value) => setAccountType(value as AccountType)}>
+                <div className="space-y-3">
+                  <Label htmlFor="renter" className="flex items-center gap-4 p-4 rounded-lg border-2 cursor-pointer hover:bg-accent transition-all [&:has([data-state=checked])]:border-primary">
+                    <RadioGroupItem value="renter" id="renter" />
+                    <User className="h-6 w-6 text-primary" />
+                    <div className="flex-1">
+                      <p className="font-semibold">Renter</p>
+                      <p className="text-sm text-muted-foreground">Browse and rent items</p>
+                    </div>
+                  </Label>
 
-                    <Label
-                      htmlFor="owner"
-                      className="flex items-center gap-4 p-4 rounded-lg border-2 cursor-pointer hover:bg-accent transition-colors"
-                    >
-                      <RadioGroupItem value="owner" id="owner" />
-                      <Store className="h-6 w-6 text-primary" />
-                      <div className="flex-1">
-                        <p className="font-semibold">Owner</p>
-                        <p className="text-sm text-muted-foreground">List and rent out your items</p>
-                      </div>
-                    </Label>
+                  <Label htmlFor="owner" className="flex items-center gap-4 p-4 rounded-lg border-2 cursor-pointer hover:bg-accent transition-all [&:has([data-state=checked])]:border-primary">
+                    <RadioGroupItem value="owner" id="owner" />
+                    <Store className="h-6 w-6 text-primary" />
+                    <div className="flex-1">
+                      <p className="font-semibold">Owner</p>
+                      <p className="text-sm text-muted-foreground">List and rent out your items</p>
+                    </div>
+                  </Label>
 
-                    <Label
-                      htmlFor="affiliate"
-                      className="flex items-center gap-4 p-4 rounded-lg border-2 cursor-pointer hover:bg-accent transition-colors"
-                    >
-                      <RadioGroupItem value="affiliate" id="affiliate" />
-                      <Users className="h-6 w-6 text-primary" />
-                      <div className="flex-1">
-                        <p className="font-semibold">Affiliate</p>
-                        <p className="text-sm text-muted-foreground">Earn commissions by referring users</p>
-                      </div>
-                    </Label>
-                  </div>
-                </RadioGroup>
-              </div>
+                  <Label htmlFor="affiliate" className="flex items-center gap-4 p-4 rounded-lg border-2 cursor-pointer hover:bg-accent transition-all [&:has([data-state=checked])]:border-primary">
+                    <RadioGroupItem value="affiliate" id="affiliate" />
+                    <Users className="h-6 w-6 text-primary" />
+                    <div className="flex-1">
+                      <p className="font-semibold">Affiliate</p>
+                      <p className="text-sm text-muted-foreground">Earn commissions</p>
+                    </div>
+                  </Label>
+                </div>
+              </RadioGroup>
+            </div>
 
-              <div className="flex gap-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => setStep(1)}
-                  disabled={isLoading}
-                >
-                  Back
-                </Button>
-                <Button
-                  type="submit"
-                  className="flex-1 bg-primary text-primary-foreground"
-                  disabled={isLoading}
-                >
-                  {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Create Account"}
-                </Button>
-              </div>
-            </form>
-          </>
+            <div className="flex gap-3">
+              <Button type="button" variant="outline" className="flex-1" onClick={() => setStep(1)} disabled={isLoading}>
+                Back
+              </Button>
+              <Button type="submit" className="flex-1 bg-primary text-primary-foreground" disabled={isLoading}>
+                {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Complete Signup"}
+              </Button>
+            </div>
+          </form>
         )}
 
-        {/* Footer */}
         <p className="text-center text-sm text-muted-foreground mt-6">
           Already have an account?{" "}
           <Link href="/sign-in" className="text-primary font-medium hover:underline">

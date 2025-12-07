@@ -443,10 +443,28 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   type __Unused = __Check
 }
 
+// Validate ../../../app/test-otp/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/test-otp">> = Specific
+  const handler = {} as typeof import("../../../app/test-otp/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
 // Validate ../../../app/users/[id]/page.tsx
 {
   type __IsExpected<Specific extends AppPageConfig<"/users/[id]">> = Specific
   const handler = {} as typeof import("../../../app/users/[id]/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../../app/api/ai/route.ts
+{
+  type __IsExpected<Specific extends RouteHandlerConfig<"/api/ai">> = Specific
+  const handler = {} as typeof import("../../../app/api/ai/route.js")
   type __Check = __IsExpected<typeof handler>
   // @ts-ignore
   type __Unused = __Check
@@ -474,6 +492,15 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
 {
   type __IsExpected<Specific extends RouteHandlerConfig<"/auth/callback">> = Specific
   const handler = {} as typeof import("../../../app/auth/callback/route.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../../app/auth/confirm/route.ts
+{
+  type __IsExpected<Specific extends RouteHandlerConfig<"/auth/confirm">> = Specific
+  const handler = {} as typeof import("../../../app/auth/confirm/route.js")
   type __Check = __IsExpected<typeof handler>
   // @ts-ignore
   type __Unused = __Check

@@ -1,6 +1,7 @@
 "use server"
 
-import { supabase } from "@/lib/supabase"
+import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { cookies } from 'next/headers'
 import { sendBookingConfirmationEmail } from "@/lib/actions/email-actions"
 
 interface BookingData {
@@ -20,6 +21,20 @@ interface BookingData {
 
 export async function createBooking(bookingData: BookingData, userEmail: string, userName: string, listingTitle: string) {
     console.log("Creating booking:", bookingData)
+
+    const cookieStore = await cookies()
+
+    const supabase = createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+            cookies: {
+                get(name: string) {
+                    return cookieStore.get(name)?.value
+                },
+            },
+        }
+    )
 
     try {
         const { data, error } = await supabase

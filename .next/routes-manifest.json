@@ -145,6 +145,12 @@
       "namedRegex": "^/auth/callback(?:/)?$"
     },
     {
+      "page": "/auth/confirm",
+      "regex": "^/auth/confirm(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/auth/confirm(?:/)?$"
+    },
+    {
       "page": "/become-owner",
       "regex": "^/become\\-owner(?:/)?$",
       "routeKeys": {},
@@ -323,6 +329,12 @@
       "regex": "^/terms(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/terms(?:/)?$"
+    },
+    {
+      "page": "/test-otp",
+      "regex": "^/test\\-otp(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/test\\-otp(?:/)?$"
     },
     {
       "page": "/verify",

@@ -1,24 +1,69 @@
 {
   "node": {
-    "783e240da2f7100dad286219201564eacdcd73f0b2": {
+    "4032147972eb89337abe7c6d8993443cf9c0e14092": {
       "workers": {
         "app/dashboard/affiliate/page": {
-          "moduleId": "[project]/.next-internal/server/app/dashboard/affiliate/page/actions.js { ACTIONS_MODULE0 => \"[project]/lib/actions/email-actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/lib/actions/affiliate-actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "moduleId": "[project]/.next-internal/server/app/dashboard/affiliate/page/actions.js { ACTIONS_MODULE0 => \"[project]/lib/actions/dashboard-actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/lib/actions/affiliate-actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
           "async": false,
-          "exportedName": "sendNewListingEmail",
-          "filename": "lib/actions/email-actions.ts"
+          "exportedName": "getNotifications",
+          "filename": "lib/actions/dashboard-actions.ts"
         }
       },
       "layer": {
         "app/dashboard/affiliate/page": "action-browser"
       },
-      "exportedName": "sendNewListingEmail",
-      "filename": "lib/actions/email-actions.ts"
+      "exportedName": "getNotifications",
+      "filename": "lib/actions/dashboard-actions.ts"
     },
-    "60c59f7d5c7b1862236c427066c155477e51ed8e39": {
+    "40e5a14d719293e1fe8689917108d2d5415b39a9e7": {
       "workers": {
         "app/dashboard/affiliate/page": {
-          "moduleId": "[project]/.next-internal/server/app/dashboard/affiliate/page/actions.js { ACTIONS_MODULE0 => \"[project]/lib/actions/email-actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/lib/actions/affiliate-actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "moduleId": "[project]/.next-internal/server/app/dashboard/affiliate/page/actions.js { ACTIONS_MODULE0 => \"[project]/lib/actions/dashboard-actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/lib/actions/affiliate-actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "markNotificationAsRead",
+          "filename": "lib/actions/dashboard-actions.ts"
+        }
+      },
+      "layer": {
+        "app/dashboard/affiliate/page": "action-browser"
+      },
+      "exportedName": "markNotificationAsRead",
+      "filename": "lib/actions/dashboard-actions.ts"
+    },
+    "40bc712662892bed4f7bc32270c4d7e03a993142c1": {
+      "workers": {
+        "app/dashboard/affiliate/page": {
+          "moduleId": "[project]/.next-internal/server/app/dashboard/affiliate/page/actions.js { ACTIONS_MODULE0 => \"[project]/lib/actions/dashboard-actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/lib/actions/affiliate-actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getAffiliateData",
+          "filename": "lib/actions/dashboard-actions.ts"
+        }
+      },
+      "layer": {
+        "app/dashboard/affiliate/page": "action-browser"
+      },
+      "exportedName": "getAffiliateData",
+      "filename": "lib/actions/dashboard-actions.ts"
+    },
+    "40088793050c2303431e5257d3b11c3a52eec2297d": {
+      "workers": {
+        "app/dashboard/affiliate/page": {
+          "moduleId": "[project]/.next-internal/server/app/dashboard/affiliate/page/actions.js { ACTIONS_MODULE0 => \"[project]/lib/actions/dashboard-actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/lib/actions/affiliate-actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getAffiliateReferrals",
+          "filename": "lib/actions/dashboard-actions.ts"
+        }
+      },
+      "layer": {
+        "app/dashboard/affiliate/page": "action-browser"
+      },
+      "exportedName": "getAffiliateReferrals",
+      "filename": "lib/actions/dashboard-actions.ts"
+    },
+    "601d59dda0ff83c526c7d517f88eb4bc88e275faa3": {
+      "workers": {
+        "app/dashboard/affiliate/page": {
+          "moduleId": "[project]/.next-internal/server/app/dashboard/affiliate/page/actions.js { ACTIONS_MODULE0 => \"[project]/lib/actions/dashboard-actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/lib/actions/affiliate-actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
           "async": false,
           "exportedName": "joinAffiliateProgram",
           "filename": "lib/actions/affiliate-actions.ts"

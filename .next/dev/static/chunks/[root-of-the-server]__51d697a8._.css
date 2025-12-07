@@ -862,6 +862,10 @@
     right: calc(var(--spacing) * 4);
   }
 
+  .right-6 {
+    right: calc(var(--spacing) * 6);
+  }
+
   .right-10 {
     right: calc(var(--spacing) * 10);
   }
@@ -896,6 +900,10 @@
 
   .bottom-20 {
     bottom: calc(var(--spacing) * 20);
+  }
+
+  .bottom-24 {
+    bottom: calc(var(--spacing) * 24);
   }
 
   .-left-12 {
@@ -1739,6 +1747,10 @@
     width: 100px;
   }
 
+  .w-\[350px\] {
+    width: 350px;
+  }
+
   .w-\[465px\] {
     width: 465px;
   }
@@ -1797,6 +1809,10 @@
 
   .max-w-\[80\%\] {
     max-width: 80%;
+  }
+
+  .max-w-\[85\%\] {
+    max-width: 85%;
   }
 
   .max-w-\[150px\] {
@@ -2013,10 +2029,6 @@
 
   .transform {
     transform: var(--tw-rotate-x, ) var(--tw-rotate-y, ) var(--tw-rotate-z, ) var(--tw-skew-x, ) var(--tw-skew-y, );
-  }
-
-  .animate-caret-blink {
-    animation: 1.25s ease-out infinite caret-blink;
   }
 
   .animate-in {
@@ -2405,6 +2417,14 @@
     border-bottom-right-radius: calc(var(--radius)  - 2px);
   }
 
+  .rounded-br-none {
+    border-bottom-right-radius: 0;
+  }
+
+  .rounded-bl-none {
+    border-bottom-left-radius: 0;
+  }
+
   .border {
     border-style: var(--tw-border-style);
     border-width: 1px;
@@ -2428,11 +2448,6 @@
   .border-\[1\.5px\] {
     border-style: var(--tw-border-style);
     border-width: 1.5px;
-  }
-
-  .border-y {
-    border-block-style: var(--tw-border-style);
-    border-block-width: 1px;
   }
 
   .border-t {
@@ -4810,10 +4825,6 @@
     text-transform: capitalize;
   }
 
-  .lowercase {
-    text-transform: lowercase;
-  }
-
   .uppercase {
     text-transform: uppercase;
   }
@@ -4870,6 +4881,11 @@
 
   .shadow {
     --tw-shadow: 0 1px 3px 0 var(--tw-shadow-color, #0000001a), 0 1px 2px -1px var(--tw-shadow-color, #0000001a);
+    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+  }
+
+  .shadow-2xl {
+    --tw-shadow: 0 25px 50px -12px var(--tw-shadow-color, #00000040);
     box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
   }
 
@@ -5175,6 +5191,10 @@
 
   .slide-in-from-bottom-5 {
     --tw-enter-translate-y: calc(.05 * 100%);
+  }
+
+  .slide-in-from-bottom-10 {
+    --tw-enter-translate-y: calc(.1 * 100%);
   }
 
   .zoom-in-95 {
@@ -5590,11 +5610,6 @@
   .first\:rounded-l-md:first-child {
     border-top-left-radius: calc(var(--radius)  - 2px);
     border-bottom-left-radius: calc(var(--radius)  - 2px);
-  }
-
-  .first\:border-l:first-child {
-    border-left-style: var(--tw-border-style);
-    border-left-width: 1px;
   }
 
   .last\:mt-0:last-child {
@@ -6328,10 +6343,6 @@
     }
   }
 
-  .has-disabled\:opacity-50:has(:disabled) {
-    opacity: .5;
-  }
-
   .has-data-\[slot\=card-action\]\:grid-cols-\[1fr_auto\]:has([data-slot="card-action"]) {
     grid-template-columns: 1fr auto;
   }
@@ -6510,14 +6521,6 @@
     color: var(--muted-foreground);
   }
 
-  .data-\[active\=true\]\:z-10[data-active="true"] {
-    z-index: 10;
-  }
-
-  .data-\[active\=true\]\:border-ring[data-active="true"] {
-    border-color: var(--ring);
-  }
-
   .data-\[active\=true\]\:bg-accent\/50[data-active="true"] {
     background-color: var(--accent);
   }
@@ -6545,21 +6548,6 @@
     color: var(--sidebar-accent-foreground);
   }
 
-  .data-\[active\=true\]\:ring-\[3px\][data-active="true"] {
-    --tw-ring-shadow: var(--tw-ring-inset, ) 0 0 0 calc(3px + var(--tw-ring-offset-width)) var(--tw-ring-color, currentcolor);
-    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
-  }
-
-  .data-\[active\=true\]\:ring-ring\/50[data-active="true"] {
-    --tw-ring-color: var(--ring);
-  }
-
-  @supports (color: color-mix(in lab, red, red)) {
-    .data-\[active\=true\]\:ring-ring\/50[data-active="true"] {
-      --tw-ring-color: color-mix(in oklab, var(--ring) 50%, transparent);
-    }
-  }
-
   @media (hover: hover) {
     .data-\[active\=true\]\:hover\:bg-accent[data-active="true"]:hover {
       background-color: var(--accent);
@@ -6568,20 +6556,6 @@
 
   .data-\[active\=true\]\:focus\:bg-accent[data-active="true"]:focus {
     background-color: var(--accent);
-  }
-
-  .data-\[active\=true\]\:aria-invalid\:border-destructive[data-active="true"][aria-invalid="true"] {
-    border-color: var(--destructive);
-  }
-
-  .data-\[active\=true\]\:aria-invalid\:ring-destructive\/20[data-active="true"][aria-invalid="true"] {
-    --tw-ring-color: var(--destructive);
-  }
-
-  @supports (color: color-mix(in lab, red, red)) {
-    .data-\[active\=true\]\:aria-invalid\:ring-destructive\/20[data-active="true"][aria-invalid="true"] {
-      --tw-ring-color: color-mix(in oklab, var(--destructive) 20%, transparent);
-    }
   }
 
   .data-\[disabled\]\:pointer-events-none[data-disabled] {
@@ -7360,6 +7334,12 @@
   @media (min-width: 40rem) {
     .sm\:w-\[350px\] {
       width: 350px;
+    }
+  }
+
+  @media (min-width: 40rem) {
+    .sm\:w-\[400px\] {
+      width: 400px;
     }
   }
 
@@ -8264,16 +8244,6 @@
     }
   }
 
-  .dark\:data-\[active\=true\]\:aria-invalid\:ring-destructive\/40:is(.dark *)[data-active="true"][aria-invalid="true"] {
-    --tw-ring-color: var(--destructive);
-  }
-
-  @supports (color: color-mix(in lab, red, red)) {
-    .dark\:data-\[active\=true\]\:aria-invalid\:ring-destructive\/40:is(.dark *)[data-active="true"][aria-invalid="true"] {
-      --tw-ring-color: color-mix(in oklab, var(--destructive) 40%, transparent);
-    }
-  }
-
   .dark\:data-\[state\=active\]\:border-input:is(.dark *)[data-state="active"] {
     border-color: var(--input);
   }
@@ -8518,6 +8488,10 @@
   .\[\&\:first-child\[data-selected\=true\]_button\]\:rounded-l-md:first-child[data-selected="true"] button {
     border-top-left-radius: calc(var(--radius)  - 2px);
     border-bottom-left-radius: calc(var(--radius)  - 2px);
+  }
+
+  .\[\&\:has\(\[data-state\=checked\]\)\]\:border-primary:has([data-state="checked"]) {
+    border-color: var(--primary);
   }
 
   .\[\&\:has\(\[role\=checkbox\]\)\]\:pr-0:has([role="checkbox"]) {
@@ -9763,16 +9737,6 @@ html, body {
 
   to {
     height: 0;
-  }
-}
-
-@keyframes caret-blink {
-  0%, 70%, 100% {
-    opacity: 1;
-  }
-
-  20%, 50% {
-    opacity: 0;
   }
 }
 

@@ -1,7 +1,27 @@
-import { supabase } from '@/lib/supabase';
+"use server"
+
+import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { cookies } from 'next/headers'
+import { sendNewListingEmail } from './email-actions';
+
+async function getSupabase() {
+    const cookieStore = await cookies()
+    return createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+            cookies: {
+                get(name: string) {
+                    return cookieStore.get(name)?.value
+                },
+            },
+        }
+    )
+}
 
 /** Fetch data for the Owner dashboard */
 export async function getOwnerData(userId: string) {
+    const supabase = await getSupabase()
     const { data, error } = await supabase
         .from('listings')
         .select('*')
@@ -12,6 +32,7 @@ export async function getOwnerData(userId: string) {
 
 /** Fetch detailed stats for Owner Dashboard */
 export async function getOwnerStats(userId: string) {
+    const supabase = await getSupabase()
     const { count: listingsCount, error: listingsError } = await supabase
         .from('listings')
         .select('*', { count: 'exact', head: true })
@@ -58,6 +79,7 @@ export async function getOwnerStats(userId: string) {
 
 /** Fetch bookings for a user (either as renter or owner) */
 export async function getBookings(userId: string, role: 'owner' | 'renter' = 'owner') {
+    const supabase = await getSupabase()
     let query = supabase
         .from('bookings')
         .select(`
@@ -81,6 +103,7 @@ export async function getBookings(userId: string, role: 'owner' | 'renter' = 'ow
 
 /** Fetch conversations for a user */
 export async function getConversations(userId: string) {
+    const supabase = await getSupabase()
     const { data, error } = await supabase
         .from('conversations')
         .select(`
@@ -96,12 +119,9 @@ export async function getConversations(userId: string) {
     if (error) throw error;
 
     // Process to get the "other" participant details
-    return data.map(conv => {
+    return data.map((conv: any) => {
         const isP1 = conv.participant_1_id === userId;
         const otherUser = isP1 ? conv.participant2 : conv.participant1;
-        // Get the latest message from the array (if joined correctly, usually strictly latest needed)
-        // Note: Supabase join on one-to-many usually returns array. Limit to 1 in real query would be better but simple select returns all.
-        // Optimizing this query might be needed for scale but fine for now.
         const lastMsg = conv.last_message?.[0] || null;
 
         return {
@@ -114,6 +134,7 @@ export async function getConversations(userId: string) {
 
 /** Fetch messages for a specific conversation */
 export async function getMessages(conversationId: string) {
+    const supabase = await getSupabase()
     const { data, error } = await supabase
         .from('messages')
         .select('*')
@@ -126,23 +147,16 @@ export async function getMessages(conversationId: string) {
 
 /** Send a message */
 export async function sendMessage(conversationId: string, senderId: string, content: string) {
+    const supabase = await getSupabase()
     const { data, error } = await supabase
         .from('messages')
         .insert({
             conversation_id: conversationId,
             sender_id: senderId,
-            // Receiver ID needs to be derived or passed. For simplicity, we trigger a function or just insert.
-            // Schema requires receiver_id. We need to look up the conversation to find the other participant.
-            // For this quick implementation, we assume the caller handles receiver logic or we do a lookup.
-            // Let's do a quick lookup if possible, or just optionalize it in schema? No, RLS needs it.
-            // IMPROVEMENT: Fetch conversation first.
             content: content
         })
         .select()
         .single();
-
-    // Wait, the schema requires receiver_id. We should update this function to take receiverId.
-    // However, fetching it inside is safer.
 
     if (error) throw error;
     return data;
@@ -150,6 +164,7 @@ export async function sendMessage(conversationId: string, senderId: string, cont
 
 /** Helper to send message with receiver lookup */
 export async function sendMessageWithLookup(conversationId: string, senderId: string, content: string) {
+    const supabase = await getSupabase()
     // 1. Get conversation to find receiver
     const { data: conv, error: convError } = await supabase
         .from('conversations')
@@ -186,6 +201,7 @@ export async function sendMessageWithLookup(conversationId: string, senderId: st
 
 /** Fetch verification documents */
 export async function getVerifications(userId: string) {
+    const supabase = await getSupabase()
     const { data, error } = await supabase
         .from('verification_documents')
         .select('*')
@@ -197,6 +213,7 @@ export async function getVerifications(userId: string) {
 
 /** Upload a verification document record (file upload handled separately) */
 export async function uploadVerification(userId: string, frontUrl: string, backUrl: string, selfieUrl: string, docType: string, documentNumber: string) {
+    const supabase = await getSupabase()
     const { data, error } = await supabase
         .from('verification_documents')
         .insert({
@@ -217,6 +234,7 @@ export async function uploadVerification(userId: string, frontUrl: string, backU
 
 /** Update user profile */
 export async function updateProfile(userId: string, updates: any) {
+    const supabase = await getSupabase()
     const { data, error } = await supabase
         .from('user_profiles')
         .update(updates)
@@ -230,8 +248,9 @@ export async function updateProfile(userId: string, updates: any) {
 
 /** Fetch data for the Affiliate dashboard */
 export async function getAffiliateData(userId: string) {
+    const supabase = await getSupabase()
     const { data, error } = await supabase
-        .from('affiliates') // Changed from affiliate_stats to affiliates table based on schema
+        .from('affiliates')
         .select('*')
         .eq('user_id', userId)
         .single();
@@ -242,6 +261,7 @@ export async function getAffiliateData(userId: string) {
 
 /** Fetch referrals for an affiliate */
 export async function getAffiliateReferrals(userId: string) {
+    const supabase = await getSupabase()
     // First get affiliate ID
     const { data: affiliate, error: affError } = await supabase
         .from('affiliates')
@@ -269,12 +289,13 @@ export async function getAffiliateReferrals(userId: string) {
 
 /** Fetch notifications for a user */
 export async function getNotifications(userId: string) {
+    const supabase = await getSupabase()
     const { data, error } = await supabase
         .from('notifications')
         .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
-        .limit(10); // Limit to latest 10
+        .limit(10);
 
     if (error) throw error;
     return data;
@@ -282,6 +303,7 @@ export async function getNotifications(userId: string) {
 
 /** Mark notification as read */
 export async function markNotificationAsRead(notificationId: string) {
+    const supabase = await getSupabase()
     const { error } = await supabase
         .from('notifications')
         .update({ is_read: true, read_at: new Date().toISOString() })
@@ -292,6 +314,7 @@ export async function markNotificationAsRead(notificationId: string) {
 
 /** Fetch data for the Admin dashboard */
 export async function getAdminData() {
+    const supabase = await getSupabase()
     const [usersRes, listingsRes] = await Promise.all([
         supabase.from('user_profiles').select('*', { count: 'exact', head: true }),
         supabase.from('listings').select('*', { count: 'exact', head: true }),
@@ -302,13 +325,12 @@ export async function getAdminData() {
         listingsCount: listingsRes.count || 0,
     };
 }
-import { sendNewListingEmail } from './email-actions';
 
-// ... existing code ...
 
 /** Create a new listing */
 export async function createListing(ownerId: string, listingData: any) {
     console.log('Creating listing with data:', listingData);
+    const supabase = await getSupabase()
 
     const { data, error } = await supabase
         .from('listings')
@@ -359,6 +381,7 @@ export async function createListing(ownerId: string, listingData: any) {
 
 /** Get User Earnings (from completed bookings) */
 export async function getEarnings(userId: string) {
+    const supabase = await getSupabase()
     const { data, error } = await supabase
         .from('bookings')
         .select(`
@@ -385,6 +408,7 @@ export async function getEarnings(userId: string) {
 
 /** Update Verification Document Status */
 export async function updateDocumentStatus(docId: string, status: 'approved' | 'rejected', reason?: string) {
+    const supabase = await getSupabase()
     const updateData: any = { status };
     if (reason) updateData.rejection_reason = reason;
 
@@ -396,19 +420,9 @@ export async function updateDocumentStatus(docId: string, status: 'approved' | '
     if (error) throw error;
 }
 
-/** Fetch all admin users */
-export async function getAdmins() {
-    const { data, error } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .or('role.eq.admin,is_admin.eq.true');
-
-    if (error) throw error;
-    return data;
-}
-
 /** Find a user by email */
 export async function getUserByEmail(email: string) {
+    const supabase = await getSupabase()
     const { data, error } = await supabase
         .from('user_profiles')
         .select('*')
@@ -419,3 +433,14 @@ export async function getUserByEmail(email: string) {
     return data;
 }
 
+/** Fetch all admin users */
+export async function getAdmins() {
+    const supabase = await getSupabase()
+    const { data, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .or('role.eq.admin,is_admin.eq.true');
+
+    if (error) throw error;
+    return data;
+}

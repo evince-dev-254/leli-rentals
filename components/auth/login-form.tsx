@@ -1,31 +1,73 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { useRouter } from "next/navigation"
-import { Eye, EyeOff, Loader2 } from "lucide-react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { Loader2, Mail, Lock, ArrowRight, Eye, EyeOff } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
 import { Separator } from "@/components/ui/separator"
+import { Message } from "@/components/ui/message"
 import { supabase } from "@/lib/supabase"
+import { checkUserExists } from "@/lib/actions/auth-actions"
 
 export function LoginForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const next = searchParams.get("next")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
-  const [rememberMe, setRememberMe] = useState(false)
+
+  // Login Logic State
+  const [isEmailChecked, setIsEmailChecked] = useState(false)
+  const [isCheckingEmail, setIsCheckingEmail] = useState(false)
+
+  // Loading & Error States
   const [isLoading, setIsLoading] = useState(false)
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const [error, setError] = useState("")
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleEmailCheck = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!email.trim()) return
+
+    setIsCheckingEmail(true)
+    setError("")
+
+    try {
+      // Check if user exists using server action
+      const result = await checkUserExists(email)
+
+      if (result.error) {
+        throw new Error("Could not verify email. Please try again.")
+      }
+
+      if (!result.exists) {
+        // User does not exist -> Redirect to Signup
+        setError("No account found with this email. Redirecting to signup...")
+        setTimeout(() => {
+          router.push(`/signup?email=${encodeURIComponent(email)}`)
+        }, 1500)
+        return
+      }
+
+      // User exists -> Show Password Field
+      setIsEmailChecked(true)
+    } catch (err: any) {
+      setError(err.message || "Something went wrong")
+    } finally {
+      setIsCheckingEmail(false)
+    }
+  }
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!password) return
+
     setIsLoading(true)
     setError("")
 
@@ -33,42 +75,33 @@ export function LoginForm() {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
-        options: {
-          persistSession: rememberMe,
-        },
       })
 
-      if (error) {
-        if (error.message.includes("Email not confirmed")) {
-          throw new Error("Please verify your email address to sign in.")
+      if (error) throw error
+
+      if (data.session) {
+        // Fetch user profile to redirect correctly
+        const { data: profile } = await supabase
+          .from('user_profiles')
+          .select('role')
+          .eq('id', data.user?.id)
+          .single()
+
+        const role = profile?.role || 'renter'
+
+        router.refresh()
+
+        if (next) {
+          router.push(next)
+        } else {
+          if (role === 'admin') router.push('/dashboard/admin')
+          else if (role === 'owner') router.push('/dashboard/owner')
+          else if (role === 'affiliate') router.push('/dashboard/affiliate')
+          else router.push('/categories')
         }
-        throw error
       }
-
-      // Store remember me preference
-      if (rememberMe) {
-        localStorage.setItem('rememberMe', 'true')
-      } else {
-        localStorage.removeItem('rememberMe')
-      }
-
-      // Fetch user profile to redirect correctly
-      const { data: profile } = await supabase
-        .from('user_profiles')
-        .select('role')
-        .eq('id', data.user.id)
-        .single()
-
-      const role = profile?.role || 'renter'
-
-      if (role === 'admin' || profile?.is_admin) router.push('/dashboard/admin')
-      else if (role === 'owner') router.push('/dashboard/owner')
-      else if (role === 'affiliate') router.push('/dashboard/affiliate')
-      else router.push('/categories') // Default for renter
-
-      router.refresh()
-    } catch (error: any) {
-      setError(error.message || "Failed to sign in")
+    } catch (err: any) {
+      setError(err.message || "Invalid login credentials")
     } finally {
       setIsLoading(false)
     }
@@ -79,7 +112,7 @@ export function LoginForm() {
     setError("")
 
     try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
@@ -106,7 +139,7 @@ export function LoginForm() {
             <Image src="/logo.png" alt="Leli Rentals" width={150} height={40} className="h-10 w-auto dark:invert" />
           </Link>
           <h1 className="text-2xl font-bold mb-2">Welcome Back</h1>
-          <p className="text-muted-foreground">Sign in to your account to continue</p>
+          <p className="text-muted-foreground">Sign in to your account</p>
         </div>
 
         {/* Google Login */}
@@ -114,7 +147,7 @@ export function LoginForm() {
           variant="outline"
           className="w-full h-12 mb-6 bg-transparent"
           onClick={handleGoogleLogin}
-          disabled={isGoogleLoading}
+          disabled={isGoogleLoading || isLoading || isCheckingEmail}
         >
           {isGoogleLoading ? (
             <Loader2 className="h-5 w-5 mr-2 animate-spin" />
@@ -141,81 +174,87 @@ export function LoginForm() {
           Continue with Google
         </Button>
 
-        {/* Divider */}
         <div className="relative mb-6">
           <Separator />
           <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-card px-4 text-sm text-muted-foreground">
-            or
+            or continue with email
           </span>
         </div>
 
-        {/* Error Message */}
-        {error && (
-          <div className="mb-4 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm">
-            {error}
-          </div>
-        )}
+        {error && <Message type="error" message={error} className="mb-6" />}
 
-        {/* Email Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={isEmailChecked ? handleLogin : handleEmailCheck} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">Email Address</Label>
             <Input
               id="email"
               type="email"
               placeholder="you@example.com"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value)
+                setIsEmailChecked(false) // Reset checking if email changes
+                setError("")
+              }}
               required
+              disabled={isCheckingEmail || isLoading}
             />
           </div>
 
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="password">Password</Label>
-              <Link href="/forgot-password" className="text-sm text-primary hover:underline">
-                Forgot password?
-              </Link>
+          {isEmailChecked && (
+            <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">Password</Label>
+                <Link
+                  href="/forgot-password"
+                  className="text-xs text-primary hover:underline"
+                >
+                  Forgot password?
+                </Link>
+              </div>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  disabled={isLoading}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4 text-muted-foreground" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-muted-foreground" />
+                  )}
+                </Button>
+              </div>
             </div>
-            <div className="relative">
-              <Input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="absolute right-0 top-0 h-full px-3"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </Button>
-            </div>
-          </div>
+          )}
 
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="remember"
-              checked={rememberMe}
-              onCheckedChange={(checked) => setRememberMe(checked as boolean)}
-            />
-            <Label htmlFor="remember" className="text-sm font-normal cursor-pointer">
-              Remember me for 30 days
-            </Label>
-          </div>
-
-          <Button type="submit" className="w-full h-12 bg-primary text-primary-foreground" disabled={isLoading}>
-            {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Sign In"}
+          <Button
+            type="submit"
+            className="w-full h-12 bg-primary text-primary-foreground mt-2"
+            disabled={isCheckingEmail || isLoading}
+          >
+            {isCheckingEmail || isLoading ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : isEmailChecked ? (
+              "Sign In"
+            ) : (
+              "Continue"
+            )}
           </Button>
         </form>
 
-        {/* Footer */}
-        <p className="text-center text-sm text-muted-foreground mt-6">
+        <p className="text-center text-sm text-muted-foreground mt-8">
           Do not have an account?{" "}
           <Link href="/signup" className="text-primary font-medium hover:underline">
             Sign up

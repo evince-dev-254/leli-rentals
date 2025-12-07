@@ -1,4 +1,20 @@
 {
-  "node": {},
+  "node": {
+    "4047ec64b7cf89dbb7a92d9331a6b72a55983ce079": {
+      "workers": {
+        "app/(auth)/login/page": {
+          "moduleId": 61893,
+          "async": false,
+          "exportedName": "checkUserExists",
+          "filename": "lib/actions/auth-actions.ts"
+        }
+      },
+      "layer": {
+        "app/(auth)/login/page": "action-browser"
+      },
+      "exportedName": "checkUserExists",
+      "filename": "lib/actions/auth-actions.ts"
+    }
+  },
   "edge": {}
 }

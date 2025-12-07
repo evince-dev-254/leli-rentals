@@ -1,66 +1,28 @@
 {
   "node": {
-    "60eb1c4f17aa689bd417ddf6139ff5290a11f54209": {
+    "4047ec64b7cf89dbb7a92d9331a6b72a55983ce079": {
       "workers": {
-        "app/(auth)/signup/page": {
-          "moduleId": 42324,
+        "app/(auth)/login/page": {
+          "moduleId": 61893,
           "async": false,
-          "exportedName": "sendWelcomeEmail",
-          "filename": "lib/actions/email-actions.ts"
-        }
-      },
-      "layer": {
-        "app/(auth)/signup/page": "action-browser"
-      },
-      "filename": "lib/actions/email-actions.ts",
-      "exportedName": "sendWelcomeEmail"
-    },
-    "4075bbdb2ca7d6dbe0c38be9664ddb06adfa49638c": {
-      "workers": {
-        "app/(auth)/signup/page": {
-          "moduleId": 42324,
+          "exportedName": "checkUserExists",
+          "filename": "lib/actions/auth-actions.ts"
+        },
+        "app/(auth)/sign-in/page": {
+          "moduleId": 12223,
           "async": false,
-          "exportedName": "sendCustomOtp",
-          "filename": "lib/actions/verify-actions.ts"
-        }
-      },
-      "layer": {
-        "app/(auth)/signup/page": "action-browser"
-      },
-      "filename": "lib/actions/verify-actions.ts",
-      "exportedName": "sendCustomOtp"
-    },
-    "78c519256122260b30e4eaeb7222d35a71686cc0a3": {
-      "workers": {
-        "app/(auth)/signup/page": {
-          "moduleId": 42324,
-          "async": false,
-          "exportedName": "verifyCustomOtp",
-          "filename": "lib/actions/verify-actions.ts"
-        }
-      },
-      "layer": {
-        "app/(auth)/signup/page": "action-browser"
-      },
-      "filename": "lib/actions/verify-actions.ts",
-      "exportedName": "verifyCustomOtp"
-    },
-    "402ae546aed102d64769f54943c332ada2d9deff94": {
-      "workers": {
-        "app/(auth)/signup/page": {
-          "moduleId": 42324,
-          "async": false,
-          "exportedName": "registerUser",
+          "exportedName": "checkUserExists",
           "filename": "lib/actions/auth-actions.ts"
         }
       },
       "layer": {
-        "app/(auth)/signup/page": "action-browser"
+        "app/(auth)/login/page": "action-browser",
+        "app/(auth)/sign-in/page": "action-browser"
       },
       "filename": "lib/actions/auth-actions.ts",
-      "exportedName": "registerUser"
+      "exportedName": "checkUserExists"
     },
-    "000cfcf38d8ee44da2ec528fb72668c340e4ed9fb8": {
+    "00505e741aac111f5625ec5e1bed2f98c625a9a474": {
       "workers": {
         "app/admin/affiliates/page": {
           "moduleId": 84569,
@@ -75,7 +37,7 @@
       "filename": "lib/actions/affiliate-actions.ts",
       "exportedName": "getAllAffiliates"
     },
-    "7836f6554c113775f9349130d57af469f4e9914fb6": {
+    "7811d0eb4dab2a9773508565a5b8edc9884ff89aad": {
       "workers": {
         "app/admin/settings/page": {
           "moduleId": 20470,
@@ -209,7 +171,7 @@
       "filename": "lib/actions/email-actions.ts",
       "exportedName": "sendNewListingEmail"
     },
-    "601796f08834749640eff9c7237738fe2946987897": {
+    "60b8d69f5284599d2bb412537c97663788d5090af9": {
       "workers": {
         "app/dashboard/affiliate/page": {
           "moduleId": 12842,
@@ -224,7 +186,7 @@
       "filename": "lib/actions/affiliate-actions.ts",
       "exportedName": "joinAffiliateProgram"
     },
-    "78b4cbbb6f71363dd038a6a51722c197a353d0a886": {
+    "7860cd3ac1b2d705839dbc800a75ab079d77a5163f": {
       "workers": {
         "app/listings/[id]/page": {
           "moduleId": 84012,
@@ -238,8 +200,38 @@
       },
       "filename": "lib/actions/booking-actions.ts",
       "exportedName": "createBooking"
+    },
+    "40e924cc7877e974285bab3cff3f1b530967f1a8b0": {
+      "workers": {
+        "app/test-otp/page": {
+          "moduleId": 74545,
+          "async": false,
+          "exportedName": "sendCustomOtp",
+          "filename": "lib/actions/verify-actions.ts"
+        }
+      },
+      "layer": {
+        "app/test-otp/page": "action-browser"
+      },
+      "filename": "lib/actions/verify-actions.ts",
+      "exportedName": "sendCustomOtp"
+    },
+    "789150717004fc4a7a2aafad5323023354d7bdc9ae": {
+      "workers": {
+        "app/test-otp/page": {
+          "moduleId": 74545,
+          "async": false,
+          "exportedName": "verifyCustomOtp",
+          "filename": "lib/actions/verify-actions.ts"
+        }
+      },
+      "layer": {
+        "app/test-otp/page": "action-browser"
+      },
+      "filename": "lib/actions/verify-actions.ts",
+      "exportedName": "verifyCustomOtp"
     }
   },
   "edge": {},
-  "encryptionKey": "vWXcGvjuxo4GIJgLWrABsm2P0QfvXDwwpc/hcBD+gFg="
+  "encryptionKey": "pUzHYuejSSb8/gDtZekBp2sC4vLxD6jIKpyhNxp2hpI="
 }

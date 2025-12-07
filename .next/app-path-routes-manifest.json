@@ -18,6 +18,7 @@
   "/api/imagekit/auth/route": "/api/imagekit/auth",
   "/api/paystack/verify/route": "/api/paystack/verify",
   "/auth/callback/route": "/auth/callback",
+  "/auth/confirm/route": "/auth/confirm",
   "/become-owner/page": "/become-owner",
   "/careers/page": "/careers",
   "/categories/[category]/page": "/categories/[category]",
@@ -48,5 +49,6 @@
   "/privacy/page": "/privacy",
   "/select-role/page": "/select-role",
   "/terms/page": "/terms",
+  "/test-otp/page": "/test-otp",
   "/users/[id]/page": "/users/[id]"
 }
