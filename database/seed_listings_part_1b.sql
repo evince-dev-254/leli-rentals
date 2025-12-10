@@ -7,7 +7,15 @@ DECLARE
     v_owner_id UUID;
     v_sub_id UUID;
 BEGIN
-    SELECT id INTO v_owner_id FROM public.user_profiles WHERE role = 'owner' LIMIT 1;
+    -- Get specific owner ID for testing (1kihiupaul@gmail.com)
+    SELECT id INTO v_owner_id FROM public.user_profiles WHERE email = '1kihiupaul@gmail.com' LIMIT 1;
+    
+    -- Fallback: Get any owner if specific user not found
+    IF v_owner_id IS NULL THEN
+        SELECT id INTO v_owner_id FROM public.user_profiles WHERE role = 'owner' LIMIT 1;
+    END IF;
+    
+    -- Fallback: Get any user if no owner found
     IF v_owner_id IS NULL THEN
         SELECT id INTO v_owner_id FROM public.user_profiles LIMIT 1;
     END IF;

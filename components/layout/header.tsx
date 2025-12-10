@@ -10,6 +10,7 @@ import { Menu, ChevronDown, ShoppingBag, User, MessageCircle, Sun, Moon } from "
 import { useTheme } from "next-themes"
 import { supabase } from "@/lib/supabase" // Import Supabase client
 import { useRouter } from "next/navigation"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 
 const categories = [
   { name: "Vehicles", href: "/categories/vehicles", count: "1,800+" },
@@ -230,22 +231,29 @@ export function Header() {
               </Button>
             </Link>
 
-            {/* Login/Profile Button - Conditional Rendering */}
+            {/* Login/Profile Button - Desktop */}
             {user ? (
               <Link href="/dashboard">
-                <Button className="hidden sm:flex bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-full px-6 font-medium">
+                <Button className="hidden lg:flex bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-full px-6 font-medium">
                   <User className="mr-2 h-4 w-4" />
                   Profile
                 </Button>
               </Link>
             ) : (
               <Link href="/login">
-                <Button className="hidden sm:flex bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-full px-6 font-medium">
+                <Button className="hidden lg:flex bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-full px-6 font-medium">
                   <User className="mr-2 h-4 w-4" />
                   Login
                 </Button>
               </Link>
             )}
+
+            {/* Mobile User Icon - Always visible on mobile */}
+            <Link href={user ? "/dashboard" : "/login"} className="lg:hidden">
+              <Button variant="ghost" size="icon" className="text-gray-200 hover:text-white hover:bg-white/10">
+                <User className="h-5 w-5" />
+              </Button>
+            </Link>
 
             {/* Mobile Menu */}
             <Sheet>
@@ -254,69 +262,95 @@ export function Header() {
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="bg-[#1a1a2e] border-[#2a2a4e] w-80 px-6 py-8">
-                <nav className="flex flex-col gap-6 mt-8">
-                  {navLinks.map((link) => (
-                    <Link
-                      key={link.name}
-                      href={link.href}
-                      className="text-lg font-medium text-gray-200 hover:text-white py-2"
-                    >
-                      {link.name}
+              <SheetContent side="right" className="bg-[#1a1a2e] border-[#2a2a4e] w-[300px] px-6 py-6 overflow-y-auto">
+                <div className="flex flex-col gap-6 mt-6">
+
+                  {/* Mobile Login/Profile Button - Highlighted at Top */}
+                  {user ? (
+                    <Link href="/dashboard" className="w-full">
+                      <Button className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-xl py-6 shadow-lg shadow-green-900/20">
+                        <User className="mr-2 h-5 w-5" />
+                        <span className="text-lg">My Profile</span>
+                      </Button>
                     </Link>
-                  ))}
-                  <div className="space-y-3 pt-2">
-                    <p className="text-sm text-gray-400 font-medium">Categories</p>
-                    {categories.map((category) => (
+                  ) : (
+                    <Link href="/login" className="w-full">
+                      <Button className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-xl py-6 shadow-lg shadow-purple-900/20">
+                        <User className="mr-2 h-5 w-5" />
+                        <span className="text-lg">Sign In / Sign Up</span>
+                      </Button>
+                    </Link>
+                  )}
+
+                  <div className="flex flex-col space-y-2">
+                    {navLinks.map((link) => (
                       <Link
-                        key={category.name}
-                        href={category.href}
-                        className="block pl-4 py-2 text-gray-300 hover:text-white"
+                        key={link.name}
+                        href={link.href}
+                        className="text-lg font-medium text-gray-200 hover:text-white py-3 px-2 rounded-lg hover:bg-white/5 transition-colors"
                       >
-                        {category.name}
-                      </Link>
-                    ))}
-                  </div>
-                  <div className="space-y-3 pt-2">
-                    <p className="text-sm text-gray-400 font-medium">More</p>
-                    {moreLinks.map((link) => (
-                      <Link key={link.name} href={link.href} className="block pl-4 py-2 text-gray-300 hover:text-white">
                         {link.name}
                       </Link>
                     ))}
                   </div>
-                  <div className="flex gap-3 mt-6 pt-4 border-t border-gray-700">
-                    <Link href="/messages" className="flex-1">
-                      <Button variant="outline" className="w-full border-gray-600 text-gray-200 bg-transparent py-6">
-                        <MessageCircle className="mr-2 h-4 w-4" />
-                        Messages
+
+                  {/* Accordion Sections */}
+                  <Accordion type="single" collapsible className="w-full">
+                    <AccordionItem value="categories" className="border-gray-800">
+                      <AccordionTrigger className="text-gray-200 hover:text-white text-lg font-medium py-3 px-2 hover:no-underline">
+                        Categories
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <div className="flex flex-col space-y-1 pl-4 pb-2">
+                          {categories.map((category) => (
+                            <Link
+                              key={category.name}
+                              href={category.href}
+                              className="text-gray-400 hover:text-white py-2 px-2 text-base rounded-md hover:bg-white/5 transition-colors flex justify-between items-center"
+                            >
+                              <span>{category.name}</span>
+                              <span className="text-xs text-gray-600">{category.count}</span>
+                            </Link>
+                          ))}
+                          <Link href="/categories" className="text-purple-400 font-medium py-2 px-2 mt-2">
+                            View All Categories
+                          </Link>
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+
+                    <AccordionItem value="more" className="border-gray-800">
+                      <AccordionTrigger className="text-gray-200 hover:text-white text-lg font-medium py-3 px-2 hover:no-underline">
+                        More Options
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <div className="flex flex-col space-y-1 pl-4 pb-2">
+                          {moreLinks.map((link) => (
+                            <Link key={link.name} href={link.href} className="text-gray-400 hover:text-white py-2 px-2 text-base rounded-md hover:bg-white/5">
+                              {link.name}
+                            </Link>
+                          ))}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
+
+                  <div className="grid grid-cols-2 gap-3 pt-4 pb-8">
+                    <Link href="/messages">
+                      <Button variant="outline" className="w-full border-gray-700 hover:bg-gray-800 text-gray-300 h-20 flex flex-col gap-2 rounded-xl">
+                        <MessageCircle className="h-6 w-6 text-blue-400" />
+                        <span className="text-xs">Messages</span>
                       </Button>
                     </Link>
-                    <Link href="/favorites" className="flex-1">
-                      <Button variant="outline" className="w-full border-gray-600 text-gray-200 bg-transparent py-6">
-                        <ShoppingBag className="mr-2 h-4 w-4" />
-                        Favorites
+                    <Link href="/favorites">
+                      <Button variant="outline" className="w-full border-gray-700 hover:bg-gray-800 text-gray-300 h-20 flex flex-col gap-2 rounded-xl">
+                        <ShoppingBag className="h-6 w-6 text-orange-400" />
+                        <span className="text-xs">Favorites</span>
                       </Button>
                     </Link>
                   </div>
 
-                  {/* Mobile Login/Profile Button */}
-                  {user ? (
-                    <Link href="/dashboard">
-                      <Button className="w-full mt-6 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-full py-6">
-                        <User className="mr-2 h-4 w-4" />
-                        Profile
-                      </Button>
-                    </Link>
-                  ) : (
-                    <Link href="/login">
-                      <Button className="w-full mt-6 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full py-6">
-                        <User className="mr-2 h-4 w-4" />
-                        Login
-                      </Button>
-                    </Link>
-                  )}
-                </nav>
+                </div>
               </SheetContent>
             </Sheet>
           </div>
