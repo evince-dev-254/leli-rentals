@@ -21,7 +21,10 @@ export default function AuthCallbackPage() {
                 const accessToken = hashParams.get('access_token')
                 const refreshToken = hashParams.get('refresh_token')
 
-                console.log('Client-side callback:', {
+                console.log('Client-side callback details:', {
+                    fullUrl: window.location.href,
+                    hash: window.location.hash,
+                    search: window.location.search,
                     hasAccessToken: !!accessToken,
                     hasRefreshToken: !!refreshToken,
                     role: roleParam,
@@ -50,24 +53,28 @@ export default function AuthCallbackPage() {
                         .from('user_profiles')
                         .select('*')
                         .eq('id', user!.id)
-                        .single()
+                        .maybeSingle()
 
                     let userRole = roleParam || 'renter'
 
                     // If no profile exists, create one
                     if (profileError || !profile) {
-                        console.log('Creating new profile with role:', userRole)
+                        console.log('Creating or updating profile with role:', userRole)
 
                         const metadata = user?.user_metadata || {}
 
-                        // Create profile
-                        const { error: insertError } = await supabase.from('user_profiles').insert({
+                        // Create profile (upsert to handle race conditions)
+                        const { error: insertError } = await supabase.from('user_profiles').upsert({
                             id: user!.id,
                             email: user!.email!,
                             full_name: metadata.full_name || metadata.name || user!.email?.split('@')[0] || '',
                             phone: metadata.phone || null,
                             role: userRole,
                             avatar_url: metadata.avatar_url || metadata.picture || '',
+                            updated_at: new Date().toISOString(),
+                        }, {
+                            onConflict: 'id',
+                            ignoreDuplicates: false,
                         })
 
                         if (insertError) {
