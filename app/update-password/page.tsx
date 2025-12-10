@@ -1,18 +1,17 @@
 
+import { UpdatePasswordForm } from "@/components/auth/update-password-form"
 import { Footer } from "@/components/layout/footer"
-import { LoginForm } from "@/components/auth/login-form"
 
 export const metadata = {
-    title: "Sign In - leli rentals",
-    description: "Sign in to your leli rentals account",
+    title: "Update Password - leli rentals",
+    description: "Set a new password for your account",
 }
 
-export default function SignInPage() {
+export default function UpdatePasswordPage() {
     return (
         <div className="min-h-screen flex flex-col">
-
             <main className="flex-1 flex items-center justify-center gradient-mesh py-12 px-4">
-                <LoginForm />
+                <UpdatePasswordForm />
             </main>
             <Footer />
         </div>

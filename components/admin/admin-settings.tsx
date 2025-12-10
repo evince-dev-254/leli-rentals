@@ -38,6 +38,7 @@ export function AdminSettings() {
   // Password Change State
   const [adminNewPassword, setAdminNewPassword] = useState("")
   const [adminConfirmPassword, setAdminConfirmPassword] = useState("")
+  const [showAdminPassword, setShowAdminPassword] = useState(false)
 
   useEffect(() => {
     loadAdmins()
@@ -62,7 +63,17 @@ export function AdminSettings() {
 
     try {
       const { error } = await supabase.auth.updateUser({ password: adminNewPassword })
-      if (error) throw error
+      if (error) {
+        // Handle specific error messages
+        if (error.message.includes('should be different')) {
+          toast.error("New password must be different from your current password")
+        } else if (error.message.includes('Password should contain')) {
+          toast.error("Password must contain: uppercase, lowercase, number, and special character")
+        } else {
+          toast.error(error.message || "Failed to update password")
+        }
+        return
+      }
       toast.success("Password updated successfully")
       setAdminNewPassword("")
       setAdminConfirmPassword("")
@@ -155,9 +166,17 @@ export function AdminSettings() {
       toast.success(`${user.email} promoted to admin`)
       setNewAdminEmail("")
       loadAdmins()
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error adding admin:", error)
-      toast.error("Failed to add admin")
+
+      // Show specific error messages
+      if (error.message) {
+        toast.error(error.message)
+      } else if (error.code === 'PGRST116') {
+        toast.error("User with this email not found")
+      } else {
+        toast.error("Failed to add admin. Please check the email and try again.")
+      }
     }
   }
 
@@ -215,23 +234,38 @@ export function AdminSettings() {
             <CardContent className="space-y-6">
               <div className="space-y-4">
                 <h3 className="font-medium">Change Password</h3>
-                <p className="text-sm text-muted-foreground">Update your password to keep your account secure.</p>
+                <p className="text-sm text-muted-foreground">Password must contain: uppercase, lowercase, number, and special character (!@#$%^&*)</p>
                 <div className="grid gap-4 max-w-md">
                   <div className="space-y-2">
                     <Label htmlFor="admin-new-password">New Password</Label>
-                    <Input
-                      id="admin-new-password"
-                      type="password"
-                      placeholder="Enter new password"
-                      value={adminNewPassword}
-                      onChange={(e) => setAdminNewPassword(e.target.value)}
-                    />
+                    <div className="relative">
+                      <Input
+                        id="admin-new-password"
+                        type={showAdminPassword ? "text" : "password"}
+                        placeholder="Enter new password"
+                        value={adminNewPassword}
+                        onChange={(e) => setAdminNewPassword(e.target.value)}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                        onClick={() => setShowAdminPassword(!showAdminPassword)}
+                      >
+                        {showAdminPassword ? (
+                          <EyeOff className="h-4 w-4 text-muted-foreground" />
+                        ) : (
+                          <Eye className="h-4 w-4 text-muted-foreground" />
+                        )}
+                      </Button>
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="admin-confirm-password">Confirm Password</Label>
                     <Input
                       id="admin-confirm-password"
-                      type="password"
+                      type={showAdminPassword ? "text" : "password"}
                       placeholder="Confirm new password"
                       value={adminConfirmPassword}
                       onChange={(e) => setAdminConfirmPassword(e.target.value)}
@@ -266,7 +300,7 @@ export function AdminSettings() {
                     id="site-name"
                     value={settings.site_name || ""}
                     onChange={(e) => handleSettingChange('site_name', e.target.value)}
-                    placeholder="Leli Rentals"
+                    placeholder="leli rentals"
                   />
                 </div>
                 <div className="space-y-2">

@@ -42,7 +42,7 @@ export const FestivePromoEmail = ({ userFirstname }: PromoEmailProps) => {
                                 src={`${baseUrl}/logo.png`}
                                 width="120"
                                 height="32"
-                                alt="Leli Rentals"
+                                alt="leli rentals"
                                 className="my-0 mx-auto"
                             />
                         </Section>
@@ -61,7 +61,7 @@ export const FestivePromoEmail = ({ userFirstname }: PromoEmailProps) => {
                             Hi {userFirstname},
                         </Text>
                         <Text className="text-black text-[14px] leading-[24px]">
-                            Celebrate with our Festive Season Mega Sale! Get amazing discounts on selected rentals this festive season. Whether you need a car for your road trip or a camera for your memories, we've got you covered.
+                            Celebrate with our Festive Season Mega Sale! Get amazing discounts on selected rentals this festive season. Whether you need a car for your road trip or a camera for your memories, we&apos;ve got you covered.
                         </Text>
                         <Text className="text-black text-[14px] font-semibold text-center text-red-500">
                             Limited Time Offer!

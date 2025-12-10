@@ -57,7 +57,7 @@ export async function sendCustomOtp(email: string) {
         console.log(`[DEV ONLY] Generated OTP for ${email}: ${code}`); // Log for dev/sandbox use
 
         const data = await resend.emails.send({
-            from: "Leli Rentals <onboarding@leli.rentals>",
+            from: "leli rentals <onboarding@leli.rentals>",
             to: email,
             subject: "Your Verification Code",
             react: OtpEmail({ code }),

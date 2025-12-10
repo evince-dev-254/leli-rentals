@@ -145,11 +145,11 @@ export default function SelectRolePage() {
                     <Card className="glass-card">
                         <CardHeader className="text-center">
                             <div className="flex justify-center mb-4">
-                                <Image src="/logo.png" alt="Leli Rentals" width={150} height={40} className="h-10 w-auto dark:invert" />
+                                <Image src="/logo.png" alt="leli rentals" width={150} height={40} className="h-10 w-auto dark:invert" />
                             </div>
                             <CardTitle className="text-2xl">Choose Your Account Type</CardTitle>
                             <CardDescription>
-                                Select how you want to use Leli Rentals. You can change this later in settings.
+                                Select how you want to use leli rentals. You can change this later in settings.
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-6">

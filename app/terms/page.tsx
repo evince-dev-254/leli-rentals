@@ -4,8 +4,8 @@ import { FileText, Shield, Users, CreditCard, AlertCircle, Scale } from "lucide-
 import { Card, CardContent } from "@/components/ui/card"
 
 export const metadata = {
-  title: "Terms of Service - Leli Rentals",
-  description: "Terms and conditions for using Leli Rentals platform.",
+  title: "Terms of Service - leli rentals",
+  description: "Terms and conditions for using leli rentals platform.",
 }
 
 export default function TermsPage() {
@@ -21,7 +21,7 @@ export default function TermsPage() {
             </div>
             <h1 className="text-4xl font-bold mb-4">Terms of Service</h1>
             <p className="text-lg text-muted-foreground">
-              Please read these terms carefully before using Leli Rentals.
+              Please read these terms carefully before using leli rentals.
             </p>
             <p className="text-sm text-muted-foreground mt-2">Last updated: January 2025</p>
           </div>
@@ -58,10 +58,10 @@ export default function TermsPage() {
                 <span className="text-primary">1.</span> Acceptance of Terms
               </h2>
               <p className="text-muted-foreground leading-relaxed mb-4">
-                By accessing and using Leli Rentals ("the Platform"), you accept and agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, please do not use our Platform.
+                By accessing and using leli rentals (&quot;the Platform&quot;), you accept and agree to be bound by these Terms of Service (&quot;Terms&quot;). If you do not agree to these Terms, please do not use our Platform.
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                These Terms constitute a legally binding agreement between you and Leli Rentals Limited, a company registered in Kenya. We reserve the right to modify these Terms at any time, and such modifications will be effective immediately upon posting.
+                These Terms constitute a legally binding agreement between you and leli rentals Limited, a company registered in Kenya. We reserve the right to modify these Terms at any time, and such modifications will be effective immediately upon posting.
               </p>
             </section>
 
@@ -70,13 +70,13 @@ export default function TermsPage() {
                 <span className="text-primary">2.</span> Definitions
               </h2>
               <ul className="space-y-2 text-muted-foreground">
-                <li><strong>"Platform"</strong> refers to the Leli Rentals website and mobile applications</li>
-                <li><strong>"User"</strong> refers to any person who accesses or uses the Platform</li>
-                <li><strong>"Owner"</strong> refers to users who list items for rent</li>
-                <li><strong>"Renter"</strong> refers to users who rent items from Owners</li>
-                <li><strong>"Listing"</strong> refers to any item posted for rent on the Platform</li>
-                <li><strong>"Transaction"</strong> refers to any rental agreement facilitated through the Platform</li>
-                <li><strong>"Affiliate"</strong> refers to users who earn commissions by referring others</li>
+                <li><strong>&quot;Platform&quot;</strong> refers to the leli rentals website and mobile applications</li>
+                <li><strong>&quot;User&quot;</strong> refers to any person who accesses or uses the Platform</li>
+                <li><strong>&quot;Owner&quot;</strong> refers to users who list items for rent</li>
+                <li><strong>&quot;Renter&quot;</strong> refers to users who rent items from Owners</li>
+                <li><strong>&quot;Listing&quot;</strong> refers to any item posted for rent on the Platform</li>
+                <li><strong>&quot;Transaction&quot;</strong> refers to any rental agreement facilitated through the Platform</li>
+                <li><strong>&quot;Affiliate&quot;</strong> refers to users who earn commissions by referring others</li>
               </ul>
             </section>
 
@@ -138,7 +138,7 @@ export default function TermsPage() {
                 <li>Return items in the same condition as received</li>
                 <li>Pay all fees and charges on time</li>
                 <li>Report any damage or issues immediately</li>
-                <li>Comply with the Owner's terms and conditions</li>
+                <li>Comply with the Owner&apos;s terms and conditions</li>
               </ul>
 
               <h3 className="font-semibold text-lg mb-2 mt-4">4.3 Prohibited Items</h3>
@@ -159,7 +159,7 @@ export default function TermsPage() {
 
               <h3 className="font-semibold text-lg mb-2 mt-4">5.1 Service Fees</h3>
               <p className="text-muted-foreground leading-relaxed mb-4">
-                Leli Rentals charges a service fee on each transaction. The fee structure is:
+                leli rentals charges a service fee on each transaction. The fee structure is:
               </p>
               <ul className="list-disc pl-6 space-y-2 text-muted-foreground mb-4">
                 <li>Renter fee: 5% of the rental amount</li>
@@ -197,7 +197,7 @@ export default function TermsPage() {
                   <div>
                     <p className="font-semibold text-yellow-800 dark:text-yellow-200 mb-1">Important Notice</p>
                     <p className="text-sm text-yellow-700 dark:text-yellow-300">
-                      Leli Rentals is a marketplace platform. We do not own, control, or manage the items listed. All transactions are between Owners and Renters.
+                      leli rentals is a marketplace platform. We do not own, control, or manage the items listed. All transactions are between Owners and Renters.
                     </p>
                   </div>
                 </div>
@@ -205,7 +205,7 @@ export default function TermsPage() {
 
               <h3 className="font-semibold text-lg mb-2 mt-4">6.1 Platform Liability</h3>
               <p className="text-muted-foreground leading-relaxed mb-4">
-                Leli Rentals provides the Platform "as is" without warranties of any kind. We are not liable for:
+                leli rentals provides the Platform &quot;as is&quot; without warranties of any kind. We are not liable for:
               </p>
               <ul className="list-disc pl-6 space-y-2 text-muted-foreground mb-4">
                 <li>Quality, safety, or legality of items listed</li>
@@ -217,7 +217,7 @@ export default function TermsPage() {
 
               <h3 className="font-semibold text-lg mb-2 mt-4">6.2 User Liability</h3>
               <p className="text-muted-foreground leading-relaxed mb-4">
-                You are responsible for your use of the Platform and any content you post. You agree to indemnify Leli Rentals against claims arising from your breach of these Terms.
+                You are responsible for your use of the Platform and any content you post. You agree to indemnify leli rentals against claims arising from your breach of these Terms.
               </p>
 
               <h3 className="font-semibold text-lg mb-2 mt-4">6.3 Insurance</h3>
@@ -231,7 +231,7 @@ export default function TermsPage() {
                 <span className="text-primary">7.</span> Intellectual Property
               </h2>
               <p className="text-muted-foreground leading-relaxed mb-4">
-                The Platform and its content (excluding user content) are owned by Leli Rentals and protected by intellectual property laws. You may not copy, modify, distribute, or create derivative works without our written permission.
+                The Platform and its content (excluding user content) are owned by leli rentals and protected by intellectual property laws. You may not copy, modify, distribute, or create derivative works without our written permission.
               </p>
               <p className="text-muted-foreground leading-relaxed">
                 By posting content on the Platform, you grant us a worldwide, non-exclusive, royalty-free license to use, display, and distribute your content in connection with the Platform.
@@ -282,7 +282,7 @@ export default function TermsPage() {
                 For questions about these Terms, please contact us:
               </p>
               <div className="bg-secondary/50 p-4 rounded-lg space-y-2 text-sm">
-                <p><strong>Leli Rentals Limited</strong></p>
+                <p><strong>leli rentals Limited</strong></p>
                 <p><strong>Email:</strong> <a href="mailto:lelirentalsmail@gmail.com" className="text-primary hover:underline">lelirentalsmail@gmail.com</a></p>
                 <p><strong>Phone:</strong> <a href="tel:+254112081866" className="text-primary hover:underline">+254 112 081 866</a></p>
                 <p><strong>Address:</strong> 123 Rental Street, Nairobi, Kenya 00100</p>
@@ -291,7 +291,7 @@ export default function TermsPage() {
 
             <div className="border-t pt-6 mt-8">
               <p className="text-sm text-muted-foreground text-center">
-                By using Leli Rentals, you acknowledge that you have read, understood, and agree to be bound by these Terms of Service.
+                By using leli rentals, you acknowledge that you have read, understood, and agree to be bound by these Terms of Service.
               </p>
             </div>
           </div>

@@ -2,8 +2,8 @@ import { Footer } from "@/components/layout/footer"
 import { LoginForm } from "@/components/auth/login-form"
 
 export const metadata = {
-  title: "Login - Leli Rentals",
-  description: "Sign in to your Leli Rentals account",
+  title: "Login - leli rentals",
+  description: "Sign in to your leli rentals account",
 }
 
 export default function LoginPage() {

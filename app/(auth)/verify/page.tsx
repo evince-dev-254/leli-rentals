@@ -3,7 +3,7 @@ import { Footer } from "@/components/layout/footer"
 import { VerifyEmailContent } from "@/components/auth/verify-email-content"
 
 export const metadata = {
-  title: "Verify Email - Leli Rentals",
+  title: "Verify Email - leli rentals",
   description: "Verify your email address",
 }
 

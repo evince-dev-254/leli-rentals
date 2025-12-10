@@ -3,7 +3,7 @@ import { Footer } from "@/components/layout/footer"
 import { FavoritesContent } from "@/components/favorites/favorites-content"
 
 export const metadata = {
-  title: "My Favorites - Leli Rentals",
+  title: "My Favorites - leli rentals",
   description: "View and manage your favorite rental listings",
 }
 

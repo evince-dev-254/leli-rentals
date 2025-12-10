@@ -1,7 +1,7 @@
 import { VerificationPage } from "@/components/dashboard/verification-page"
 
 export const metadata = {
-  title: "Verification - Leli Rentals",
+  title: "Verification - leli rentals",
   description: "Complete your account verification",
 }
 

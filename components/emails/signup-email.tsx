@@ -10,13 +10,13 @@ export default function SignUpEmail({ userFirstname = "Friend", signupLink = "ht
     return (
         <Html>
             <Head />
-            <Preview>Welcome to Leli Rentals, {userFirstname}!</Preview>
+            <Preview>Welcome to leli rentals, {userFirstname}!</Preview>
             <Body style={bodyStyle}>
                 <Container style={containerStyle}>
-                    <Img src="https://leli.rentals/logo.png" alt="Leli Rentals" width="150" height="40" style={logoStyle} />
+                    <Img src="https://leli.rentals/logo.png" alt="leli rentals" width="150" height="40" style={logoStyle} />
                     <Heading style={headingStyle}>Welcome, {userFirstname}!</Heading>
                     <Text style={textStyle}>
-                        Thank you for joining Leli Rentals. Your account is ready and you can start exploring amazing rentals across Kenya.
+                        Thank you for joining leli rentals. Your account is ready and you can start exploring amazing rentals across Kenya.
                     </Text>
                     <Button href={signupLink} style={buttonStyle}>
                         Get Started

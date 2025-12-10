@@ -13,13 +13,13 @@ export default function ConfirmSignUpEmail({
     return (
         <Html>
             <Head />
-            <Preview>Confirm your Leli Rentals account, {userFirstname}</Preview>
+            <Preview>Confirm your leli rentals account, {userFirstname}</Preview>
             <Body style={bodyStyle}>
                 <Container style={containerStyle}>
-                    <Img src="https://leli.rentals/logo.png" alt="Leli Rentals" width="150" height="40" style={logoStyle} />
+                    <Img src="https://leli.rentals/logo.png" alt="leli rentals" width="150" height="40" style={logoStyle} />
                     <Heading style={headingStyle}>Confirm your email</Heading>
                     <Text style={textStyle}>
-                        Hi {userFirstname}, please confirm your email address to activate your Leli Rentals account.
+                        Hi {userFirstname}, please confirm your email address to activate your leli rentals account.
                     </Text>
                     <Button href={confirmLink} style={buttonStyle}>Confirm Email</Button>
                     <Text style={footerStyle}>If you did not sign up, you can safely ignore this email.</Text>

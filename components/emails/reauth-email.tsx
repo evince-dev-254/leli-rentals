@@ -16,7 +16,7 @@ export default function ReauthEmail({
             <Preview>{userFirstname}, please re‑authenticate</Preview>
             <Body style={bodyStyle}>
                 <Container style={containerStyle}>
-                    <Img src="https://leli.rentals/logo.png" alt="Leli Rentals" width="150" height="40" style={logoStyle} />
+                    <Img src="https://leli.rentals/logo.png" alt="leli rentals" width="150" height="40" style={logoStyle} />
                     <Heading style={headingStyle}>Re‑authenticate your account</Heading>
                     <Text style={textStyle}>
                         Hi {userFirstname}, for security reasons we need you to confirm your identity before proceeding.

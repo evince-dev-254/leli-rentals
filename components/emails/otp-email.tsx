@@ -41,15 +41,15 @@ export const OtpEmail = ({ code }: OtpEmailProps) => {
                                 src={`${baseUrl}/logo.png`}
                                 width="120"
                                 height="32"
-                                alt="Leli Rentals"
+                                alt="leli rentals"
                                 className="my-0 mx-auto"
                             />
                         </Section>
                         <Heading className="text-black text-[24px] font-normal text-center p-0 my-[30px] mx-0">
-                            Verify Your Account
+                            Complete Your Signup
                         </Heading>
                         <Text className="text-black text-[14px] leading-[24px]">
-                            Here is your verification code to complete your signup:
+                            Welcome to leli rentals! Here&apos;s your verification code to complete your account registration:
                         </Text>
                         <Section className="bg-slate-100 p-[20px] rounded text-center my-[20px]">
                             <Text className="text-black text-[32px] font-bold tracking-[6px] m-0">
@@ -57,7 +57,7 @@ export const OtpEmail = ({ code }: OtpEmailProps) => {
                             </Text>
                         </Section>
                         <Text className="text-black text-[14px] leading-[24px] text-center">
-                            This code will expire in 10 minutes.
+                            This code will expire in 10 minutes. If you didn&apos;t create an account, you can safely ignore this email.
                         </Text>
                     </Container>
                 </Body>

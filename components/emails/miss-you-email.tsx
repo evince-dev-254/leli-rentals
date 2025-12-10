@@ -23,7 +23,7 @@ export const MissYouEmail = ({ userFirstname }: MissYouEmailProps) => {
     return (
         <Html>
             <Head />
-            <Preview>We miss you at Leli Rentals!</Preview>
+            <Preview>We miss you at leli rentals!</Preview>
             <Tailwind
                 config={{
                     theme: {
@@ -42,7 +42,7 @@ export const MissYouEmail = ({ userFirstname }: MissYouEmailProps) => {
                                 src={`${baseUrl}/logo.png`}
                                 width="120"
                                 height="32"
-                                alt="Leli Rentals"
+                                alt="leli rentals"
                                 className="my-0 mx-auto"
                             />
                         </Section>
@@ -50,7 +50,7 @@ export const MissYouEmail = ({ userFirstname }: MissYouEmailProps) => {
                             We Miss You, {userFirstname}!
                         </Heading>
                         <Text className="text-black text-[14px] leading-[24px]">
-                            It's been a while since we've seen you. We've added lots of new listings that you might love.
+                            It&apos;s been a while since we&apos;ve seen you. We&apos;ve added lots of new listings that you might love.
                         </Text>
                         <Section className="text-center mt-[32px] mb-[32px]">
                             <Button

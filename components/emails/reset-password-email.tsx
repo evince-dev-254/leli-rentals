@@ -16,10 +16,10 @@ export default function ResetPasswordEmail({
             <Preview>{userFirstname}, reset your password</Preview>
             <Body style={bodyStyle}>
                 <Container style={containerStyle}>
-                    <Img src="https://leli.rentals/logo.png" alt="Leli Rentals" width="150" height="40" style={logoStyle} />
+                    <Img src="https://leli.rentals/logo.png" alt="leli rentals" width="150" height="40" style={logoStyle} />
                     <Heading style={headingStyle}>Reset your password</Heading>
                     <Text style={textStyle}>
-                        Hi {userFirstname}, click the button below to set a new password for your Leli Rentals account.
+                        Hi {userFirstname}, click the button below to set a new password for your leli rentals account.
                     </Text>
                     <Button href={resetLink} style={buttonStyle}>Reset Password</Button>
                     <Text style={footerStyle}>If you didn’t request a password reset, you can safely ignore this email.</Text>

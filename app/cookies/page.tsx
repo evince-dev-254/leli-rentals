@@ -4,8 +4,8 @@ import { Shield, Cookie, Settings, Eye, Lock, FileText } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 
 export const metadata = {
-  title: "Cookie Policy - Leli Rentals",
-  description: "Learn about how we use cookies to enhance your experience on Leli Rentals.",
+  title: "Cookie Policy - leli rentals",
+  description: "Learn about how we use cookies to enhance your experience on leli rentals.",
 }
 
 export default function CookiePolicyPage() {
@@ -21,7 +21,7 @@ export default function CookiePolicyPage() {
             </div>
             <h1 className="text-4xl font-bold mb-4">Cookie Policy</h1>
             <p className="text-lg text-muted-foreground">
-              Learn about how we use cookies to enhance your experience on Leli Rentals.
+              Learn about how we use cookies to enhance your experience on leli rentals.
             </p>
             <p className="text-sm text-muted-foreground mt-2">Last updated: January 2025</p>
           </div>
@@ -68,7 +68,7 @@ export default function CookiePolicyPage() {
                 Cookies are small data files that are placed on your computer or mobile device when you visit a website. Cookies are widely used by website owners to make their websites work, or to work more efficiently, as well as to provide reporting information.
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                Cookies set by the website owner (in this case, Leli Rentals) are called "first-party cookies". Cookies set by parties other than the website owner are called "third-party cookies". Third-party cookies enable third-party features or functionality to be provided on or through the website (e.g., advertising, interactive content, and analytics).
+                Cookies set by the website owner (in this case, leli rentals) are called &quot;first-party cookies&quot;. Cookies set by parties other than the website owner are called &quot;third-party cookies&quot;. Third-party cookies enable third-party features or functionality to be provided on or through the website (e.g., advertising, interactive content, and analytics).
               </p>
             </section>
 
@@ -101,7 +101,7 @@ export default function CookiePolicyPage() {
                     These cookies are necessary for the website to function and cannot be switched off in our systems.
                   </p>
                   <ul className="list-disc pl-6 space-y-1 text-sm text-muted-foreground">
-                    <li>Authentication cookies: Help us remember if you're logged in</li>
+                    <li>Authentication cookies: Help us remember if you&apos;re logged in</li>
                     <li>Security cookies: Protect against fraud and unauthorized access</li>
                     <li>Load balancing cookies: Ensure website stability</li>
                     <li>Cookie preference cookies: Remember your cookie settings</li>
@@ -198,7 +198,7 @@ export default function CookiePolicyPage() {
                 <div className="bg-secondary/50 p-4 rounded-lg">
                   <h3 className="font-semibold mb-2">Our Cookie Banner</h3>
                   <p className="text-sm text-muted-foreground">
-                    When you first visit our website, you'll see a cookie banner that allows you to accept or reject non-essential cookies. You can change your preferences at any time by clicking the cookie settings link in our footer.
+                    When you first visit our website, you&apos;ll see a cookie banner that allows you to accept or reject non-essential cookies. You can change your preferences at any time by clicking the cookie settings link in our footer.
                   </p>
                 </div>
 
@@ -243,7 +243,7 @@ export default function CookiePolicyPage() {
                 <span className="text-primary">8.</span> Updates to This Policy
               </h2>
               <p className="text-muted-foreground leading-relaxed">
-                We may update this Cookie Policy from time to time to reflect changes in our practices or for other operational, legal, or regulatory reasons. We will notify you of any material changes by posting the updated policy on our website and updating the "Last updated" date.
+                We may update this Cookie Policy from time to time to reflect changes in our practices or for other operational, legal, or regulatory reasons. We will notify you of any material changes by posting the updated policy on our website and updating the &quot;Last updated&quot; date.
               </p>
             </section>
 

@@ -427,10 +427,10 @@ export async function getUserByEmail(email: string) {
         .from('user_profiles')
         .select('*')
         .eq('email', email)
-        .single();
+        .maybeSingle(); // Use maybeSingle to return null if not found instead of throwing
 
     if (error) throw error;
-    return data;
+    return data; // Will be null if user not found
 }
 
 /** Fetch all admin users */

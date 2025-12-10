@@ -16,10 +16,10 @@ export default function MagicLinkEmail({
             <Preview>{userFirstname}, use this magic link to sign in</Preview>
             <Body style={bodyStyle}>
                 <Container style={containerStyle}>
-                    <Img src="https://leli.rentals/logo.png" alt="Leli Rentals" width="150" height="40" style={logoStyle} />
+                    <Img src="https://leli.rentals/logo.png" alt="leli rentals" width="150" height="40" style={logoStyle} />
                     <Heading style={headingStyle}>Your magic sign‑in link</Heading>
                     <Text style={textStyle}>
-                        Hi {userFirstname}, click the button below to instantly sign in to your Leli Rentals account.
+                        Hi {userFirstname}, click the button below to instantly sign in to your leli rentals account.
                     </Text>
                     <Button href={magicLink} style={buttonStyle}>Sign In</Button>
                     <Text style={footerStyle}>If you didn’t request this, you can safely ignore this email.</Text>

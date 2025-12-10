@@ -3,7 +3,7 @@ import { Footer } from "@/components/layout/footer"
 import { CareersContent } from "@/components/pages/careers-content"
 
 export const metadata = {
-  title: "Careers - Leli Rentals",
+  title: "Careers - leli rentals",
   description: "Join our team and help shape the future of rentals.",
 }
 

@@ -42,7 +42,7 @@ export function RenterReviews() {
         <div className="space-y-6">
             <div>
                 <h1 className="text-3xl font-bold">My Reviews</h1>
-                <p className="text-muted-foreground">Reviews you've left for items</p>
+                <p className="text-muted-foreground">Reviews you&apos;ve left for items</p>
             </div>
 
             <Card className="glass-card">
@@ -53,7 +53,7 @@ export function RenterReviews() {
                 <CardContent>
                     {reviews.length === 0 ? (
                         <div className="text-center py-12">
-                            <p className="text-muted-foreground">You haven't left any reviews yet.</p>
+                            <p className="text-muted-foreground">You haven&apos;t left any reviews yet.</p>
                         </div>
                     ) : (
                         <div className="space-y-4">
@@ -72,7 +72,7 @@ export function RenterReviews() {
                                                     <Star key={i} className={`h-3 w-3 ${i < review.rating ? "fill-current" : "text-gray-300"}`} />
                                                 ))}
                                             </div>
-                                            <p className="text-sm text-muted-foreground italic">"{review.comment}"</p>
+                                            <p className="text-sm text-muted-foreground italic">&quot;{review.comment}&quot;</p>
                                             <p className="text-xs text-muted-foreground mt-2">{new Date(review.created_at).toLocaleDateString()}</p>
                                         </div>
                                     </div>

@@ -108,7 +108,7 @@ export function RenterDashboard() {
                         <CardContent>
                             {bookings.length === 0 ? (
                                 <div className="text-center py-12">
-                                    <p className="text-muted-foreground">You haven't made any bookings yet.</p>
+                                    <p className="text-muted-foreground">You haven&apos;t made any bookings yet.</p>
                                     <Button className="mt-4" asChild>
                                         <Link href="/categories">Browse Listings</Link>
                                     </Button>
@@ -218,12 +218,12 @@ export function RenterDashboard() {
                     <Card className="glass-card">
                         <CardHeader>
                             <CardTitle>My Reviews</CardTitle>
-                            <CardDescription>Reviews you've left for items</CardDescription>
+                            <CardDescription>Reviews you&apos;ve left for items</CardDescription>
                         </CardHeader>
                         <CardContent>
                             {reviews.length === 0 ? (
                                 <div className="text-center py-12">
-                                    <p className="text-muted-foreground">You haven't left any reviews yet.</p>
+                                    <p className="text-muted-foreground">You haven&apos;t left any reviews yet.</p>
                                 </div>
                             ) : (
                                 <div className="space-y-4">
@@ -242,7 +242,7 @@ export function RenterDashboard() {
                                                             <Star key={i} className={`h-3 w-3 ${i < review.rating ? "fill-current" : "text-gray-300"}`} />
                                                         ))}
                                                     </div>
-                                                    <p className="text-sm text-muted-foreground italic">"{review.comment}"</p>
+                                                    <p className="text-sm text-muted-foreground italic">&quot;{review.comment}&quot;</p>
                                                     <p className="text-xs text-muted-foreground mt-2">{new Date(review.created_at).toLocaleDateString()}</p>
                                                 </div>
                                             </div>

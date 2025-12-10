@@ -90,7 +90,7 @@ export function ContactContent() {
               Get in <span className="text-primary">Touch</span>
             </h1>
             <p className="text-xl text-muted-foreground text-pretty">
-              Have questions? We're here to help. Reach out through any of our channels.
+              Have questions? We&apos;re here to help. Reach out through any of our channels.
             </p>
           </div>
         </div>

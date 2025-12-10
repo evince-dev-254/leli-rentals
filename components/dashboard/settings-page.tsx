@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 import { updateProfile } from "@/lib/actions/dashboard-actions"
-import { User, Bell, Save, CreditCard, Plus, AlertCircle, Loader2 } from "lucide-react"
+import { User, Bell, Save, CreditCard, Plus, AlertCircle, Loader2, Eye, EyeOff } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -36,6 +36,7 @@ export function SettingsPage() {
 
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
 
   useEffect(() => {
     const getProfile = async () => {
@@ -261,7 +262,7 @@ export function SettingsPage() {
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label className="text-base">Marketing Emails</Label>
-                  <p className="text-sm text-muted-foreground">Receive news and special offers from Leli Rentals.</p>
+                  <p className="text-sm text-muted-foreground">Receive news and special offers from leli rentals.</p>
                 </div>
                 <Switch checked={true} onCheckedChange={() => { }} />
               </div>
@@ -278,23 +279,38 @@ export function SettingsPage() {
             <CardContent className="space-y-6">
               <div className="space-y-4">
                 <h3 className="font-medium">Password</h3>
-                <p className="text-sm text-muted-foreground">Ensure your account is using a long, random password to stay secure.</p>
+                <p className="text-sm text-muted-foreground">Password must contain: uppercase, lowercase, number, and special character (!@#$%^&*)</p>
                 <div className="space-y-4 pt-4">
                   <div className="space-y-2">
                     <Label htmlFor="new-password">New Password</Label>
-                    <Input
-                      id="new-password"
-                      type="password"
-                      placeholder="Enter new password"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                    />
+                    <div className="relative">
+                      <Input
+                        id="new-password"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Enter new password"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4 text-muted-foreground" />
+                        ) : (
+                          <Eye className="h-4 w-4 text-muted-foreground" />
+                        )}
+                      </Button>
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="confirm-password">Confirm Password</Label>
                     <Input
                       id="confirm-password"
-                      type="password"
+                      type={showPassword ? "text" : "password"}
                       placeholder="Confirm new password"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
@@ -314,7 +330,17 @@ export function SettingsPage() {
 
                       try {
                         const { error } = await supabase.auth.updateUser({ password: newPassword })
-                        if (error) throw error
+                        if (error) {
+                          // Handle specific error messages
+                          if (error.message.includes('should be different')) {
+                            alert("New password must be different from your current password")
+                          } else if (error.message.includes('Password should contain')) {
+                            alert("Password must contain: uppercase, lowercase, number, and special character")
+                          } else {
+                            alert(error.message || "Failed to update password")
+                          }
+                          return
+                        }
                         alert("Password updated successfully")
                         setNewPassword("")
                         setConfirmPassword("")
@@ -375,7 +401,7 @@ export function SettingsPage() {
               </div>
               <div className="bg-blue-500/10 p-4 rounded-lg flex gap-3 text-sm text-blue-600">
                 <AlertCircle className="h-5 w-5 shrink-0" />
-                <p>Your payment information is securely stored with Paystack. Leli Rentals does not store your full card details.</p>
+                <p>Your payment information is securely stored with Paystack. leli rentals does not store your full card details.</p>
               </div>
             </CardContent>
           </Card>

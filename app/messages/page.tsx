@@ -3,7 +3,7 @@ import { Footer } from "@/components/layout/footer"
 import { MessagesContent } from "@/components/messages/messages-content"
 
 export const metadata = {
-  title: "Messages - Leli Rentals",
+  title: "Messages - leli rentals",
   description: "Chat with rental owners and manage your conversations",
 }
 

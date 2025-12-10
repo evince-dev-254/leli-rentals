@@ -25,7 +25,7 @@ export const NewListingEmail = ({ userFirstname, listingTitle, listingUrl }: New
     return (
         <Html>
             <Head />
-            <Preview>Your listing "{listingTitle}" has been created!</Preview>
+            <Preview>Your listing &quot;{listingTitle}&quot; has been created!</Preview>
             <Tailwind
                 config={{
                     theme: {
@@ -44,7 +44,7 @@ export const NewListingEmail = ({ userFirstname, listingTitle, listingUrl }: New
                                 src={`${baseUrl}/logo.png`}
                                 width="120"
                                 height="32"
-                                alt="Leli Rentals"
+                                alt="leli rentals"
                                 className="my-0 mx-auto"
                             />
                         </Section>

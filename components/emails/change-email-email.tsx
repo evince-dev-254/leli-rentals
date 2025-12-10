@@ -16,7 +16,7 @@ export default function ChangeEmailVerification({
             <Preview>Confirm your new email address, {userFirstname}</Preview>
             <Body style={bodyStyle}>
                 <Container style={containerStyle}>
-                    <Img src="https://leli.rentals/logo.png" alt="Leli Rentals" width="150" height="40" style={logoStyle} />
+                    <Img src="https://leli.rentals/logo.png" alt="leli rentals" width="150" height="40" style={logoStyle} />
                     <Heading style={headingStyle}>Verify your new email</Heading>
                     <Text style={textStyle}>
                         Hi {userFirstname}, you requested to change your email address. Click the button below to verify the new address.

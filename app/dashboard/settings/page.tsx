@@ -1,7 +1,7 @@
 import { SettingsPage } from "@/components/dashboard/settings-page"
 
 export const metadata = {
-  title: "Settings - Leli Rentals",
+  title: "Settings - leli rentals",
   description: "Manage your account settings",
 }
 

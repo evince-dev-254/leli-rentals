@@ -3,8 +3,8 @@ import { Footer } from "@/components/layout/footer"
 import { AboutContent } from "@/components/pages/about-content"
 
 export const metadata = {
-  title: "About Us - Leli Rentals",
-  description: "Learn about Leli Rentals and our mission to connect renters with quality items.",
+  title: "About Us - leli rentals",
+  description: "Learn about leli rentals and our mission to connect renters with quality items.",
 }
 
 export default function AboutPage() {

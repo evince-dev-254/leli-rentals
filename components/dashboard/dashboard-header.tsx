@@ -95,7 +95,7 @@ export function DashboardHeader() {
           </SheetTrigger>
           <SheetContent side="left" className="w-[80vw] sm:w-[350px] p-0">
             <div className="p-6 border-b">
-              <h2 className="text-xl font-bold">Leli Rentals</h2>
+              <h2 className="text-xl font-bold">leli rentals</h2>
             </div>
             <nav className="flex-1 overflow-y-auto py-4">
               <ul className="grid gap-1 px-2">

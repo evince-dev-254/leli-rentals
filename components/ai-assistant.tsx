@@ -16,7 +16,7 @@ interface Message {
 export function AiAssistant() {
     const [isOpen, setIsOpen] = useState(false)
     const [messages, setMessages] = useState<Message[]>([
-        { role: "assistant", content: "Hi! I'm your Leli Rentals assistant. How can I help you today?" }
+        { role: "assistant", content: "Hi! I'm your leli rentals assistant. How can I help you today?" }
     ])
     const [input, setInput] = useState("")
     const [isLoading, setIsLoading] = useState(false)

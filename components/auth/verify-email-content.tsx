@@ -85,7 +85,7 @@ export function VerifyEmailContent() {
         {/* Header */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-block mb-6">
-            <Image src="/logo.svg" alt="Leli Rentals" width={150} height={40} className="h-10 w-auto dark:invert" />
+            <Image src="/logo.svg" alt="leli rentals" width={150} height={40} className="h-10 dark:invert" style={{ width: 'auto' }} />
           </Link>
           <h1 className="text-2xl font-bold mb-2">Complete Verification</h1>
           <p className="text-muted-foreground">Submit your verification documents to activate your account</p>

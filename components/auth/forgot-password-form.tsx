@@ -8,19 +8,41 @@ import { ArrowLeft, Loader2, Mail, CheckCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { supabase } from "@/lib/supabase"
+import { Message } from "@/components/ui/message"
 
 export function ForgotPasswordForm() {
   const [email, setEmail] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
+  const [error, setError] = useState("")
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    setIsLoading(false)
-    setIsSubmitted(true)
+    setError("")
+
+    try {
+      // Use current origin for development, NEXT_PUBLIC_SITE_URL for production
+      const redirectUrl = window.location.origin.includes('localhost')
+        ? window.location.origin
+        : (process.env.NEXT_PUBLIC_SITE_URL || window.location.origin)
+
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${redirectUrl}/update-password`,
+      })
+
+      if (error) {
+        // Handle specific error codes if needed, mainly rate limits
+        throw error
+      }
+
+      setIsSubmitted(true)
+    } catch (err: any) {
+      setError(err.message || "Failed to send reset email. Please try again.")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -29,7 +51,7 @@ export function ForgotPasswordForm() {
         {/* Header */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-block mb-6">
-            <Image src="/logo.svg" alt="Leli Rentals" width={150} height={40} className="h-10 w-auto dark:invert" />
+            <Image src="/logo.svg" alt="leli rentals" width={150} height={40} className="h-10 dark:invert" style={{ width: 'auto' }} />
           </Link>
 
           {!isSubmitted ? (
@@ -56,6 +78,7 @@ export function ForgotPasswordForm() {
 
         {!isSubmitted ? (
           <form onSubmit={handleSubmit} className="space-y-4">
+            {error && <Message type="error" message={error} />}
             <div className="space-y-2">
               <Label htmlFor="email">Email Address</Label>
               <div className="relative">
@@ -81,6 +104,15 @@ export function ForgotPasswordForm() {
             <Button
               variant="outline"
               className="w-full h-12 bg-transparent"
+              onClick={handleSubmit}
+              disabled={isLoading}
+            >
+              {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Resend Reset Link"}
+            </Button>
+
+            <Button
+              variant="outline"
+              className="w-full h-12 bg-transparent"
               onClick={() => {
                 setIsSubmitted(false)
                 setEmail("")
@@ -94,7 +126,7 @@ export function ForgotPasswordForm() {
         {/* Back to Login */}
         <div className="mt-6">
           <Link
-            href="/login"
+            href="/sign-in"
             className="flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />

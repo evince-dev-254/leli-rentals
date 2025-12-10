@@ -64,7 +64,7 @@ export default function OwnerDashboard() {
             {/* Welcome Section */}
             <div>
                 <h2 className="text-3xl font-bold tracking-tight">Owner Dashboard</h2>
-                <p className="text-muted-foreground">Welcome back, {user.email?.split('@')[0] || 'User'}. Here's what's happening today.</p>
+                <p className="text-muted-foreground">Welcome back, {user.email?.split('@')[0] || 'User'}. Here&apos;s what&apos;s happening today.</p>
             </div>
 
             {/* Stats Grid */}

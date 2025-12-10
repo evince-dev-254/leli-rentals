@@ -23,7 +23,7 @@ export const WelcomeEmail = ({ userFirstname }: WelcomeEmailProps) => {
     return (
         <Html>
             <Head />
-            <Preview>Welcome to Leli Rentals!</Preview>
+            <Preview>Welcome to leli rentals!</Preview>
             <Tailwind
                 config={{
                     theme: {
@@ -42,18 +42,18 @@ export const WelcomeEmail = ({ userFirstname }: WelcomeEmailProps) => {
                                 src={`${baseUrl}/logo.png`}
                                 width="120"
                                 height="32"
-                                alt="Leli Rentals"
+                                alt="leli rentals"
                                 className="my-0 mx-auto"
                             />
                         </Section>
                         <Heading className="text-black text-[24px] font-normal text-center p-0 my-[30px] mx-0">
-                            Welcome to <strong>Leli Rentals</strong>, {userFirstname}!
+                            Welcome to <strong>leli rentals</strong>, {userFirstname}!
                         </Heading>
                         <Text className="text-black text-[14px] leading-[24px]">
                             Hello {userFirstname},
                         </Text>
                         <Text className="text-black text-[14px] leading-[24px]">
-                            We're excited to have you on board. Leli Rentals is the best place to find and rent everything you need, from cars to cameras.
+                            We&apos;re excited to have you on board. leli rentals is the best place to find and rent everything you need, from cars to cameras.
                         </Text>
                         <Section className="text-center mt-[32px] mb-[32px]">
                             <Button

@@ -1,7 +1,7 @@
 import { PaymentsPage } from "@/components/dashboard/payments-page"
 
 export const metadata = {
-    title: "Payments - Leli Rentals",
+    title: "Payments - leli rentals",
     description: "View your payment history",
 }
 

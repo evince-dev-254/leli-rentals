@@ -38,6 +38,7 @@ export const PaystackPaymentButton = ({
     const componentProps = {
         email,
         amount: amount * 100, // Convert to cents (KES)
+        currency: 'KES', // Kenyan Shillings
         metadata: metadata || {},
         publicKey,
         text,

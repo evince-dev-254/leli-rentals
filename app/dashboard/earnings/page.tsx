@@ -1,7 +1,7 @@
 import { EarningsPage } from "@/components/dashboard/earnings-page"
 
 export const metadata = {
-  title: "Earnings - Leli Rentals",
+  title: "Earnings - leli rentals",
   description: "Track your rental earnings",
 }
 

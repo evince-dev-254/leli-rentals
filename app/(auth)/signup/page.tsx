@@ -2,8 +2,8 @@ import { Footer } from "@/components/layout/footer"
 import { SignupForm } from "@/components/auth/signup-form"
 
 export const metadata = {
-  title: "Sign Up - Leli Rentals",
-  description: "Create your Leli Rentals account",
+  title: "Sign Up - leli rentals",
+  description: "Create your leli rentals account",
 }
 
 export default function SignupPage() {

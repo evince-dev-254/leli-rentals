@@ -37,6 +37,8 @@ export function Header() {
   const { theme, setTheme } = useTheme()
   const [isScrolled, setIsScrolled] = useState(false)
   const [user, setUser] = useState<any>(null)
+  const [unreadMessages, setUnreadMessages] = useState(0)
+  const [unreadNotifications, setUnreadNotifications] = useState(0)
   const router = useRouter()
 
   useEffect(() => {
@@ -63,6 +65,66 @@ export function Header() {
     return () => subscription.unsubscribe()
   }, [])
 
+  // Fetch unread counts
+  useEffect(() => {
+    if (!user) {
+      setUnreadMessages(0)
+      setUnreadNotifications(0)
+      return
+    }
+
+    const fetchUnreadCounts = async () => {
+      // Get unread messages count
+      const { count: messagesCount } = await supabase
+        .from('messages')
+        .select('*', { count: 'exact', head: true })
+        .eq('receiver_id', user.id)
+        .eq('is_read', false)
+
+      // Get unread notifications count
+      const { count: notificationsCount } = await supabase
+        .from('notifications')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('is_read', false)
+
+      setUnreadMessages(messagesCount || 0)
+      setUnreadNotifications(notificationsCount || 0)
+    }
+
+    fetchUnreadCounts()
+
+    // Set up real-time subscriptions
+    const messagesSubscription = supabase
+      .channel('messages-changes')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'messages',
+        filter: `receiver_id=eq.${user.id}`
+      }, () => {
+        fetchUnreadCounts()
+      })
+      .subscribe()
+
+    const notificationsSubscription = supabase
+      .channel('notifications-changes')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'notifications',
+        filter: `user_id=eq.${user.id}`
+      }, () => {
+        fetchUnreadCounts()
+      })
+      .subscribe()
+
+    return () => {
+      messagesSubscription.unsubscribe()
+      notificationsSubscription.unsubscribe()
+    }
+  }, [user])
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 w-full px-2 sm:px-4 py-2 sm:py-4">
       <div className="container mx-auto">
@@ -76,7 +138,7 @@ export function Header() {
           <Link href="/" className="flex items-center gap-2 flex-shrink-0">
             <Image
               src="/logo.png"
-              alt="Leli Rentals"
+              alt="leli rentals"
               width={100}
               height={28}
               className="h-4 sm:h-5 w-auto invert"
@@ -148,11 +210,13 @@ export function Header() {
                 className="hidden sm:flex text-gray-200 hover:text-orange-400 hover:bg-white/10 relative"
               >
                 <MessageCircle className="h-5 w-5" />
-                <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-orange-500 ring-2 ring-[#1a1a2e]" />
+                {unreadMessages > 0 && (
+                  <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-orange-500 ring-2 ring-[#1a1a2e]" />
+                )}
               </Button>
             </Link>
 
-            {/* Cart Icon */}
+            {/* Cart/Notifications Icon */}
             <Link href="/favorites">
               <Button
                 variant="ghost"
@@ -160,7 +224,9 @@ export function Header() {
                 className="hidden sm:flex text-gray-200 hover:text-orange-400 hover:bg-white/10 relative"
               >
                 <ShoppingBag className="h-5 w-5" />
-                <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-orange-500 ring-2 ring-[#1a1a2e]" />
+                {unreadNotifications > 0 && (
+                  <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-orange-500 ring-2 ring-[#1a1a2e]" />
+                )}
               </Button>
             </Link>
 
@@ -188,46 +254,46 @@ export function Header() {
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="bg-[#1a1a2e] border-[#2a2a4e] w-80">
-                <nav className="flex flex-col gap-4 mt-8">
+              <SheetContent side="right" className="bg-[#1a1a2e] border-[#2a2a4e] w-80 px-6 py-8">
+                <nav className="flex flex-col gap-6 mt-8">
                   {navLinks.map((link) => (
                     <Link
                       key={link.name}
                       href={link.href}
-                      className="text-lg font-medium text-gray-200 hover:text-white"
+                      className="text-lg font-medium text-gray-200 hover:text-white py-2"
                     >
                       {link.name}
                     </Link>
                   ))}
-                  <div className="space-y-2">
+                  <div className="space-y-3 pt-2">
                     <p className="text-sm text-gray-400 font-medium">Categories</p>
                     {categories.map((category) => (
                       <Link
                         key={category.name}
                         href={category.href}
-                        className="block pl-4 py-1 text-gray-300 hover:text-white"
+                        className="block pl-4 py-2 text-gray-300 hover:text-white"
                       >
                         {category.name}
                       </Link>
                     ))}
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-3 pt-2">
                     <p className="text-sm text-gray-400 font-medium">More</p>
                     {moreLinks.map((link) => (
-                      <Link key={link.name} href={link.href} className="block pl-4 py-1 text-gray-300 hover:text-white">
+                      <Link key={link.name} href={link.href} className="block pl-4 py-2 text-gray-300 hover:text-white">
                         {link.name}
                       </Link>
                     ))}
                   </div>
-                  <div className="flex gap-2 mt-4">
+                  <div className="flex gap-3 mt-6 pt-4 border-t border-gray-700">
                     <Link href="/messages" className="flex-1">
-                      <Button variant="outline" className="w-full border-gray-600 text-gray-200 bg-transparent">
+                      <Button variant="outline" className="w-full border-gray-600 text-gray-200 bg-transparent py-6">
                         <MessageCircle className="mr-2 h-4 w-4" />
                         Messages
                       </Button>
                     </Link>
                     <Link href="/favorites" className="flex-1">
-                      <Button variant="outline" className="w-full border-gray-600 text-gray-200 bg-transparent">
+                      <Button variant="outline" className="w-full border-gray-600 text-gray-200 bg-transparent py-6">
                         <ShoppingBag className="mr-2 h-4 w-4" />
                         Favorites
                       </Button>
@@ -237,14 +303,14 @@ export function Header() {
                   {/* Mobile Login/Profile Button */}
                   {user ? (
                     <Link href="/dashboard">
-                      <Button className="w-full mt-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-full">
+                      <Button className="w-full mt-6 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-full py-6">
                         <User className="mr-2 h-4 w-4" />
                         Profile
                       </Button>
                     </Link>
                   ) : (
                     <Link href="/login">
-                      <Button className="w-full mt-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full">
+                      <Button className="w-full mt-6 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full py-6">
                         <User className="mr-2 h-4 w-4" />
                         Login
                       </Button>

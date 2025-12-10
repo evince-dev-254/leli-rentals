@@ -166,7 +166,7 @@ export function PolicySelector({ value, onChange, error }: PolicySelectorProps) 
                     <div className="text-sm">
                         <p className="font-semibold text-blue-900 dark:text-blue-100 mb-1">Policy Enforcement</p>
                         <p className="text-blue-700 dark:text-blue-300">
-                            Your chosen policy will be clearly displayed to renters before booking. While Leli Rentals facilitates communication and dispute resolution, you are responsible for enforcing your policy terms.
+                            Your chosen policy will be clearly displayed to renters before booking. While leli rentals facilitates communication and dispute resolution, you are responsible for enforcing your policy terms.
                         </p>
                     </div>
                 </div>

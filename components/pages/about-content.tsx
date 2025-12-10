@@ -85,10 +85,10 @@ export function AboutContent() {
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-6 text-balance text-white">
-              About <span className="text-primary">Leli Rentals</span>
+              About <span className="text-primary">leli rentals</span>
             </h1>
             <p className="text-xl text-white/80 text-pretty">
-              We're on a mission to transform how people access and share items. From vehicles to homes, equipment to
+              We&apos;re on a mission to transform how people access and share items. From vehicles to homes, equipment to
               fashion, we connect you with what you need, when you need it.
             </p>
           </div>
@@ -122,12 +122,12 @@ export function AboutContent() {
               <h2 className="text-3xl font-bold mb-6">Our Story</h2>
               <div className="space-y-4 text-muted-foreground">
                 <p>
-                  Leli Rentals was born from a simple observation: people own items they rarely use, while others
+                  leli rentals was born from a simple observation: people own items they rarely use, while others
                   struggle to access those same items when they need them most.
                 </p>
                 <p>
                   Founded in Nairobi in 2020, we started as a small platform connecting car owners with those who needed
-                  temporary transportation. Today, we've grown to serve thousands of users across Kenya, offering
+                  temporary transportation. Today, we&apos;ve grown to serve thousands of users across Kenya, offering
                   everything from vehicles and homes to equipment and fashion items.
                 </p>
                 <p>
@@ -154,7 +154,7 @@ export function AboutContent() {
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold mb-4">Our Values</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              These principles guide everything we do at Leli Rentals.
+              These principles guide everything we do at leli rentals.
             </p>
           </div>
 
@@ -179,7 +179,7 @@ export function AboutContent() {
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold mb-4">Meet Our Team</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">The passionate people behind Leli Rentals.</p>
+            <p className="text-muted-foreground max-w-2xl mx-auto">The passionate people behind leli rentals.</p>
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">

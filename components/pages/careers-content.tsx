@@ -111,13 +111,13 @@ export function CareersContent() {
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-3xl mx-auto text-center">
             <Badge className="mb-4" variant="secondary">
-              We're Hiring
+              We&apos;re Hiring
             </Badge>
             <h1 className="text-4xl md:text-5xl font-bold mb-6 text-balance">
-              Join the <span className="text-primary">Leli Rentals</span> Team
+              Join the <span className="text-primary">leli rentals</span> Team
             </h1>
             <p className="text-xl text-muted-foreground mb-8 text-pretty">
-              Help us build the future of rentals in Africa. We're looking for passionate people who want to make a
+              Help us build the future of rentals in Africa. We&apos;re looking for passionate people who want to make a
               difference.
             </p>
             <Button size="lg" asChild>
@@ -131,11 +131,11 @@ export function CareersContent() {
       <section className="py-12">
         <div className="container mx-auto px-4">
           <div className="relative h-[300px] md:h-[400px] rounded-2xl overflow-hidden">
-            <Image src="/diverse-african-tech-team-working-together-modern-.jpg" alt="Leli Rentals Team" fill className="object-cover" />
+            <Image src="/diverse-african-tech-team-working-together-modern-.jpg" alt="leli rentals Team" fill className="object-cover" />
             <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent" />
             <div className="absolute bottom-8 left-8 text-white max-w-lg">
               <h2 className="text-2xl md:text-3xl font-bold mb-2">Build Something Meaningful</h2>
-              <p className="text-white/80">Join a team that's transforming how people access what they need.</p>
+              <p className="text-white/80">Join a team that&apos;s transforming how people access what they need.</p>
             </div>
           </div>
         </div>
@@ -172,7 +172,7 @@ export function CareersContent() {
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold mb-4">Open Positions</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">Find your next opportunity at Leli Rentals.</p>
+            <p className="text-muted-foreground max-w-2xl mx-auto">Find your next opportunity at leli rentals.</p>
           </div>
 
           <div className="max-w-4xl mx-auto space-y-4">
@@ -288,9 +288,9 @@ export function CareersContent() {
         <div className="container mx-auto px-4">
           <Card className="bg-gradient-to-r from-primary/10 to-secondary/10 border-border/50 max-w-3xl mx-auto">
             <CardContent className="py-12 text-center">
-              <h2 className="text-2xl font-bold mb-2">Don't see a perfect fit?</h2>
+              <h2 className="text-2xl font-bold mb-2">Don&apos;t see a perfect fit?</h2>
               <p className="text-muted-foreground mb-6">
-                We're always looking for talented people. Send us your resume and we'll keep you in mind for future
+                We&apos;re always looking for talented people. Send us your resume and we&apos;ll keep you in mind for future
                 opportunities.
               </p>
               <Button variant="outline" asChild>

@@ -4,8 +4,8 @@ import { Shield, Lock, Eye, Database, UserCheck, Globe } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 
 export const metadata = {
-  title: "Privacy Policy - Leli Rentals",
-  description: "How Leli Rentals collects, uses, and protects your personal information.",
+  title: "Privacy Policy - leli rentals",
+  description: "How leli rentals collects, uses, and protects your personal information.",
 }
 
 export default function PrivacyPage() {
@@ -58,10 +58,10 @@ export default function PrivacyPage() {
                 <span className="text-primary">1.</span> Introduction
               </h2>
               <p className="text-muted-foreground leading-relaxed mb-4">
-                Leli Rentals Limited ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our Platform.
+                leli rentals Limited (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;) is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our Platform.
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                By using Leli Rentals, you consent to the data practices described in this policy. If you do not agree with our policies and practices, please do not use our Platform.
+                By using leli rentals, you consent to the data practices described in this policy. If you do not agree with our policies and practices, please do not use our Platform.
               </p>
             </section>
 
@@ -75,7 +75,7 @@ export default function PrivacyPage() {
               <ul className="list-disc pl-6 space-y-2 text-muted-foreground mb-4">
                 <li><strong>Account Information:</strong> Name, email, phone number, date of birth, password</li>
                 <li><strong>Profile Information:</strong> Bio, profile picture, location preferences</li>
-                <li><strong>Verification Documents:</strong> ID cards, driver's licenses, business permits</li>
+                <li><strong>Verification Documents:</strong> ID cards, driver&apos;s licenses, business permits</li>
                 <li><strong>Payment Information:</strong> Payment methods, billing address (processed by Paystack)</li>
                 <li><strong>Listing Information:</strong> Item descriptions, photos, pricing, availability</li>
                 <li><strong>Communications:</strong> Messages, reviews, support tickets</li>
@@ -219,7 +219,7 @@ export default function PrivacyPage() {
 
               <h3 className="font-semibold text-lg mb-2 mt-4">6.3 Marketing Communications</h3>
               <p className="text-muted-foreground leading-relaxed mb-4">
-                You can opt out of marketing emails by clicking the "unsubscribe" link in any marketing email or updating your preferences in account settings.
+                You can opt out of marketing emails by clicking the &quot;unsubscribe&quot; link in any marketing email or updating your preferences in account settings.
               </p>
 
               <h3 className="font-semibold text-lg mb-2 mt-4">6.4 Cookies</h3>
@@ -250,7 +250,7 @@ export default function PrivacyPage() {
 
             <section>
               <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
-                <span className="text-primary">8.</span> Children's Privacy
+                <span className="text-primary">8.</span> Children&apos;s Privacy
               </h2>
               <p className="text-muted-foreground leading-relaxed">
                 Our Platform is not intended for users under 18 years of age. We do not knowingly collect information from children. If you believe we have collected information from a child, please contact us immediately.
@@ -271,7 +271,7 @@ export default function PrivacyPage() {
                 <span className="text-primary">10.</span> Changes to This Policy
               </h2>
               <p className="text-muted-foreground leading-relaxed">
-                We may update this Privacy Policy from time to time. We will notify you of material changes by posting the updated policy on our Platform and updating the "Last updated" date. Your continued use of the Platform after changes constitutes acceptance of the updated policy.
+                We may update this Privacy Policy from time to time. We will notify you of material changes by posting the updated policy on our Platform and updating the &quot;Last updated&quot; date. Your continued use of the Platform after changes constitutes acceptance of the updated policy.
               </p>
             </section>
 
@@ -283,7 +283,7 @@ export default function PrivacyPage() {
                 If you have questions about this Privacy Policy or our data practices, please contact us:
               </p>
               <div className="bg-secondary/50 p-4 rounded-lg space-y-2 text-sm">
-                <p><strong>Leli Rentals Limited</strong></p>
+                <p><strong>leli rentals Limited</strong></p>
                 <p><strong>Data Protection Officer</strong></p>
                 <p><strong>Email:</strong> <a href="mailto:lelirentalsmail@gmail.com" className="text-primary hover:underline">lelirentalsmail@gmail.com</a></p>
                 <p><strong>Phone:</strong> <a href="tel:+254112081866" className="text-primary hover:underline">+254 112 081 866</a></p>
@@ -293,7 +293,7 @@ export default function PrivacyPage() {
 
             <div className="border-t pt-6 mt-8">
               <p className="text-sm text-muted-foreground text-center">
-                By using Leli Rentals, you acknowledge that you have read and understood this Privacy Policy.
+                By using leli rentals, you acknowledge that you have read and understood this Privacy Policy.
               </p>
             </div>
           </div>

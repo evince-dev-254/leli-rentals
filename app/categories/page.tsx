@@ -3,7 +3,7 @@ import { Footer } from "@/components/layout/footer"
 import { CategoriesPageContent } from "@/components/categories/categories-page-content"
 
 export const metadata = {
-  title: "All Categories - Leli Rentals",
+  title: "All Categories - leli rentals",
   description: "Browse all rental categories. Find vehicles, homes, equipment, electronics, fashion, and more.",
 }
 

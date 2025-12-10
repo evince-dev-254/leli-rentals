@@ -1,7 +1,7 @@
 import { MyListings } from "@/components/dashboard/my-listings"
 
 export const metadata = {
-  title: "My Listings - Leli Rentals",
+  title: "My Listings - leli rentals",
   description: "Manage your rental listings",
 }
 

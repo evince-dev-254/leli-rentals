@@ -45,7 +45,7 @@ export function AdminSidebar() {
       {/* Logo */}
       <div className="p-4 border-b border-border flex items-center justify-between">
         <Link href="/admin" className="flex items-center gap-3">
-          <Image src="/logo.svg" alt="Leli Rentals" width={32} height={32} className="dark:invert" />
+          <Image src="/logo.svg" alt="leli rentals" width={32} height={32} className="dark:invert" />
           {!collapsed && <span className="font-bold text-lg">Admin</span>}
         </Link>
         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setCollapsed(!collapsed)}>

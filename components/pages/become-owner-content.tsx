@@ -103,7 +103,7 @@ export function BecomeOwnerContent() {
             </div>
 
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-balance">
-              Earn Money with <span className="text-primary">Leli Rentals</span>
+              Earn Money with <span className="text-primary">leli rentals</span>
             </h1>
             <p className="text-xl text-muted-foreground mb-10 text-pretty">
               Whether you want to rent out your items or earn commissions by referring others, we have the perfect
@@ -142,7 +142,7 @@ export function BecomeOwnerContent() {
             <p className="text-muted-foreground max-w-2xl mx-auto">
               {selectedTab === "owner"
                 ? "Turn your assets into income. List anything from vehicles to equipment and start earning."
-                : "Earn passive income by sharing Leli Rentals with your network. No inventory needed."}
+                : "Earn passive income by sharing leli rentals with your network. No inventory needed."}
             </p>
           </div>
 
@@ -309,7 +309,7 @@ export function BecomeOwnerContent() {
                 </h2>
                 <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
                   {selectedTab === "owner"
-                    ? "Join thousands of owners who are already earning from their assets on Leli Rentals."
+                    ? "Join thousands of owners who are already earning from their assets on leli rentals."
                     : "Share your unique affiliate link and earn commissions on every successful rental."}
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">

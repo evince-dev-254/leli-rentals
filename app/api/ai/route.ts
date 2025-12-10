@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
         // If we want a system prompt, we can inject it into the history as a user message at the start, 
         // but here we just process the latest message.
 
-        const systemContext = `You are a helpful AI assistant for "Leli Rentals", a peer-to-peer rental marketplace. 
+        const systemContext = `You are a helpful AI assistant for "leli rentals", a peer-to-peer rental marketplace. 
     Platform Roles:
     - Renters: Browse and rent items from owners.
     - Owners: List items (cameras, drones, tools, etc.) to earn money.

@@ -126,7 +126,7 @@ export default function AffiliateDashboard() {
                 </div>
                 <h3 className="text-2xl font-bold">Become an Affiliate Partner</h3>
                 <p className="text-muted-foreground max-w-md">
-                    Earn 10% commission for every user you refer to Leli Rentals.
+                    Earn 10% commission for every user you refer to leli rentals.
                     Join our affiliate program today and start earning passive income.
                 </p>
                 <div className="p-4 bg-muted/50 rounded-lg text-sm text-left w-full space-y-2">

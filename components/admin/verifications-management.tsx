@@ -154,7 +154,9 @@ export function VerificationsManagement() {
     .filter((doc) => doc.user); // Safety filter: remove documents where user is not found
 
   const pendingUsers = relatedUsers.filter((u) => {
-    if (!(u.role === "owner" || u.role === "affiliate")) return false
+    // Only owners and affiliates need verification
+    if (u.role !== "owner" && u.role !== "affiliate") return false
+
     const userDocs = verificationDocs.filter((d) => d.userId === u.id)
     // if no docs, they're awaiting submission
     if (userDocs.length === 0) return true

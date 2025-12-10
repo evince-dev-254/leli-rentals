@@ -1,7 +1,7 @@
 import { SubscriptionPage } from "@/components/dashboard/subscription-page"
 
 export const metadata = {
-  title: "Subscription - Leli Rentals",
+  title: "Subscription - leli rentals",
   description: "Manage your subscription plan",
 }
 

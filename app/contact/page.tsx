@@ -3,7 +3,7 @@ import { Footer } from "@/components/layout/footer"
 import { ContactContent } from "@/components/pages/contact-content"
 
 export const metadata = {
-  title: "Contact Us - Leli Rentals",
+  title: "Contact Us - leli rentals",
   description: "Get in touch with our team. We're here to help.",
 }
 

@@ -33,7 +33,7 @@ export const PaymentSuccessEmail = ({
     return (
         <Html>
             <Head />
-            <Preview>Payment Confirmation - Leli Rentals</Preview>
+            <Preview>Payment Confirmation - leli rentals</Preview>
             <Tailwind
                 config={{
                     theme: {
@@ -52,7 +52,7 @@ export const PaymentSuccessEmail = ({
                                 src={`${baseUrl}/logo.png`}
                                 width="120"
                                 height="32"
-                                alt="Leli Rentals"
+                                alt="leli rentals"
                                 className="my-0 mx-auto"
                             />
                         </Section>
@@ -86,7 +86,7 @@ export const PaymentSuccessEmail = ({
                         </Section>
                         <Hr className="border border-solid border-[#eaeaea] my-[26px] mx-0 w-full" />
                         <Text className="text-gray-500 text-[12px] text-center">
-                            Leli Rentals, Nairobi, Kenya
+                            leli rentals, Nairobi, Kenya
                         </Text>
                     </Container>
                 </Body>
