@@ -32,13 +32,23 @@ export function CategoryDetailContent({ categoryId }: CategoryDetailContentProps
 
       setLoading(true)
       try {
-        const categoryUUID = getCategoryUUID(categoryId)
-        if (!categoryUUID) {
-          console.error("Category UUID not found for:", categoryId)
+        // 1. First fetch the category by slug to get its correct UUID from the DB
+        // This avoids issues if the DB UUIDs don't match the hardcoded map
+        const { data: dbCategory, error: catError } = await supabase
+          .from('categories')
+          .select('id')
+          .eq('slug', category.id) // category.id from categories-data acts as the slug
+          .single()
+
+        if (catError || !dbCategory) {
+          console.error("Error fetching category from DB:", catError)
           setLoading(false)
           return
         }
 
+        const categoryUUID = dbCategory.id
+
+        // 2. Fetch listings using the actual DB UUID
         const { data, error } = await supabase
           .from("listings")
           .select(`
@@ -166,8 +176,8 @@ export function CategoryDetailContent({ categoryId }: CategoryDetailContentProps
                     }
                   }}
                   className={`group relative rounded-xl overflow-hidden aspect-square transition-all ${selectedSubcategories.includes(sub.name)
-                      ? "ring-2 ring-primary ring-offset-2"
-                      : "hover:ring-2 hover:ring-primary/50"
+                    ? "ring-2 ring-primary ring-offset-2"
+                    : "hover:ring-2 hover:ring-primary/50"
                     }`}
                 >
                   <img

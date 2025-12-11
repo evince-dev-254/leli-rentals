@@ -64,7 +64,8 @@ export default function AuthCallbackPage() {
                         const metadata = user?.user_metadata || {}
 
                         // Create profile (upsert to handle race conditions)
-                        const { error: insertError } = await supabase.from('user_profiles').upsert({
+                        // Create profile (upsert to handle race conditions)
+                        const profileData = {
                             id: user!.id,
                             email: user!.email!,
                             full_name: metadata.full_name || metadata.name || user!.email?.split('@')[0] || '',
@@ -72,14 +73,29 @@ export default function AuthCallbackPage() {
                             role: userRole,
                             avatar_url: metadata.avatar_url || metadata.picture || '',
                             updated_at: new Date().toISOString(),
-                        }, {
+                            last_login_at: new Date().toISOString(),
+                        }
+
+                        // Try first insert
+                        let { error: insertError } = await supabase.from('user_profiles').upsert(profileData, {
                             onConflict: 'id',
                             ignoreDuplicates: false,
                         })
 
+                        // If error is due to missing column (likely last_login_at), try without it
+                        if (insertError && (insertError.message?.includes("column") || insertError.code === "42703")) {
+                            console.warn("Schema mismatch detected, retrying profile creation without new columns...")
+                            const { last_login_at, ...legacyData } = profileData
+                            const retry = await supabase.from('user_profiles').upsert(legacyData, {
+                                onConflict: 'id',
+                                ignoreDuplicates: false,
+                            })
+                            insertError = retry.error
+                        }
+
                         if (insertError) {
                             console.error('Error creating profile:', insertError)
-                            setError('Failed to create profile. Please contact support.')
+                            setError(`Failed to create profile: ${insertError.message}`)
                             return
                         }
 
@@ -110,6 +126,12 @@ export default function AuthCallbackPage() {
                         // Profile exists, use its role
                         userRole = profile.role || userRole
                         console.log('Using existing profile role:', userRole)
+
+                        // Update last_login_at for existing user
+                        await supabase
+                            .from('user_profiles')
+                            .update({ last_login_at: new Date().toISOString() })
+                            .eq('id', user!.id)
                     }
 
                     // Redirect based on role

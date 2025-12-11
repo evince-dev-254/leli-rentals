@@ -1,12 +1,16 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Search, Filter, MoreHorizontal, Eye, Ban, CheckCircle, Mail, Download, UserPlus } from "lucide-react"
+import { Search, Filter, MoreHorizontal, Eye, Ban, CheckCircle, Mail, Download, UserPlus, Trash2, Send, X } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
+import { useToast } from "@/components/ui/use-toast"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,17 +21,26 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { supabase } from "@/lib/supabase"
 import type { User } from "@/lib/types"
+import { suspendUsers, reactivateUsers, deleteUsers, sendBulkReminders } from "@/lib/actions/admin-actions"
 
 export function UsersManagement() {
+  const { toast } = useToast()
   const [searchQuery, setSearchQuery] = useState("")
   const [roleFilter, setRoleFilter] = useState<string>("all")
   const [statusFilter, setStatusFilter] = useState<string>("all")
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [users, setUsers] = useState<User[]>([])
   const [loadingUsers, setLoadingUsers] = useState<boolean>(true)
+
+  // Bulk Actions State
+  const [selectedUserIds, setSelectedUserIds] = useState<string[]>([])
+  const [actionLoading, setActionLoading] = useState(false)
+  const [reminderOpen, setReminderOpen] = useState(false)
+  const [reminderSubject, setReminderSubject] = useState("")
+  const [reminderMessage, setReminderMessage] = useState("")
 
   // Filter users fetched from Supabase
   const filteredUsers = users.filter((user) => {
@@ -39,55 +52,134 @@ export function UsersManagement() {
     return matchesSearch && matchesRole && matchesStatus
   })
 
-  useEffect(() => {
-    let mounted = true
-
-    async function loadUsers() {
-      setLoadingUsers(true)
-      try {
-        const { data, error } = await supabase.from("user_profiles").select("*")
-        if (error) {
-          console.error("Error fetching user_profiles:", error)
-          return
-        }
-
-        if (!mounted) return
-
-        // Map DB fields to the User interface expected by this component
-        const mapped: User[] = (data || []).map((u: any) => ({
-          id: u.id,
-          email: u.email,
-          fullName: u.full_name ?? "",
-          phone: u.phone ?? "",
-          avatarUrl: u.avatar_url ?? null,
-          role: (u.role as any) ?? "renter",
-          accountStatus: (u.account_status as any) ?? "active",
-          verificationStatus: (u.verification_status as any) ?? "pending",
-          verificationDeadline: u.verification_deadline ? new Date(u.verification_deadline) : null,
-          verificationDocuments: [],
-          subscriptionPlan: (u.subscription_plan as any) ?? null,
-          subscriptionExpiresAt: u.subscription_expires_at ? new Date(u.subscription_expires_at) : null,
-          createdAt: u.created_at ? new Date(u.created_at) : new Date(),
-          updatedAt: u.updated_at ? new Date(u.updated_at) : new Date(),
-          lastLoginAt: u.last_login_at ? new Date(u.last_login_at) : null,
-          affiliateCode: u.affiliate_code ?? null,
-          referredBy: u.referred_by ?? null,
-          totalReferrals: u.total_referrals ?? 0,
-          totalEarnings: u.total_earnings ?? 0,
-        }))
-
-        setUsers(mapped)
-      } finally {
-        setLoadingUsers(false)
+  async function loadUsers() {
+    setLoadingUsers(true)
+    try {
+      const { data, error } = await supabase.from("user_profiles").select("*")
+      if (error) {
+        console.error("Error fetching user_profiles:", error)
+        return
       }
-    }
 
+      // Map DB fields to the User interface expected by this component
+      const mapped: User[] = (data || []).map((u: any) => ({
+        id: u.id,
+        email: u.email,
+        fullName: u.full_name ?? "",
+        phone: u.phone ?? "",
+        avatarUrl: u.avatar_url ?? null,
+        role: (u.role as any) ?? "renter",
+        accountStatus: (u.account_status as any) ?? "active",
+        verificationStatus: (u.verification_status as any) ?? "pending",
+        verificationDeadline: u.verification_deadline ? new Date(u.verification_deadline) : null,
+        verificationDocuments: [],
+        subscriptionPlan: (u.subscription_plan as any) ?? null,
+        subscriptionExpiresAt: u.subscription_expires_at ? new Date(u.subscription_expires_at) : null,
+        createdAt: u.created_at ? new Date(u.created_at) : new Date(),
+        updatedAt: u.updated_at ? new Date(u.updated_at) : new Date(),
+        lastLoginAt: u.last_login_at ? new Date(u.last_login_at) : null,
+        affiliateCode: u.affiliate_code ?? null,
+        referredBy: u.referred_by ?? null,
+        totalReferrals: u.total_referrals ?? 0,
+        totalEarnings: u.total_earnings ?? 0,
+      }))
+
+      setUsers(mapped)
+    } finally {
+      setLoadingUsers(false)
+    }
+  }
+
+  useEffect(() => {
     loadUsers()
-
-    return () => {
-      mounted = false
-    }
   }, [])
+
+  // Selection Handlers
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedUserIds(filteredUsers.map(u => u.id))
+    } else {
+      setSelectedUserIds([])
+    }
+  }
+
+  const handleSelectUser = (userId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedUserIds(prev => [...prev, userId])
+    } else {
+      setSelectedUserIds(prev => prev.filter(id => id !== userId))
+    }
+  }
+
+  // Action Handlers
+  const handleBulkSuspend = async () => {
+    if (!confirm(`Are you sure you want to suspend ${selectedUserIds.length} users?`)) return
+
+    setActionLoading(true)
+    const result = await suspendUsers(selectedUserIds)
+    setActionLoading(false)
+
+    if (result.success) {
+      toast({ title: "Success", description: "Users suspended successfully" })
+      loadUsers()
+      setSelectedUserIds([])
+    } else {
+      toast({ title: "Error", description: "Failed to suspend users", variant: "destructive" })
+    }
+  }
+
+  const handleBulkReactivate = async () => {
+    if (!confirm(`Are you sure you want to reactivate ${selectedUserIds.length} users?`)) return
+
+    setActionLoading(true)
+    const result = await reactivateUsers(selectedUserIds)
+    setActionLoading(false)
+
+    if (result.success) {
+      toast({ title: "Success", description: "Users reactivated successfully" })
+      loadUsers()
+      setSelectedUserIds([])
+    } else {
+      toast({ title: "Error", description: "Failed to reactivate users", variant: "destructive" })
+    }
+  }
+
+  const handleBulkDelete = async () => {
+    if (!confirm(`Are you sure you want to PERMANENTLY DELETE ${selectedUserIds.length} users? This action cannot be undone.`)) return
+
+    setActionLoading(true)
+    const result = await deleteUsers(selectedUserIds)
+    setActionLoading(false)
+
+    if (result.success) {
+      toast({ title: "Success", description: "Users deleted successfully" })
+      loadUsers()
+      setSelectedUserIds([])
+    } else {
+      toast({ title: "Error", description: "Failed to delete users", variant: "destructive" })
+    }
+  }
+
+  const handleSendReminder = async () => {
+    if (!reminderSubject || !reminderMessage) {
+      toast({ title: "Error", description: "Please provide a subject and message", variant: "destructive" })
+      return
+    }
+
+    setActionLoading(true)
+    const result = await sendBulkReminders(selectedUserIds, reminderSubject, reminderMessage)
+    setActionLoading(false)
+
+    if (result.success) {
+      toast({ title: "Success", description: `Reminders sent to ${result.count} users` })
+      setReminderOpen(false)
+      setReminderSubject("")
+      setReminderMessage("")
+      setSelectedUserIds([])
+    } else {
+      toast({ title: "Error", description: "Failed to send reminders", variant: "destructive" })
+    }
+  }
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -132,6 +224,36 @@ export function UsersManagement() {
           Add User
         </Button>
       </div>
+
+      {/* Bulk Actions Toolbar */}
+      {selectedUserIds.length > 0 && (
+        <div className="flex items-center justify-between p-4 bg-primary/10 border border-primary/20 rounded-lg animate-in fade-in slide-in-from-top-2">
+          <div className="flex items-center gap-2">
+            <Badge variant="default" className="bg-primary">{selectedUserIds.length} Selected</Badge>
+            <Button variant="ghost" size="sm" onClick={() => setSelectedUserIds([])} className="h-8 w-8 p-0">
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => setReminderOpen(true)} disabled={actionLoading}>
+              <Send className="h-4 w-4 mr-2" />
+              Send Reminder
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleBulkSuspend} disabled={actionLoading} className="text-orange-600 hover:text-orange-700 hover:bg-orange-50">
+              <Ban className="h-4 w-4 mr-2" />
+              Suspend
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleBulkReactivate} disabled={actionLoading} className="text-green-600 hover:text-green-700 hover:bg-green-50">
+              <CheckCircle className="h-4 w-4 mr-2" />
+              Reactivate
+            </Button>
+            <Button variant="destructive" size="sm" onClick={handleBulkDelete} disabled={actionLoading}>
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Filters */}
       <Card className="glass-card">
@@ -192,6 +314,12 @@ export function UsersManagement() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-[50px]">
+                  <Checkbox
+                    checked={filteredUsers.length > 0 && selectedUserIds.length === filteredUsers.length}
+                    onCheckedChange={(checked) => handleSelectAll(!!checked)}
+                  />
+                </TableHead>
                 <TableHead>User</TableHead>
                 <TableHead>Role</TableHead>
                 <TableHead>Status</TableHead>
@@ -204,6 +332,12 @@ export function UsersManagement() {
             <TableBody>
               {filteredUsers.map((user) => (
                 <TableRow key={user.id}>
+                  <TableCell>
+                    <Checkbox
+                      checked={selectedUserIds.includes(user.id)}
+                      onCheckedChange={(checked) => handleSelectUser(user.id, !!checked)}
+                    />
+                  </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <Avatar>
@@ -254,18 +388,27 @@ export function UsersManagement() {
                           <Eye className="h-4 w-4 mr-2" />
                           View Details
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => {
+                          setSelectedUserIds([user.id])
+                          setReminderOpen(true)
+                        }}>
                           <Mail className="h-4 w-4 mr-2" />
                           Send Email
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         {user.accountStatus === "suspended" ? (
-                          <DropdownMenuItem className="text-green-600">
+                          <DropdownMenuItem className="text-green-600" onClick={() => {
+                            setSelectedUserIds([user.id])
+                            handleBulkReactivate()
+                          }}>
                             <CheckCircle className="h-4 w-4 mr-2" />
                             Reactivate Account
                           </DropdownMenuItem>
                         ) : (
-                          <DropdownMenuItem className="text-destructive">
+                          <DropdownMenuItem className="text-destructive" onClick={() => {
+                            setSelectedUserIds([user.id])
+                            handleBulkSuspend()
+                          }}>
                             <Ban className="h-4 w-4 mr-2" />
                             Suspend Account
                           </DropdownMenuItem>
@@ -352,15 +495,64 @@ export function UsersManagement() {
               </div>
 
               <div className="flex gap-2 justify-end">
-                <Button variant="outline">Send Email</Button>
+                <Button variant="outline" onClick={() => {
+                  setSelectedUser(null)
+                  setSelectedUserIds([selectedUser.id])
+                  setReminderOpen(true)
+                }}>Send Email</Button>
                 {selectedUser.accountStatus === "suspended" ? (
-                  <Button className="bg-green-600 hover:bg-green-700">Reactivate Account</Button>
+                  <Button className="bg-green-600 hover:bg-green-700" onClick={() => {
+                    setSelectedUser(null)
+                    setSelectedUserIds([selectedUser.id])
+                    handleBulkReactivate()
+                  }}>Reactivate Account</Button>
                 ) : (
-                  <Button variant="destructive">Suspend Account</Button>
+                  <Button variant="destructive" onClick={() => {
+                    setSelectedUser(null)
+                    setSelectedUserIds([selectedUser.id])
+                    handleBulkSuspend()
+                  }}>Suspend Account</Button>
                 )}
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Reminder Email Dialog */}
+      <Dialog open={reminderOpen} onOpenChange={setReminderOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Send Reminder</DialogTitle>
+            <DialogDescription>
+              Send an email and notification to {selectedUserIds.length} users.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Subject</Label>
+              <Input
+                placeholder="e.g. Action Required: Verification"
+                value={reminderSubject}
+                onChange={(e) => setReminderSubject(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Message</Label>
+              <Textarea
+                placeholder="Enter your message here..."
+                value={reminderMessage}
+                onChange={(e) => setReminderMessage(e.target.value)}
+                className="min-h-[100px]"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setReminderOpen(false)}>Cancel</Button>
+            <Button onClick={handleSendReminder} disabled={actionLoading}>
+              {actionLoading ? "Sending..." : "Send Reminder"}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

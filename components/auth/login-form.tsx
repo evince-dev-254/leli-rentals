@@ -80,6 +80,12 @@ export function LoginForm() {
       if (error) throw error
 
       if (data.session) {
+        // Update last_login_at
+        await supabase
+          .from('user_profiles')
+          .update({ last_login_at: new Date().toISOString() })
+          .eq('id', data.user?.id)
+
         // Fetch user profile to redirect correctly
         const { data: profile } = await supabase
           .from('user_profiles')
