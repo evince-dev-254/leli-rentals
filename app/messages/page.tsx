@@ -1,6 +1,4 @@
-import { Header } from "@/components/layout/header"
-import { Footer } from "@/components/layout/footer"
-import { MessagesContent } from "@/components/messages/messages-content"
+import { MessagesPageClient } from "@/components/messages/messages-page-client"
 
 export const metadata = {
   title: "Messages - leli rentals",
@@ -8,13 +6,5 @@ export const metadata = {
 }
 
 export default function MessagesPage() {
-  return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
-      <main className="flex-1">
-        <MessagesContent />
-      </main>
-      <Footer />
-    </div>
-  )
+  return <MessagesPageClient />
 }

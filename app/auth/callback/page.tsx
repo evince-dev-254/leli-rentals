@@ -17,16 +17,17 @@ export default function AuthCallbackPage() {
                 const refCode = searchParams.get('ref')
 
                 // Check if we have a hash fragment (implicit flow - used by Supabase OAuth)
-                const hashParams = new URLSearchParams(window.location.hash.substring(1))
-                const accessToken = hashParams.get('access_token')
-                const refreshToken = hashParams.get('refresh_token')
+                let accessToken = null
+                let refreshToken = null
+
+                if (typeof window !== 'undefined') {
+                    const hashParams = new URLSearchParams(window.location.hash.substring(1))
+                    accessToken = hashParams.get('access_token')
+                    refreshToken = hashParams.get('refresh_token')
+                }
 
                 console.log('Client-side callback details:', {
-                    fullUrl: window.location.href,
-                    hash: window.location.hash,
-                    search: window.location.search,
-                    hasAccessToken: !!accessToken,
-                    hasRefreshToken: !!refreshToken,
+                    fullUrl: typeof window !== 'undefined' ? window.location.href : '',
                     role: roleParam,
                     ref: refCode
                 })
@@ -59,11 +60,19 @@ export default function AuthCallbackPage() {
 
                     // If no profile exists, create one
                     if (profileError || !profile) {
+
+                        // If no role param provided (e.g. Google Sign In) and no profile exists,
+                        // redirect to role selection instead of defaulting to renter
+                        if (!roleParam) {
+                            console.log('No role specified, redirecting to role selection')
+                            router.push('/select-role')
+                            return
+                        }
+
                         console.log('Creating or updating profile with role:', userRole)
 
                         const metadata = user?.user_metadata || {}
 
-                        // Create profile (upsert to handle race conditions)
                         // Create profile (upsert to handle race conditions)
                         const profileData = {
                             id: user!.id,

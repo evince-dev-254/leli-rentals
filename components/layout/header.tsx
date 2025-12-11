@@ -11,6 +11,7 @@ import { useTheme } from "next-themes"
 import { supabase } from "@/lib/supabase" // Import Supabase client
 import { useRouter } from "next/navigation"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 const categories = [
   { name: "Vehicles", href: "/categories/vehicles", count: "1,800+" },
@@ -234,10 +235,12 @@ export function Header() {
             {/* Login/Profile Button - Desktop */}
             {user ? (
               <Link href="/dashboard">
-                <Button className="hidden lg:flex bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-full px-6 font-medium">
-                  <User className="mr-2 h-4 w-4" />
-                  Profile
-                </Button>
+                <Avatar className="hidden lg:flex h-10 w-10 ring-2 ring-white/20 hover:ring-white/50 transition-all cursor-pointer">
+                  <AvatarImage src={user.user_metadata?.avatar_url || user.user_metadata?.picture} />
+                  <AvatarFallback className="bg-gradient-to-br from-green-500 to-emerald-600 text-white">
+                    {user.email?.[0]?.toUpperCase() || 'U'}
+                  </AvatarFallback>
+                </Avatar>
               </Link>
             ) : (
               <Link href="/login">
@@ -250,9 +253,30 @@ export function Header() {
 
             {/* Mobile User Icon - Always visible on mobile */}
             <Link href={user ? "/dashboard" : "/login"} className="lg:hidden">
-              <Button variant="ghost" size="icon" className="text-gray-200 hover:text-white hover:bg-white/10">
-                <User className="h-5 w-5" />
-              </Button>
+              {user ? (
+                <div className="relative h-8 w-8 rounded-full overflow-hidden border border-white/20">
+                  {/* We can use the Avatar component from shadcn if imported, but we are in Header. 
+                       Let's check imports. Yes, Avatar is likely not imported in Header yet?
+                       Wait, step 955 view_file shows imports.
+                       lines 1-14: Button, DropdownMenu... 
+                       It does NOT import Avatar. 
+                       I need to add the import first? 
+                       Actually, the file content in step 955 shows:
+                       import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar" IS MISSING.
+                       Wait, I should check the file content again.
+                   */}
+                  <Image
+                    src={user.user_metadata?.avatar_url || user.user_metadata?.picture || "/placeholder.svg"}
+                    alt="User"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              ) : (
+                <Button variant="ghost" size="icon" className="text-gray-200 hover:text-white hover:bg-white/10">
+                  <User className="h-5 w-5" />
+                </Button>
+              )}
             </Link>
 
             {/* Mobile Menu */}
