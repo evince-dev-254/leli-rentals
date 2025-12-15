@@ -1,50 +1,26 @@
 "use client"
 
-import { useState } from "react"
+
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Search, MapPin } from "lucide-react"
 import Link from "next/link"
 
 export function HeroSection() {
-  const [videoError, setVideoError] = useState(false)
-  const [videoLoaded, setVideoLoaded] = useState(false)
+
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Video Background */}
-      {!videoError && (
-        <video
-          key="hero-video"
-          autoPlay
-          muted
-          loop
-          playsInline
-          poster="/modern-apartment-interior-with-city-skyline-view.jpg"
-          preload="auto"
-          onCanPlay={() => setVideoLoaded(true)}
-          onError={(e) => {
-            console.error("Video loading error:", e);
-            setVideoError(true);
-          }}
-          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${videoLoaded ? "opacity-100" : "opacity-0"
-            }`}
-        >
-          <source
-            src="/videos/rental-hero-video.mp4"
-            type="video/mp4"
-          />
-        </video>
-      )}
-
-      {/* Fallback Background Image with Gradient */}
+      {/* Animated Background Image (Ken Burns Effect) */}
       <div
-        className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ${videoLoaded && !videoError ? "opacity-0" : "opacity-100"
-          }`}
+        className="absolute inset-0 bg-cover bg-center animate-ken-burns"
         style={{
-          backgroundImage: `url('/modern-city-skyline-nairobi-evening-with-lights.jpg')`,
+          backgroundImage: `url('/leli-hero-bg.jpg')`,
         }}
       />
+
+      {/* Fallback Background Image with Gradient */}
+
 
       {/* Pink/Purple Gradient Overlay (always visible) */}
       <div className="absolute inset-0 bg-gradient-to-br from-pink-500/30 via-purple-500/30 to-blue-500/20" />

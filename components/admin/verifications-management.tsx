@@ -151,11 +151,11 @@ export function VerificationsManagement() {
         user: user as User,
       };
     })
-    .filter((doc) => doc.user); // Safety filter: remove documents where user is not found
+    .filter((doc) => doc.user && doc.user.role === 'owner'); // Enforce Owner Only
 
   const pendingUsers = relatedUsers.filter((u) => {
-    // Only owners and affiliates need verification
-    if (u.role !== "owner" && u.role !== "affiliate") return false
+    // Only owners need verification
+    if (u.role !== "owner") return false
 
     const userDocs = verificationDocs.filter((d) => d.userId === u.id)
     // if no docs, they're awaiting submission
@@ -165,7 +165,7 @@ export function VerificationsManagement() {
   })
 
   const submittedUsers = relatedUsers.filter((u) => {
-    if (!(u.role === "owner" || u.role === "affiliate")) return false
+    if (u.role !== "owner") return false
     const userDocs = verificationDocs.filter((d) => d.userId === u.id)
     return userDocs.some((d) => d.status === "pending")
   })

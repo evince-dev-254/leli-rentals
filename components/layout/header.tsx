@@ -5,7 +5,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet"
 import { Menu, ChevronDown, ShoppingBag, User, MessageCircle, Sun, Moon } from "lucide-react"
 import { useTheme } from "next-themes"
 import { supabase } from "@/lib/supabase" // Import Supabase client
@@ -31,7 +31,6 @@ const navLinks = [
 ]
 
 const moreLinks = [
-  { name: "Careers", href: "/careers" },
   { name: "Become an Owner", href: "/become-owner" },
 ]
 
@@ -251,33 +250,7 @@ export function Header() {
               </Link>
             )}
 
-            {/* Mobile User Icon - Always visible on mobile */}
-            <Link href={user ? "/dashboard" : "/login"} className="lg:hidden">
-              {user ? (
-                <div className="relative h-8 w-8 rounded-full overflow-hidden border border-white/20">
-                  {/* We can use the Avatar component from shadcn if imported, but we are in Header. 
-                       Let's check imports. Yes, Avatar is likely not imported in Header yet?
-                       Wait, step 955 view_file shows imports.
-                       lines 1-14: Button, DropdownMenu... 
-                       It does NOT import Avatar. 
-                       I need to add the import first? 
-                       Actually, the file content in step 955 shows:
-                       import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar" IS MISSING.
-                       Wait, I should check the file content again.
-                   */}
-                  <Image
-                    src={user.user_metadata?.avatar_url || user.user_metadata?.picture || "/placeholder.svg"}
-                    alt="User"
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-              ) : (
-                <Button variant="ghost" size="icon" className="text-gray-200 hover:text-white hover:bg-white/10">
-                  <User className="h-5 w-5" />
-                </Button>
-              )}
-            </Link>
+
 
             {/* Mobile Menu */}
             <Sheet>
@@ -287,6 +260,7 @@ export function Header() {
                 </Button>
               </SheetTrigger>
               <SheetContent side="right" className="bg-[#1a1a2e] border-[#2a2a4e] w-[300px] px-6 py-6 overflow-y-auto">
+                <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
                 <div className="flex flex-col gap-6 mt-6">
 
                   {/* Mobile Login/Profile Button - Highlighted at Top */}
@@ -294,7 +268,7 @@ export function Header() {
                     <Link href="/dashboard" className="w-full">
                       <Button className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-xl py-6 shadow-lg shadow-green-900/20">
                         <User className="mr-2 h-5 w-5" />
-                        <span className="text-lg">My Profile</span>
+                        <span className="text-lg">Dashboard</span>
                       </Button>
                     </Link>
                   ) : (
@@ -307,6 +281,14 @@ export function Header() {
                   )}
 
                   <div className="flex flex-col space-y-2">
+                    {user && (
+                      <Link
+                        href="/dashboard"
+                        className="text-lg font-medium text-gray-200 hover:text-white py-3 px-2 rounded-lg hover:bg-white/5 transition-colors"
+                      >
+                        Dashboard
+                      </Link>
+                    )}
                     {navLinks.map((link) => (
                       <Link
                         key={link.name}

@@ -48,8 +48,8 @@ const contactMethods = [
 
 const offices = [
   {
-    city: "Nairobi",
-    address: "Westlands Business Park, 4th Floor",
+    city: "Meru",
+    address: "Sarah Plaza, Meru town, 5th floor",
     phone: "+254 700 123 456",
   },
   {

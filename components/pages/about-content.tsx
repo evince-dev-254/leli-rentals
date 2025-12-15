@@ -2,15 +2,10 @@
 
 import { useState } from "react"
 import Image from "next/image"
-import { Users, Package, MapPin, Star, Target, Heart, Shield, Zap } from "lucide-react"
+import { Target, Heart, Shield, Zap } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 
-const stats = [
-  { icon: Users, value: "50,000+", label: "Active Users" },
-  { icon: Package, value: "200,000+", label: "Successful Rentals" },
-  { icon: MapPin, value: "25+", label: "Cities Covered" },
-  { icon: Star, value: "4.8", label: "Average Rating" },
-]
+
 
 const values = [
   {
@@ -35,12 +30,7 @@ const values = [
   },
 ]
 
-const team = [
-  { name: "John Kamau", role: "CEO & Founder", image: "/african-man-professional.png" },
-  { name: "Sarah Wanjiku", role: "COO", image: "/african-woman-professional.jpg" },
-  { name: "David Ochieng", role: "CTO", image: "/kenyan-man-business.jpg" },
-  { name: "Grace Muthoni", role: "Head of Operations", image: "/young-african-woman.jpg" },
-]
+
 
 export function AboutContent() {
   const [videoError, setVideoError] = useState(false)
@@ -53,18 +43,19 @@ export function AboutContent() {
         {/* Video Background */}
         {!videoError && (
           <video
+            key="kenya-rentals-video-v3"
             autoPlay
             muted
             loop
             playsInline
-            poster="/modern-apartment-interior-with-city-skyline-view.jpg"
+            poster="/kenya-rentals-bg-v2.png"
             onLoadedData={() => setVideoLoaded(true)}
             onError={() => setVideoError(true)}
             className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${videoLoaded ? "opacity-100" : "opacity-0"
               }`}
           >
             <source
-              src="/videos/about-hero-video.mp4"
+              src="/videos/rental-hero-video.mp4"
               type="video/mp4"
             />
           </video>
@@ -75,7 +66,7 @@ export function AboutContent() {
           className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ${videoLoaded && !videoError ? "opacity-0" : "opacity-100"
             }`}
           style={{
-            backgroundImage: `url('/nairobi-city-skyline-at-sunset-panoramic.jpg')`,
+            backgroundImage: `url('/kenya-rentals-bg-v2.png')`,
           }}
         />
 
@@ -95,24 +86,7 @@ export function AboutContent() {
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-16 bg-secondary/30">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {stats.map((stat, index) => (
-              <Card key={index} className="glass-card border-border/50 text-center">
-                <CardContent className="pt-6">
-                  <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
-                    <stat.icon className="h-6 w-6 text-primary" />
-                  </div>
-                  <div className="text-3xl font-bold text-foreground">{stat.value}</div>
-                  <div className="text-sm text-muted-foreground">{stat.label}</div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
+
 
       {/* Story Section */}
       <section className="py-20">
@@ -174,34 +148,7 @@ export function AboutContent() {
         </div>
       </section>
 
-      {/* Team Section */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Meet Our Team</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">The passionate people behind leli rentals.</p>
-          </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {team.map((member, index) => (
-              <Card key={index} className="glass-card border-border/50 overflow-hidden group">
-                <div className="relative h-48 overflow-hidden">
-                  <Image
-                    src={member.image || "/placeholder.svg"}
-                    alt={member.name}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                </div>
-                <CardContent className="pt-4 text-center">
-                  <h3 className="font-semibold">{member.name}</h3>
-                  <p className="text-sm text-muted-foreground">{member.role}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
     </div>
   )
 }

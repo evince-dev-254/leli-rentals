@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Check, Crown, Zap, AlertCircle, CreditCard, Loader2 } from "lucide-react"
+import { Check, Crown, Zap, AlertCircle, CreditCard, Loader2, Tag } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -19,8 +19,7 @@ const plans = [
     price: 500,
     duration: "7 days",
     listingLimit: 10,
-    features: ["Up to 10 listings", "Basic analytics", "Email support", "Standard visibility"],
-    popular: false,
+    commitment: "Low, flexible",
   },
   {
     id: "monthly",
@@ -28,15 +27,7 @@ const plans = [
     price: 1000,
     duration: "30 days",
     listingLimit: -1, // Unlimited
-    features: [
-      "Unlimited listings",
-      "Advanced analytics",
-      "Priority support",
-      "Featured listings",
-      "Promotional tools",
-      "Early access to features",
-    ],
-    popular: true,
+    commitment: "High value, stable",
   },
 ]
 
@@ -193,55 +184,75 @@ export function SubscriptionPage() {
       </Card>
 
       {/* Plans */}
-      <div>
-        <h2 className="text-xl font-semibold mb-4">Choose Your Plan</h2>
-        <div className="grid gap-6 md:grid-cols-2">
-          {plans.map((plan) => (
-            <Card
-              key={plan.id}
-              className={`glass-card relative ${plan.popular ? "border-primary ring-2 ring-primary/20" : ""}`}
-            >
-              {plan.popular && (
-                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary">Most Popular</Badge>
-              )}
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  {plan.popular ? <Zap className="h-5 w-5 text-primary" /> : <Crown className="h-5 w-5" />}
-                  {plan.name}
-                </CardTitle>
-                <CardDescription>{plan.duration} duration</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div>
-                  <span className="text-4xl font-bold">KSh {plan.price.toLocaleString()}</span>
-                  <span className="text-muted-foreground">/{plan.duration === "7 days" ? "week" : "month"}</span>
-                </div>
+      {/* Plans Table */}
+      <div className="rounded-xl border border-border bg-card/50 overflow-hidden glass-card">
+        <div className="p-6 border-b border-border/50">
+          <h2 className="text-xl font-semibold flex items-center gap-2">
+            <Tag className="h-5 w-5 text-orange-400" />
+            Choose Your Listing Plan
+          </h2>
+        </div>
 
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 p-3 rounded-lg bg-primary/10">
-                    <Check className="h-4 w-4 text-primary" />
-                    <span className="font-medium">
-                      {plan.listingLimit === -1 ? "Unlimited" : `Up to ${plan.listingLimit}`} listings
-                    </span>
-                  </div>
-                  {plan.features.slice(1).map((feature) => (
-                    <div key={feature} className="flex items-center gap-2">
-                      <Check className="h-4 w-4 text-green-500" />
-                      <span className="text-sm">{feature}</span>
-                    </div>
-                  ))}
-                </div>
+        <div className="grid grid-cols-[1.5fr,1fr,1fr] divide-y divide-border/50">
+          {/* Header Row */}
+          <div className="grid grid-cols-[1.5fr,1fr,1fr] divide-x divide-border/50 bg-muted/20">
+            <div className="p-4 font-medium text-muted-foreground">Feature</div>
+            <div className="p-4 font-medium text-center">Weekly Plan</div>
+            <div className="p-4 font-medium text-center">Monthly Plan</div>
+          </div>
 
-                <Button
-                  className={`w-full ${plan.popular ? "bg-primary text-primary-foreground" : ""}`}
-                  variant={plan.popular ? "default" : "outline"}
-                  onClick={() => handleSubscribe(plan.id)}
-                >
-                  {currentPlan.name === plan.name ? "Renew Plan" : "Subscribe"}
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
+          {/* Price Row */}
+          <div className="grid grid-cols-[1.5fr,1fr,1fr] divide-x divide-border/50 hover:bg-muted/10 transition-colors">
+            <div className="p-4 font-medium">Price</div>
+            <div className="p-4 text-center font-bold text-lg">Ksh 500</div>
+            <div className="p-4 text-center font-bold text-lg">Ksh 1,000</div>
+          </div>
+
+          {/* Listing Limit Row */}
+          <div className="grid grid-cols-[1.5fr,1fr,1fr] divide-x divide-border/50 hover:bg-muted/10 transition-colors">
+            <div className="p-4 font-medium">Listing Limit</div>
+            <div className="p-4 text-center">Up to 10 listings</div>
+            <div className="p-4 text-center font-bold text-primary">Unlimited listings</div>
+          </div>
+
+          {/* Duration Row */}
+          <div className="grid grid-cols-[1.5fr,1fr,1fr] divide-x divide-border/50 hover:bg-muted/10 transition-colors">
+            <div className="p-4 font-medium">Duration</div>
+            <div className="p-4 text-center">7 days</div>
+            <div className="p-4 text-center">30 days</div>
+          </div>
+
+          {/* Commitment Row */}
+          <div className="grid grid-cols-[1.5fr,1fr,1fr] divide-x divide-border/50 hover:bg-muted/10 transition-colors">
+            <div className="p-4 font-medium">Commitment</div>
+            <div className="p-4 text-center text-muted-foreground">Low, flexible</div>
+            <div className="p-4 text-center text-muted-foreground">High value, stable</div>
+          </div>
+
+          {/* Action Row */}
+          <div className="grid grid-cols-[1.5fr,1fr,1fr] divide-x divide-border/50 bg-muted/10">
+            <div className="p-4"></div>
+            <div className="p-4 text-center">
+              <Button
+                variant={currentPlan.name === 'Weekly Plan' ? "outline" : "default"}
+                className={`w-full ${currentPlan.name === 'Weekly Plan' ? "border-primary/50" : ""}`}
+                disabled={currentPlan.name === 'Weekly Plan'}
+                onClick={() => handleSubscribe('weekly')}
+              >
+                {currentPlan.name === 'Weekly Plan' ? 'Active' : 'Select'}
+              </Button>
+            </div>
+            <div className="p-4 text-center">
+              <Button
+                variant={currentPlan.name === 'Monthly Plan' ? "outline" : "default"}
+                className={`w-full ${currentPlan.name !== 'Monthly Plan' ? "bg-primary text-primary-foreground" : "border-primary/50"}`}
+                disabled={currentPlan.name === 'Monthly Plan'}
+                onClick={() => handleSubscribe('monthly')}
+              >
+                {currentPlan.name === 'Monthly Plan' ? 'Active' : 'Select'}
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
 

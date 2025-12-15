@@ -36,7 +36,7 @@ export const allLinks = [
   { href: "/dashboard/payments", label: "Payments", icon: Receipt, roles: ["renter"] }, // New for Renters
   { href: "/dashboard/reviews", label: "My Reviews", icon: Star, roles: ["renter"] },
   { href: "/dashboard/subscription", label: "Subscription", icon: CreditCard, roles: ["owner", "admin"] },
-  { href: "/dashboard/verification", label: "Verification", icon: ShieldCheck, badge: "Pending", roles: ["owner", "affiliate"] }, // Removed for renter
+  { href: "/dashboard/verification", label: "Verification", icon: ShieldCheck, badge: "Pending", roles: ["owner"] }, // Removed for renter and affiliate
   { href: "/dashboard/settings", label: "Settings", icon: Settings, roles: ["owner", "renter", "affiliate", "admin"] },
 ]
 

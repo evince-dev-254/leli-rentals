@@ -7,7 +7,6 @@ const platformLinks = [
   { name: "About Us", href: "/about" },
   { name: "Pricing", href: "/pricing" },
   { name: "Contact", href: "/contact" },
-  { name: "Careers", href: "/careers" },
 ]
 
 const categoryLinks = [
@@ -96,7 +95,7 @@ export function Footer() {
             <ul className="space-y-3">
               <li className="flex items-start gap-2 text-muted-foreground">
                 <MapPin className="h-5 w-5 shrink-0 mt-0.5" />
-                <span>123 Rental Street, Nairobi, Kenya 00100</span>
+                <span>Sarah Plaza, Meru town, 5th floor</span>
               </li>
               <li className="flex items-center gap-2 text-muted-foreground">
                 <Phone className="h-5 w-5 shrink-0" />
@@ -104,7 +103,7 @@ export function Footer() {
               </li>
               <li className="flex items-center gap-2 text-muted-foreground">
                 <Mail className="h-5 w-5 shrink-0" />
-                <span>info@leli.rentals</span>
+                <span>support@leli.rentals</span>
               </li>
             </ul>
           </div>
@@ -113,7 +112,7 @@ export function Footer() {
         {/* Bottom Bar */}
         <div className="mt-12 pt-8 border-t border-border/50 flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="flex flex-col md:flex-row gap-2 items-center">
-            <p className="text-sm text-muted-foreground">© 2025 leli rentals. All rights reserved.</p>
+            <p className="text-sm text-muted-foreground">© 2025 Leli Rentals. All rights reserved.</p>
             <span className="hidden md:inline text-muted-foreground">•</span>
             <p className="text-sm text-muted-foreground">
               Developed by <a href="#" className="hover:text-primary transition-colors">GuruCrafts Agency</a>
