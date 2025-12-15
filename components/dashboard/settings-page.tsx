@@ -203,7 +203,7 @@ export function SettingsPage() {
                 </div>
                 <div className="space-y-2">
                   <Label>Phone</Label>
-                  <Input name="phone" value={formData.phone} onChange={handleChange} placeholder="+254..." />
+                  <Input name="phone" value={formData.phone} onChange={handleChange} placeholder="e.g. +254 712 345 678" />
                 </div>
                 <div className="space-y-2">
                   <Label>Location</Label>

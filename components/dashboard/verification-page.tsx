@@ -40,17 +40,26 @@ export function VerificationPage() {
 
   const fetchDocuments = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
+      console.log("fetchDocuments: Starting...")
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      console.log("fetchDocuments: Auth User:", user?.id, "Error:", authError)
+
       if (user) {
-        const data = await getVerifications(user.id)
-        setDocuments(data || [])
+        // Use API route instead of Server Action for reliability
+        const res = await fetch('/api/verifications')
+        if (res.ok) {
+          const data = await res.json()
+          setDocuments(data || [])
+        } else {
+          console.error("Failed to fetch verifications API")
+        }
 
         // Fetch Profile
         const { data: profile } = await supabase
           .from('user_profiles')
           .select('*')
           .eq('id', user.id)
-          .single()
+          .maybeSingle()
 
         if (profile) {
           setDob(profile.date_of_birth || "")
@@ -156,6 +165,30 @@ export function VerificationPage() {
 
   const isVerified = documents.some(d => d.status === 'approved')
   const isPending = documents.some(d => d.status === 'pending')
+  const isRejected = documents.some(d => d.status === 'rejected')
+  const hasDocuments = documents.length > 0
+
+  let statusTitle = "Verification Required"
+  let statusDesc = "Please submit your documents to verify your identity."
+  let statusColor = "orange"
+  let StatusIcon = AlertTriangle
+
+  if (isVerified) {
+    statusTitle = "Verification Complete"
+    statusDesc = "Your account is fully verified. You can now list items and accept bookings."
+    statusColor = "green"
+    StatusIcon = CheckCircle
+  } else if (isPending) {
+    statusTitle = "Verification in Progress"
+    statusDesc = "Your documents have been received and are currently under review. This process usually takes up to 5 business days."
+    statusColor = "blue"
+    StatusIcon = Clock
+  } else if (isRejected) {
+    statusTitle = "Verification Failed"
+    statusDesc = "Please check the rejection reason below and re-submit your documents."
+    statusColor = "red"
+    StatusIcon = X
+  }
 
   if (loading) return <div className="flex justify-center p-20"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>
 
@@ -168,20 +201,18 @@ export function VerificationPage() {
       </div>
 
       {/* Status Card */}
-      <Card className={`border-l-4 ${isVerified ? "border-l-green-500 bg-green-500/5" : "border-l-orange-500 bg-orange-500/5"}`}>
+      <Card className={`border-l-4 border-l-${statusColor}-500 bg-${statusColor}-500/5`}>
         <CardContent className="pt-6">
           <div className="flex items-start gap-4">
-            <div className={`p-3 rounded-full ${isVerified ? "bg-green-500/10" : "bg-orange-500/10"}`}>
-              {isVerified ? <CheckCircle className="h-6 w-6 text-green-500" /> : <AlertTriangle className="h-6 w-6 text-orange-500" />}
+            <div className={`p-3 rounded-full bg-${statusColor}-500/10`}>
+              <StatusIcon className={`h-6 w-6 text-${statusColor}-500`} />
             </div>
             <div className="flex-1">
-              <h3 className={`font-semibold mb-1 ${isVerified ? "text-green-600" : "text-orange-600"}`}>
-                {isVerified ? "Verification Complete" : "Verification Pending"}
+              <h3 className={`font-semibold mb-1 text-${statusColor}-600`}>
+                {statusTitle}
               </h3>
               <p className="text-sm text-muted-foreground mb-3">
-                {isVerified
-                  ? "Your account is fully verified. You can now list items and accept bookings."
-                  : "Submit all required documents to verify your identity."}
+                {statusDesc}
               </p>
             </div>
           </div>
@@ -235,7 +266,7 @@ export function VerificationPage() {
               <div className="space-y-2">
                 <Label>Phone Number</Label>
                 <Input
-                  placeholder="+254..."
+                  placeholder="e.g. +254 712 345 678"
                   value={nokPhone}
                   onChange={(e) => setNokPhone(e.target.value)}
                 />
@@ -257,29 +288,36 @@ export function VerificationPage() {
           ) : (
             <div className="space-y-4">
               {documents.map((doc) => (
-                <div
-                  key={doc.id}
-                  className="flex items-center justify-between p-4 rounded-lg bg-background/50 border border-border"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="p-2 rounded-lg bg-primary/10">
-                      <FileText className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <p className="font-medium capitalize">{doc.document_type.replace('_', ' ')}</p>
-                      <div className="flex flex-col gap-1">
-                        <a href={doc.document_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-500 hover:underline">View Front</a>
-                        {doc.back_image_url && <a href={doc.back_image_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-500 hover:underline">View Back</a>}
-                        {doc.selfie_image_url && <a href={doc.selfie_image_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-500 hover:underline">View Selfie</a>}
+                <div key={doc.id} className="space-y-2">
+                  <div className="flex items-center justify-between p-4 rounded-lg bg-background/50 border border-border">
+                    <div className="flex items-center gap-4">
+                      <div className="p-2 rounded-lg bg-primary/10">
+                        <FileText className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <p className="font-medium capitalize">{doc.document_type.replace('_', ' ')}</p>
+                        <div className="flex flex-col gap-1">
+                          <a href={doc.document_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-500 hover:underline">View Front</a>
+                          {doc.back_image_url && <a href={doc.back_image_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-500 hover:underline">View Back</a>}
+                          {doc.selfie_image_url && <a href={doc.selfie_image_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-500 hover:underline">View Selfie</a>}
+                        </div>
                       </div>
                     </div>
+                    <div className="flex items-center gap-3">
+                      <Badge className={`
+                        ${doc.status === 'approved' ? 'bg-green-500' : ''}
+                        ${doc.status === 'pending' ? 'bg-blue-500' : ''}
+                        ${doc.status === 'rejected' ? 'bg-red-500' : ''}
+                      `}>
+                        {doc.status}
+                      </Badge>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <Badge className={`${doc.status === 'approved' ? 'bg-green-500' : 'bg-orange-500'}`}>
-                      {doc.status}
-                    </Badge>
-                    {/* Delete button logic could go here */}
-                  </div>
+                  {doc.status === 'rejected' && doc.rejection_reason && (
+                    <div className="p-3 bg-red-500/10 rounded-lg text-sm text-red-600 border border-red-500/20">
+                      <span className="font-semibold">Reason:</span> {doc.rejection_reason}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

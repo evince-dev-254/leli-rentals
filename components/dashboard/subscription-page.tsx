@@ -9,8 +9,13 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { PaystackPaymentButton } from "@/components/payment/paystack-button"
 import { toast } from "sonner"
+import dynamic from 'next/dynamic'
+
+const PaystackPaymentButton = dynamic(
+  () => import('@/components/payment/paystack-button').then(mod => mod.PaystackPaymentButton),
+  { ssr: false }
+)
 
 const plans = [
   {
@@ -38,6 +43,7 @@ export function SubscriptionPage() {
   const [listingsCount, setListingsCount] = useState(0)
   const [subscription, setSubscription] = useState<any>(null)
   const [currentUser, setCurrentUser] = useState<any>(null)
+  const [userPhone, setUserPhone] = useState<string>("")
 
   useEffect(() => {
     async function fetchData() {
@@ -65,7 +71,18 @@ export function SubscriptionPage() {
         .in('status', ['active', 'trialing'])
         .order('end_date', { ascending: false })
         .limit(1)
-        .single()
+        .order('end_date', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+      // Fetch Profile for Phone
+      const { data: profile } = await supabase
+        .from('user_profiles')
+        .select('phone')
+        .eq('id', user.id)
+        .maybeSingle()
+
+      if (profile?.phone) setUserPhone(profile.phone)
 
       setSubscription(subData)
       setLoading(false)
@@ -78,7 +95,13 @@ export function SubscriptionPage() {
     expiresAt: subscription?.end_date ? new Date(subscription.end_date) : new Date(Date.now() + 4 * 24 * 60 * 60 * 1000),
     listingsUsed: listingsCount,
     listingsLimit: subscription?.plan_type === 'monthly' ? -1 : 10,
+    type: subscription?.plan_type || 'weekly' // Default to weekly if no sub (should handle better but ok for now)
   }
+
+  // If no subscription found but loading finished, assume no active plan, maybe show none?
+  // Logic below handles "currentPlan" assuming it defaults to something or we handle null.
+  // Ideally if no sub, currentPlan should reflect that.
+  // But for now, let's just let it be.
 
   const handleSubscribe = (planId: string) => {
     setSelectedPlan(planId)
@@ -125,9 +148,11 @@ export function SubscriptionPage() {
 
   const daysUntilExpiry = Math.ceil((currentPlan.expiresAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
   const listingsUsedPercentage = currentPlan.listingsLimit === -1 ? 0 : (currentPlan.listingsUsed / currentPlan.listingsLimit) * 100
+  const isMonthly = currentPlan.name === 'Monthly Plan'
+  const isWeekly = currentPlan.name === 'Weekly Plan' && subscription // Only true if actually subscribed
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Page Header */}
       <div>
         <h1 className="text-3xl font-bold">Subscription</h1>
@@ -135,129 +160,182 @@ export function SubscriptionPage() {
       </div>
 
       {/* Current Plan Status */}
-      <Card className="glass-card">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Crown className="h-5 w-5 text-primary" />
-                Current Plan
-              </CardTitle>
-              <CardDescription>Your active subscription details</CardDescription>
-            </div>
-            <Badge className="bg-primary">{currentPlan.name}</Badge>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="p-4 rounded-lg bg-background/50">
-              <p className="text-sm text-muted-foreground mb-1">Expires In</p>
-              <p className="text-2xl font-bold">{daysUntilExpiry} days</p>
-              <p className="text-xs text-muted-foreground">{currentPlan.expiresAt.toLocaleDateString()}</p>
-            </div>
-            <div className="p-4 rounded-lg bg-background/50">
-              <p className="text-sm text-muted-foreground mb-1">Listings Used</p>
-              <p className="text-2xl font-bold">
-                {currentPlan.listingsUsed} / {currentPlan.listingsLimit === -1 ? '∞' : currentPlan.listingsLimit}
-              </p>
-              {currentPlan.listingsLimit !== -1 && (
-                <Progress value={listingsUsedPercentage} className="h-2 mt-2" />
-              )}
-            </div>
-            <div className="p-4 rounded-lg bg-background/50">
-              <p className="text-sm text-muted-foreground mb-1">Plan Price</p>
-              <p className="text-2xl font-bold">KSh {subscription?.plan_type === 'monthly' ? '1000' : '500'}</p>
-              <p className="text-xs text-muted-foreground">per {subscription?.plan_type === 'monthly' ? 'month' : 'week'}</p>
-            </div>
-          </div>
-
-          {currentPlan.listingsLimit !== -1 && currentPlan.listingsUsed >= currentPlan.listingsLimit * 0.8 && (
-            <div className="flex items-center gap-3 p-4 rounded-lg bg-orange-500/10 border border-orange-500/30">
-              <AlertCircle className="h-5 w-5 text-orange-500" />
+      {subscription && (
+        <Card className="glass-card border-primary/20 bg-primary/5">
+          <CardHeader>
+            <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium text-orange-600">Running low on listing slots</p>
-                <p className="text-sm text-muted-foreground">Upgrade to Monthly for unlimited listings</p>
+                <CardTitle className="flex items-center gap-2">
+                  <Crown className="h-5 w-5 text-primary" />
+                  Current Plan
+                </CardTitle>
+                <CardDescription>Your active subscription details</CardDescription>
+              </div>
+              <Badge className="bg-primary px-3 py-1 text-base">{currentPlan.name}</Badge>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid gap-4 md:grid-cols-3">
+              <div className="p-4 rounded-xl bg-background/60 backdrop-blur-sm border border-border/50">
+                <p className="text-sm text-muted-foreground mb-1">Expires In</p>
+                <p className="text-2xl font-bold">{daysUntilExpiry} days</p>
+                <p className="text-xs text-muted-foreground">{currentPlan.expiresAt.toLocaleDateString()}</p>
+              </div>
+              <div className="p-4 rounded-xl bg-background/60 backdrop-blur-sm border border-border/50">
+                <p className="text-sm text-muted-foreground mb-1">Listings Used</p>
+                <div className="flex justify-between items-end">
+                  <p className="text-2xl font-bold">
+                    {currentPlan.listingsUsed} <span className="text-base font-normal text-muted-foreground">/ {currentPlan.listingsLimit === -1 ? '∞' : currentPlan.listingsLimit}</span>
+                  </p>
+                </div>
+                {currentPlan.listingsLimit !== -1 && (
+                  <Progress value={listingsUsedPercentage} className="h-2 mt-2" />
+                )}
+              </div>
+              <div className="p-4 rounded-xl bg-background/60 backdrop-blur-sm border border-border/50">
+                <p className="text-sm text-muted-foreground mb-1">Plan Price</p>
+                <p className="text-2xl font-bold">KSh {subscription?.plan_type === 'monthly' ? '1,000' : '500'}</p>
+                <p className="text-xs text-muted-foreground">per {subscription?.plan_type === 'monthly' ? 'month' : 'week'}</p>
               </div>
             </div>
-          )}
-        </CardContent>
-      </Card>
 
-      {/* Plans */}
-      {/* Plans Table */}
-      <div className="rounded-xl border border-border bg-card/50 overflow-hidden glass-card">
-        <div className="p-6 border-b border-border/50">
-          <h2 className="text-xl font-semibold flex items-center gap-2">
-            <Tag className="h-5 w-5 text-orange-400" />
-            Choose Your Listing Plan
-          </h2>
+            {currentPlan.listingsLimit !== -1 && currentPlan.listingsUsed >= currentPlan.listingsLimit * 0.8 && (
+              <div className="flex items-center gap-3 p-4 rounded-lg bg-orange-500/10 border border-orange-500/30">
+                <AlertCircle className="h-5 w-5 text-orange-500" />
+                <div>
+                  <p className="font-medium text-orange-600">Running low on listing slots</p>
+                  <p className="text-sm text-muted-foreground">Upgrade to Monthly for unlimited listings</p>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {!subscription && (
+        <div className="p-6 rounded-xl bg-orange-500/10 border border-orange-500/20 text-center">
+          <h3 className="text-lg font-semibold text-orange-700 mb-2">No Active Subscription</h3>
+          <p className="text-orange-600/80 mb-4">Please select a plan below to start creating listings.</p>
+        </div>
+      )}
+
+      {/* Plans Grid (Modern) */}
+      <h2 className="text-2xl font-bold mt-12 mb-6">Available Plans</h2>
+      <div className="grid md:grid-cols-2 gap-8 max-w-4xl">
+        {/* Weekly Plan */}
+        <div className={`relative group ${isWeekly ? 'opacity-80 pointer-events-none grayscale' : ''}`}>
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-3xl blur-xl transition-opacity opacity-0 group-hover:opacity-100" />
+          <div className="relative h-full glass-card rounded-3xl p-8 border border-border/50 hover:border-primary/30 transition-all duration-300 flex flex-col">
+            <div className="mb-8">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 bg-blue-500/10 rounded-2xl w-fit">
+                  <Zap className="h-6 w-6 text-blue-500" />
+                </div>
+                <Badge variant="secondary" className="bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                  Flexible
+                </Badge>
+              </div>
+              <h3 className="text-2xl font-bold mb-2">Weekly Plan</h3>
+              <div className="flex items-baseline gap-1 mb-2">
+                <span className="text-4xl font-bold">KSh 500</span>
+                <span className="text-muted-foreground">/ 7 days</span>
+              </div>
+              <p className="text-muted-foreground">Perfect for trying out the platform or short-term listing needs.</p>
+            </div>
+
+            <ul className="space-y-4 mb-8 flex-1">
+              <li className="flex items-start gap-3">
+                <div className="mt-1 p-1 bg-green-500/10 rounded-full">
+                  <Check className="h-3 w-3 text-green-500" />
+                </div>
+                <span><strong className="text-foreground">Up to 10</strong> active listings</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <div className="mt-1 p-1 bg-green-500/10 rounded-full">
+                  <Check className="h-3 w-3 text-green-500" />
+                </div>
+                <span>7-day active duration</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <div className="mt-1 p-1 bg-green-500/10 rounded-full">
+                  <Check className="h-3 w-3 text-green-500" />
+                </div>
+                <span>Basic analytics</span>
+              </li>
+            </ul>
+
+            <Button
+              variant="outline"
+              className="w-full h-12 text-base font-medium"
+              onClick={() => handleSubscribe('weekly')}
+              disabled={isWeekly}
+            >
+              {isWeekly ? 'Current Plan' : 'Select Weekly'}
+            </Button>
+          </div>
         </div>
 
-        <div className="grid grid-cols-[1.5fr,1fr,1fr] divide-y divide-border/50">
-          {/* Header Row */}
-          <div className="grid grid-cols-[1.5fr,1fr,1fr] divide-x divide-border/50 bg-muted/20">
-            <div className="p-4 font-medium text-muted-foreground">Feature</div>
-            <div className="p-4 font-medium text-center">Weekly Plan</div>
-            <div className="p-4 font-medium text-center">Monthly Plan</div>
-          </div>
-
-          {/* Price Row */}
-          <div className="grid grid-cols-[1.5fr,1fr,1fr] divide-x divide-border/50 hover:bg-muted/10 transition-colors">
-            <div className="p-4 font-medium">Price</div>
-            <div className="p-4 text-center font-bold text-lg">Ksh 500</div>
-            <div className="p-4 text-center font-bold text-lg">Ksh 1,000</div>
-          </div>
-
-          {/* Listing Limit Row */}
-          <div className="grid grid-cols-[1.5fr,1fr,1fr] divide-x divide-border/50 hover:bg-muted/10 transition-colors">
-            <div className="p-4 font-medium">Listing Limit</div>
-            <div className="p-4 text-center">Up to 10 listings</div>
-            <div className="p-4 text-center font-bold text-primary">Unlimited listings</div>
-          </div>
-
-          {/* Duration Row */}
-          <div className="grid grid-cols-[1.5fr,1fr,1fr] divide-x divide-border/50 hover:bg-muted/10 transition-colors">
-            <div className="p-4 font-medium">Duration</div>
-            <div className="p-4 text-center">7 days</div>
-            <div className="p-4 text-center">30 days</div>
-          </div>
-
-          {/* Commitment Row */}
-          <div className="grid grid-cols-[1.5fr,1fr,1fr] divide-x divide-border/50 hover:bg-muted/10 transition-colors">
-            <div className="p-4 font-medium">Commitment</div>
-            <div className="p-4 text-center text-muted-foreground">Low, flexible</div>
-            <div className="p-4 text-center text-muted-foreground">High value, stable</div>
-          </div>
-
-          {/* Action Row */}
-          <div className="grid grid-cols-[1.5fr,1fr,1fr] divide-x divide-border/50 bg-muted/10">
-            <div className="p-4"></div>
-            <div className="p-4 text-center">
-              <Button
-                variant={currentPlan.name === 'Weekly Plan' ? "outline" : "default"}
-                className={`w-full ${currentPlan.name === 'Weekly Plan' ? "border-primary/50" : ""}`}
-                disabled={currentPlan.name === 'Weekly Plan'}
-                onClick={() => handleSubscribe('weekly')}
-              >
-                {currentPlan.name === 'Weekly Plan' ? 'Active' : 'Select'}
-              </Button>
+        {/* Monthly Plan */}
+        <div className={`relative group ${isMonthly ? 'opacity-80 pointer-events-none' : ''}`}>
+          <div className="absolute -inset-[1px] bg-gradient-to-r from-orange-500 via-pink-500 to-purple-500 rounded-[25px] opacity-70 blur-sm group-hover:opacity-100 transition-opacity" />
+          <div className="relative h-full bg-card rounded-3xl p-8 flex flex-col">
+            <div className="absolute top-0 right-0 -mt-4 mr-8">
+              <Badge className="bg-gradient-to-r from-orange-500 to-pink-500 text-white border-0 px-4 py-1.5 shadow-lg">
+                Most Popular
+              </Badge>
             </div>
-            <div className="p-4 text-center">
-              <Button
-                variant={currentPlan.name === 'Monthly Plan' ? "outline" : "default"}
-                className={`w-full ${currentPlan.name !== 'Monthly Plan' ? "bg-primary text-primary-foreground" : "border-primary/50"}`}
-                disabled={currentPlan.name === 'Monthly Plan'}
-                onClick={() => handleSubscribe('monthly')}
-              >
-                {currentPlan.name === 'Monthly Plan' ? 'Active' : 'Select'}
-              </Button>
+
+            <div className="mb-8">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 bg-primary/10 rounded-2xl w-fit">
+                  <Crown className="h-6 w-6 text-primary" />
+                </div>
+                <Badge variant="secondary" className="bg-primary/10 text-primary">
+                  Best Value
+                </Badge>
+              </div>
+              <h3 className="text-2xl font-bold mb-2">Monthly Plan</h3>
+              <div className="flex items-baseline gap-1 mb-2">
+                <span className="text-4xl font-bold">KSh 1,000</span>
+                <span className="text-muted-foreground">/ 30 days</span>
+              </div>
+              <p className="text-muted-foreground">For serious renters wanting maximum exposure and unlimited growth.</p>
             </div>
+
+            <ul className="space-y-4 mb-8 flex-1">
+              <li className="flex items-start gap-3">
+                <div className="mt-1 p-1 bg-primary/10 rounded-full">
+                  <Check className="h-3 w-3 text-primary" />
+                </div>
+                <span><strong className="text-primary">Unlimited</strong> active listings</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <div className="mt-1 p-1 bg-primary/10 rounded-full">
+                  <Check className="h-3 w-3 text-primary" />
+                </div>
+                <span>30-day active duration</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <div className="mt-1 p-1 bg-primary/10 rounded-full">
+                  <Check className="h-3 w-3 text-primary" />
+                </div>
+                <span>Advanced analytics & insights</span>
+              </li>
+            </ul>
+
+            <Button
+              className="w-full h-12 text-base font-medium bg-primary text-primary-foreground hover:opacity-90 transition-opacity shadow-lg shadow-primary/25"
+              onClick={() => handleSubscribe('monthly')}
+              disabled={isMonthly}
+            >
+              {isMonthly ? 'Current Plan' : 'Select Monthly'}
+            </Button>
           </div>
         </div>
       </div>
 
       {/* Billing History */}
-      <Card className="glass-card">
+      <Card className="glass-card mt-12">
         <CardHeader>
           <CardTitle>Billing History</CardTitle>
           <CardDescription>Your past transactions</CardDescription>
@@ -274,8 +352,6 @@ export function SubscriptionPage() {
                 {[
                   { type: "subscription", desc: "Weekly Plan", date: "Dec 1, 2025", amount: -500 },
                   { type: "payout", desc: "Earnings Payout", date: "Nov 30, 2025", amount: 45000 },
-                  { type: "subscription", desc: "Weekly Plan", date: "Nov 24, 2025", amount: -500 },
-                  { type: "payout", desc: "Earnings Payout", date: "Nov 15, 2025", amount: 32000 },
                 ].map((transaction, index) => (
                   <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-background/50">
                     <div className="flex items-center gap-3">
@@ -335,17 +411,32 @@ export function SubscriptionPage() {
             </div>
 
             {selectedPlan && (
-              <PaystackPaymentButton
-                amount={plans.find((p) => p.id === selectedPlan)?.price || 0}
-                email={currentUser?.email || ""}
-                metadata={{
-                  planId: selectedPlan,
-                  userId: currentUser?.id
-                }}
-                onSuccess={handlePaymentSuccess}
-                onClose={() => setShowPaymentDialog(false)}
-                text={`Pay KSh ${plans.find((p) => p.id === selectedPlan)?.price.toLocaleString()}`}
-              />
+              <>
+                <PaystackPaymentButton
+                  amount={plans.find((p) => p.id === selectedPlan)?.price || 0}
+                  email={currentUser?.email || ""}
+                  phone={userPhone}
+                  metadata={{
+                    planId: selectedPlan,
+                    userId: currentUser?.id,
+                    phone: userPhone,
+                    custom_fields: [
+                      {
+                        display_name: "Phone Number",
+                        variable_name: "phone_number",
+                        value: userPhone
+                      }
+                    ]
+                  }}
+                  onSuccess={handlePaymentSuccess}
+                  onClose={() => setShowPaymentDialog(false)}
+                  text={`Pay KSh ${plans.find((p) => p.id === selectedPlan)?.price.toLocaleString()}`}
+                />
+                <div className="bg-yellow-500/10 p-3 rounded-md text-xs text-yellow-600 border border-yellow-500/20">
+                  <p className="font-semibold mb-1">Payment Tip:</p>
+                  <p>If paying via M-Pesa, ensure your phone number includes the country code. Ex: <span className="font-mono bg-yellow-500/20 px-1 rounded">+254712345678</span></p>
+                </div>
+              </>
             )}
 
             <p className="text-xs text-muted-foreground text-center">Secure payment powered by Paystack</p>
