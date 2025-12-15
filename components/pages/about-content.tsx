@@ -41,32 +41,11 @@ export function AboutContent() {
       {/* Hero Section with Video Background */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
         {/* Video Background */}
-        {!videoError && (
-          <video
-            key="kenya-rentals-video-v3"
-            autoPlay
-            muted
-            loop
-            playsInline
-            poster="/kenya-rentals-bg-v2.png"
-            onLoadedData={() => setVideoLoaded(true)}
-            onError={() => setVideoError(true)}
-            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${videoLoaded ? "opacity-100" : "opacity-0"
-              }`}
-          >
-            <source
-              src="/videos/rental-hero-video.mp4"
-              type="video/mp4"
-            />
-          </video>
-        )}
-
-        {/* Fallback Background Image */}
+        {/* Animated Background Image (Ken Burns Effect) */}
         <div
-          className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ${videoLoaded && !videoError ? "opacity-0" : "opacity-100"
-            }`}
+          className="absolute inset-0 bg-cover bg-center animate-ken-burns"
           style={{
-            backgroundImage: `url('/kenya-rentals-bg-v2.png')`,
+            backgroundImage: `url('/african-businessman.png')`,
           }}
         />
 
@@ -79,8 +58,7 @@ export function AboutContent() {
               About <span className="text-primary">leli rentals</span>
             </h1>
             <p className="text-xl text-white/80 text-pretty">
-              We&apos;re on a mission to transform how people access and share items. From vehicles to homes, equipment to
-              fashion, we connect you with what you need, when you need it.
+              Leli Rentals aims to modernize and simplify the rental experience by providing a trusted, seamless, and tech-driven marketplace that efficiently connects renters and listers, empowering the growth of the sharing economy.
             </p>
           </div>
         </div>
@@ -96,22 +74,18 @@ export function AboutContent() {
               <h2 className="text-3xl font-bold mb-6">Our Story</h2>
               <div className="space-y-4 text-muted-foreground">
                 <p>
-                  leli rentals was born from a simple observation: people own items they rarely use, while others
-                  struggle to access those same items when they need them most.
+                  Welcome to Leli Rentals, the premier modern, tech-inspired rental marketplace designed to simplify your search for the perfect item. We connect thousands of users across various categories, from vehicles and equipment to homes and fashion, all on one seamless platform.
                 </p>
                 <p>
-                  Founded in Nairobi in 2020, we started as a small platform connecting car owners with those who needed
-                  temporary transportation. Today, we&apos;ve grown to serve thousands of users across Kenya, offering
-                  everything from vehicles and homes to equipment and fashion items.
+                  Leli Rentals was founded in December 2025 with a singular vision: to revolutionize the rental experience. We recognized the growing need for a trusted, efficient, and streamlined platform to power the sharing economy in Kenya and beyond.
                 </p>
                 <p>
-                  Our commitment to verification and trust has made us the leading rental marketplace in East Africa. We
-                  verify every owner and affiliate within 5 days to ensure safe, secure transactions for our community.
+                  Our commitment is to your peace of mind. We leverage modern technology to provide easy search, verified listings, and an instant booking system. Whether you are looking to rent an item or earn money by listing your own, we are dedicated to making your experience secure, transparent, and effortlessly modern.
                 </p>
               </div>
             </div>
             <div className="relative h-[400px] rounded-2xl overflow-hidden">
-              <Image src="/modern-apartment-interior-with-city-skyline-view.jpg" alt="Nairobi Skyline" fill className="object-cover" />
+              <Image src="/african-businessman.png" alt="Leli Rentals Team" fill className="object-cover" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
               <div className="absolute bottom-6 left-6 text-white">
                 <p className="text-lg font-semibold">Proudly Kenyan</p>

@@ -131,8 +131,8 @@ export function Header() {
       <div className="container mx-auto">
         <div
           className={`flex h-12 sm:h-14 items-center justify-between px-3 sm:px-6 rounded-full shadow-lg transition-all duration-300 ${isScrolled
-            ? "bg-[#1a1a2e]/80 backdrop-blur-md border border-[#2a2a4e]"
-            : "bg-black/10 backdrop-blur-sm border border-white/10"
+            ? "bg-[#1a1a2e]/95 backdrop-blur-md border border-[#2a2a4e]"
+            : "bg-black/80 backdrop-blur-md border border-white/10"
             }`}
         >
           {/* Logo */}

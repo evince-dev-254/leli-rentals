@@ -15,7 +15,7 @@ export function HeroSection() {
       <div
         className="absolute inset-0 bg-cover bg-center animate-ken-burns"
         style={{
-          backgroundImage: `url('/leli-hero-bg.jpg')`,
+          backgroundImage: `url('/leli-home-hero-corrected.png')`,
         }}
       />
 

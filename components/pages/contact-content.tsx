@@ -15,10 +15,10 @@ const contactMethods = [
   {
     icon: MessageCircle,
     title: "WhatsApp",
-    value: "+254112081866",
+    value: "+254785063461",
     description: "Quick responses, 9am - 9pm",
     action: "Chat Now",
-    href: "https://wa.me/254112081866",
+    href: "https://wa.me/254785063461",
   },
   {
     icon: Mail,
@@ -31,18 +31,10 @@ const contactMethods = [
   {
     icon: Phone,
     title: "Phone",
-    value: "+254112081866",
+    value: "+254785063461",
     description: "Mon - Fri, 9am - 6pm",
     action: "Call Us",
-    href: "tel:+254112081866",
-  },
-  {
-    icon: Clock,
-    title: "24/7 Emergency",
-    value: "+254112081866",
-    description: "For urgent rental issues",
-    action: "Call Now",
-    href: "tel:+254112081866",
+    href: "tel:+254785063461",
   },
 ]
 
@@ -50,17 +42,7 @@ const offices = [
   {
     city: "Meru",
     address: "Sarah Plaza 5th Floor, Meru County, Kenya",
-    phone: "+254112081866",
-  },
-  {
-    city: "Mombasa",
-    address: "Nyali Centre, 2nd Floor",
-    phone: "+254 700 123 457",
-  },
-  {
-    city: "Kisumu",
-    address: "Mega City Mall, Ground Floor",
-    phone: "+254 700 123 458",
+    phone: "+254785063461",
   },
 ]
 
@@ -99,7 +81,7 @@ export function ContactContent() {
       {/* Contact Methods */}
       <section className="py-16">
         <div className="container mx-auto px-4">
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {contactMethods.map((method, index) => (
               <Card
                 key={index}

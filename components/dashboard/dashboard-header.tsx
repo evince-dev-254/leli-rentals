@@ -76,7 +76,7 @@ export function DashboardHeader() {
   }
 
   return (
-    <header className="md:sticky md:top-0 z-40 h-14 md:h-16 border-b border-border bg-card/50 backdrop-blur-xl px-3 md:px-6 flex items-center justify-between">
+    <header className="md:sticky md:top-0 z-40 h-14 md:h-16 border-b border-border bg-card/95 backdrop-blur-xl px-3 md:px-6 flex items-center justify-between">
       {/* Search - Hidden on mobile */}
       <div className="hidden md:flex flex-1 max-w-md">
         <div className="relative w-full">
