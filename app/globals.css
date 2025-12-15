@@ -347,7 +347,7 @@ body {
   }
 
   100% {
-    transform: scale(1.15) translate(-2%, -2%);
+    transform: scale(1.05) translate(-1%, -1%);
   }
 }
 

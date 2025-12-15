@@ -45,7 +45,7 @@ export function AboutContent() {
         <div
           className="absolute inset-0 bg-cover bg-center animate-ken-burns"
           style={{
-            backgroundImage: `url('/african-businessman.png')`,
+            backgroundImage: `url('/kenyan-man-business.jpg')`,
           }}
         />
 
@@ -85,7 +85,7 @@ export function AboutContent() {
               </div>
             </div>
             <div className="relative h-[400px] rounded-2xl overflow-hidden">
-              <Image src="/african-businessman.png" alt="Leli Rentals Team" fill className="object-cover" />
+              <Image src="/kenyan-man-business.jpg" alt="Leli Rentals Founder" fill className="object-cover" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
               <div className="absolute bottom-6 left-6 text-white">
                 <p className="text-lg font-semibold">Proudly Kenyan</p>
