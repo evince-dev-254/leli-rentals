@@ -95,11 +95,11 @@ export function Footer() {
             <ul className="space-y-3">
               <li className="flex items-start gap-2 text-muted-foreground">
                 <MapPin className="h-5 w-5 shrink-0 mt-0.5" />
-                <span>Sarah Plaza, Meru town, 5th floor</span>
+                <span>Sarah Plaza 5th Floor, Meru County, Kenya</span>
               </li>
               <li className="flex items-center gap-2 text-muted-foreground">
                 <Phone className="h-5 w-5 shrink-0" />
-                <span>+254 112 081 866</span>
+                <span>+254112081866</span>
               </li>
               <li className="flex items-center gap-2 text-muted-foreground">
                 <Mail className="h-5 w-5 shrink-0" />

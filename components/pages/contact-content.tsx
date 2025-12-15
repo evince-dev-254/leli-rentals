@@ -15,10 +15,10 @@ const contactMethods = [
   {
     icon: MessageCircle,
     title: "WhatsApp",
-    value: "+254 700 123 456",
+    value: "+254112081866",
     description: "Quick responses, 9am - 9pm",
     action: "Chat Now",
-    href: "https://wa.me/254700123456",
+    href: "https://wa.me/254112081866",
   },
   {
     icon: Mail,
@@ -31,26 +31,26 @@ const contactMethods = [
   {
     icon: Phone,
     title: "Phone",
-    value: "+254 700 123 456",
+    value: "+254112081866",
     description: "Mon - Fri, 9am - 6pm",
     action: "Call Us",
-    href: "tel:+254700123456",
+    href: "tel:+254112081866",
   },
   {
     icon: Clock,
     title: "24/7 Emergency",
-    value: "+254 700 999 999",
+    value: "+254112081866",
     description: "For urgent rental issues",
     action: "Call Now",
-    href: "tel:+254700999999",
+    href: "tel:+254112081866",
   },
 ]
 
 const offices = [
   {
     city: "Meru",
-    address: "Sarah Plaza, Meru town, 5th floor",
-    phone: "+254 700 123 456",
+    address: "Sarah Plaza 5th Floor, Meru County, Kenya",
+    phone: "+254112081866",
   },
   {
     city: "Mombasa",
