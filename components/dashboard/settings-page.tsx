@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 import { updateProfile } from "@/lib/actions/dashboard-actions"
-import { User, Bell, Save, CreditCard, Plus, AlertCircle, Loader2, Eye, EyeOff } from "lucide-react"
+import { User, Bell, Save, CreditCard, Plus, AlertCircle, Loader2, Eye, EyeOff, ArrowLeft } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -113,9 +113,19 @@ export function SettingsPage() {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div>
-        <h1 className="text-3xl font-bold">Settings</h1>
-        <p className="text-muted-foreground">Manage your account preferences</p>
+      <div className="flex items-center gap-4">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-9 w-9"
+          onClick={() => router.push('/dashboard')}
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
+        <div>
+          <h1 className="text-3xl font-bold">Settings</h1>
+          <p className="text-muted-foreground">Manage your account preferences</p>
+        </div>
       </div>
 
       <Tabs defaultValue="profile" className="space-y-6">
@@ -148,7 +158,7 @@ export function SettingsPage() {
                   <Button
                     variant="outline"
                     className="bg-background"
-                    onClick={() => router.push('/select-role')}
+                    onClick={() => router.push('/select-role?force=true')}
                   >
                     Switch Account Type
                   </Button>

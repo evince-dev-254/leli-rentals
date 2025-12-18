@@ -20,7 +20,7 @@ export function FavoritesContent() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">My Favorites</h1>
           <p className="text-muted-foreground">
-            {favoriteListings.length} {favoriteListings.length === 1 ? "item" : "items"} saved
+            {favoriteListings.length} {favoriteListings.length === 1 ? "item" : "items"} saved for later
           </p>
         </div>
 

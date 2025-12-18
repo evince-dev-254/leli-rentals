@@ -4,8 +4,8 @@ import { FileText, Shield, Users, CreditCard, AlertCircle, Scale } from "lucide-
 import { Card, CardContent } from "@/components/ui/card"
 
 export const metadata = {
-  title: "Terms of Service - leli rentals",
-  description: "Terms and conditions for using leli rentals platform.",
+  title: "Terms of Service | Leli Rentals",
+  description: "Terms and conditions for using Leli Rentals platform.",
 }
 
 export default function TermsPage() {
@@ -58,10 +58,10 @@ export default function TermsPage() {
                 <span className="text-primary">1.</span> Acceptance of Terms
               </h2>
               <p className="text-muted-foreground leading-relaxed mb-4">
-                By accessing and using leli rentals (&quot;the Platform&quot;), you accept and agree to be bound by these Terms of Service (&quot;Terms&quot;). If you do not agree to these Terms, please do not use our Platform.
+                By accessing and using Leli Rentals (&quot;the Platform&quot;), you accept and agree to be bound by these Terms of Service (&quot;Terms&quot;). If you do not agree to these Terms, please do not use our Platform.
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                These Terms constitute a legally binding agreement between you and leli rentals Limited, a company registered in Kenya. We reserve the right to modify these Terms at any time, and such modifications will be effective immediately upon posting.
+                These Terms constitute a legally binding agreement between you and Leli Rentals Limited, a company registered in Kenya. We reserve the right to modify these Terms at any time, and such modifications will be effective immediately upon posting.
               </p>
             </section>
 

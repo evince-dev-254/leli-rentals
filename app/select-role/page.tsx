@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { Header } from "@/components/layout/header"
-import { Users, Building2, TrendingUp, Loader2 } from "lucide-react"
+import { Users, Building2, TrendingUp, Loader2, ArrowLeft } from "lucide-react"
 import Image from "next/image"
 
 const accountTypes = [
@@ -45,22 +45,28 @@ export default function SelectRolePage() {
         const checkUser = async () => {
             const { data: { user } } = await supabase.auth.getUser()
             if (!user) {
-                router.push('/signin')
+                router.push('/login') // Corrected signin route
                 return
             }
             setUser(user)
 
-            // Check if user already has a profile with a role
-            const { data: profile } = await supabase
-                .from('user_profiles')
-                .select('role')
-                .eq('id', user.id)
-                .single()
+            // Get search params to check for force flag
+            const params = new URLSearchParams(window.location.search)
+            const force = params.get('force') === 'true'
 
-            if (profile && profile.role && profile.role !== 'renter') {
-                // User already selected a role, redirect them
-                const redirectUrl = getRoleRedirect(profile.role)
-                router.push(redirectUrl)
+            if (!force) {
+                // Check if user already has a profile with a role
+                const { data: profile } = await supabase
+                    .from('user_profiles')
+                    .select('role')
+                    .eq('id', user.id)
+                    .single()
+
+                if (profile && profile.role && profile.role !== 'renter') {
+                    // User already selected a role, redirect them
+                    const redirectUrl = getRoleRedirect(profile.role)
+                    router.push(redirectUrl)
+                }
             }
         }
 
@@ -142,6 +148,14 @@ export default function SelectRolePage() {
         <div className="min-h-screen flex flex-col">
             <main className="flex-1 flex items-center justify-center py-12 px-4">
                 <div className="w-full max-w-4xl">
+                    <div className="flex items-center gap-4 mb-6">
+                        <Button variant="ghost" asChild className="text-muted-foreground hover:text-foreground">
+                            <Link href="/dashboard" className="flex items-center gap-2">
+                                <ArrowLeft className="h-4 w-4" />
+                                Back to Dashboard
+                            </Link>
+                        </Button>
+                    </div>
                     <Card className="glass-card">
                         <CardHeader className="text-center">
                             <div className="flex justify-center mb-4">

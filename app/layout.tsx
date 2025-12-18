@@ -16,13 +16,13 @@ const _geistMono = Geist_Mono({ subsets: ["latin"] })
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://www.leli.rentals'),
   title: {
-    default: "leli rentals - Find Your Perfect Rental in Kenya",
-    template: "%s | leli rentals"
+    default: "Leli Rentals - Find Your Perfect Rental in Kenya",
+    template: "%s | Leli Rentals"
   },
   description:
     "The premier destination for all your rental needs in Kenya. Discover amazing rentals for every occasion - from cars to equipment, homes to fashion. Rent what you need, when you need it.",
   generator: "evince Agency",
-  applicationName: "leli rentals",
+  applicationName: "Leli Rentals",
   keywords: [
     "rentals Kenya",
     "car rental Nairobi",
@@ -36,11 +36,11 @@ export const metadata: Metadata = {
     "rent items Kenya",
     "peer to peer rental",
     "rental marketplace",
-    "leli rentals"
+    "Leli Rentals"
   ],
-  authors: [{ name: "leli rentals" }],
+  authors: [{ name: "Leli Rentals" }],
   creator: "evince Agency",
-  publisher: "leli rentals",
+  publisher: "Leli Rentals",
   robots: {
     index: true,
     follow: true,
@@ -61,8 +61,8 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_KE',
     url: 'https://www.leli.rentals',
-    siteName: 'leli rentals',
-    title: 'leli rentals - Find Your Perfect Rental in Kenya',
+    siteName: 'Leli Rentals',
+    title: 'Leli Rentals - Find Your Perfect Rental in Kenya',
     description: 'The premier destination for all your rental needs in Kenya. Discover amazing rentals for every occasion - from cars to equipment, homes to fashion.',
     images: [
       {
@@ -75,7 +75,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'leli rentals - Find Your Perfect Rental in Kenya',
+    title: 'Leli Rentals - Find Your Perfect Rental in Kenya',
     description: 'The premier destination for all your rental needs in Kenya. Discover amazing rentals for every occasion.',
     images: ['/og-image.png'],
     creator: '@lelirentals',

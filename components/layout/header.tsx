@@ -139,7 +139,7 @@ export function Header() {
           <Link href="/" className="flex items-center gap-2 flex-shrink-0">
             <Image
               src="/logo.png"
-              alt="leli rentals"
+              alt="Leli Rentals"
               width={100}
               height={28}
               className="h-4 sm:h-5 w-auto invert"
@@ -341,17 +341,23 @@ export function Header() {
                     </AccordionItem>
                   </Accordion>
 
-                  <div className="grid grid-cols-2 gap-3 pt-4 pb-8">
-                    <Link href="/messages">
-                      <Button variant="outline" className="w-full border-gray-700 hover:bg-gray-800 text-gray-300 h-20 flex flex-col gap-2 rounded-xl">
-                        <MessageCircle className="h-6 w-6 text-blue-400" />
-                        <span className="text-xs">Messages</span>
+                  <div className="grid grid-cols-2 gap-4 pt-6 pb-8">
+                    <Link href="/messages" className="w-full">
+                      <Button className="w-full bg-gradient-to-br from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white h-24 flex flex-col items-center justify-center gap-2 rounded-2xl shadow-lg shadow-blue-900/20 border-0 transition-transform active:scale-95">
+                        <MessageCircle className="h-7 w-7" />
+                        <span className="text-sm font-semibold tracking-wide">Messages</span>
+                        {unreadMessages > 0 && (
+                          <span className="absolute top-2 right-2 h-3 w-3 rounded-full bg-orange-500 ring-2 ring-white/20" />
+                        )}
                       </Button>
                     </Link>
-                    <Link href="/favorites">
-                      <Button variant="outline" className="w-full border-gray-700 hover:bg-gray-800 text-gray-300 h-20 flex flex-col gap-2 rounded-xl">
-                        <ShoppingBag className="h-6 w-6 text-orange-400" />
-                        <span className="text-xs">Favorites</span>
+                    <Link href="/favorites" className="w-full">
+                      <Button className="w-full bg-gradient-to-br from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700 text-white h-24 flex flex-col items-center justify-center gap-2 rounded-2xl shadow-lg shadow-rose-900/20 border-0 transition-transform active:scale-95">
+                        <ShoppingBag className="h-7 w-7" />
+                        <span className="text-sm font-semibold tracking-wide">Favorites</span>
+                        {unreadNotifications > 0 && (
+                          <span className="absolute top-2 right-2 h-3 w-3 rounded-full bg-orange-500 ring-2 ring-white/20" />
+                        )}
                       </Button>
                     </Link>
                   </div>

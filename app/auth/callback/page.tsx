@@ -49,99 +49,24 @@ export default function AuthCallbackPage() {
                     const user = sessionData.user
                     console.log('Session set successfully:', user?.email)
 
-                    // Check if user has a profile
-                    const { data: profile, error: profileError } = await supabase
-                        .from('user_profiles')
-                        .select('*')
-                        .eq('id', user!.id)
-                        .maybeSingle()
+                    // Sync profile using server action (safe from RLS issues)
+                    const { syncUserProfile } = await import('@/lib/actions/auth-actions')
+                    const result = await syncUserProfile(
+                        user!.id,
+                        user!.email!,
+                        user?.user_metadata || {},
+                        roleParam || undefined,
+                        refCode || null
+                    )
 
-                    let userRole = roleParam || 'renter'
-
-                    // If no profile exists, create one
-                    if (profileError || !profile) {
-
-                        // If no role param provided (e.g. Google Sign In) and no profile exists,
-                        // redirect to role selection instead of defaulting to renter
-                        if (!roleParam) {
-                            console.log('No role specified, redirecting to role selection')
-                            router.push('/select-role')
-                            return
-                        }
-
-                        console.log('Creating or updating profile with role:', userRole)
-
-                        const metadata = user?.user_metadata || {}
-
-                        // Create profile (upsert to handle race conditions)
-                        const profileData = {
-                            id: user!.id,
-                            email: user!.email!,
-                            full_name: metadata.full_name || metadata.name || user!.email?.split('@')[0] || '',
-                            phone: metadata.phone || null,
-                            role: userRole,
-                            avatar_url: metadata.avatar_url || metadata.picture || '',
-                            updated_at: new Date().toISOString(),
-                            last_login_at: new Date().toISOString(),
-                        }
-
-                        // Try first insert
-                        let { error: insertError } = await supabase.from('user_profiles').upsert(profileData, {
-                            onConflict: 'id',
-                            ignoreDuplicates: false,
-                        })
-
-                        // If error is due to missing column (likely last_login_at), try without it
-                        if (insertError && (insertError.message?.includes("column") || insertError.code === "42703")) {
-                            console.warn("Schema mismatch detected, retrying profile creation without new columns...")
-                            const { last_login_at, ...legacyData } = profileData
-                            const retry = await supabase.from('user_profiles').upsert(legacyData, {
-                                onConflict: 'id',
-                                ignoreDuplicates: false,
-                            })
-                            insertError = retry.error
-                        }
-
-                        if (insertError) {
-                            console.error('Error creating profile:', insertError)
-                            setError(`Failed to create profile: ${insertError.message}`)
-                            return
-                        }
-
-                        // Handle referral if ref code exists
-                        if (refCode) {
-                            try {
-                                const { data: affiliate } = await supabase
-                                    .from('affiliates')
-                                    .select('id')
-                                    .eq('invite_code', refCode)
-                                    .single()
-
-                                if (affiliate) {
-                                    await supabase.from('affiliate_referrals').insert({
-                                        affiliate_id: affiliate.id,
-                                        referred_user_id: user!.id,
-                                        commission_amount: 0,
-                                        commission_status: 'pending'
-                                    })
-                                }
-                            } catch (e) {
-                                console.error('Error processing referral:', e)
-                            }
-                        }
-
-                        console.log('Profile created successfully')
-                    } else {
-                        // Profile exists, use its role
-                        userRole = profile.role || userRole
-                        console.log('Using existing profile role:', userRole)
-
-                        // Update last_login_at for existing user
-                        await supabase
-                            .from('user_profiles')
-                            .update({ last_login_at: new Date().toISOString() })
-                            .eq('id', user!.id)
+                    if (!result.success) {
+                        console.error('Error syncing profile:', result.error)
+                        setError(`Failed to set up profile: ${result.error}`)
+                        return
                     }
+
+                    const userRole = result.profile?.role || 'renter'
+                    console.log('Profile synced successfully. Role:', userRole)
 
                     // Redirect based on role
                     let redirectUrl = '/categories'

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
+import Image from "next/image"
 import { Bell, Search, Moon, Sun, Menu } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -96,7 +97,10 @@ export function DashboardHeader() {
           <SheetContent side="left" className="w-[300px] p-0 border-r border-border bg-card">
             <div className="p-6 border-b border-border">
               <Link href="/" className="flex items-center gap-2">
-                <span className="text-xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">leli rentals</span>
+                <div className="h-8 w-8 rounded-lg bg-gradient-to-tr from-primary to-purple-600 flex items-center justify-center">
+                  <Image src="/logo.svg" alt="L" width={20} height={20} className="invert" />
+                </div>
+                <span className="text-sm uppercase font-black tracking-wider text-primary">Dashboard</span>
               </Link>
             </div>
             <nav className="flex-1 overflow-y-auto py-6 px-4">

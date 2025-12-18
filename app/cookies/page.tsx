@@ -4,8 +4,8 @@ import { Shield, Cookie, Settings, Eye, Lock, FileText } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 
 export const metadata = {
-  title: "Cookie Policy - leli rentals",
-  description: "Learn about how we use cookies to enhance your experience on leli rentals.",
+  title: "Cookie Policy | Leli Rentals",
+  description: "Learn about how we use cookies to enhance your experience on Leli Rentals.",
 }
 
 export default function CookiePolicyPage() {

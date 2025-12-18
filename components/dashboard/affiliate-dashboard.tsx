@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { getAffiliateData, getAffiliateReferrals } from "@/lib/actions/dashboard-actions";
 import { joinAffiliateProgram } from "@/lib/actions/affiliate-actions";
@@ -13,7 +14,8 @@ import {
     ExternalLink,
     Copy,
     Check,
-    Loader2
+    Loader2,
+    ArrowLeft
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -29,6 +31,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 
 export default function AffiliateDashboard() {
+    const router = useRouter();
     const [user, setUser] = useState<any>(null);
     const [stats, setStats] = useState<any>(null);
     const [referrals, setReferrals] = useState<any[]>([]);
@@ -120,7 +123,15 @@ export default function AffiliateDashboard() {
 
     if (!stats) {
         return (
-            <div className="flex flex-col items-center justify-center p-12 text-center border rounded-lg bg-card/50 shadow-sm space-y-4 max-w-2xl mx-auto mt-8">
+            <div className="flex flex-col items-center justify-center p-12 text-center border rounded-lg bg-card/50 shadow-sm space-y-4 max-w-2xl mx-auto mt-8 relative">
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute top-4 left-4 h-8 w-8"
+                    onClick={() => router.push('/dashboard')}
+                >
+                    <ArrowLeft className="h-4 w-4" />
+                </Button>
                 <div className="p-4 bg-primary/10 rounded-full mb-4">
                     <DollarSign className="h-10 w-10 text-primary" />
                 </div>
@@ -150,9 +161,27 @@ export default function AffiliateDashboard() {
     return (
         <div className="space-y-8 animate-in fade-in duration-500">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div>
-                    <h2 className="text-3xl font-bold tracking-tight">Affiliate Dashboard</h2>
-                    <p className="text-muted-foreground">Track your referrals and earnings.</p>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-9 w-9"
+                        onClick={() => router.push('/dashboard')}
+                    >
+                        <ArrowLeft className="h-5 w-5" />
+                    </Button>
+                    <div>
+                        <h2 className="text-3xl font-bold tracking-tight">Affiliate Dashboard</h2>
+                        <p className="text-muted-foreground">Track your referrals and earnings.</p>
+                    </div>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-fit"
+                        onClick={() => router.push('/select-role?force=true')}
+                    >
+                        Switch Account Type
+                    </Button>
                 </div>
 
                 <Card className="w-full md:w-auto bg-primary/5 border-primary/20">

@@ -40,29 +40,21 @@ export async function GET(request: NextRequest) {
     }
 
     if (sessionData?.user) {
-        // Check if user profile exists
-        const { data: profile, error: profileError } = await supabase
-            .from('user_profiles')
-            .select('*')
-            .eq('id', sessionData.user.id)
-            .single()
+        const { syncUserProfile } = await import('@/lib/actions/auth-actions')
+        const result = await syncUserProfile(
+            sessionData.user.id,
+            sessionData.user.email!,
+            sessionData.user.user_metadata || {},
+            sessionData.user.user_metadata?.role || undefined
+        )
 
-        // If no profile exists, handle creation (fallback if trigger failed)
-        if (profileError || !profile) {
-            // Check metadata passed during signup
-            const metadata = sessionData.user.user_metadata || {}
-
-            await supabase.from('user_profiles').insert({
-                id: sessionData.user.id,
-                email: sessionData.user.email!,
-                full_name: metadata.full_name || metadata.name || '',
-                phone: metadata.phone || null,
-                role: metadata.role || 'renter',
-                avatar_url: metadata.avatar_url || metadata.picture || '',
-            })
+        if (!result.success) {
+            console.error('Error syncing profile in confirm route:', result.error)
+            // Still redirect but maybe to a fallback
+            return NextResponse.redirect(new URL('/categories', request.url))
         }
 
-        const role = profile?.role || sessionData.user.user_metadata?.role || 'renter'
+        const role = result.profile?.role || 'renter'
         const redirectUrl = getRoleRedirect(role)
 
         return NextResponse.redirect(new URL(redirectUrl, request.url))

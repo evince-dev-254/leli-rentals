@@ -9,6 +9,6 @@ export default function robots(): MetadataRoute.Robots {
                 disallow: ['/dashboard/', '/admin/', '/api/'],
             },
         ],
-        sitemap: 'https://www.leli.rentals/sitemap.xml',
+        sitemap: 'https://leli.rentals/sitemap.xml',
     }
 }

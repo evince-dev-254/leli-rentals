@@ -2,7 +2,7 @@ import { supabase } from "@/lib/supabase"
 import { notFound } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
-import { MapPin, Calendar, ShieldCheck, Star, Mail, Phone, Crown } from "lucide-react"
+import { MapPin, Calendar, ShieldCheck, Star, Mail, Phone, Crown, ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -58,6 +58,15 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
     return (
         <div className="min-h-screen bg-background pt-24 pb-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-6xl mx-auto space-y-8">
+
+                <div className="flex items-center gap-4 mb-2">
+                    <Button variant="ghost" asChild className="-ml-4 text-muted-foreground hover:text-foreground">
+                        <Link href="/dashboard" className="flex items-center gap-2">
+                            <ArrowLeft className="h-4 w-4" />
+                            Back to Dashboard
+                        </Link>
+                    </Button>
+                </div>
 
                 {/* Profile Header Card */}
                 <Card className="glass-card overflow-hidden border-border/50">

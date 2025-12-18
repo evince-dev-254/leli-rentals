@@ -2,7 +2,7 @@
 
 import { useRef, useCallback, useState, useEffect } from "react"
 import Webcam from "react-webcam"
-import { ShieldCheck, Upload, FileText, Clock, CheckCircle, AlertTriangle, X, Loader2, Camera, RefreshCw } from "lucide-react"
+import { ShieldCheck, Upload, FileText, Clock, CheckCircle, AlertTriangle, X, Loader2, Camera, RefreshCw, ArrowLeft } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -15,10 +15,13 @@ import { getVerifications, uploadVerification, updateProfile } from "@/lib/actio
 import { toast } from "sonner"
 import { ImageUpload } from "@/components/ui/image-upload"
 
+import { useRouter } from "next/navigation"
+
 const IMAGEKIT_PUBLIC_KEY = process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY
 const IMAGEKIT_URL_ENDPOINT = process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT
 
 export function VerificationPage() {
+  const router = useRouter()
   const [documents, setDocuments] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
@@ -195,9 +198,19 @@ export function VerificationPage() {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div>
-        <h1 className="text-3xl font-bold">Verification</h1>
-        <p className="text-muted-foreground">Complete your account verification to start listing</p>
+      <div className="flex items-center gap-4">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-9 w-9"
+          onClick={() => router.push('/dashboard')}
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
+        <div>
+          <h1 className="text-3xl font-bold">Verification</h1>
+          <p className="text-muted-foreground">Complete your account verification to start listing</p>
+        </div>
       </div>
 
       {/* Status Card */}

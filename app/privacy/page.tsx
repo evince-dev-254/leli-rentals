@@ -4,8 +4,8 @@ import { Shield, Lock, Eye, Database, UserCheck, Globe } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 
 export const metadata = {
-  title: "Privacy Policy - leli rentals",
-  description: "How leli rentals collects, uses, and protects your personal information.",
+  title: "Privacy Policy | Leli Rentals",
+  description: "How Leli Rentals collects, uses, and protects your personal information.",
 }
 
 export default function PrivacyPage() {
@@ -58,10 +58,10 @@ export default function PrivacyPage() {
                 <span className="text-primary">1.</span> Introduction
               </h2>
               <p className="text-muted-foreground leading-relaxed mb-4">
-                leli rentals Limited (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;) is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our Platform.
+                Leli Rentals Limited (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;) is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our Platform.
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                By using leli rentals, you consent to the data practices described in this policy. If you do not agree with our policies and practices, please do not use our Platform.
+                By using Leli Rentals, you consent to the data practices described in this policy. If you do not agree with our policies and practices, please do not use our Platform.
               </p>
             </section>
 
@@ -283,7 +283,7 @@ export default function PrivacyPage() {
                 If you have questions about this Privacy Policy or our data practices, please contact us:
               </p>
               <div className="bg-secondary/50 p-4 rounded-lg space-y-2 text-sm">
-                <p><strong>leli rentals Limited</strong></p>
+                <p><strong>Leli Rentals Limited</strong></p>
                 <p><strong>Data Protection Officer</strong></p>
                 <p><strong>Email:</strong> <a href="mailto:lelirentalsmail@gmail.com" className="text-primary hover:underline">lelirentalsmail@gmail.com</a></p>
                 <p><strong>Phone:</strong> <a href="tel:+254112081866" className="text-primary hover:underline">+254 112 081 866</a></p>
