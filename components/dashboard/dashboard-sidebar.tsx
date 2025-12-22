@@ -149,16 +149,19 @@ export function DashboardSidebar() {
 
       {/* Bottom actions */}
       <div className="p-4 border-t border-border/50">
-        <Link
-          href="/"
+        <button
+          onClick={async () => {
+            await supabase.auth.signOut()
+            window.location.href = "/"
+          }}
           className={cn(
-            "flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-all group",
+            "flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-all group w-full",
             collapsed && "justify-center"
           )}
         >
           <LogOut className="h-5 w-5 shrink-0 transition-transform group-hover:scale-110" />
           {!collapsed && <span className="font-medium">Logout</span>}
-        </Link>
+        </button>
       </div>
     </aside>
   )

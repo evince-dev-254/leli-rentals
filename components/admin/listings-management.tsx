@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Search, Filter, MoreHorizontal, Eye, CheckCircle, XCircle, Package } from "lucide-react"
+import Link from "next/link"
+import { Search, Filter, MoreHorizontal, Eye, CheckCircle, XCircle, Package, Plus } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -85,9 +86,17 @@ export function ListingsManagement() {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div>
-        <h1 className="text-3xl font-bold">Listings</h1>
-        <p className="text-muted-foreground">Manage all rental listings on the platform</p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold">Listings</h1>
+          <p className="text-muted-foreground">Manage all rental listings on the platform</p>
+        </div>
+        <Button asChild className="bg-gradient-to-tr from-primary to-purple-600">
+          <Link href="/dashboard/listings/new">
+            <Plus className="h-4 w-4 mr-2" />
+            New Listing
+          </Link>
+        </Button>
       </div>
 
       {/* Stats */}

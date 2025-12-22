@@ -39,8 +39,8 @@ export function CreateListing() {
   const [area, setArea] = useState("")
   const [cancellationPolicy, setCancellationPolicy] = useState("flexible")
   const [subscription, setSubscription] = useState<any>(null)
-  const [listingsCount, setListingsCount] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
+  const [userRole, setUserRole] = useState<string | null>(null)
 
   const [coordinates, setCoordinates] = useState({ lat: -1.2921, lng: 36.8219 }) // Default Nairobi
 
@@ -63,6 +63,14 @@ export function CreateListing() {
         .single()
 
       setSubscription(subData)
+
+      // Fetch profile for role
+      const { data: profile } = await supabase
+        .from('user_profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+      setUserRole(profile?.role || 'renter')
 
       // Fetch listing count
       const { count } = await supabase
@@ -264,7 +272,7 @@ export function CreateListing() {
 
 
       {
-        !isLoading && !subscription ? (
+        !isLoading && !subscription && userRole !== 'admin' ? (
           <Card className="border-destructive/20 bg-destructive/5">
             <CardContent className="pt-6 text-center">
               <div className="mb-4 text-destructive font-bold text-xl">No Subscription Found</div>
@@ -272,7 +280,7 @@ export function CreateListing() {
               <Button onClick={() => router.push('/dashboard/subscription')}>View Plans</Button>
             </CardContent>
           </Card>
-        ) : !isLoading && subscription && subscription.plan_type === 'weekly' && listingsCount >= 10 ? (
+        ) : !isLoading && subscription && subscription.plan_type === 'weekly' && listingsCount >= 10 && userRole !== 'admin' ? (
           <Card className="border-orange-500/20 bg-orange-500/5">
             <CardContent className="pt-6 text-center">
               <div className="mb-4 text-orange-600 font-bold text-xl">Listing Limit Reached</div>
