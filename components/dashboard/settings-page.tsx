@@ -18,6 +18,7 @@ import { ImageUpload } from "@/components/ui/image-upload"
 import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
 import { LoadingLogo } from "@/components/ui/loading-logo"
+import { LocationSearch } from "@/components/ui/location-search"
 
 export function SettingsPage() {
   const router = useRouter()
@@ -217,7 +218,11 @@ export function SettingsPage() {
                 </div>
                 <div className="space-y-2">
                   <Label>Location</Label>
-                  <Input name="location" value={formData.location} onChange={handleChange} placeholder="City, Country" />
+                  <LocationSearch
+                    onLocationSelect={(data) => setFormData(prev => ({ ...prev, location: data.address }))}
+                    defaultValue={formData.location}
+                    placeholder="City, Country"
+                  />
                 </div>
               </div>
 

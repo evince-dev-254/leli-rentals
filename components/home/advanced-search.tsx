@@ -6,6 +6,7 @@ import { Search, MapPin, Briefcase, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { LocationSearch } from "@/components/ui/location-search"
 import { categories } from "@/lib/categories-data"
 
 const KENYAN_CITIES = [
@@ -115,21 +116,12 @@ export function AdvancedSearch() {
                 <div className="hidden sm:block w-px h-6 bg-white/20" />
 
                 {/* Location */}
-                <div className="w-full sm:w-40 relative group">
-                    <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-primary group-focus-within:scale-110 transition-transform z-10 pointer-events-none" />
-                    <Select value={city} onValueChange={setCity}>
-                        <SelectTrigger className="h-9 sm:h-11 pl-10 bg-white/10 border-none text-slate-900 focus:ring-0 focus:ring-offset-0 rounded-full sm:rounded-none text-sm font-medium">
-                            <SelectValue placeholder="Location" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-slate-900/95 backdrop-blur-xl border-white/10 text-white">
-                            <SelectItem value="all">Everywhere</SelectItem>
-                            {KENYAN_CITIES.map((c) => (
-                                <SelectItem key={c} value={c}>
-                                    {c}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                <div className="w-full sm:w-64 relative group">
+                    <LocationSearch
+                        onLocationSelect={(data) => setCity(data.city || data.address)}
+                        placeholder="Location"
+                        className="h-9 sm:h-11 bg-white/10 border-none text-slate-900 placeholder:text-slate-500 focus:ring-0 focus:ring-offset-0 rounded-full sm:rounded-none text-sm font-medium"
+                    />
                 </div>
 
                 {/* Search Button */}

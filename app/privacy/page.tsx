@@ -93,7 +93,7 @@ export default function PrivacyPage() {
               <h3 className="font-semibold text-lg mb-2 mt-4">2.3 Third-Party Information</h3>
               <p className="text-muted-foreground leading-relaxed mb-2">We may receive information from:</p>
               <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
-                <li>Social media platforms (if you connect your account)</li>
+                <li>Social media platforms (if you connect your account via Google OAuth or similar)</li>
                 <li>Payment processors (transaction confirmations)</li>
                 <li>Analytics providers (Google Analytics)</li>
                 <li>Verification services (identity verification)</li>
@@ -277,7 +277,25 @@ export default function PrivacyPage() {
 
             <section>
               <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
-                <span className="text-primary">11.</span> Contact Us
+                <span className="text-primary">12.</span> Third-Party Services (Google OAuth)
+              </h2>
+              <p className="text-muted-foreground leading-relaxed mb-4">
+                Our Platform uses Google OAuth for authentication. When you choose to sign in with Google:
+              </p>
+              <ul className="list-disc pl-6 space-y-2 text-muted-foreground mb-4">
+                <li>We collect your <strong>name</strong>, <strong>email address</strong>, and <strong>profile picture</strong>.</li>
+                <li>This data is used solely to create and manage your account on Leli Rentals.</li>
+                <li>We do not share your Google user data with third parties for marketing purposes.</li>
+                <li>We do not use your Google user data for any purpose other than providing and improving our services.</li>
+              </ul>
+              <p className="text-muted-foreground leading-relaxed">
+                Leli Rentals&apos; use and transfer of information received from Google APIs to any other app will adhere to <a href="https://developers.google.com/terms/api-services-user-data-policy#additional_requirements_for_specific_api_scopes" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">Google API Services User Data Policy</a>, including the Limited Use requirements.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
+                <span className="text-primary">13.</span> Contact Us
               </h2>
               <p className="text-muted-foreground leading-relaxed mb-4">
                 If you have questions about this Privacy Policy or our data practices, please contact us:

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
-import { Bell, Search, Moon, Sun, Menu } from "lucide-react"
+import { Bell, Search, Moon, Sun, Menu, Key } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -96,11 +96,11 @@ export function DashboardHeader() {
           </SheetTrigger>
           <SheetContent side="left" className="w-[300px] p-0 border-r border-border bg-card">
             <div className="p-6 border-b border-border">
-              <Link href="/" className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-lg bg-gradient-to-tr from-primary to-purple-600 flex items-center justify-center">
-                  <Image src="/logo.svg" alt="L" width={20} height={20} className="invert" />
+              <Link href="/" className="flex items-center gap-2 group">
+                <div className="h-8 w-8 rounded-lg bg-gradient-to-tr from-primary to-purple-600 flex items-center justify-center shadow-md shadow-primary/20">
+                  <Key className="h-5 w-5 text-white" />
                 </div>
-                <span className="text-sm uppercase font-black tracking-wider text-primary">Dashboard</span>
+                <span className="text-sm uppercase font-black tracking-wider text-primary">Portal</span>
               </Link>
             </div>
             <nav className="flex-1 overflow-y-auto py-6 px-4">

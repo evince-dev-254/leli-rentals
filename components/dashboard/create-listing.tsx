@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import { categories } from "@/lib/categories-data"
-import { GoogleMap, Marker, useLoadScript, Autocomplete } from "@react-google-maps/api"
+import { LocationSearch } from "@/components/ui/location-search"
 import { kenyaCounties } from "@/lib/kenya-counties"
 import { ImageUpload } from "@/components/ui/image-upload"
 import { supabase } from "@/lib/supabase"
@@ -87,83 +87,7 @@ export function CreateListing() {
   }, [])
 
 
-  const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "AIzaSyBsNWbwqj4f2MGSxWON040GKMDsqPBM1sU",
-    libraries,
-  })
-
-  // Get subcategories based on selected category
-  const currentCategory = categories.find(c => c.id === selectedCategory)
-  const subcategories = currentCategory ? currentCategory.subcategories : []
-
-  const [searchResult, setSearchResult] = useState<google.maps.places.Autocomplete | null>(null)
-
-  const onLoadAutocomplete = (autocomplete: google.maps.places.Autocomplete) => {
-    setSearchResult(autocomplete)
-  }
-
-  const onPlaceChanged = () => {
-    if (searchResult !== null) {
-      const place = searchResult.getPlace()
-      console.log("Autocomplete Place Result:", place)
-
-      if (place.geometry && place.geometry.location) {
-        setCoordinates({
-          lat: place.geometry.location.lat(),
-          lng: place.geometry.location.lng()
-        })
-      }
-
-      // Auto-fill address fields
-      if (place.address_components) {
-        let city = ""
-        let area = ""
-
-        console.log("Address Components:", place.address_components)
-
-        place.address_components.forEach(component => {
-          const types = component.types
-          const value = component.long_name
-
-          // City Detection (County or Locality)
-          if (types.includes("administrative_area_level_1") || types.includes("locality") || types.includes("administrative_area_level_2")) {
-            // Check against our Kenya counties list
-            // We optimize for partial matches e.g. "Nairobi County" -> "Nairobi"
-            const match = kenyaCounties.find(c =>
-              value.toLowerCase().includes(c.toLowerCase()) ||
-              c.toLowerCase().includes(value.toLowerCase())
-            )
-            if (match && !city) city = match
-          }
-
-          // Area Detection
-          if (types.includes("sublocality") || types.includes("sublocality_level_1") || types.includes("neighborhood") || types.includes("route")) {
-            // Prefer neighborhood or sublocality over route
-            if (!area || types.includes("neighborhood") || types.includes("sublocality")) {
-              area = value
-            }
-          }
-        })
-
-        console.log("Detected City:", city)
-        console.log("Detected Area:", area)
-
-        if (city) setSelectedCity(city)
-        if (area) setArea(area)
-      }
-    } else {
-      console.log("Autocomplete: searchResult is null")
-    }
-  }
-
-  const onMapClick = (e: google.maps.MapMouseEvent) => {
-    if (e.latLng) {
-      setCoordinates({
-        lat: e.latLng.lat(),
-        lng: e.latLng.lng(),
-      })
-    }
-  }
+  /* REMOVED Map click handlers */
 
   /* REMOVED MAP IMPORTS */
   /* REMOVED Autocomplete/Map logic */
@@ -410,7 +334,7 @@ export function CreateListing() {
               </CardContent>
             </Card>
 
-            {/* Location - Simplified */}
+            {/* Location */}
             <Card className="glass-card">
               <CardHeader>
                 <CardTitle>Location</CardTitle>
@@ -419,13 +343,14 @@ export function CreateListing() {
               <CardContent className="space-y-4">
                 <div className="space-y-2 mb-4">
                   <Label>Search Location (Auto-fill)</Label>
-                  {isLoaded && !loadError ? (
-                    <Autocomplete onLoad={onLoadAutocomplete} onPlaceChanged={onPlaceChanged}>
-                      <Input type="text" placeholder="Start typing address..." />
-                    </Autocomplete>
-                  ) : (
-                    <Input disabled placeholder="Map not loaded (cannot search)" />
-                  )}
+                  <LocationSearch
+                    onLocationSelect={(data) => {
+                      setCoordinates(data.coordinates)
+                      if (data.city) setSelectedCity(data.city)
+                      if (data.area) setArea(data.area)
+                    }}
+                    placeholder="Start typing address..."
+                  />
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-2">

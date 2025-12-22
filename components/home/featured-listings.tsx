@@ -5,6 +5,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Star, Heart, MapPin, ArrowRight, CheckCircle2, Loader2 } from "lucide-react"
+import { FavoriteButton } from "@/components/listings/favorite-button"
 import { supabase } from "@/lib/supabase"
 
 export function FeaturedListings() {
@@ -121,10 +122,9 @@ export function FeaturedListings() {
                       </Badge>
                     )}
                   </div>
-                  {/* Favorite Button */}
-                  <button className="absolute top-3 right-3 w-8 h-8 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors">
-                    <Heart className="h-4 w-4" />
-                  </button>
+                  <div className="absolute top-3 right-3 z-10">
+                    <FavoriteButton listingId={listing.id} />
+                  </div>
                 </div>
 
                 {/* Content */}

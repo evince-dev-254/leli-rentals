@@ -15,6 +15,7 @@ import {
   ChevronLeft,
   ChevronRight,
   MessageSquare,
+  Key,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -44,9 +45,11 @@ export function AdminSidebar() {
     >
       {/* Logo */}
       <div className="p-4 border-b border-border flex items-center justify-between">
-        <Link href="/admin" className="flex items-center gap-3">
-          <Image src="/logo.svg" alt="leli rentals" width={32} height={32} className="dark:invert" />
-          {!collapsed && <span className="font-bold text-lg">Admin</span>}
+        <Link href="/admin" className="flex items-center gap-3 group">
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-primary to-purple-600 flex items-center justify-center shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform duration-300">
+            <Key className="h-6 w-6 text-white" />
+          </div>
+          {!collapsed && <span className="font-bold text-lg text-primary tracking-tight">Admin Portal</span>}
         </Link>
         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setCollapsed(!collapsed)}>
           {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}

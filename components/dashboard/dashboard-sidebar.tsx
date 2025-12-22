@@ -19,6 +19,7 @@ import {
   Receipt,
   Star,
   Users,
+  Key,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -27,17 +28,17 @@ import { useState, useEffect } from "react"
 import { supabase } from "@/lib/supabase"
 
 export const allLinks = [
-  { href: "/dashboard", label: "Overview", icon: LayoutDashboard, roles: ["owner", "renter", "affiliate", "admin"] },
-  { href: "/dashboard/listings", label: "My Listings", icon: Package, roles: ["owner", "renter", "admin"] }, // Renters asked for this, though strange without create
-  { href: "/dashboard/bookings", label: "Bookings", icon: CalendarCheck, roles: ["owner", "renter", "admin"] },
-  { href: "/dashboard/messages", label: "Messages", icon: MessageCircle, roles: ["owner", "renter", "admin"] },
-  { href: "/dashboard/earnings", label: "Earnings", icon: DollarSign, roles: ["owner", "affiliate", "admin"] },
+  { href: "/dashboard", label: "Overview", icon: LayoutDashboard, roles: ["owner", "renter", "affiliate"] },
+  { href: "/dashboard/listings", label: "My Listings", icon: Package, roles: ["owner", "renter"] }, // Renters asked for this, though strange without create
+  { href: "/dashboard/bookings", label: "Bookings", icon: CalendarCheck, roles: ["owner", "renter"] },
+  { href: "/dashboard/messages", label: "Messages", icon: MessageCircle, roles: ["owner", "renter"] },
+  { href: "/dashboard/earnings", label: "Earnings", icon: DollarSign, roles: ["owner", "affiliate"] },
   { href: "/dashboard/affiliate/referrals", label: "My Referees", icon: Users, roles: ["affiliate"] },
   { href: "/dashboard/payments", label: "Payments", icon: Receipt, roles: ["renter"] }, // New for Renters
   { href: "/dashboard/reviews", label: "My Reviews", icon: Star, roles: ["renter"] },
-  { href: "/dashboard/subscription", label: "Subscription", icon: CreditCard, roles: ["owner", "admin"] },
+  { href: "/dashboard/subscription", label: "Subscription", icon: CreditCard, roles: ["owner"] },
   { href: "/dashboard/verification", label: "Verification", icon: ShieldCheck, badge: "Pending", roles: ["owner"] }, // Removed for renter and affiliate
-  { href: "/dashboard/settings", label: "Settings", icon: Settings, roles: ["owner", "renter", "affiliate", "admin"] },
+  { href: "/dashboard/settings", label: "Settings", icon: Settings, roles: ["owner", "renter", "affiliate"] },
 ]
 
 export function DashboardSidebar() {
@@ -73,7 +74,7 @@ export function DashboardSidebar() {
       <div className="p-6 border-b border-border/50 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3 group">
           <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-primary to-purple-600 flex items-center justify-center shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform duration-300">
-            <Image src="/logo.svg" alt="L" width={24} height={24} className="invert" />
+            <Key className="h-6 w-6 text-white" />
           </div>
           {!collapsed && (
             <div className="flex flex-col animate-in fade-in slide-in-from-left-2 duration-300">

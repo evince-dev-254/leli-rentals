@@ -9,20 +9,20 @@ export function HeroSection() {
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Animated Background Image (Ken Burns Effect) */}
       <div
-        className="absolute inset-0 bg-cover bg-center animate-ken-burns"
+        className="absolute inset-0 bg-cover bg-[center_10%] animate-ken-burns"
         style={{
           backgroundImage: `url('/leli-home-hero-corrected.png')`,
         }}
       />
 
       {/* Pink/Purple Gradient Overlay (always visible) */}
-      <div className="absolute inset-0 bg-gradient-to-br from-pink-500/30 via-purple-500/30 to-blue-500/20" />
+      <div className="absolute inset-0 bg-gradient-to-br from-pink-500/20 via-purple-500/20 to-blue-500/10" />
 
-      {/* Dark Overlay for readability */}
-      <div className="absolute inset-0 bg-black/40" />
+      {/* Dark Overlay for readability - slightly lightened */}
+      <div className="absolute inset-0 bg-black/30" />
 
       {/* Additional Gradient for depth */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/50" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/40" />
 
       <div className="container relative z-10 px-4 py-12 sm:py-20">
         <div className="max-w-4xl mx-auto text-center">

@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
 import { Search, MapPin, Star, Heart, Grid3X3, List, SlidersHorizontal, Loader2, Filter } from "lucide-react"
+import { FavoriteButton } from "@/components/listings/favorite-button"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -178,10 +179,8 @@ function SearchResults() {
                                             <span className="text-muted-foreground">No image</span>
                                         </div>
                                     )}
-                                    <div className="absolute top-3 right-3">
-                                        <Button variant="ghost" size="icon" className="bg-white/80 backdrop-blur-sm rounded-full hover:bg-white text-rose-500">
-                                            <Heart className="h-4 w-4" />
-                                        </Button>
+                                    <div className="absolute top-3 right-3 z-10">
+                                        <FavoriteButton listingId={listing.id} />
                                     </div>
                                     {listing.is_featured && (
                                         <Badge className="absolute top-3 left-3 bg-primary shadow-lg ring-1 ring-white/20">Featured</Badge>

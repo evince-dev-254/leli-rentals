@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
-import AdminDashboard from "@/components/dashboard/admin-dashboard"
 import { LoadingLogo } from "@/components/ui/loading-logo"
 import { Loader2 } from "lucide-react"
 
@@ -45,11 +44,10 @@ export default function DashboardPage() {
         setProfile(profileData)
 
         // Redirect logic
-        // If user is conceptually an admin (either role=='admin' OR is_admin==true), send to Admin Dashboard.
-        // NOTE: If an owner is also an admin, usually they want the Admin dashboard more prominent or a choice.
-        // For now, we prioritize Admin access if they visit the generic /dashboard.
+        // If user is an admin, always use the dedicated admin area
         if (profileData.role === 'admin' || profileData.is_admin) {
           router.push('/admin')
+          return
         }
         // Otherwise, send to specific role dashboard
         else if (profileData.role === 'renter') {
