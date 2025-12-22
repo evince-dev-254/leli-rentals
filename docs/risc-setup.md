@@ -1,31 +1,39 @@
 # Google Cross-Account Protection (RISC) Setup Guide
 
-To complete the configuration for Cross-Account Protection, you must register the webhook endpoint in your Google Cloud Console.
+To complete the configuration for Cross-Account Protection, you must register the webhook endpoint. Since there is no direct UI for this in the Google Cloud Console, I have created a script to automate it for you.
 
-## Prerequisites
-- You must be an owner or editor of the Google Cloud Project used for Google OAuth.
-- The project must have the **RISC Configuration Admin** role enabled (or be an Owner).
+## Setup Steps
 
-## Step-by-Step Instructions
+### 1. Enable RISC API
+- Go to the [Google Cloud Console API Library](https://console.cloud.google.com/apis/library).
+- Search for **"RISC"** or **"Security Event"**.
+- Click **Enable**.
 
-1.  **Obtain your Webhook URL**:
-    - Your production URL will be: `https://www.leli.rentals/api/webhooks/google-risc`
+### 2. Create a Service Account
+- Go to **IAM & Admin** > **Service Accounts**.
+- Click **Create Service Account**.
+- Name it `risc-manager`.
+- For the role, select **Project** > **Owner** (or **RISC Configuration Admin** if you prefer more restricted access).
+- Click **Done**.
 
-2.  **Enable the RISC API**:
-    - Go to the [Google Cloud Console API Library](https://console.cloud.google.com/apis/library).
-    - Search for "RISC" or "Security Event" (Note: This is often enabled by default when using Cross-Account Protection features).
+### 3. Generate a JSON Key
+- Find your new `risc-manager` service account in the list.
+- Click the three dots (Actions) > **Manage keys**.
+- Click **Add Key** > **Create new key**.
+- Select **JSON** and click **Create**.
+- Save the file on your computer (e.g., as `google-key.json`).
 
-3.  **Register the Endpoint**:
-    - Google currently requires using their API or a configuration page if available in your project's "Security" tab.
-    - Go to **APIs & Services** > **Credentials**.
-    - Look for your **OAuth 2.0 Client IDs**.
-    - Click on your Web Client ID.
-    - Under **Cross-Account Protection** (if visible), enter the Webhook URL:
-      `https://www.leli.rentals/api/webhooks/google-risc`
+### 4. Run the Registration Script
+Open your terminal in the project folder and run:
 
-4.  **Verification**:
-    - Once registered, Google will send a test event to this endpoint.
-    - My code is configured to return the required `202 Accepted` response immediately.
+```bash
+node scripts/register-risc.js C:\path\to\your\google-key.json
+```
 
-## Why this is required
-Google's "Trust and Safety" team requires Cross-Account Protection for apps with many users to ensure that if a user's Google account is flagged for security (e.g., they lose their phone), your app is notified so you can protect their local data.
+*(Replace the path with the actual location of the JSON file you just downloaded.)*
+
+## Success
+Once the script says `✅ SUCCESS`, your project is fully configured. Google will now notify your app of any critical security events.
+
+---
+**Privacy Note**: You can delete the `google-key.json` and the service account once the registration is complete.
