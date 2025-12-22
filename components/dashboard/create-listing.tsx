@@ -39,6 +39,7 @@ export function CreateListing() {
   const [area, setArea] = useState("")
   const [cancellationPolicy, setCancellationPolicy] = useState("flexible")
   const [subscription, setSubscription] = useState<any>(null)
+  const [listingsCount, setListingsCount] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [userRole, setUserRole] = useState<string | null>(null)
 

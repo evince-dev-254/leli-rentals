@@ -39,9 +39,21 @@ export function ListingsManagement() {
           return
         }
 
-        const ownerIds = Array.from(new Set((ls || []).map((l: any) => l.owner_id)))
-        const { data: us, error: usErr } = await supabase.from("user_profiles").select("*").in("id", ownerIds.length ? ownerIds : ["null"])
-        if (usErr) console.error("Error fetching listing owners:", usErr)
+        const ownerIds = Array.from(new Set((ls || []).map((l: any) => l.owner_id).filter(Boolean)))
+
+        let us = [];
+        if (ownerIds.length > 0) {
+          const { data, error: usErr } = await supabase
+            .from("user_profiles")
+            .select("id, full_name, avatar_url, email")
+            .in("id", ownerIds);
+
+          if (usErr) {
+            console.error("Error fetching listing owners:", usErr);
+          } else {
+            us = data || [];
+          }
+        }
 
         if (!mounted) return
 
@@ -223,7 +235,7 @@ export function ListingsManagement() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <p className="font-medium">{owner?.fullName}</p>
+                      <p className="font-medium">{owner?.full_name || 'System'}</p>
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline" className="capitalize">

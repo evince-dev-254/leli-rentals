@@ -379,7 +379,17 @@ export async function getAdminData() {
 /** Create a new listing */
 export async function createListing(ownerId: string, listingData: any) {
     console.log('Creating listing with data:', listingData);
-    const supabase = await getSupabase()
+
+    // Check if the creator is an admin to decide which client to use
+    const baseSupabase = await getSupabase()
+    const { data: profile } = await baseSupabase
+        .from('user_profiles')
+        .select('role')
+        .eq('id', ownerId)
+        .single()
+
+    const isAdmin = profile?.role === 'admin'
+    const supabase = isAdmin ? getAdminSupabase() : baseSupabase
 
     const { data, error } = await supabase
         .from('listings')
