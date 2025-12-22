@@ -180,6 +180,10 @@ export function CreateListing() {
     setAmenities(amenities.filter((a) => a !== amenity))
   }
 
+  const subcategories = selectedCategory
+    ? categories.find((c) => c.id === selectedCategory)?.subcategories || []
+    : []
+
   return (
     <div className="max-w-4xl mx-auto space-y-4 md:space-y-6">
       <div className="flex items-center gap-2 md:gap-4">
