@@ -26,7 +26,7 @@ import { Calendar as CalendarComponent } from "@/components/ui/calendar"
 import { Separator } from "@/components/ui/separator"
 import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
-import Map, { Marker, NavigationControl } from 'react-map-gl'
+import Map, { Marker, NavigationControl } from 'react-map-gl/mapbox'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import { getCategoryById } from "@/lib/categories-data"
 import { useFavorites } from "@/lib/favorites-context"
