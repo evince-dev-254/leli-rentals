@@ -87,10 +87,7 @@ export function CreateListing() {
   }, [])
 
 
-  /* REMOVED Map click handlers */
-
-  /* REMOVED MAP IMPORTS */
-  /* REMOVED Autocomplete/Map logic */
+  // Map handlers removed during migration to Mapbox
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

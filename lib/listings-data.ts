@@ -9,6 +9,8 @@ export interface Listing {
   pricePerMonth: number
   location: string
   city: string
+  latitude?: number
+  longitude?: number
   images: string[]
   ownerId: string
   ownerName: string

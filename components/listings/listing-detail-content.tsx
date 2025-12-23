@@ -26,6 +26,8 @@ import { Calendar as CalendarComponent } from "@/components/ui/calendar"
 import { Separator } from "@/components/ui/separator"
 import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
+import Map, { Marker, NavigationControl } from 'react-map-gl'
+import 'mapbox-gl/dist/mapbox-gl.css'
 import { getCategoryById } from "@/lib/categories-data"
 import { useFavorites } from "@/lib/favorites-context"
 import { useMessages } from "@/lib/messages-context"
@@ -35,6 +37,8 @@ import type { Listing } from "@/lib/listings-data"
 interface ListingDetailContentProps {
   listing: Listing
 }
+
+const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN
 
 export function ListingDetailContent({ listing }: ListingDetailContentProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
@@ -193,8 +197,33 @@ export function ListingDetailContent({ listing }: ListingDetailContentProps) {
                   <TabsTrigger value="reviews">Reviews</TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="description" className="mt-4">
+                <TabsContent value="description" className="mt-4 space-y-6">
                   <p className="text-muted-foreground leading-relaxed">{listing.description}</p>
+
+                  {listing.latitude && listing.longitude && (
+                    <div className="space-y-3">
+                      <h3 className="font-semibold flex items-center gap-2">
+                        <MapPin className="h-4 w-4" />
+                        Location
+                      </h3>
+                      <div className="h-64 rounded-xl overflow-hidden border shadow-inner relative">
+                        <Map
+                          initialViewState={{
+                            latitude: listing.latitude,
+                            longitude: listing.longitude,
+                            zoom: 14
+                          }}
+                          mapStyle="mapbox://styles/mapbox/streets-v11"
+                          mapboxAccessToken={MAPBOX_TOKEN}
+                          style={{ width: '100%', height: '100%' }}
+                        >
+                          <NavigationControl position="bottom-right" />
+                          <Marker longitude={listing.longitude} latitude={listing.latitude} color="#9333ea" />
+                        </Map>
+                      </div>
+                      <p className="text-sm text-muted-foreground">{listing.location}</p>
+                    </div>
+                  )}
                 </TabsContent>
 
                 <TabsContent value="amenities" className="mt-4">
