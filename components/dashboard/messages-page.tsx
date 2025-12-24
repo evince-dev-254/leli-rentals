@@ -5,9 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Search, Send, User, Loader2 } from "lucide-react"
+import { Search, Send, User, Loader2, ArrowLeft } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import { getConversations, getMessages, sendMessage } from "@/lib/actions/dashboard-actions"
+import { BackButton } from "@/components/ui/back-button"
 
 export function MessagesPage() {
     const [selectedChatId, setSelectedChatId] = useState<string | null>(null)
@@ -113,10 +114,13 @@ export function MessagesPage() {
 
     return (
         <div className="h-[calc(100vh-8rem)] flex flex-col md:flex-row gap-6">
-            {/* Chat List */}
-            <Card className="glass-card w-full md:w-80 flex flex-col">
+            {/* Chat List - Hidden on mobile if chat selected */}
+            <Card className={`glass-card w-full md:w-80 flex flex-col ${selectedChatId ? 'hidden md:flex' : 'flex'}`}>
                 <CardHeader className="p-4 border-b border-border/50">
-                    <CardTitle className="text-xl">Messages</CardTitle>
+                    <div className="flex items-center gap-2">
+                        <BackButton href="/dashboard" label="" />
+                        <CardTitle className="text-xl">Messages</CardTitle>
+                    </div>
                     <div className="relative mt-2">
                         <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                         <Input placeholder="Search messages..." className="pl-8" />
@@ -161,11 +165,14 @@ export function MessagesPage() {
                 </CardContent>
             </Card>
 
-            {/* Chat Window */}
-            <Card className="glass-card flex-1 flex flex-col">
+            {/* Chat Window - Hidden on mobile if no chat selected */}
+            <Card className={`glass-card flex-1 flex flex-col ${!selectedChatId ? 'hidden md:flex' : 'flex'}`}>
                 {selectedChatId ? (
                     <>
                         <div className="p-4 border-b border-border/50 flex items-center gap-3">
+                            <Button variant="ghost" size="icon" className="md:hidden mr-2" onClick={() => setSelectedChatId(null)}>
+                                <ArrowLeft className="h-4 w-4" />
+                            </Button>
                             <Avatar>
                                 <AvatarImage src={selectedChatUser?.avatar_url} />
                                 <AvatarFallback>{selectedChatUser?.full_name?.[0] || 'U'}</AvatarFallback>
@@ -188,8 +195,17 @@ export function MessagesPage() {
                                     const isMe = msg.sender_id === currentUser?.id
                                     return (
                                         <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                                            <div className={`rounded-lg p-3 max-w-[80%] text-sm ${isMe ? 'bg-primary text-primary-foreground' : 'bg-secondary'}`}>
-                                                {msg.content}
+                                            <div
+                                                className={`relative px-4 py-2 max-w-[80%] text-sm shadow-sm ${isMe
+                                                    ? 'bg-primary text-primary-foreground rounded-2xl rounded-tr-sm'
+                                                    : 'bg-card border border-border/50 text-foreground rounded-2xl rounded-tl-sm'
+                                                    }`}
+                                            >
+                                                <p className="leading-relaxed">{msg.content}</p>
+                                                <div className={`text-[10px] mt-1 text-right select-none ${isMe ? 'text-primary-foreground/70' : 'text-muted-foreground/70'
+                                                    }`}>
+                                                    {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                </div>
                                             </div>
                                         </div>
                                     )

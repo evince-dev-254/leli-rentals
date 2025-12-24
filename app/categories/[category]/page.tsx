@@ -1,6 +1,6 @@
-import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { CategoryDetailContent } from "@/components/categories/category-detail-content"
+import { BackButton } from "@/components/ui/back-button"
 import { getCategoryById, categories } from "@/lib/categories-data"
 import { notFound } from "next/navigation"
 
@@ -31,8 +31,10 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header />
       <main className="flex-1">
+        <div className="container mx-auto px-4 py-4">
+          <BackButton href="/" label="Back to Home" />
+        </div>
         <CategoryDetailContent categoryId={category.id} />
       </main>
       <Footer />

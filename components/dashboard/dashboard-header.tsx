@@ -5,6 +5,7 @@ import { useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 import { Bell, Search, Moon, Sun, Menu, Key } from "lucide-react"
+import { HandHoldingKey } from "@/components/icons/hand-holding-key"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -98,7 +99,7 @@ export function DashboardHeader() {
             <div className="p-6 border-b border-border">
               <Link href="/" className="flex items-center gap-2 group">
                 <div className="h-8 w-8 rounded-lg bg-gradient-to-tr from-primary to-purple-600 flex items-center justify-center shadow-md shadow-primary/20">
-                  <Key className="h-5 w-5 text-white" />
+                  <HandHoldingKey className="h-5 w-5 text-white" />
                 </div>
                 <span className="text-sm uppercase font-black tracking-wider text-primary">Portal</span>
               </Link>

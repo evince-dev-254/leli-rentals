@@ -32,7 +32,7 @@ export function LocationSearch({
 
     const handleSearch = async (query: string) => {
         setInputValue(query)
-        if (query.length < 3) {
+        if (query.length < 2) {
             setSuggestions([])
             return
         }

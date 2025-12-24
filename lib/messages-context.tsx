@@ -34,7 +34,7 @@ interface MessagesContextType {
   conversations: Conversation[]
   activeConversation: Conversation | null
   setActiveConversation: (conversation: Conversation | null) => void
-  sendMessage: (conversationId: string, content: string) => void
+  sendMessage: (conversationId: string, content: string, receiverId?: string) => void
   startConversation: (
     ownerId: string,
     ownerName: string,
@@ -150,17 +150,28 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const sendMessage = async (conversationId: string, content: string) => {
+  const sendMessage = async (conversationId: string, content: string, receiverId?: string) => {
     if (!currentUserId) return
 
-    const conversation = conversations.find(c => c.id === conversationId)
-    if (!conversation) return
+    let finalReceiverId = receiverId
+
+    if (!finalReceiverId) {
+      const conversation = conversations.find(c => c.id === conversationId)
+      if (conversation) {
+        finalReceiverId = conversation.participantId
+      }
+    }
+
+    if (!finalReceiverId) {
+      console.error("No receiver ID found for message")
+      return
+    }
 
     try {
       const { error } = await supabase.from('messages').insert({
         conversation_id: conversationId,
         sender_id: currentUserId,
-        receiver_id: conversation.participantId,
+        receiver_id: finalReceiverId,
         content: content,
         is_read: false
       })
@@ -218,7 +229,7 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
       }
 
       // Send initial message
-      await sendMessage(convId, initialMessage)
+      await sendMessage(convId, initialMessage, ownerId)
 
       // Refresh and set active
       await fetchConversations(currentUserId)

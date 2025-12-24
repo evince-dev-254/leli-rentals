@@ -21,6 +21,7 @@ import {
   Users,
   Key,
 } from "lucide-react"
+import { HandHoldingKey } from "@/components/icons/hand-holding-key"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -74,7 +75,7 @@ export function DashboardSidebar() {
       <div className="p-6 border-b border-border/50 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3 group">
           <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-primary to-purple-600 flex items-center justify-center shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform duration-300">
-            <Key className="h-6 w-6 text-white" />
+            <HandHoldingKey className="h-6 w-6 text-white" />
           </div>
           {!collapsed && (
             <div className="flex flex-col animate-in fade-in slide-in-from-left-2 duration-300">

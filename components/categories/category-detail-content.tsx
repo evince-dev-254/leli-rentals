@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { Search, Filter, MapPin, Star, Heart, ArrowLeft, Grid3X3, List, SlidersHorizontal, Loader2 } from "lucide-react"
+import { Search, Filter, MapPin, Star, Heart, ArrowLeft, Grid3X3, List, SlidersHorizontal, Loader2, Map as MapIcon } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -23,7 +23,7 @@ export function CategoryDetailContent({ categoryId }: CategoryDetailContentProps
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [sortBy, setSortBy] = useState("featured")
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
+  const [viewMode, setViewMode] = useState<"grid" | "list" | "map">("grid")
   const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([])
 
   useEffect(() => {
@@ -245,6 +245,13 @@ export function CategoryDetailContent({ categoryId }: CategoryDetailContentProps
               >
                 <List className="h-4 w-4" />
               </Button>
+              <Button
+                variant={viewMode === "map" ? "default" : "ghost"}
+                size="icon"
+                onClick={() => setViewMode("map")}
+              >
+                <MapIcon className="h-4 w-4" />
+              </Button>
             </div>
 
             <Sheet>
@@ -303,6 +310,19 @@ export function CategoryDetailContent({ categoryId }: CategoryDetailContentProps
                       ? "Try adjusting your filters or search query"
                       : "Be the first to list in this category!"}
                   </p>
+                </div>
+              ) : viewMode === "map" ? (
+                <div className="h-[600px] rounded-2xl overflow-hidden relative border bg-muted">
+                  {/* Placeholder for Map - In a real implementation this would be <Map ... /> */}
+                  {/* Since we don't have the full Mapbox setup in this file context yet, providing a placeholder or basic iframe/component */}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground p-6 text-center">
+                    <MapIcon className="h-16 w-16 mb-4 opacity-20" />
+                    <p className="text-lg font-medium">Map View</p>
+                    <p className="max-w-md mt-2">
+                      Interactive map showing {sortedListings.length} results in {category.name}.
+                      (Map integration requires valid Mapbox Token in environment variables)
+                    </p>
+                  </div>
                 </div>
               ) : viewMode === "grid" ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">

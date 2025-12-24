@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import {
   ArrowLeft,
@@ -18,6 +18,7 @@ import {
   Send,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { BackButton } from "@/components/ui/back-button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -28,6 +29,7 @@ import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import Map, { Marker, NavigationControl } from 'react-map-gl/mapbox'
 import 'mapbox-gl/dist/mapbox-gl.css'
+import { LeaveReviewDialog } from "@/components/dashboard/leave-review-dialog"
 import { getCategoryById } from "@/lib/categories-data"
 import { useFavorites } from "@/lib/favorites-context"
 import { useMessages } from "@/lib/messages-context"
@@ -39,6 +41,9 @@ interface ListingDetailContentProps {
 }
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN
+// Default Nairobi coordinates used in CreateListing
+const DEFAULT_NAIROBI_LAT = -1.2921
+const DEFAULT_NAIROBI_LNG = 36.8219
 
 export function ListingDetailContent({ listing }: ListingDetailContentProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
@@ -46,6 +51,48 @@ export function ListingDetailContent({ listing }: ListingDetailContentProps) {
   const [isBookingOpen, setIsBookingOpen] = useState(false)
   const [isChatOpen, setIsChatOpen] = useState(false)
   const [chatMessage, setChatMessage] = useState("")
+  const [correctedCoords, setCorrectedCoords] = useState<{ lat: number; lng: number } | null>(null)
+
+  // Default Nairobi coordinates used in CreateListing
+  const DEFAULT_NAIROBI_LAT = -1.2921
+  const DEFAULT_NAIROBI_LNG = 36.8219
+
+  useEffect(() => {
+    const checkAndFixCoordinates = async () => {
+      // Check if coordinates match default Nairobi AND location string doesn't mention Nairobi
+      const lat = listing.latitude ?? 0
+      const lng = listing.longitude ?? 0
+
+      const isDefaultCoords =
+        Math.abs(lat - DEFAULT_NAIROBI_LAT) < 0.001 &&
+        Math.abs(lng - DEFAULT_NAIROBI_LNG) < 0.001
+
+      const isNotNairobiLocation = listing.location && !listing.location.toLowerCase().includes("nairobi")
+
+      if (isDefaultCoords && isNotNairobiLocation && MAPBOX_TOKEN) {
+        console.log("Detected default coordinates for non-Nairobi location. Attempting to geocode:", listing.location)
+        try {
+          const response = await fetch(
+            `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(listing.location)}.json?access_token=${MAPBOX_TOKEN}&limit=1&country=KE`,
+          )
+          const data = await response.json()
+          if (data.features && data.features.length > 0) {
+            const [lng, lat] = data.features[0].center
+            setCorrectedCoords({ lat, lng })
+          }
+        } catch (err) {
+          console.error("Failed to auto-correct coordinates:", err)
+        }
+      }
+    }
+
+    checkAndFixCoordinates()
+  }, [listing.latitude, listing.longitude, listing.location])
+
+  const mapLat = correctedCoords ? correctedCoords.lat : listing.latitude
+  const mapLng = correctedCoords ? correctedCoords.lng : listing.longitude
+  const mapKey = correctedCoords ? `corrected-${listing.id}` : listing.id
+
 
   const { isFavorite, toggleFavorite } = useFavorites()
   const { startConversation } = useMessages()
@@ -88,13 +135,7 @@ export function ListingDetailContent({ listing }: ListingDetailContentProps) {
       <div className="container mx-auto max-w-7xl">
         {/* Breadcrumb */}
         <div className="mb-6">
-          <Link
-            href={`/categories/${listing.category}`}
-            className="inline-flex items-center text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to {category?.name}
-          </Link>
+          <BackButton href={`/categories/${listing.category}`} label={`Back to ${category?.name}`} />
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
@@ -200,7 +241,9 @@ export function ListingDetailContent({ listing }: ListingDetailContentProps) {
                 <TabsContent value="description" className="mt-4 space-y-6">
                   <p className="text-muted-foreground leading-relaxed">{listing.description}</p>
 
-                  {listing.latitude && listing.longitude && (
+
+
+                  {(listing.latitude !== undefined && listing.longitude !== undefined || correctedCoords) && (
                     <div className="space-y-3">
                       <h3 className="font-semibold flex items-center gap-2">
                         <MapPin className="h-4 w-4" />
@@ -208,9 +251,10 @@ export function ListingDetailContent({ listing }: ListingDetailContentProps) {
                       </h3>
                       <div className="h-64 rounded-xl overflow-hidden border shadow-inner relative">
                         <Map
+                          key={mapKey}
                           initialViewState={{
-                            latitude: listing.latitude,
-                            longitude: listing.longitude,
+                            latitude: mapLat ?? 0,
+                            longitude: mapLng ?? 0,
                             zoom: 14
                           }}
                           mapStyle="mapbox://styles/mapbox/streets-v11"
@@ -218,7 +262,7 @@ export function ListingDetailContent({ listing }: ListingDetailContentProps) {
                           style={{ width: '100%', height: '100%' }}
                         >
                           <NavigationControl position="bottom-right" />
-                          <Marker longitude={listing.longitude} latitude={listing.latitude} color="#9333ea" />
+                          <Marker longitude={mapLng} latitude={mapLat} color="#9333ea" />
                         </Map>
                       </div>
                       <p className="text-sm text-muted-foreground">{listing.location}</p>
@@ -238,6 +282,17 @@ export function ListingDetailContent({ listing }: ListingDetailContentProps) {
                 </TabsContent>
 
                 <TabsContent value="reviews" className="mt-4">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="font-semibold text-lg">Reviews</h3>
+                    <LeaveReviewDialog
+                      bookingId="placeholder-booking-id" // In reality this should be passed if the user has a valid booking
+                      listingId={listing.id}
+                      listingTitle={listing.title}
+                      listingImage={listing.images[0]}
+                    >
+                      <Button>Write a Review</Button>
+                    </LeaveReviewDialog>
+                  </div>
                   <div className="space-y-4">
                     {[1, 2, 3].map((i) => (
                       <div key={i} className="p-4 rounded-lg bg-secondary/50">

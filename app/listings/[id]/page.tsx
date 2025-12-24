@@ -1,4 +1,3 @@
-import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { ListingDetailContent } from "@/components/listings/listing-detail-content"
 import { supabase } from "@/lib/supabase"
@@ -33,8 +32,8 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
     pricePerWeek: Number(listing.price_per_week || listing.price_per_day * 7),
     pricePerMonth: Number(listing.price_per_month || listing.price_per_day * 30),
     location: listing.location,
-    latitude: listing.latitude,
-    longitude: listing.longitude,
+    latitude: Number(listing.latitude),
+    longitude: Number(listing.longitude),
     images: listing.images || [],
     category: listing.category?.name || "Uncategorized", // Use mapped category name or ID
     subcategory: listing.subcategory_id || "General",
@@ -53,7 +52,6 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header />
       <main className="flex-1">
         <ListingDetailContent listing={transformedListing} />
       </main>
