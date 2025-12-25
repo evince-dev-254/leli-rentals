@@ -146,6 +146,14 @@ export const categories = [
         name: "Electrical",
         image: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=400&h=300&fit=crop",
       },
+      {
+        name: "Party Rentals",
+        image: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=400&h=300&fit=crop",
+      },
+      {
+        name: "Outdoor Gear",
+        image: "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=400&h=300&fit=crop",
+      },
     ],
   },
   {
