@@ -67,7 +67,7 @@ export function AiAssistant() {
             <Button
                 onClick={() => setIsOpen(!isOpen)}
                 className={cn(
-                    "fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg z-50 transition-all duration-300 hover:scale-110",
+                    "fixed bottom-4 right-4 sm:bottom-6 sm:right-6 h-14 w-14 rounded-full shadow-lg z-50 transition-all duration-300 hover:scale-110",
                     isOpen ? "bg-destructive hover:bg-destructive/90 rotate-90" : "bg-primary hover:bg-primary/90"
                 )}
             >
@@ -76,7 +76,7 @@ export function AiAssistant() {
 
             {/* Chat Window */}
             {isOpen && (
-                <Card className="fixed bottom-24 right-6 w-[350px] sm:w-[400px] h-[500px] z-50 shadow-2xl flex flex-col animate-in slide-in-from-bottom-10 fade-in glass-card border-primary/20">
+                <Card className="fixed bottom-20 right-4 sm:bottom-24 sm:right-6 w-[calc(100vw-2rem)] sm:w-[400px] h-[70vh] sm:h-[500px] z-50 shadow-2xl flex flex-col animate-in slide-in-from-bottom-10 fade-in glass-card border-primary/20">
                     <CardHeader className="p-4 border-b bg-primary/5 flex flex-row items-center justify-between space-y-0">
                         <div className="flex items-center gap-2">
                             <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">

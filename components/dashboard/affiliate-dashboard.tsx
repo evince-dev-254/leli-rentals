@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { getAffiliateData, getAffiliateReferrals } from "@/lib/actions/dashboard-actions";
@@ -15,7 +15,8 @@ import {
     Copy,
     Check,
     Loader2,
-    ArrowLeft
+    ArrowLeft,
+    RefreshCw
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -37,52 +38,63 @@ export default function AffiliateDashboard() {
     const [referrals, setReferrals] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [joining, setJoining] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
     const [copied, setCopied] = useState(false);
 
     useEffect(() => {
-        const fetchData = async () => {
+        const getUser = async () => {
             const { data: { user } } = await supabase.auth.getUser();
             setUser(user);
-
-            if (!user) {
-                setLoading(false);
-                return;
-            }
-
-            try {
-                // Also fetch user profile to check role
-                const { data: profile } = await supabase
-                    .from('user_profiles')
-                    .select('role')
-                    .eq('id', user.id)
-                    .single();
-
-                const [statsData, referralsData] = await Promise.all([
-                    getAffiliateData(user.id),
-                    getAffiliateReferrals(user.id)
-                ]);
-
-                setStats(statsData);
-                setReferrals(referralsData || []);
-
-                // If user role is affiliate but stats is null, they might have just joined
-                // Retry fetching stats once more
-                if (!statsData && profile?.role === 'affiliate') {
-                    // Wait a bit and retry
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                    const retryStats = await getAffiliateData(user.id);
-                    if (retryStats) {
-                        setStats(retryStats);
-                    }
-                }
-            } catch (e) {
-                console.error(e);
-            } finally {
-                setLoading(false);
-            }
+            if (!user) setLoading(false);
         };
-        fetchData();
+        getUser();
     }, []);
+
+    const loadDashboardData = useCallback(async () => {
+        if (!user) return;
+        try {
+            // Also fetch user profile to check role
+            const { data: profile } = await supabase
+                .from('user_profiles')
+                .select('role')
+                .eq('id', user.id)
+                .single();
+
+            const [statsData, referralsData] = await Promise.all([
+                getAffiliateData(user.id),
+                getAffiliateReferrals(user.id)
+            ]);
+
+            setStats(statsData);
+            setReferrals(referralsData || []);
+
+            // If user role is affiliate but stats is null, they might have just joined
+            // Retry fetching stats once more
+            if (!statsData && profile?.role === 'affiliate') {
+                // Wait a bit and retry
+                await new Promise(resolve => setTimeout(resolve, 500));
+                const retryStats = await getAffiliateData(user.id);
+                if (retryStats) {
+                    setStats(retryStats);
+                }
+            }
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setLoading(false);
+            setRefreshing(false);
+        }
+    }, [user]);
+
+    useEffect(() => {
+        if (!user) return;
+        loadDashboardData();
+    }, [user, loadDashboardData]);
+
+    const handleRefresh = async () => {
+        setRefreshing(true);
+        await loadDashboardData();
+    };
 
     const handleJoinProgram = async () => {
         if (!user) return;
@@ -113,7 +125,7 @@ export default function AffiliateDashboard() {
         setTimeout(() => setCopied(false), 2000);
     };
 
-    if (loading) return (
+    if (loading && !refreshing && !stats) return (
         <div className="flex items-center justify-center p-12">
             <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
         </div>
@@ -121,7 +133,7 @@ export default function AffiliateDashboard() {
 
     if (!user) return <div className="text-center p-8">Please sign in to view the affiliate dashboard.</div>;
 
-    if (!stats) {
+    if (!stats && !loading) {
         return (
             <div className="flex flex-col items-center justify-center p-12 text-center border rounded-lg bg-card/50 shadow-sm space-y-4 max-w-2xl mx-auto mt-8 relative">
                 <Button
@@ -156,7 +168,7 @@ export default function AffiliateDashboard() {
         )
     }
 
-    const referralLink = `${process.env.NEXT_PUBLIC_SITE_URL || "https://leli.rentals"}/signup?ref=${stats.invite_code}`;
+    const referralLink = `${process.env.NEXT_PUBLIC_SITE_URL || "https://leli.rentals"}/signup?ref=${stats?.invite_code || ''}`;
 
     return (
         <div className="space-y-8 animate-in fade-in duration-500">
@@ -174,6 +186,17 @@ export default function AffiliateDashboard() {
                         <h2 className="text-3xl font-bold tracking-tight">Affiliate Dashboard</h2>
                         <p className="text-muted-foreground">Track your referrals and earnings.</p>
                     </div>
+                </div>
+                <div className="flex items-center gap-2">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleRefresh}
+                        disabled={refreshing}
+                    >
+                        <RefreshCw className={`mr-2 h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+                        Refresh Stats
+                    </Button>
                     <Button
                         variant="outline"
                         size="sm"
@@ -183,31 +206,31 @@ export default function AffiliateDashboard() {
                         Switch Account Type
                     </Button>
                 </div>
-
-                <Card className="w-full md:w-auto bg-primary/5 border-primary/20">
-                    <CardContent className="p-4 flex items-center gap-4">
-                        <div className="flex flex-col">
-                            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Your Referral Code</span>
-                            <div className="flex items-center gap-2">
-                                <span className="text-xl font-mono font-bold">{stats.invite_code}</span>
-                                <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => copyToClipboard(stats.invite_code)}>
-                                    {copied ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
-                                </Button>
-                            </div>
-                        </div>
-                        <Separator orientation="vertical" className="h-10 mx-2" />
-                        <div className="flex flex-col">
-                            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Referral Link</span>
-                            <div className="flex items-center gap-2">
-                                <span className="text-sm text-foreground/80 truncate max-w-[150px]">{referralLink}</span>
-                                <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => copyToClipboard(referralLink)}>
-                                    {copied ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
-                                </Button>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
             </div>
+
+            <Card className="w-full md:w-auto bg-primary/5 border-primary/20">
+                <CardContent className="p-4 flex items-center gap-4">
+                    <div className="flex flex-col">
+                        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Your Referral Code</span>
+                        <div className="flex items-center gap-2">
+                            <span className="text-xl font-mono font-bold">{stats?.invite_code || '...'}</span>
+                            <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => copyToClipboard(stats?.invite_code || '')}>
+                                {copied ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+                            </Button>
+                        </div>
+                    </div>
+                    <Separator orientation="vertical" className="h-10 mx-2" />
+                    <div className="flex flex-col">
+                        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Referral Link</span>
+                        <div className="flex items-center gap-2">
+                            <span className="text-sm text-foreground/80 truncate max-w-[150px]">{referralLink}</span>
+                            <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => copyToClipboard(referralLink)}>
+                                {copied ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+                            </Button>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
 
             {/* Overview Stats */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -217,7 +240,7 @@ export default function AffiliateDashboard() {
                         <Users className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{stats.total_referrals || 0}</div>
+                        <div className="text-2xl font-bold">{stats?.total_referrals || 0}</div>
                         <p className="text-xs text-muted-foreground">Users signed up</p>
                     </CardContent>
                 </Card>
@@ -227,7 +250,7 @@ export default function AffiliateDashboard() {
                         <DollarSign className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">Kes {stats.total_earnings || 0}</div>
+                        <div className="text-2xl font-bold">Kes {stats?.total_earnings || 0}</div>
                         <p className="text-xs text-muted-foreground">Lifetime earnings</p>
                     </CardContent>
                 </Card>
@@ -237,17 +260,17 @@ export default function AffiliateDashboard() {
                         <DollarSign className="h-4 w-4 text-orange-500" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-orange-500">Kes {stats.pending_earnings || 0}</div>
+                        <div className="text-2xl font-bold text-orange-500">Kes {stats?.pending_earnings || 0}</div>
                         <p className="text-xs text-muted-foreground">Ready to withdraw</p>
                     </CardContent>
                 </Card>
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Commission Rate</CardTitle>
-                        <Badge variant="outline">{stats.commission_rate}%</Badge>
+                        <Badge variant="outline">{stats?.commission_rate || 10}%</Badge>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{stats.commission_rate}%</div>
+                        <div className="text-2xl font-bold">{stats?.commission_rate || 10}%</div>
                         <p className="text-xs text-muted-foreground">Per successful booking</p>
                     </CardContent>
                 </Card>
