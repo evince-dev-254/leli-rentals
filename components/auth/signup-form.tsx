@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { useRouter, useSearchParams } from "next/navigation"
@@ -37,6 +37,19 @@ export function SignupForm() {
   // OTP State
   const [showOtpInput, setShowOtpInput] = useState(false)
   const [otp, setOtp] = useState("")
+  // Persist referral code
+  useEffect(() => {
+    const urlRef = searchParams.get("ref")
+    if (urlRef) {
+      sessionStorage.setItem("referral_code", urlRef)
+    }
+  }, [searchParams])
+
+  // Get effective ref code (URL > Session > null)
+  const getEffectiveRefCode = () => {
+    return searchParams.get("ref") || (typeof window !== 'undefined' ? sessionStorage.getItem("referral_code") : null)
+  }
+
   const [timeLeft, setTimeLeft] = useState(0)
 
   React.useEffect(() => {
@@ -98,7 +111,7 @@ export function SignupForm() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${redirectUrl}/auth/callback?ref=${refCode || ''}`,
+          redirectTo: `${redirectUrl}/auth/callback?ref=${getEffectiveRefCode() || ''}`,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
@@ -144,7 +157,7 @@ export function SignupForm() {
             phone: phone,
             date_of_birth: dateOfBirth,
             role: accountType,
-            ref_code: refCode, // Store referral code in metadata
+            ref_code: getEffectiveRefCode(), // Store referral code in metadata
           }
         },
       })

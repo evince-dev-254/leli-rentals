@@ -30,21 +30,30 @@ export async function getAllAffiliates() {
 
 export async function joinAffiliateProgram(userId: string, email: string) {
     // 1. Check if affiliate already exists for this user or email
+    // Use Admin client to check existence across all records
     const { data: existingAffiliate, error: findError } = await supabaseAdmin
         .from('affiliates')
         .select('*')
         .or(`user_id.eq.${userId},email.eq.${email}`)
-        .single();
+        .maybeSingle(); // Use maybeSingle to avoid error if multiple (shouldn't happen with unique email) or none
 
     if (existingAffiliate) {
-        // Already exists, just ensure role is updated and return success
-        // Update user role to affiliate if not already
+        // Record exists. Ensure it is linked to this user_id if it was just email-based
+        if (existingAffiliate.user_id !== userId) {
+            await supabaseAdmin
+                .from('affiliates')
+                .update({ user_id: userId, status: 'active' }) // Ensure active and linked
+                .eq('id', existingAffiliate.id);
+        }
+
+        // Ensure user profile role is set to affiliate
         await supabaseAdmin
             .from('user_profiles')
             .update({ role: 'affiliate' })
             .eq('id', userId);
 
-        return { success: true, data: existingAffiliate };
+        // Return the affiliate data with the correct user_id
+        return { success: true, data: { ...existingAffiliate, user_id: userId } };
     }
 
     // Generate codes
