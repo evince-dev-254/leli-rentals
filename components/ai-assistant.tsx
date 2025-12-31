@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Bot, Send, X, MessageSquare, Loader2, Sparkles } from "lucide-react"
+import { Bot, Send, X, MessageSquare, Loader2, Sparkles, Phone } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface Message {
@@ -104,13 +104,30 @@ export function AiAssistant() {
                                 >
                                     <div
                                         className={cn(
-                                            "rounded-2xl px-4 py-2 max-w-[85%] text-sm shadow-sm",
+                                            "rounded-2xl px-4 py-2 max-w-[85%] text-sm shadow-sm flex flex-col gap-2",
                                             msg.role === "user"
                                                 ? "bg-primary text-primary-foreground rounded-br-none"
                                                 : "bg-muted text-foreground rounded-bl-none"
                                         )}
                                     >
-                                        {msg.content}
+                                        {msg.content.split(/(https:\/\/wa\.me\/\d+)/g).map((part, i) => {
+                                            if (part.match(/https:\/\/wa\.me\/\d+/)) {
+                                                return (
+                                                    <Button
+                                                        key={i}
+                                                        asChild
+                                                        size="sm"
+                                                        className="mt-1 bg-green-600 hover:bg-green-700 text-white gap-2 h-8"
+                                                    >
+                                                        <a href={part} target="_blank" rel="noopener noreferrer">
+                                                            <Phone className="h-3 w-3" />
+                                                            Chat on WhatsApp
+                                                        </a>
+                                                    </Button>
+                                                )
+                                            }
+                                            return <span key={i}>{part}</span>
+                                        })}
                                     </div>
                                 </div>
                             ))}
