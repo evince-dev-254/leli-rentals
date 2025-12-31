@@ -89,7 +89,7 @@ export function AdvancedSearch() {
                         placeholder="Search keywords..."
                         value={query}
                         onChange={(e) => handleQueryChange(e.target.value)}
-                        className="h-9 sm:h-11 pl-10 bg-white/10 border-none text-slate-900 placeholder:text-slate-500 focus-visible:ring-0 focus-visible:ring-offset-0 rounded-full sm:rounded-l-full sm:rounded-r-none text-sm font-medium"
+                        className="h-9 sm:h-11 pl-10 bg-white/10 dark:bg-white/5 border-none text-foreground placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0 rounded-full sm:rounded-l-full sm:rounded-r-none text-sm font-medium"
                     />
                 </div>
 
@@ -99,7 +99,7 @@ export function AdvancedSearch() {
                 <div className="w-full sm:w-40 relative group">
                     <Briefcase className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-primary group-focus-within:scale-110 transition-transform z-10 pointer-events-none" />
                     <Select value={category} onValueChange={setCategory}>
-                        <SelectTrigger className="h-9 sm:h-11 pl-10 bg-white/10 border-none text-slate-900 focus:ring-0 focus:ring-offset-0 rounded-full sm:rounded-none text-sm font-medium">
+                        <SelectTrigger className="h-9 sm:h-11 pl-10 bg-white/10 dark:bg-white/5 border-none text-foreground focus:ring-0 focus:ring-offset-0 rounded-full sm:rounded-none text-sm font-medium">
                             <SelectValue placeholder="Category" />
                         </SelectTrigger>
                         <SelectContent className="bg-slate-900/95 backdrop-blur-xl border-white/10 text-white">
@@ -120,7 +120,7 @@ export function AdvancedSearch() {
                     <LocationSearch
                         onLocationSelect={(data) => setCity(data.city || data.address)}
                         placeholder="Location"
-                        className="h-9 sm:h-11 bg-white/10 border-none text-slate-900 placeholder:text-slate-500 focus:ring-0 focus:ring-offset-0 rounded-full sm:rounded-none text-sm font-medium"
+                        className="h-9 sm:h-11 bg-white/10 dark:bg-white/5 border-none text-foreground placeholder:text-muted-foreground focus:ring-0 focus:ring-offset-0 rounded-full sm:rounded-none text-sm font-medium"
                     />
                 </div>
 

@@ -122,7 +122,6 @@ export function DashboardHeader() {
                               : "text-muted-foreground hover:bg-muted hover:text-foreground"
                           )}
                         >
-                          <link.icon className="h-5 w-5 shrink-0" />
                           <span className="font-medium">{link.label}</span>
                         </Link>
                       </li>

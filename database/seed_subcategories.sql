@@ -24,6 +24,8 @@ VALUES
     ('33333333-3333-3333-3333-333333333333', 'Gardening', 'gardening', 'Mowers and trimmers', 3),
     ('33333333-3333-3333-3333-333333333333', 'Cleaning', 'cleaning', 'Pressure washers and vacuums', 4),
     ('33333333-3333-3333-3333-333333333333', 'Ladders & Access', 'ladders', 'Ladders and platforms', 5),
+    ('33333333-3333-3333-3333-333333333333', 'Party Rentals', 'party-rentals', 'Tents, chairs, and tables', 6),
+    ('33333333-3333-3333-3333-333333333333', 'Outdoor Gear', 'outdoor-gear', 'Camping and hiking equipment', 7),
 
     -- 4. ELECTRONICS (4444...)
     ('44444444-4444-4444-4444-444444444444', 'Audio & Sound', 'audio', 'Speakers and microphones', 1),

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { MessageCircle, Send, ArrowLeft, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -8,11 +8,23 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { useMessages, type Conversation } from "@/lib/messages-context"
 import { cn } from "@/lib/utils"
+import { supabase } from "@/lib/supabase"
 
 export function MessagesContent() {
   const { conversations, activeConversation, setActiveConversation, sendMessage, markAsRead } = useMessages()
   const [newMessage, setNewMessage] = useState("")
   const [searchQuery, setSearchQuery] = useState("")
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+
+  useEffect(() => {
+    async function getCurrentUser() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        setCurrentUserId(user.id)
+      }
+    }
+    getCurrentUser()
+  }, [])
 
   const filteredConversations = conversations.filter(
     (conv) =>
@@ -156,21 +168,21 @@ export function MessagesContent() {
                       {activeConversation.messages.map((message) => (
                         <div
                           key={message.id}
-                          className={cn("flex", message.senderId === "user" ? "justify-end" : "justify-start")}
+                          className={cn("flex", message.senderId === currentUserId ? "justify-end" : "justify-start")}
                         >
                           <div
                             className={cn(
                               "max-w-[70%] rounded-2xl px-4 py-2",
-                              message.senderId === "user"
-                                ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
-                                : "bg-secondary",
+                              message.senderId === currentUserId
+                                ? "bg-gradient-to-r from-primary to-purple-600 text-white"
+                                : "bg-secondary text-foreground",
                             )}
                           >
                             <p className="text-sm">{message.content}</p>
                             <p
                               className={cn(
                                 "text-xs mt-1",
-                                message.senderId === "user" ? "text-white/70" : "text-muted-foreground",
+                                message.senderId === currentUserId ? "text-white/70" : "text-muted-foreground",
                               )}
                             >
                               {formatTime(message.timestamp)}

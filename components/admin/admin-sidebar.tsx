@@ -34,26 +34,14 @@ const sidebarLinks = [
 
 export function AdminSidebar() {
   const pathname = usePathname()
-  const [collapsed, setCollapsed] = useState(false)
 
   return (
-    <aside
-      className={cn(
-        "sticky top-0 h-screen bg-card/50 backdrop-blur-xl border-r border-border flex flex-col transition-all duration-300",
-        collapsed ? "w-20" : "w-64",
-      )}
-    >
+    <aside className="sticky top-0 h-screen bg-card/50 backdrop-blur-xl border-r border-border flex flex-col transition-all duration-300 w-64">
       {/* Logo */}
       <div className="p-4 border-b border-border flex items-center justify-between">
         <Link href="/admin" className="flex items-center gap-3 group">
-          <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-primary to-purple-600 flex items-center justify-center shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform duration-300">
-            <Key className="h-6 w-6 text-white" />
-          </div>
-          {!collapsed && <span className="font-bold text-lg text-primary tracking-tight">Admin Portal</span>}
+          <span className="font-black text-lg tracking-wide uppercase bg-gradient-to-r from-purple-500 via-pink-500 to-primary bg-clip-text text-transparent hover:from-purple-500/80 hover:via-pink-500/80 hover:to-primary/80 transition-all duration-300">Admin Portal</span>
         </Link>
-        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setCollapsed(!collapsed)}>
-          {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-        </Button>
       </div>
 
       {/* Navigation */}
@@ -71,8 +59,7 @@ export function AdminSidebar() {
                   : "text-muted-foreground hover:bg-secondary hover:text-foreground",
               )}
             >
-              <link.icon className="h-5 w-5 shrink-0" />
-              {!collapsed && <span>{link.label}</span>}
+              <span>{link.label}</span>
             </Link>
           )
         })}
@@ -86,8 +73,7 @@ export function AdminSidebar() {
             "flex items-center gap-3 px-3 py-2.5 rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-all",
           )}
         >
-          <LogOut className="h-5 w-5 shrink-0" />
-          {!collapsed && <span>Exit Admin</span>}
+          <span>Exit Admin</span>
         </Link>
       </div>
     </aside>

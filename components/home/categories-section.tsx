@@ -71,7 +71,7 @@ const categories = [
 
 export function CategoriesSection() {
   return (
-    <section className="py-20 px-4">
+    <section className="pt-20 pb-10 px-4">
       <div className="container mx-auto">
         {/* Header */}
         <div className="text-center mb-12">

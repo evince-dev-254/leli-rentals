@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Image from "next/image"
 import { CalendarCheck, Clock, CheckCircle, XCircle, MessageCircle, Loader2 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -9,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { supabase } from "@/lib/supabase"
 import { getBookings } from "@/lib/actions/dashboard-actions"
+import { LeaveReviewDialog } from "@/components/dashboard/leave-review-dialog"
 
 export function MyBookings() {
   const [bookings, setBookings] = useState<any[]>([])
@@ -26,7 +28,15 @@ export function MyBookings() {
       try {
         const { data: { user } } = await supabase.auth.getUser()
         if (user) {
-          const data = await getBookings(user.id, 'owner')
+          // Fetch current profile to determine role
+          const { data: profile } = await supabase
+            .from('user_profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single()
+
+          const role = profile?.role || 'renter'
+          const data = await getBookings(user.id, role as 'owner' | 'renter')
           setBookings(data || [])
         }
       } catch (error) {
@@ -40,13 +50,13 @@ export function MyBookings() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "confirmed":
-        return <Badge className="bg-green-500/20 text-green-600">Confirmed</Badge>
+        return <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20">Confirmed</Badge>
       case "pending":
-        return <Badge className="bg-orange-500/20 text-orange-600">Pending</Badge>
+        return <Badge className="bg-orange-500/10 text-orange-600 border-orange-500/20">Pending</Badge>
       case "completed":
-        return <Badge className="bg-blue-500/20 text-blue-600">Completed</Badge>
+        return <Badge className="bg-blue-500/10 text-blue-600 border-blue-500/20">Completed</Badge>
       case "cancelled":
-        return <Badge className="bg-red-500/20 text-red-600">Cancelled</Badge>
+        return <Badge className="bg-red-500/10 text-red-600 border-red-500/20">Cancelled</Badge>
       default:
         return <Badge variant="outline">{status}</Badge>
     }
@@ -134,11 +144,14 @@ export function MyBookings() {
               <div className="space-y-4">
                 {bookings.map((booking) => (
                   <div key={booking.id} className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
-                    <img
-                      src={booking.listing?.images?.[0] || "/placeholder.svg"}
-                      alt={booking.listing?.title}
-                      className="w-20 h-16 rounded-lg object-cover"
-                    />
+                    <div className="relative w-24 h-16 mr-1">
+                      <Image
+                        src={booking.listing?.images?.[0] || "/placeholder.svg"}
+                        alt={booking.listing?.title}
+                        fill
+                        className="rounded-lg object-cover"
+                      />
+                    </div>
                     <div className="flex-1 min-w-0">
                       <h4 className="font-semibold">{booking.listing?.title}</h4>
                       <div className="flex items-center gap-2 mt-1">
@@ -160,9 +173,21 @@ export function MyBookings() {
                       <Button variant="outline" size="icon">
                         <MessageCircle className="h-4 w-4" />
                       </Button>
+                      {booking.status === "completed" && (
+                        <LeaveReviewDialog
+                          bookingId={booking.id}
+                          listingId={booking.listing_id}
+                          listingTitle={booking.listing?.title}
+                          listingImage={booking.listing?.images?.[0]}
+                        >
+                          <Button size="sm" variant="outline" className="border-primary text-primary hover:bg-primary hover:text-white">
+                            Leave Review
+                          </Button>
+                        </LeaveReviewDialog>
+                      )}
                       {booking.status === "pending" && (
                         <>
-                          <Button size="sm" className="bg-green-500 hover:bg-green-600">
+                          <Button size="sm" className="bg-green-500 hover:bg-green-600 text-white">
                             Accept
                           </Button>
                           <Button size="sm" variant="destructive">

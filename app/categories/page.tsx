@@ -10,7 +10,9 @@ export const metadata = {
 export default function CategoriesPage() {
   return (
     <div className="min-h-screen flex flex-col">
-      <Header />
+      <div className="hidden lg:block">
+        <Header />
+      </div>
       <main className="flex-1">
         <CategoriesPageContent />
       </main>

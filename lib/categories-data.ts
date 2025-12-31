@@ -458,7 +458,7 @@ export const categories = [
     longDescription: "Quality baby gear for traveling families. Rent instead of carrying heavy equipment on trips.",
     count: 290,
     icon: Baby,
-    image: "/placeholder.svg",
+    image: "https://images.unsplash.com/photo-1519689680058-324335c77eba?w=800&q=80",
     color: "from-sky-500/20 to-sky-600/10",
     featured: false,
     subcategories: [
@@ -498,7 +498,7 @@ export const categories = [
     longDescription: "Professional office setups for temporary workspaces, events, or expanding businesses.",
     count: 520,
     icon: Briefcase,
-    image: "/placeholder.svg",
+    image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80",
     color: "from-slate-500/20 to-slate-600/10",
     featured: false,
     subcategories: [
@@ -547,7 +547,7 @@ export const categories = [
     longDescription: "Eco-friendly transportation options. Perfect for exploring cities or daily commuting.",
     count: 340,
     icon: Bike,
-    image: "/placeholder.svg",
+    image: "https://images.unsplash.com/photo-1571068316344-75bc76f77890?w=800&q=80",
     color: "from-emerald-500/20 to-emerald-600/10",
     featured: false,
     subcategories: [

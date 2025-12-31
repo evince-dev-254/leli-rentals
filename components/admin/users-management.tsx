@@ -57,7 +57,8 @@ export function UsersManagement() {
     try {
       const { data, error } = await supabase.from("user_profiles").select("*")
       if (error) {
-        console.error("Error fetching user_profiles:", error)
+        console.error("Error fetching user_profiles:", error.message || error)
+        toast({ title: "Error", description: "Failed to load users", variant: "destructive" })
         return
       }
 

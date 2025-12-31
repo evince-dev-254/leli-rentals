@@ -11,6 +11,7 @@ import {
   TrendingUp,
   AlertTriangle,
   Clock,
+  Star, // Added Star icon
 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -34,6 +35,7 @@ export function AdminDashboard() {
     totalBookings: 0,
     totalRevenue: 0,
     suspendedAccounts: 0,
+    totalReviews: 0, // Added totalReviews to stats state
   })
 
   const [pendingVerifications, setPendingVerifications] = useState<any[]>([])
@@ -46,24 +48,25 @@ export function AdminDashboard() {
     async function loadStats() {
       try {
         // counts
-        const [{ data: tu, error: tuErr, count: totalUsers }, { data: ownersData, error: ownersErr, count: totalOwners }] = await Promise.all([
+        const [
+          { data: tu, error: tuErr, count: totalUsers },
+          { data: ownersData, error: ownersErr, count: totalOwners },
+          { data: affiliatesData, error: affErr, count: totalAffiliates },
+          { data: listingsData, error: listingsErr, count: activeListings },
+          { data: bookingsData, error: bookingsErr, count: totalBookings },
+          { data: reviewsData, error: reviewsErr, count: totalReviews }, // Added reviews count fetch
+        ] = await Promise.all([
           supabase.from("user_profiles").select("id", { count: "exact", head: true }),
           supabase.from("user_profiles").select("id", { count: "exact", head: true }).eq("role", "owner"),
-        ])
-
-        const [{ data: affiliatesData, error: affErr, count: totalAffiliates }, { data: listingsData, error: listingsErr, count: activeListings }] = await Promise.all([
           supabase.from("user_profiles").select("id", { count: "exact", head: true }).eq("role", "affiliate"),
           supabase.from("listings").select("id", { count: "exact", head: true }).eq("status", "approved"),
-        ])
-
-        const [{ data: bookingsData, error: bookingsErr, count: totalBookings }, { data: revenueData, error: revenueErr }] = await Promise.all([
           supabase.from("bookings").select("id", { count: "exact", head: true }),
-          supabase.from("bookings").select("total_amount"),
+          supabase.from("reviews").select("id", { count: "exact", head: true }), // Fetch reviews count
         ])
 
         // compute total revenue from bookings
-        const bookingRows = revenueErr ? [] : (await supabase.from("bookings").select("total_amount")).data || []
-        const totalRevenue = bookingRows.reduce((s: number, r: any) => s + Number(r.total_amount || 0), 0)
+        const { data: revenueRows, error: revenueErr } = await supabase.from("bookings").select("total_amount")
+        const totalRevenue = revenueErr ? 0 : (revenueRows || []).reduce((s: number, r: any) => s + Number(r.total_amount || 0), 0)
 
         const { data: suspended, error: suspendedErr } = await supabase.from("user_profiles").select("*").eq("account_status", "suspended").limit(5)
         const { data: pendingV, error: pendingVErr } = await supabase
@@ -96,9 +99,9 @@ export function AdminDashboard() {
           ...(recentBookings || []).map((b: any) => ({
             type: 'booking',
             action: 'New booking',
-            user: `Booking #${b.id.slice(0, 8)}`,
+            user: `Booking #${b.id.slice(0, 8)} `,
             time: b.created_at,
-            details: `KSh ${b.total_amount}`
+            details: `KSh ${b.total_amount} `
           }))
         ].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()).slice(0, 10)
 
@@ -114,6 +117,7 @@ export function AdminDashboard() {
           totalBookings: Number(totalBookings) || 0,
           totalRevenue,
           suspendedAccounts: (suspended && suspended.length) || 0,
+          totalReviews: Number(totalReviews) || 0, // Set totalReviews
         })
 
         setPendingVerifications(pendingV || [])
@@ -204,6 +208,21 @@ export function AdminDashboard() {
             <div className="flex items-center gap-1 mt-1">
               <TrendingUp className="h-3 w-3 text-muted-foreground" />
               <span className="text-xs text-muted-foreground">Recent changes</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* New Card for Total Reviews */}
+        <Card className="glass-card">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Reviews</CardTitle>
+            <Star className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.totalReviews}</div>
+            <div className="flex items-center gap-1 mt-1">
+              <TrendingUp className="h-3 w-3 text-green-500" />
+              <span className="text-xs text-green-500">+10% from last month</span>
             </div>
           </CardContent>
         </Card>

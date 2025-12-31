@@ -77,7 +77,7 @@ export function VerificationsManagement() {
           .in("id", userIds.length ? userIds : ["null"])
 
         if (usersError) {
-          console.error("Error fetching user_profiles:", usersError)
+          console.error("Error fetching user_profiles:", usersError.message || usersError)
         }
 
         if (!mounted) return
