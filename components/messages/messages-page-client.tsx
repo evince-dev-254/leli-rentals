@@ -49,7 +49,7 @@ export function MessagesPageClient() {
     return (
         <div className="min-h-screen flex flex-col bg-background">
             {/* Header and Footer removed for full-screen experience */}
-            <main className="flex-1 h-screen overflow-hidden">
+            <main className="flex-1 h-[100dvh] overflow-hidden">
                 <MessagesContent />
             </main>
         </div>

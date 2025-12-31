@@ -1,9 +1,10 @@
 "use client"
 
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from "react"
 import { supabase } from "@/lib/supabase"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
+import { sendMessageWithLookup } from "./actions/dashboard-actions"
 
 export interface Message {
   id: string
@@ -58,41 +59,7 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
 
   const unreadTotal = conversations.reduce((total, conv) => total + conv.unreadCount, 0)
 
-  useEffect(() => {
-    async function init() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        setCurrentUserId(user.id)
-        fetchConversations(user.id)
-        setupSubscription(user.id)
-      }
-    }
-    init()
-  }, [])
-
-  const setupSubscription = (uid: string) => {
-    const channel = supabase
-      .channel('messages_channel')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'messages',
-          filter: `receiver_id=eq.${uid}`
-        },
-        () => {
-          fetchConversations(uid)
-        }
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }
-
-  const fetchConversations = async (uid: string) => {
+  const fetchConversations = useCallback(async (uid: string) => {
     try {
       const { data: convs, error } = await supabase
         .from('conversations')
@@ -131,7 +98,7 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
           messages: messages.map((m: any) => ({
             id: m.id,
             senderId: m.sender_id,
-            receiverId: m.sender_id === uid ? "me" : "other", // Simplification
+            receiverId: m.sender_id === uid ? "me" : "other",
             listingId: conv.listing?.id,
             listingTitle: conv.listing?.title,
             content: m.content,
@@ -148,7 +115,41 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
     } catch (err) {
       console.error("Error fetching conversations:", err)
     }
-  }
+  }, [])
+
+  const setupSubscription = useCallback((uid: string) => {
+    const channel = supabase
+      .channel('messages_channel')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'messages',
+          filter: `receiver_id=eq.${uid}`
+        },
+        () => {
+          fetchConversations(uid)
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [fetchConversations])
+
+  useEffect(() => {
+    async function init() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        setCurrentUserId(user.id)
+        fetchConversations(user.id)
+        setupSubscription(user.id)
+      }
+    }
+    init()
+  }, [fetchConversations, setupSubscription])
 
   const sendMessage = async (conversationId: string, content: string, receiverId?: string) => {
     if (!currentUserId) return
@@ -168,17 +169,10 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      const { error } = await supabase.from('messages').insert({
-        conversation_id: conversationId,
-        sender_id: currentUserId,
-        receiver_id: finalReceiverId,
-        content: content,
-        is_read: false
-      })
+      await sendMessageWithLookup(conversationId, currentUserId, content)
 
-      if (error) throw error
-
-      // Optimistic update
+      // fetchConversations(currentUserId) is not strictly needed if subscription works, 
+      // but we do it anyway for immediate feedback
       fetchConversations(currentUserId)
     } catch (err) {
       console.error("Error sending message:", err)

@@ -4,7 +4,6 @@ import { HeroSection } from "@/components/home/hero-section"
 import { CategoriesSection } from "@/components/home/categories-section"
 import { FeaturedListings } from "@/components/home/featured-listings"
 import { FeaturesSection } from "@/components/home/features-section"
-import { PromoBanner } from "@/components/home/promo-banner"
 import { NewsletterSection } from "@/components/home/newsletter-section"
 
 export default function HomePage() {
@@ -16,7 +15,6 @@ export default function HomePage() {
         <CategoriesSection />
         <FeaturedListings />
         <FeaturesSection />
-        <PromoBanner />
         <NewsletterSection />
       </main>
       <Footer />

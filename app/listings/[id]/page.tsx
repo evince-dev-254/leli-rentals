@@ -35,7 +35,7 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
     latitude: Number(listing.latitude),
     longitude: Number(listing.longitude),
     images: listing.images || [],
-    category: listing.category?.name || "Uncategorized", // Use mapped category name or ID
+    category: listing.category_id || "equipment", // Use category ID for lookup
     subcategory: listing.subcategory_id || "General",
     amenities: listing.amenities || [],
     rating: listing.rating_average || 0,

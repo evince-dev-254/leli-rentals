@@ -13,6 +13,9 @@ import ResetPasswordEmail from "@/components/emails/reset-password-email"
 import ReauthEmail from "@/components/emails/reauth-email"
 import NewListingEmail from "@/components/emails/new-listing-email"
 import BookingConfirmationEmail from "@/components/emails/booking-confirmation-email"
+import NewMessageEmail from "@/components/emails/new-message-email"
+import SubscriptionConfirmationEmail from "@/components/emails/newsletter-confirmation-email"
+import ContactFormEmail from "@/components/emails/contact-submission-email"
 
 export async function sendWelcomeEmail(email: string, firstName: string) {
     try {
@@ -211,6 +214,75 @@ export async function sendBookingConfirmationEmail(
         })
         return { success: true, data }
     } catch (error) {
+        return { success: false, error }
+    }
+}
+
+export async function sendNewMessageEmail(
+    email: string,
+    receiverName: string,
+    senderName: string,
+    messageContent: string,
+    listingTitle?: string
+) {
+    try {
+        const data = await resend.emails.send({
+            from: "leli rentals <messages@leli.rentals>",
+            to: email,
+            subject: `New message from ${senderName}`,
+            react: NewMessageEmail({
+                receiverName,
+                senderName,
+                messageContent,
+                listingTitle
+            }),
+        })
+        return { success: true, data }
+    } catch (error) {
+        console.error("Failed to send message email:", error)
+        return { success: false, error }
+    }
+}
+
+/** Send newsletter subscription confirmation email */
+export async function sendNewsletterConfirmationEmail(email: string) {
+    try {
+        const data = await resend.emails.send({
+            from: "leli rentals <updates@leli.rentals>",
+            to: email,
+            subject: "You're subscribed to leli rentals newsletter!",
+            react: SubscriptionConfirmationEmail(),
+        })
+        return { success: true, data }
+    } catch (error) {
+        console.error("Failed to send newsletter email:", error)
+        return { success: false, error }
+    }
+}
+
+/** Send contact form submission to admin */
+export async function sendContactFormEmail(formData: {
+    name: string,
+    email: string,
+    subject: string,
+    message: string
+}) {
+    try {
+        const data = await resend.emails.send({
+            from: "leli rentals <support@leli.rentals>",
+            to: "lelirentalsmail@gmail.com",
+            replyTo: formData.email,
+            subject: `Contact Form: ${formData.subject}`,
+            react: ContactFormEmail({
+                name: formData.name,
+                email: formData.email,
+                subject: formData.subject,
+                message: formData.message
+            }),
+        })
+        return { success: true, data }
+    } catch (error) {
+        console.error("Failed to send contact form email:", error)
         return { success: false, error }
     }
 }

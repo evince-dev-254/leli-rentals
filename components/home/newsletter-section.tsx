@@ -5,18 +5,28 @@ import type React from "react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Mail, Check } from "lucide-react"
+import { Mail, Check, Loader2 } from "lucide-react"
+import { sendNewsletterConfirmationEmail } from "@/lib/actions/email-actions"
 
 export function NewsletterSection() {
   const [email, setEmail] = useState("")
   const [subscribed, setSubscribed] = useState(false)
+  const [loading, setLoading] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (email) {
-      setSubscribed(true)
-      setEmail("")
-      setTimeout(() => setSubscribed(false), 3000)
+      setLoading(true)
+      try {
+        await sendNewsletterConfirmationEmail(email)
+        setSubscribed(true)
+        setEmail("")
+        setTimeout(() => setSubscribed(false), 5000)
+      } catch (error) {
+        console.error("Subscription error:", error)
+      } finally {
+        setLoading(false)
+      }
     }
   }
 
@@ -45,9 +55,12 @@ export function NewsletterSection() {
             <Button
               type="submit"
               size="lg"
+              disabled={loading || subscribed}
               className="h-12 px-8 bg-primary text-primary-foreground hover:bg-primary/90"
             >
-              {subscribed ? (
+              {loading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : subscribed ? (
                 <>
                   <Check className="mr-2 h-4 w-4" />
                   Subscribed!

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Image from "next/image"
 import { MessageCircle, Send, ArrowLeft, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -9,6 +10,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { useMessages, type Conversation } from "@/lib/messages-context"
 import { cn } from "@/lib/utils"
 import { supabase } from "@/lib/supabase"
+import { BackButton } from "@/components/ui/back-button"
 
 export function MessagesContent() {
   const { conversations, activeConversation, setActiveConversation, sendMessage, markAsRead } = useMessages()
@@ -56,9 +58,9 @@ export function MessagesContent() {
   }
 
   return (
-    <div className="gradient-mesh min-h-screen py-8 px-4">
+    <div className="gradient-mesh min-h-screen py-4 md:py-8 px-2 md:px-4">
       <div className="container mx-auto max-w-6xl">
-        <div className="glass-card rounded-2xl overflow-hidden h-[calc(100vh-200px)] min-h-[500px]">
+        <div className="glass-card rounded-2xl overflow-hidden h-[calc(100vh-60px)] md:h-[calc(100vh-200px)] min-h-[500px]">
           <div className="flex h-full">
             {/* Conversations List */}
             <div
@@ -68,7 +70,10 @@ export function MessagesContent() {
               )}
             >
               <div className="p-4 border-b border-border">
-                <h2 className="text-xl font-semibold mb-3">Messages</h2>
+                <div className="flex items-center gap-2 mb-3">
+                  <BackButton href="/" label="" />
+                  <h2 className="text-xl font-semibold">Messages</h2>
+                </div>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -155,17 +160,20 @@ export function MessagesContent() {
                       <p className="font-medium">{activeConversation.participantName}</p>
                       <p className="text-sm text-muted-foreground">{activeConversation.listingTitle}</p>
                     </div>
-                    <img
-                      src={activeConversation.listingImage || "/placeholder.svg"}
-                      alt={activeConversation.listingTitle}
-                      className="h-10 w-14 object-cover rounded"
-                    />
+                    <div className="relative h-10 w-14 overflow-hidden rounded">
+                      <Image
+                        src={activeConversation.listingImage || "/placeholder.svg"}
+                        alt={activeConversation.listingTitle}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
                   </div>
 
                   {/* Messages */}
                   <ScrollArea className="flex-1 p-4">
                     <div className="space-y-4">
-                      {activeConversation.messages.map((message) => (
+                      {activeConversation.messages?.map((message) => (
                         <div
                           key={message.id}
                           className={cn("flex", message.senderId === currentUserId ? "justify-end" : "justify-start")}

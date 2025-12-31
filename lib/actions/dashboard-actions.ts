@@ -2,7 +2,7 @@
 
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { cookies } from 'next/headers'
-import { sendNewListingEmail } from './email-actions';
+import { sendNewListingEmail, sendNewMessageEmail } from './email-actions';
 
 async function getSupabase() {
     const cookieStore = await cookies()
@@ -156,21 +156,9 @@ export async function getMessages(conversationId: string) {
     return data;
 }
 
-/** Send a message */
+/** Send a message (Wrapper for sendMessageWithLookup) */
 export async function sendMessage(conversationId: string, senderId: string, content: string) {
-    const supabase = await getSupabase()
-    const { data, error } = await supabase
-        .from('messages')
-        .insert({
-            conversation_id: conversationId,
-            sender_id: senderId,
-            content: content
-        })
-        .select()
-        .single();
-
-    if (error) throw error;
-    return data;
+    return sendMessageWithLookup(conversationId, senderId, content);
 }
 
 /** Helper to send message with receiver lookup */
@@ -179,7 +167,7 @@ export async function sendMessageWithLookup(conversationId: string, senderId: st
     // 1. Get conversation to find receiver
     const { data: conv, error: convError } = await supabase
         .from('conversations')
-        .select('participant_1_id, participant_2_id')
+        .select('participant_1_id, participant_2_id, listing_id')
         .eq('id', conversationId)
         .single();
 
@@ -206,7 +194,72 @@ export async function sendMessageWithLookup(conversationId: string, senderId: st
         .update({ last_message_at: new Date().toISOString() })
         .eq('id', conversationId);
 
+    // --- TRIGGER NOTIFICATION & EMAIL ---
+    try {
+        // 1. Get sender and receiver profiles for content
+        const { data: profiles } = await supabase
+            .from('user_profiles')
+            .select('id, full_name, email')
+            .in('id', [senderId, receiverId]);
+
+        const sender = profiles?.find(p => p.id === senderId);
+        const receiver = profiles?.find(p => p.id === receiverId);
+
+        // 2. Get listing title if possible
+        const { data: listing } = await supabase
+            .from('listings')
+            .select('title')
+            .eq('id', conv.listing_id)
+            .single();
+
+        // 3. Create in-app notification
+        await createNotification(receiverId, {
+            type: 'new_message',
+            title: 'New Message',
+            message: `You have a new message from ${sender?.full_name || 'a user'}`,
+            action_url: `/messages`,
+            metadata: { conversation_id: conversationId, sender_id: senderId }
+        });
+
+        // 4. Send email notification
+        if (receiver?.email) {
+            await sendNewMessageEmail(
+                receiver.email,
+                receiver.full_name?.split(' ')[0] || 'User',
+                sender?.full_name || 'Someone',
+                content,
+                listing?.title
+            );
+        }
+    } catch (triggerError) {
+        console.error("Failed to trigger message notifications:", triggerError);
+        // We don't throw here to avoid failing the message send if notification fails
+    }
+
     return data;
+}
+
+/** Create a notification for a user */
+export async function createNotification(userId: string, data: {
+    type: string,
+    title: string,
+    message: string,
+    action_url?: string,
+    metadata?: any
+}) {
+    const supabase = getAdminSupabase() // Use admin for reliable insert
+    const { error } = await supabase
+        .from('notifications')
+        .insert({
+            user_id: userId,
+            ...data,
+            is_read: false
+        });
+
+    if (error) {
+        console.error("Error creating notification:", error);
+        throw error;
+    }
 }
 
 

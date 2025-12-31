@@ -10,6 +10,9 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { sendContactFormEmail } from "@/lib/actions/email-actions"
+import { toast } from "sonner"
+import { Loader2 } from "lucide-react"
 
 const contactMethods = [
   {
@@ -53,11 +56,37 @@ export function ContactContent() {
     subject: "",
     message: "",
   })
+  const [loading, setLoading] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle form submission
-    console.log("Form submitted:", formData)
+    if (!formData.name || !formData.email || !formData.message) {
+      toast.error("Please fill in all required fields")
+      return
+    }
+
+    setLoading(true)
+    try {
+      const result = await sendContactFormEmail(formData)
+      if (result.success) {
+        toast.success("Message sent successfully! We'll get back to you soon.")
+        setSubmitted(true)
+        setFormData({
+          name: "",
+          email: "",
+          subject: "",
+          message: "",
+        })
+      } else {
+        throw new Error("Failed to send message")
+      }
+    } catch (error) {
+      console.error("Contact form error:", error)
+      toast.error("An error occurred while sending your message. Please try again.")
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -169,9 +198,13 @@ export function ContactContent() {
                     />
                   </div>
 
-                  <Button type="submit" className="w-full">
-                    <Send className="h-4 w-4 mr-2" />
-                    Send Message
+                  <Button type="submit" className="w-full" disabled={loading}>
+                    {loading ? (
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    ) : (
+                      <Send className="h-4 w-4 mr-2" />
+                    )}
+                    {loading ? "Sending..." : "Send Message"}
                   </Button>
                 </form>
               </CardContent>
