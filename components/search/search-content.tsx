@@ -61,7 +61,7 @@ function SearchResults() {
                 }
 
                 if (city && city !== "all") {
-                    supabaseQuery = supabaseQuery.eq("city", city)
+                    supabaseQuery = supabaseQuery.or(`city.eq."${city}",location.ilike.%${city}%`)
                 }
 
                 const { data, error } = await supabaseQuery

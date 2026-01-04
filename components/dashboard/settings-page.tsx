@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 import { updateProfile } from "@/lib/actions/dashboard-actions"
+import { toast } from "sonner"
 import { User, Bell, Save, CreditCard, Plus, AlertCircle, Loader2, Eye, EyeOff, ArrowLeft } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -100,10 +101,12 @@ export function SettingsPage() {
         bio: formData.bio,
         // email is usually handled via specific auth update flow, but keeping it here for display
       })
-      alert("Profile updated successfully") // Replace with toast if available
-    } catch (error) {
+      toast.success("Profile updated successfully")
+    } catch (error: any) {
       console.error("Error updating profile:", error)
-      alert("Failed to update profile")
+      toast.error("Failed to update profile", {
+        description: error.message || "Please check your information and try again."
+      })
     } finally {
       setSaving(false)
     }
@@ -186,10 +189,13 @@ export function SettingsPage() {
                           if (user) {
                             await updateProfile(user.id, { avatar_url: res.url })
                             setProfile((prev: any) => ({ ...(prev || {}), avatar_url: res.url }))
-                            alert("Profile photo updated!")
+                            toast.success("Profile photo updated!")
                           }
-                        } catch (e) {
+                        } catch (e: any) {
                           console.error("Error updating avatar", e)
+                          toast.error("Failed to update avatar", {
+                            description: e.message
+                          })
                         }
                       }}
                       onError={(err) => console.error(err)}
@@ -335,11 +341,15 @@ export function SettingsPage() {
                     variant="outline"
                     onClick={async () => {
                       if (!newPassword || newPassword.length < 6) {
-                        alert("Password must be at least 6 characters")
+                        toast.error("Invalid Password", {
+                          description: "Password must be at least 6 characters"
+                        })
                         return
                       }
                       if (newPassword !== confirmPassword) {
-                        alert("Passwords do not match")
+                        toast.error("Passwords mismatch", {
+                          description: "The confirmation password does not match."
+                        })
                         return
                       }
 
@@ -348,20 +358,28 @@ export function SettingsPage() {
                         if (error) {
                           // Handle specific error messages
                           if (error.message.includes('should be different')) {
-                            alert("New password must be different from your current password")
+                            toast.error("Update Failed", {
+                              description: "New password must be different from your current password"
+                            })
                           } else if (error.message.includes('Password should contain')) {
-                            alert("Password must contain: uppercase, lowercase, number, and special character")
+                            toast.error("Weak Password", {
+                              description: "Password must contain: uppercase, lowercase, number, and special character"
+                            })
                           } else {
-                            alert(error.message || "Failed to update password")
+                            toast.error("Update Failed", {
+                              description: error.message || "Failed to update password"
+                            })
                           }
                           return
                         }
-                        alert("Password updated successfully")
+                        toast.success("Password updated successfully")
                         setNewPassword("")
                         setConfirmPassword("")
                       } catch (error: any) {
                         console.error("Error updating password:", error)
-                        alert(error.message || "Failed to update password")
+                        toast.error("Unexpected Error", {
+                          description: error.message || "Failed to update password"
+                        })
                       }
                     }}
                     disabled={!newPassword || !confirmPassword}

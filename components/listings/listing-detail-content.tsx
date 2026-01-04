@@ -31,10 +31,12 @@ import Map, { Marker, NavigationControl } from 'react-map-gl/mapbox'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import { LeaveReviewDialog } from "@/components/dashboard/leave-review-dialog"
 import { getCategoryById } from "@/lib/categories-data"
+import { getCategoryStringId } from "@/lib/category-uuid-map"
 import { useFavorites } from "@/lib/favorites-context"
 import { useMessages } from "@/lib/messages-context"
 import { BookingModal } from "@/components/booking/booking-modal"
 import type { Listing } from "@/lib/listings-data"
+import { cn } from "@/lib/utils"
 
 interface ListingDetailContentProps {
   listing: Listing
@@ -52,6 +54,7 @@ export function ListingDetailContent({ listing }: ListingDetailContentProps) {
   const [isChatOpen, setIsChatOpen] = useState(false)
   const [chatMessage, setChatMessage] = useState("")
   const [correctedCoords, setCorrectedCoords] = useState<{ lat: number; lng: number } | null>(null)
+  const [showShareToast, setShowShareToast] = useState(false)
 
   // Default Nairobi coordinates used in CreateListing
   const DEFAULT_NAIROBI_LAT = -1.2921
@@ -103,7 +106,9 @@ export function ListingDetailContent({ listing }: ListingDetailContentProps) {
   const currentUserRole = "renter"
   const isRenter = currentUserRole === "renter"
 
-  const category = getCategoryById(listing.category)
+  // Listing category is often a UUID from DB, translate back to string slug for lookup
+  const categorySlug = getCategoryStringId(listing.category) || listing.category
+  const category = getCategoryById(categorySlug)
 
   const nextImage = () => {
     setCurrentImageIndex((prev) => (prev + 1) % listing.images.length)
@@ -111,6 +116,31 @@ export function ListingDetailContent({ listing }: ListingDetailContentProps) {
 
   const prevImage = () => {
     setCurrentImageIndex((prev) => (prev - 1 + listing.images.length) % listing.images.length)
+  }
+
+  const handleShare = async () => {
+    const shareData = {
+      title: listing.title,
+      text: listing.description,
+      url: window.location.href,
+    }
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData)
+      } catch (err) {
+        console.error("Error sharing:", err)
+      }
+    } else {
+      // Fallback: Copy to clipboard
+      try {
+        await navigator.clipboard.writeText(window.location.href)
+        setShowShareToast(true)
+        setTimeout(() => setShowShareToast(false), 3000)
+      } catch (err) {
+        console.error("Failed to copy link:", err)
+      }
+    }
   }
 
   const handleSendMessage = () => {
@@ -131,22 +161,41 @@ export function ListingDetailContent({ listing }: ListingDetailContentProps) {
   }
 
   return (
-    <div className="gradient-mesh min-h-screen py-8 px-4">
+    <div className="gradient-mesh min-h-screen pb-24 sm:pb-8 pt-8 px-4">
       <div className="container mx-auto max-w-7xl">
-        {/* Breadcrumb */}
-        <div className="mb-6">
-          <BackButton href={`/categories/${listing.category}`} label={`Back to ${category?.name}`} />
+        {/* Breadcrumb and Top Actions */}
+        <div className="flex items-center justify-between mb-6">
+          <BackButton href={`/categories/${categorySlug}`} label={`Back to ${category?.name || "Categories"}`} />
+
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="icon"
+              className="bg-white/80 backdrop-blur-sm hover:bg-white rounded-full shadow-sm"
+              onClick={() => toggleFavorite(listing.id)}
+            >
+              <Heart className={cn("h-5 w-5", isLiked && "fill-red-500 text-red-500")} />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="bg-white/80 backdrop-blur-sm hover:bg-white rounded-full shadow-sm"
+              onClick={handleShare}
+            >
+              <Share2 className="h-5 w-5" />
+            </Button>
+          </div>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Image Gallery */}
-            <div className="relative aspect-[16/10] rounded-2xl overflow-hidden glass-card">
+            <div className="relative aspect-[16/10] sm:aspect-[16/9] rounded-2xl overflow-hidden glass-card shadow-lg group">
               <img
                 src={listing.images[currentImageIndex] || "/placeholder.svg"}
                 alt={listing.title}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
               />
 
               {listing.images.length > 1 && (
@@ -154,7 +203,7 @@ export function ListingDetailContent({ listing }: ListingDetailContentProps) {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 backdrop-blur-sm hover:bg-white"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/60 backdrop-blur-md hover:bg-white/90 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                     onClick={prevImage}
                   >
                     <ChevronLeft className="h-5 w-5" />
@@ -162,17 +211,19 @@ export function ListingDetailContent({ listing }: ListingDetailContentProps) {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 backdrop-blur-sm hover:bg-white"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/60 backdrop-blur-md hover:bg-white/90 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                     onClick={nextImage}
                   >
                     <ChevronRight className="h-5 w-5" />
                   </Button>
-                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 p-1.5 bg-black/20 backdrop-blur-md rounded-full">
                     {listing.images.map((_, index) => (
                       <button
                         key={index}
-                        className={`w-2 h-2 rounded-full transition-all ${index === currentImageIndex ? "bg-white w-6" : "bg-white/50"
-                          }`}
+                        className={cn(
+                          "w-2 h-2 rounded-full transition-all duration-300",
+                          index === currentImageIndex ? "bg-white w-5" : "bg-white/50 hover:bg-white/70"
+                        )}
                         onClick={() => setCurrentImageIndex(index)}
                       />
                     ))}
@@ -180,76 +231,68 @@ export function ListingDetailContent({ listing }: ListingDetailContentProps) {
                 </>
               )}
 
-              {/* Action Buttons - Use favorites context */}
-              <div className="absolute top-4 right-4 flex gap-2">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="bg-white/80 backdrop-blur-sm hover:bg-white"
-                  onClick={() => toggleFavorite(listing.id)}
-                >
-                  <Heart className={`h-5 w-5 ${isLiked ? "fill-red-500 text-red-500" : ""}`} />
-                </Button>
-                <Button variant="ghost" size="icon" className="bg-white/80 backdrop-blur-sm hover:bg-white">
-                  <Share2 className="h-5 w-5" />
-                </Button>
-              </div>
-
               {/* Badges */}
               <div className="absolute top-4 left-4 flex gap-2">
-                {listing.isFeatured && <Badge className="bg-primary">Featured</Badge>}
+                {listing.isFeatured && <Badge className="bg-primary/90 backdrop-blur-sm font-semibold">Featured</Badge>}
                 {listing.isVerified && (
-                  <Badge className="bg-green-500">
+                  <Badge className="bg-green-500/90 backdrop-blur-sm font-semibold">
                     <Shield className="h-3 w-3 mr-1" /> Verified
                   </Badge>
                 )}
               </div>
+
+              {/* Counter Badge */}
+              <div className="absolute top-4 right-4 px-3 py-1 bg-black/50 backdrop-blur-md rounded-full text-white text-xs font-medium">
+                {currentImageIndex + 1} / {listing.images.length}
+              </div>
             </div>
 
             {/* Title and Info */}
-            <div className="glass-card rounded-2xl p-6">
+            <div className="glass-card rounded-2xl p-6 sm:p-8 shadow-sm">
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <Badge variant="secondary" className="mb-2">
+                  <Badge variant="secondary" className="mb-3 px-3 py-1 text-xs uppercase tracking-wider font-semibold">
                     {listing.subcategory}
                   </Badge>
-                  <h1 className="text-2xl sm:text-3xl font-bold">{listing.title}</h1>
-                  <div className="flex items-center gap-4 mt-2 text-muted-foreground">
-                    <div className="flex items-center">
-                      <MapPin className="h-4 w-4 mr-1" />
+                  <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight mb-3">{listing.title}</h1>
+                  <div className="flex flex-wrap items-center gap-y-2 gap-x-5 text-muted-foreground">
+                    <div className="flex items-center text-sm font-medium">
+                      <MapPin className="h-4 w-4 mr-1.5 text-primary" />
                       {listing.location}
                     </div>
-                    <div className="flex items-center">
-                      <Star className="h-4 w-4 fill-yellow-500 text-yellow-500 mr-1" />
-                      <span className="font-medium text-foreground">{listing.rating}</span>
-                      <span className="ml-1">({listing.reviewCount} reviews)</span>
+                    <div className="flex items-center text-sm">
+                      <Star className="h-4 w-4 fill-yellow-500 text-yellow-500 mr-1.5" />
+                      <span className="font-bold text-foreground">{listing.rating}</span>
+                      <span className="ml-1.5 opacity-80">({listing.reviewCount} reviews)</span>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <Separator className="my-6" />
+              <Separator className="my-8 opacity-50" />
 
               {/* Tabs */}
-              <Tabs defaultValue="description">
-                <TabsList>
-                  <TabsTrigger value="description">Description</TabsTrigger>
-                  <TabsTrigger value="amenities">Amenities</TabsTrigger>
+              <Tabs defaultValue="description" className="w-full">
+                <TabsList className="grid w-full max-w-[400px] grid-cols-3 mb-8 bg-secondary/30">
+                  <TabsTrigger value="description">Details</TabsTrigger>
+                  <TabsTrigger value="amenities">Features</TabsTrigger>
                   <TabsTrigger value="reviews">Reviews</TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="description" className="mt-4 space-y-6">
-                  <p className="text-muted-foreground leading-relaxed">{listing.description}</p>
-
-
+                <TabsContent value="description" className="mt-0 space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                  <div className="prose prose-sm max-w-none dark:prose-invert">
+                    <p className="text-muted-foreground leading-relaxed text-base sm:text-lg">
+                      {listing.description}
+                    </p>
+                  </div>
 
                   {(listing.latitude !== undefined && listing.longitude !== undefined || correctedCoords) && (
-                    <div className="space-y-3">
-                      <h3 className="font-semibold flex items-center gap-2">
-                        <MapPin className="h-4 w-4" />
-                        Location
+                    <div className="space-y-4 pt-4 border-t border-border/50">
+                      <h3 className="text-lg font-bold flex items-center gap-2">
+                        <MapPin className="h-5 w-5 text-primary" />
+                        Explore Location
                       </h3>
-                      <div className="h-64 rounded-xl overflow-hidden border shadow-inner relative">
+                      <div className="h-72 sm:h-80 rounded-2xl overflow-hidden border shadow-inner relative group">
                         <Map
                           key={mapKey}
                           initialViewState={{
@@ -265,56 +308,73 @@ export function ListingDetailContent({ listing }: ListingDetailContentProps) {
                           <Marker longitude={mapLng} latitude={mapLat} color="#9333ea" />
                         </Map>
                       </div>
-                      <p className="text-sm text-muted-foreground">{listing.location}</p>
+                      <p className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                        <MapPin className="h-3.5 w-3.5" />
+                        {listing.location}
+                      </p>
                     </div>
                   )}
                 </TabsContent>
 
-                <TabsContent value="amenities" className="mt-4">
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <TabsContent value="amenities" className="mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                     {listing.amenities.map((amenity) => (
-                      <div key={amenity} className="flex items-center gap-2 p-3 rounded-lg bg-secondary/50">
-                        <Check className="h-4 w-4 text-primary" />
-                        <span className="text-sm">{amenity}</span>
+                      <div key={amenity} className="flex items-center gap-3 p-4 rounded-xl bg-secondary/20 border border-secondary/30 hover:bg-secondary/40 transition-colors">
+                        <div className="p-1.5 bg-primary/10 rounded-full">
+                          <Check className="h-4 w-4 text-primary" />
+                        </div>
+                        <span className="text-sm font-medium">{amenity}</span>
                       </div>
                     ))}
                   </div>
                 </TabsContent>
 
-                <TabsContent value="reviews" className="mt-4">
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="font-semibold text-lg">Reviews</h3>
+                <TabsContent value="reviews" className="mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+                    <div>
+                      <h3 className="font-bold text-xl mb-1">Guest Reviews</h3>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
+                        <span className="text-foreground font-bold">{listing.rating}</span>
+                        <span>&bull; {listing.reviewCount} total reviews</span>
+                      </div>
+                    </div>
                     <LeaveReviewDialog
-                      bookingId="placeholder-booking-id" // In reality this should be passed if the user has a valid booking
+                      bookingId="placeholder-booking-id"
                       listingId={listing.id}
                       listingTitle={listing.title}
                       listingImage={listing.images[0]}
                     >
-                      <Button>Write a Review</Button>
+                      <Button className="rounded-full px-6">Rate this Rental</Button>
                     </LeaveReviewDialog>
                   </div>
-                  <div className="space-y-4">
+
+                  <div className="space-y-6">
                     {[1, 2, 3].map((i) => (
-                      <div key={i} className="p-4 rounded-lg bg-secondary/50">
-                        <div className="flex items-center gap-3 mb-2">
-                          <Avatar className="h-10 w-10">
-                            <AvatarImage src={`/diverse-group.png?height=40&width=40&query=person ${i}`} />
-                            <AvatarFallback>U{i}</AvatarFallback>
+                      <div key={i} className="p-6 rounded-2xl bg-secondary/10 border border-secondary/20">
+                        <div className="flex items-center gap-4 mb-4">
+                          <Avatar className="h-12 w-12 border-2 border-background shadow-sm">
+                            <AvatarImage src={`/diverse-group.png?height=48&width=48&query=person ${i}`} />
+                            <AvatarFallback className="font-bold">U{i}</AvatarFallback>
                           </Avatar>
                           <div>
-                            <p className="font-medium">User {i}</p>
-                            <div className="flex items-center">
+                            <p className="font-bold">Happy Renter</p>
+                            <div className="flex items-center gap-0.5 mt-0.5">
                               {[...Array(5)].map((_, idx) => (
                                 <Star
                                   key={idx}
-                                  className={`h-3 w-3 ${idx < 5 - i + 3 ? "fill-yellow-500 text-yellow-500" : "text-muted-foreground"}`}
+                                  className={cn(
+                                    "h-3.5 w-3.5",
+                                    idx < 5 - i + 3 ? "fill-yellow-500 text-yellow-500" : "text-muted-foreground/30"
+                                  )}
                                 />
                               ))}
+                              <span className="ml-2 text-xs text-muted-foreground font-medium">2 weeks ago</span>
                             </div>
                           </div>
                         </div>
-                        <p className="text-sm text-muted-foreground">
-                          Great experience! The item was exactly as described and the owner was very responsive.
+                        <p className="text-muted-foreground leading-relaxed italic">
+                          &quot;Great experience! The item was exactly as described and the owner was very responsive. The pickup process was seamless.&quot;
                         </p>
                       </div>
                     ))}
@@ -323,159 +383,215 @@ export function ListingDetailContent({ listing }: ListingDetailContentProps) {
               </Tabs>
             </div>
 
-            {/* Owner Info - Add chat functionality */}
-            <Card className="glass-card">
-              <CardHeader>
-                <CardTitle className="text-lg">About the Owner</CardTitle>
+            {/* Owner Info */}
+            <Card className="glass-card border-none shadow-sm overflow-hidden">
+              <CardHeader className="bg-secondary/10 pb-4">
+                <CardTitle className="text-lg font-bold">Hosted by</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-4">
-                  <Avatar className="h-16 w-16">
-                    <AvatarImage src={listing.ownerAvatar || "/placeholder.svg"} />
-                    <AvatarFallback>
-                      {listing.ownerName
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <p className="font-semibold text-lg">{listing.ownerName}</p>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <div className="flex items-center">
-                        <Star className="h-4 w-4 fill-yellow-500 text-yellow-500 mr-1" />
-                        {listing.ownerRating} ({listing.ownerReviews} reviews)
-                      </div>
-                      <div className="flex items-center">
-                        <Shield className="h-4 w-4 text-green-500 mr-1" />
-                        Verified Owner
-                      </div>
+              <CardContent className="p-6">
+                <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 text-center sm:text-left">
+                  <div className="relative">
+                    <Avatar className="h-20 w-20 ring-4 ring-background shadow-md">
+                      <AvatarImage src={listing.ownerAvatar || "/placeholder.svg"} />
+                      <AvatarFallback className="text-xl font-bold">
+                        {listing.ownerName
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="absolute -bottom-1 -right-1 p-1 bg-green-500 rounded-full border-2 border-background shadow-sm">
+                      <Shield className="h-3 w-3 text-white" />
                     </div>
                   </div>
-                  <Button variant="outline" onClick={() => setIsChatOpen(true)}>
-                    <MessageCircle className="h-4 w-4 mr-2" />
-                    Chat
-                  </Button>
+                  <div className="flex-1 space-y-3">
+                    <div>
+                      <p className="font-extrabold text-xl">{listing.ownerName}</p>
+                      <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 mt-1 text-sm text-muted-foreground">
+                        <div className="flex items-center">
+                          <Star className="h-4 w-4 fill-yellow-500 text-yellow-500 mr-1.5" />
+                          <span className="font-bold text-foreground">{listing.ownerRating}</span>
+                          <span className="ml-1">({listing.ownerReviews} reviews)</span>
+                        </div>
+                        <div className="flex items-center font-medium text-green-600 dark:text-green-400">
+                          <Check className="h-4 w-4 mr-1" />
+                          Identity Verified
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-3 pt-1 justify-center sm:justify-start">
+                      <Button variant="outline" className="rounded-full px-5" onClick={() => setIsChatOpen(true)}>
+                        <MessageCircle className="h-4 w-4 mr-2" />
+                        Chat with Owner
+                      </Button>
+                      <Button variant="ghost" className="rounded-full px-5">
+                        View Profile
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Booking Sidebar */}
-          <div className="lg:col-span-1">
-            <div className="glass-card rounded-2xl p-6 sticky top-24">
+          {/* Booking Sidebar - Hidden on mobile, replaced by bottom bar */}
+          <div className="lg:col-span-1 hidden lg:block">
+            <div className="glass-card rounded-3xl p-8 sticky top-24 shadow-xl border border-border/40">
               {/* Pricing */}
-              <div className="mb-6">
-                <div className="flex items-baseline gap-2 mb-4">
-                  <span className="text-3xl font-bold text-primary">KSh {listing.pricePerDay.toLocaleString()}</span>
-                  <span className="text-muted-foreground">/day</span>
+              <div className="mb-8 text-center sm:text-left">
+                <div className="flex items-baseline justify-center sm:justify-start gap-2 mb-4">
+                  <span className="text-4xl font-extrabold text-primary">KSh {listing.pricePerDay.toLocaleString()}</span>
+                  <span className="text-muted-foreground font-medium">/ day</span>
                 </div>
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  <div className="p-3 rounded-lg bg-secondary/50">
-                    <p className="text-muted-foreground">Weekly</p>
-                    <p className="font-semibold">KSh {listing.pricePerWeek.toLocaleString()}</p>
+                <div className="grid grid-cols-2 gap-3 mt-6">
+                  <div className="p-4 rounded-2xl bg-secondary/20 border border-secondary/30 text-center">
+                    <p className="text-xs text-muted-foreground font-bold uppercase tracking-wider mb-1">Weekly</p>
+                    <p className="font-extrabold text-lg text-foreground">KSh {listing.pricePerWeek.toLocaleString()}</p>
                   </div>
-                  <div className="p-3 rounded-lg bg-secondary/50">
-                    <p className="text-muted-foreground">Monthly</p>
-                    <p className="font-semibold">KSh {listing.pricePerMonth.toLocaleString()}</p>
+                  <div className="p-4 rounded-2xl bg-secondary/20 border border-secondary/30 text-center">
+                    <p className="text-xs text-muted-foreground font-bold uppercase tracking-wider mb-1">Monthly</p>
+                    <p className="font-extrabold text-lg text-foreground">KSh {listing.pricePerMonth.toLocaleString()}</p>
                   </div>
                 </div>
               </div>
 
-              <Separator className="my-6" />
+              <Separator className="my-8 opacity-50" />
 
               {/* Calendar */}
-              <div className="mb-6">
-                <h4 className="font-semibold mb-3 flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  Check Availability
+              <div className="mb-8">
+                <h4 className="font-bold text-lg mb-4 flex items-center gap-2">
+                  <Calendar className="h-5 w-5 text-primary" />
+                  Select Rental Dates
                 </h4>
-                <CalendarComponent
-                  mode="single"
-                  selected={selectedDates}
-                  onSelect={setSelectedDates}
-                  className="rounded-md border"
-                  disabled={(date) => date < new Date()}
-                />
+                <div className="rounded-2xl border bg-secondary/5 p-2 calendar-custom">
+                  <CalendarComponent
+                    mode="single"
+                    selected={selectedDates}
+                    onSelect={setSelectedDates}
+                    className="w-full"
+                    disabled={(date) => date < new Date()}
+                  />
+                </div>
               </div>
 
               {/* Availability */}
-              <div className="flex items-center gap-2 mb-6 p-3 rounded-lg bg-green-500/10 text-green-600">
-                <Clock className="h-4 w-4" />
-                <span className="text-sm font-medium">Available Now</span>
+              <div className="flex items-center justify-center gap-2 mb-8 p-4 rounded-2xl bg-green-500/10 text-green-600 border border-green-500/20">
+                <div className="relative">
+                  <Clock className="h-5 w-5" />
+                  <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                </div>
+                <span className="text-sm font-bold tracking-tight">Ready for Instant Booking</span>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <Button
-                  className="w-full h-12 text-lg bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+                  className="w-full h-14 text-lg font-bold rounded-2xl bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 text-white shadow-lg shadow-purple-500/20 transition-all hover:scale-[1.02] active:scale-95"
                   onClick={() => setIsBookingOpen(true)}
                   disabled={!isRenter}
                 >
-                  {isRenter ? "Book Now" : "Owner Account (View Only)"}
+                  {isRenter ? "Reserve Now" : "Register to Book"}
                 </Button>
                 {!isRenter && (
-                  <p className="text-xs text-center text-destructive">
-                    Only renter accounts can make bookings.
+                  <p className="text-xs text-center text-destructive font-medium">
+                    Owner accounts are for listing management only.
                   </p>
                 )}
-                <Button variant="outline" className="w-full bg-transparent" onClick={() => setIsChatOpen(true)}>
+                <Button
+                  variant="outline"
+                  className="w-full h-12 rounded-xl bg-transparent font-semibold border-2"
+                  onClick={() => setIsChatOpen(true)}
+                >
                   <MessageCircle className="h-4 w-4 mr-2" />
-                  Message Owner
+                  Inquire First
                 </Button>
               </div>
 
-              <p className="text-xs text-muted-foreground text-center mt-3">You will not be charged yet</p>
-
-              <div className="mt-6 pt-6 border-t">
-                <Button variant="ghost" className="w-full justify-center" onClick={() => toggleFavorite(listing.id)}>
-                  <Heart className={`h-5 w-5 mr-2 ${isLiked ? "fill-red-500 text-red-500" : ""}`} />
-                  {isLiked ? "Saved to Favorites" : "Save to Favorites"}
-                </Button>
-              </div>
+              <p className="text-xs text-muted-foreground text-center mt-4">Free cancellation for 48 hours</p>
             </div>
           </div>
         </div>
       </div>
+
+      {/* FIXED BOTTOM ACTION BAR - Mobile Only */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-background/80 backdrop-blur-xl border-t border-border/50 p-4 pb-safe-offset shadow-[0_-10px_30px_-15px_rgba(0,0,0,0.3)] safe-bottom-padding">
+        <div className="container flex items-center justify-between gap-4 max-w-7xl mx-auto">
+          <div className="flex flex-col">
+            <div className="flex items-baseline gap-1">
+              <span className="text-xl font-extrabold text-primary">KSh {listing.pricePerDay.toLocaleString()}</span>
+              <span className="text-xs text-muted-foreground font-medium">/ night</span>
+            </div>
+            <button
+              onClick={() => {
+                const calendarElement = document.querySelector('[value="description"]')
+                calendarElement?.scrollIntoView({ behavior: 'smooth' })
+              }}
+              className="text-xs font-bold text-muted-foreground underline text-left"
+            >
+              {selectedDates ? selectedDates.toLocaleDateString() : "Select dates"}
+            </button>
+          </div>
+          <Button
+            className="flex-1 max-w-[200px] h-12 text-base font-bold rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-lg shadow-purple-500/20"
+            onClick={() => setIsBookingOpen(true)}
+            disabled={!isRenter}
+          >
+            Reserve
+          </Button>
+        </div>
+      </div>
+
+      {/* Toast Notification (Simple) */}
+      {showShareToast && (
+        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[100] bg-black/80 backdrop-blur-md text-white px-6 py-3 rounded-full text-sm font-bold shadow-2xl animate-in fade-in zoom-in duration-300">
+          Link copied to clipboard!
+        </div>
+      )}
 
       {/* Booking Modal */}
       <BookingModal listing={listing} isOpen={isBookingOpen} onClose={() => setIsBookingOpen(false)} />
 
       {/* Chat Modal */}
       <Dialog open={isChatOpen} onOpenChange={setIsChatOpen}>
-        <DialogContent>
+        <DialogContent className="rounded-3xl max-w-md">
           <DialogHeader>
-            <DialogTitle>Message {listing.ownerName}</DialogTitle>
-            <DialogDescription>Send a message about {listing.title}</DialogDescription>
+            <DialogTitle className="text-2xl font-bold">Message {listing.ownerName}</DialogTitle>
+            <DialogDescription className="text-base">
+              Send an inquiry about <span className="font-bold text-foreground">{listing.title}</span>
+            </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div className="flex gap-3 p-3 bg-secondary/50 rounded-lg">
-              <img
-                src={listing.images[0] || "/placeholder.svg"}
-                alt={listing.title}
-                className="w-16 h-12 object-cover rounded"
-              />
-              <div>
-                <p className="font-medium text-sm">{listing.title}</p>
-                <p className="text-xs text-muted-foreground">KSh {listing.pricePerDay.toLocaleString()}/day</p>
+          <div className="space-y-6 pt-4">
+            <div className="flex gap-4 p-4 bg-secondary/20 rounded-2xl border border-secondary/30">
+              <div className="w-20 h-16 shrink-0 rounded-xl overflow-hidden shadow-sm">
+                <img
+                  src={listing.images[0] || "/placeholder.svg"}
+                  alt={listing.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="flex flex-col justify-center">
+                <p className="font-bold text-sm line-clamp-1">{listing.title}</p>
+                <p className="text-xs text-primary font-bold">KSh {listing.pricePerDay.toLocaleString()}/day</p>
               </div>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-3">
+              <label className="text-sm font-bold px-1">Your Message</label>
               <Input
-                placeholder="Hi, I'm interested in renting this item..."
+                placeholder="Hi, I'm interested in renting this..."
+                className="h-14 rounded-xl border-2 focus:ring-primary/20 transition-all"
                 value={chatMessage}
                 onChange={(e) => setChatMessage(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
               />
-              <p className="text-xs text-muted-foreground">
-                Ask about availability, pickup details, or any questions you have.
+              <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold px-1">
+                Typical response time: 2 hours
               </p>
             </div>
             <Button
-              className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+              className="w-full h-14 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-500 font-bold text-lg text-white shadow-xl shadow-purple-500/10"
               onClick={handleSendMessage}
               disabled={!chatMessage.trim()}
             >
-              <Send className="h-4 w-4 mr-2" />
+              <Send className="h-5 w-5 mr-3" />
               Send Message
             </Button>
           </div>

@@ -1,7 +1,6 @@
 "use server"
 
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
-import { cookies } from 'next/headers'
+import { createClient } from '@/lib/supabase-server'
 import { sendBookingConfirmationEmail } from "@/lib/actions/email-actions"
 
 interface BookingData {
@@ -19,24 +18,27 @@ interface BookingData {
     status: "pending" | "confirmed"
 }
 
+
 export async function createBooking(bookingData: BookingData, userEmail: string, userName: string, listingTitle: string) {
-    console.log("Creating booking:", bookingData)
-
-    const cookieStore = await cookies()
-
-    const supabase = createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        {
-            cookies: {
-                get(name: string) {
-                    return cookieStore.get(name)?.value
-                },
-            },
-        }
-    )
+    console.log("[SERVER ACTION] createBooking started:", { ...bookingData, userEmail, userName });
 
     try {
+        const supabase = await createClient()
+        const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+        if (authError || !user) {
+            console.error("[SERVER ACTION] Auth error or user not found:", authError);
+            return { success: false, error: "Authentication failed. Please sign in again." };
+        }
+
+        console.log("[SERVER ACTION] Authenticated user ID:", user.id);
+        console.log("[SERVER ACTION] Booking renter ID:", bookingData.renter_id);
+
+        if (user.id !== bookingData.renter_id) {
+            console.error("[SERVER ACTION] User ID mismatch:", { userId: user.id, renterId: bookingData.renter_id });
+            return { success: false, error: "Unauthorized booking attempt. User ID mismatch." };
+        }
+
         const { data, error } = await supabase
             .from("bookings")
             .insert(bookingData)
@@ -44,8 +46,15 @@ export async function createBooking(bookingData: BookingData, userEmail: string,
             .single()
 
         if (error) {
-            console.error("Error creating booking:", error)
-            throw error
+            console.error("[SERVER ACTION] Supabase error creating booking:", error);
+            // Check for specific RLS error
+            if (error.code === '42501' || error.message.includes('row-level security')) {
+                return {
+                    success: false,
+                    error: "Security Policy Violation: You don't have permission to book this listing. This usually happens if there's a problem with your account setup."
+                };
+            }
+            return { success: false, error: `Database error: ${error.message}` };
         }
 
         console.log("Booking created:", data.id)
@@ -69,6 +78,7 @@ export async function createBooking(bookingData: BookingData, userEmail: string,
 
         return { success: true, booking: data }
     } catch (err: any) {
-        return { success: false, error: err.message }
+        console.error("[SERVER ACTION] Unexpected error in createBooking:", err);
+        return { success: false, error: "An unexpected error occurred. Please try again later." }
     }
 }

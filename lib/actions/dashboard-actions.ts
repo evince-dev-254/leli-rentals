@@ -2,37 +2,13 @@
 
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { cookies } from 'next/headers'
+import { createClient } from '@/lib/supabase-server'
 import { sendNewListingEmail, sendNewMessageEmail } from './email-actions';
 
-async function getSupabase() {
-    const cookieStore = await cookies()
-    return createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        {
-            cookies: {
-                getAll() {
-                    return cookieStore.getAll()
-                },
-                setAll(cookiesToSet) {
-                    try {
-                        cookiesToSet.forEach(({ name, value, options }) =>
-                            cookieStore.set(name, value, options)
-                        )
-                    } catch {
-                        // The `setAll` method was called from a Server Component.
-                        // This can be ignored if you have middleware refreshing
-                        // user sessions.
-                    }
-                },
-            },
-        }
-    )
-}
 
 /** Fetch data for the Owner dashboard */
 export async function getOwnerData(userId: string) {
-    const supabase = await getSupabase()
+    const supabase = await createClient()
     const { data, error } = await supabase
         .from('listings')
         .select('*')
@@ -43,7 +19,7 @@ export async function getOwnerData(userId: string) {
 
 /** Fetch detailed stats for Owner Dashboard */
 export async function getOwnerStats(userId: string) {
-    const supabase = await getSupabase()
+    const supabase = await createClient()
     const { count: listingsCount, error: listingsError } = await supabase
         .from('listings')
         .select('*', { count: 'exact', head: true })
@@ -90,7 +66,7 @@ export async function getOwnerStats(userId: string) {
 
 /** Fetch bookings for a user (either as renter or owner) */
 export async function getBookings(userId: string, role: 'owner' | 'renter' = 'owner') {
-    const supabase = await getSupabase()
+    const supabase = await createClient()
     let query = supabase
         .from('bookings')
         .select(`
@@ -114,7 +90,7 @@ export async function getBookings(userId: string, role: 'owner' | 'renter' = 'ow
 
 /** Fetch conversations for a user */
 export async function getConversations(userId: string) {
-    const supabase = await getSupabase()
+    const supabase = await createClient()
     const { data, error } = await supabase
         .from('conversations')
         .select(`
@@ -145,7 +121,7 @@ export async function getConversations(userId: string) {
 
 /** Fetch messages for a specific conversation */
 export async function getMessages(conversationId: string) {
-    const supabase = await getSupabase()
+    const supabase = await createClient()
     const { data, error } = await supabase
         .from('messages')
         .select('*')
@@ -163,7 +139,7 @@ export async function sendMessage(conversationId: string, senderId: string, cont
 
 /** Helper to send message with receiver lookup */
 export async function sendMessageWithLookup(conversationId: string, senderId: string, content: string) {
-    const supabase = await getSupabase()
+    const supabase = await createClient()
     // 1. Get conversation to find receiver
     const { data: conv, error: convError } = await supabase
         .from('conversations')
@@ -280,7 +256,7 @@ function getAdminSupabase() {
 
 /** Fetch verification documents */
 export async function getVerifications(userId: string) {
-    const supabase = await getSupabase()
+    const supabase = await createClient()
 
     // Security Check: Ensure the requester is the user themselves
     const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -350,7 +326,7 @@ export async function updateProfile(userId: string, updates: any) {
 
 /** Fetch data for the Affiliate dashboard */
 export async function getAffiliateData(userId: string) {
-    const supabase = await getSupabase()
+    const supabase = await createClient()
     const { data, error } = await supabase
         .from('affiliates')
         .select('*')
@@ -363,7 +339,7 @@ export async function getAffiliateData(userId: string) {
 
 /** Fetch referrals for an affiliate */
 export async function getAffiliateReferrals(userId: string) {
-    const supabase = await getSupabase()
+    const supabase = await createClient()
     // First get affiliate ID
     const { data: affiliate, error: affError } = await supabase
         .from('affiliates')
@@ -391,7 +367,7 @@ export async function getAffiliateReferrals(userId: string) {
 
 /** Fetch notifications for a user */
 export async function getNotifications(userId: string) {
-    const supabase = await getSupabase()
+    const supabase = await createClient()
     const { data, error } = await supabase
         .from('notifications')
         .select('*')
@@ -405,7 +381,7 @@ export async function getNotifications(userId: string) {
 
 /** Mark notification as read */
 export async function markNotificationAsRead(notificationId: string) {
-    const supabase = await getSupabase()
+    const supabase = await createClient()
     const { error } = await supabase
         .from('notifications')
         .update({ is_read: true, read_at: new Date().toISOString() })
@@ -416,7 +392,7 @@ export async function markNotificationAsRead(notificationId: string) {
 
 /** Fetch data for the Admin dashboard */
 export async function getAdminData() {
-    const supabase = await getSupabase()
+    const supabase = await createClient()
     const [usersRes, listingsRes] = await Promise.all([
         supabase.from('user_profiles').select('*', { count: 'exact', head: true }),
         supabase.from('listings').select('*', { count: 'exact', head: true }),
@@ -434,7 +410,7 @@ export async function createListing(ownerId: string, listingData: any) {
     console.log('Creating listing with data:', listingData);
 
     // Check if the creator is an admin to decide which client to use
-    const baseSupabase = await getSupabase()
+    const baseSupabase = await createClient()
     const { data: profile } = await baseSupabase
         .from('user_profiles')
         .select('role')
@@ -493,7 +469,7 @@ export async function createListing(ownerId: string, listingData: any) {
 
 /** Get User Earnings (from completed bookings) */
 export async function getEarnings(userId: string) {
-    const supabase = await getSupabase()
+    const supabase = await createClient()
     const { data, error } = await supabase
         .from('bookings')
         .select(`
@@ -534,7 +510,7 @@ export async function updateDocumentStatus(docId: string, status: 'approved' | '
 
 /** Find a user by email */
 export async function getUserByEmail(email: string) {
-    const supabase = await getSupabase()
+    const supabase = await createClient()
     const { data, error } = await supabase
         .from('user_profiles')
         .select('*')
@@ -547,7 +523,7 @@ export async function getUserByEmail(email: string) {
 
 /** Fetch all admin users */
 export async function getAdmins() {
-    const supabase = await getSupabase()
+    const supabase = await createClient()
     const { data, error } = await supabase
         .from('user_profiles')
         .select('*')

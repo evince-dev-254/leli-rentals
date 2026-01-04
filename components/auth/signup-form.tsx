@@ -17,6 +17,8 @@ import { DateOfBirthInput, validateAge } from "@/components/ui/date-of-birth-inp
 import { Message } from "@/components/ui/message"
 import { OTPInput } from "@/components/ui/otp-input"
 import { supabase } from "@/lib/supabase"
+import { toast } from "sonner"
+import { Turnstile } from '@marsidev/react-turnstile'
 
 type AccountType = "renter" | "owner" | "affiliate"
 
@@ -37,6 +39,7 @@ export function SignupForm() {
   // OTP State
   const [showOtpInput, setShowOtpInput] = useState(false)
   const [otp, setOtp] = useState("")
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null)
   // Persist referral code
   useEffect(() => {
     const urlRef = searchParams.get("ref")
@@ -122,6 +125,9 @@ export function SignupForm() {
       if (error) throw error
     } catch (error: any) {
       setGeneralError(error.message || "Failed to sign up with Google")
+      toast.error("Google Signup Failed", {
+        description: error.message || "Something went wrong. Please try again."
+      })
       setIsGoogleLoading(false)
     }
   }
@@ -152,6 +158,7 @@ export function SignupForm() {
         options: {
           emailRedirectTo: `${redirectUrl}/auth/confirm`,
           shouldCreateUser: true,
+          captchaToken: captchaToken || undefined, // Pass captcha token if available
           data: {
             full_name: fullName,
             phone: phone,
@@ -167,9 +174,15 @@ export function SignupForm() {
       setShowOtpInput(true)
       setTimeLeft(60) // Start timer on first show
       setSuccessMessage(`We've sent a verification code to ${email}. Enter it below to complete your signup.`)
+      toast.success("Code sent!", {
+        description: `Check your email (${email}) for the verification code.`
+      })
 
     } catch (error: any) {
       setGeneralError(error.message || "Failed to sign up")
+      toast.error("Signup Failed", {
+        description: error.message || "Please check your details and try again."
+      })
     } finally {
       setIsLoading(false)
     }
@@ -190,6 +203,9 @@ export function SignupForm() {
       if (error) throw error
 
       if (data.session) {
+        toast.success("Account verified successfully!", {
+          description: "Welcome to Leli Rentals."
+        })
         // Redirection based on role
         if (accountType === 'renter') router.push('/categories')
         else if (accountType === 'owner') router.push('/dashboard/owner')
@@ -198,6 +214,9 @@ export function SignupForm() {
       }
     } catch (error: any) {
       setGeneralError(error.message || "Invalid or expired code")
+      toast.error("Verification Failed", {
+        description: error.message || "The code you entered is invalid or has expired."
+      })
     } finally {
       setIsLoading(false)
     }
@@ -230,9 +249,13 @@ export function SignupForm() {
       if (error) throw error
 
       setSuccessMessage(`Code resent to ${email}!`)
+      toast.success("Code resent successfully")
       setTimeLeft(60) // Reset timer
     } catch (error: any) {
       setGeneralError(error.message || "Failed to resend code")
+      toast.error("Failed to resend code", {
+        description: error.message
+      })
     } finally {
       setIsLoading(false)
     }
@@ -460,6 +483,18 @@ export function SignupForm() {
                   </Label>
                 </div>
               </RadioGroup>
+            </div>
+
+            <div className="my-4 flex justify-center">
+              <Turnstile
+                siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA"}
+                onSuccess={(token) => setCaptchaToken(token)}
+                onExpire={() => setCaptchaToken(null)}
+                onError={() => setCaptchaToken(null)}
+                options={{
+                  theme: 'auto',
+                }}
+              />
             </div>
 
             <div className="flex gap-3">

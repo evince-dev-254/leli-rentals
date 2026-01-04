@@ -1,8 +1,10 @@
 import type React from "react"
 import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
+import Script from "next/script"
 import { Analytics } from "@vercel/analytics/next"
 import { GoogleAnalytics } from '@next/third-parties/google'
+import { Toaster } from "@/components/ui/sonner"
 import { CookieConsent } from "@/components/cookie-consent"
 import { AiAssistant } from "@/components/ai-assistant"
 import { FavoritesProvider } from "@/lib/favorites-context"
@@ -92,15 +94,34 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`font-sans antialiased hide-scrollbar`}>
+      <body className={`font-sans antialiased hide-scrollbar`} suppressHydrationWarning>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
           <FavoritesProvider>
             <MessagesProvider>
               {children}
+              <Toaster position="top-center" richColors />
               <AiAssistant />
               <CookieConsent />
               <Analytics />
               <GoogleAnalytics gaId="G-7MHZ00M71E" />
+              {/* Tawk.to Live Chat */}
+              <Script
+                id="tawk-script"
+                strategy="afterInteractive"
+                dangerouslySetInnerHTML={{
+                  __html: `
+                    var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+                    (function(){
+                    var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+                    s1.async=true;
+                    s1.src='https://embed.tawk.to/6954cc957665ef197dae18b7/1jdpjuar6';
+                    s1.charset='UTF-8';
+                    s1.setAttribute('crossorigin','*');
+                    s0.parentNode.insertBefore(s1,s0);
+                    })();
+                  `
+                }}
+              />
             </MessagesProvider>
           </FavoritesProvider>
         </ThemeProvider>

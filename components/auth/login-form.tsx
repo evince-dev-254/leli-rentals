@@ -12,7 +12,9 @@ import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Message } from "@/components/ui/message"
 import { supabase } from "@/lib/supabase"
+import { toast } from "sonner"
 import { checkUserExists } from "@/lib/actions/auth-actions"
+import { Turnstile } from '@marsidev/react-turnstile'
 
 export function LoginForm() {
   const router = useRouter()
@@ -30,6 +32,7 @@ export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const [error, setError] = useState("")
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null)
 
   const handleEmailCheck = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -75,6 +78,9 @@ export function LoginForm() {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
+        options: {
+          captchaToken: captchaToken || undefined
+        }
       })
 
       if (error) throw error
@@ -137,6 +143,9 @@ export function LoginForm() {
       if (error) throw error
     } catch (error: any) {
       setError(error.message || "Failed to sign in with Google")
+      toast.error("Google Login Failed", {
+        description: error.message || "Something went wrong. Please try again."
+      })
       setIsGoogleLoading(false)
     }
   }
@@ -267,6 +276,18 @@ export function LoginForm() {
               "Continue"
             )}
           </Button>
+
+          <div className="my-4 flex justify-center">
+            <Turnstile
+              siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA"}
+              onSuccess={(token) => setCaptchaToken(token)}
+              onExpire={() => setCaptchaToken(null)}
+              onError={() => setCaptchaToken(null)}
+              options={{
+                theme: 'auto',
+              }}
+            />
+          </div>
         </form>
 
         <p className="text-center text-sm text-muted-foreground mt-8">

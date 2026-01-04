@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { getAffiliateData, getAffiliateReferrals } from "@/lib/actions/dashboard-actions";
 import { joinAffiliateProgram } from "@/lib/actions/affiliate-actions";
+import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
     Users,
@@ -104,16 +105,21 @@ export default function AffiliateDashboard() {
             if (result.success) {
                 // Update local state directly with returned data to show dashboard immediately
                 setStats(result.data);
+                toast.success("Welcome to the Affiliate Program!");
                 // Also refresh referrals just in case
                 const referralsData = await getAffiliateReferrals(user.id);
                 setReferrals(referralsData || []);
 
             } else {
-                alert("Failed to join: " + result.error);
+                toast.error("Failed to join program", {
+                    description: result.error
+                });
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
-            alert("An error occurred");
+            toast.error("An error occurred", {
+                description: error.message
+            });
         } finally {
             setJoining(false);
         }

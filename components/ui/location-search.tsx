@@ -65,7 +65,8 @@ export function LocationSearch({
                 const id = ctx.id
                 const text = ctx.text
 
-                if (id.startsWith('place')) {
+                // Check for city match in context
+                if (id.startsWith('place') || id.startsWith('region')) {
                     const match = kenyaCounties.find(c =>
                         text.toLowerCase().includes(c.toLowerCase()) ||
                         c.toLowerCase().includes(text.toLowerCase())
@@ -79,10 +80,12 @@ export function LocationSearch({
             })
         }
 
-        // Fallback for city if not found in context but present in place_name
+        // Fallback for city if not found in context but present in place_name or feature.text
         if (!city) {
+            const possibleCity = feature.text || ""
             const match = kenyaCounties.find(c =>
-                address.toLowerCase().includes(c.toLowerCase())
+                address.toLowerCase().includes(c.toLowerCase()) ||
+                possibleCity.toLowerCase().includes(c.toLowerCase())
             )
             if (match) city = match
         }

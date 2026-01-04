@@ -13,12 +13,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
+import Image from "next/image"
 import { categories } from "@/lib/categories-data"
 import { LocationSearch } from "@/components/ui/location-search"
 import { kenyaCounties } from "@/lib/kenya-counties"
 import { ImageUpload } from "@/components/ui/image-upload"
 import { supabase } from "@/lib/supabase"
 import { createListing } from "@/lib/actions/dashboard-actions"
+import { toast } from "sonner"
 import { CANCELLATION_POLICIES } from "@/lib/policies-data"
 import { getCategoryUUID } from "@/lib/category-uuid-map"
 
@@ -104,19 +106,19 @@ export function CreateListing() {
 
       // Validation
       if (!selectedCategory) {
-        alert('Please select a category')
+        toast.error("Missing Category", { description: 'Please select a category for your listing' })
         setIsSubmitting(false)
         return
       }
 
       if (!selectedCity) {
-        alert('Please select a city/county')
+        toast.error("Missing Location", { description: 'Please select a city/county' })
         setIsSubmitting(false)
         return
       }
 
       if (images.length === 0) {
-        alert('Please upload at least one image')
+        toast.error("Images Required", { description: 'Please upload at least one image of your item' })
         setIsSubmitting(false)
         return
       }
@@ -124,7 +126,7 @@ export function CreateListing() {
       // Convert string category ID to UUID
       const categoryUUID = getCategoryUUID(selectedCategory)
       if (!categoryUUID) {
-        alert('Invalid category selected')
+        toast.error("Invalid Category", { description: 'Selected category is not valid' })
         setIsSubmitting(false)
         return
       }
@@ -136,6 +138,7 @@ export function CreateListing() {
         price_per_week: formData.get('pricePerWeek'),
         price_per_month: formData.get('pricePerMonth'),
         location: `${formData.get('area') || area}, ${selectedCity}`,
+        city: selectedCity,
         latitude: coordinates.lat,
         longitude: coordinates.lng,
         category_id: categoryUUID, // Use UUID instead of string
@@ -153,10 +156,15 @@ export function CreateListing() {
       }
 
       await createListing(user.id, listingData)
+      toast.success("Listing created successfully!", {
+        description: "Your item is now pending review."
+      })
       router.push("/dashboard/listings")
-    } catch (e) {
+    } catch (e: any) {
       console.error("Error creating listing:", e)
-      alert(`Failed to create listing: ${e instanceof Error ? e.message : 'Unknown error'}`)
+      toast.error("Failed to create listing", {
+        description: e.message || "Unknown error occurred"
+      })
     } finally {
       setIsSubmitting(false)
     }
@@ -281,7 +289,12 @@ export function CreateListing() {
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                   {images.map((image, index) => (
                     <div key={index} className="relative aspect-square rounded-lg overflow-hidden">
-                      <img src={image || "/placeholder.svg"} alt="" className="w-full h-full object-cover" />
+                      <Image
+                        src={image || "/placeholder.svg"}
+                        alt=""
+                        fill
+                        className="object-cover"
+                      />
                       <Button
                         type="button"
                         variant="destructive"

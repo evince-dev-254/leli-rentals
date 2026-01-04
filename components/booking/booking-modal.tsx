@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { CreditCard, Check, Loader2 } from "lucide-react"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -13,6 +14,7 @@ import type { Listing } from "@/lib/listings-data"
 import type { DateRange } from "react-day-picker"
 import { createBooking } from "@/lib/actions/booking-actions"
 import { supabase } from "@/lib/supabase"
+import { toast } from "sonner"
 
 interface BookingModalProps {
   listing: Listing
@@ -51,14 +53,25 @@ export function BookingModal({ listing, isOpen, onClose }: BookingModalProps) {
   }
 
   const handlePayWithPaystack = async () => {
+    // 1. Initial auth check before anything else
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+    if (authError || !user) {
+      toast.error("Please sign in to book this rental", {
+        description: "You need to be logged in as a renter to proceed.",
+        action: {
+          label: "Sign In",
+          onClick: () => window.location.href = "/sign-in"
+        }
+      })
+      return
+    }
+
     setIsProcessing(true)
 
-    // Simulate Paystack payment processing delay
-    await new Promise(resolve => setTimeout(resolve, 2000))
-
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error("User not logged in")
+      // Simulate Paystack payment processing delay
+      await new Promise(resolve => setTimeout(resolve, 2000))
 
       const total = calculateTotal()
 
@@ -80,10 +93,27 @@ export function BookingModal({ listing, isOpen, onClose }: BookingModalProps) {
 
       if (!result.success) throw new Error(result.error)
 
+      toast.success("Booking confirmed!", {
+        description: `Your reservation for ${listing.title} has been successfully created.`
+      })
       setStep("success")
-    } catch (error) {
+    } catch (error: any) {
       console.error("Booking error:", error)
-      alert("Failed to complete booking. Please try again.")
+      const isAuthError = error.message?.includes("User not logged in") || error.message?.includes("unauthorized")
+
+      if (isAuthError) {
+        toast.error("Please sign in to book this rental", {
+          description: "Your session may have expired. Please sign in again.",
+          action: {
+            label: "Sign In",
+            onClick: () => window.location.href = "/sign-in"
+          }
+        })
+      } else {
+        toast.error("Booking Failed", {
+          description: error.message || "Something went wrong while processing your booking. Please try again."
+        })
+      }
     } finally {
       setIsProcessing(false)
     }
@@ -118,11 +148,14 @@ export function BookingModal({ listing, isOpen, onClose }: BookingModalProps) {
           <div className="space-y-4">
             {/* Listing Preview */}
             <div className="flex gap-3 p-3 bg-secondary/50 rounded-lg">
-              <img
-                src={listing.images[0] || "/placeholder.svg"}
-                alt={listing.title}
-                className="w-20 h-16 object-cover rounded"
-              />
+              <div className="relative w-20 h-16 rounded overflow-hidden">
+                <Image
+                  src={listing.images[0] || "/placeholder.svg"}
+                  alt={listing.title}
+                  fill
+                  className="object-cover"
+                />
+              </div>
               <div>
                 <p className="font-medium text-sm">{listing.title}</p>
                 <p className="text-xs text-muted-foreground">{listing.location}</p>
@@ -296,11 +329,14 @@ export function BookingModal({ listing, isOpen, onClose }: BookingModalProps) {
                 You will be redirected to Paystack to complete your payment securely. We accept cards, bank transfers,
                 and mobile money.
               </p>
-              <img
-                src="https://website-v3-assets.s3.amazonaws.com/assets/img/hero/Paystack-mark-white-twitter.png"
-                alt="Paystack"
-                className="h-6 opacity-50 dark:invert"
-              />
+              <div className="relative h-6 w-32 opacity-50 dark:invert">
+                <Image
+                  src="https://website-v3-assets.s3.amazonaws.com/assets/img/hero/Paystack-mark-white-twitter.png"
+                  alt="Paystack"
+                  fill
+                  className="object-contain"
+                />
+              </div>
             </div>
 
             <div className="flex gap-2">
