@@ -38,6 +38,7 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
     category: listing.category?.slug || "equipment",
     categoryName: listing.category?.name || "Categories",
     subcategory: listing.subcategory_id || "General",
+    amenities: listing.amenities || [],
     rating: listing.rating_average || 4.5,
     reviewCount: listing.rating_count || 0,
     isFeatured: listing.is_featured,

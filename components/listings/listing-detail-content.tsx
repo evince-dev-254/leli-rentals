@@ -321,7 +321,7 @@ export function ListingDetailContent({ listing }: ListingDetailContentProps) {
 
                 <TabsContent value="amenities" className="mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300">
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                    {listing.amenities.map((amenity) => (
+                    {(listing.amenities || []).map((amenity) => (
                       <div key={amenity} className="flex items-center gap-3 p-4 rounded-xl bg-secondary/20 border border-secondary/30 hover:bg-secondary/40 transition-colors">
                         <div className="p-1.5 bg-primary/10 rounded-full">
                           <Check className="h-4 w-4 text-primary" />
