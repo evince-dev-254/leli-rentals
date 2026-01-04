@@ -18,14 +18,14 @@ export function MessagesPageClient() {
 
                 if (!session) {
                     // Redirect to sign in if not authenticated
-                    router.push('/sign-in?next=/messages')
+                    router.push('/login?next=/messages')
                     return
                 }
 
                 setIsAuthenticated(true)
             } catch (error) {
                 console.error("Auth check error:", error)
-                router.push('/sign-in')
+                router.push('/login')
             } finally {
                 setIsLoading(false)
             }

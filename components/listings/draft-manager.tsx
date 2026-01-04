@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Save, Loader2, CheckCircle2, AlertCircle } from "lucide-react"
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
+import { supabase } from "@/lib/supabase"
 import { useToast } from "@/hooks/use-toast"
 
 interface DraftManagerProps {
@@ -21,7 +21,6 @@ export function DraftManager({
     const [isSaving, setIsSaving] = useState(false)
     const [lastSaved, setLastSaved] = useState<Date | null>(null)
     const [hasDraft, setHasDraft] = useState(false)
-    const supabase = createClientComponentClient()
     const { toast } = useToast()
 
     // Auto-save effect

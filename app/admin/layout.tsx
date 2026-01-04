@@ -17,7 +17,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       try {
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) {
-          router.replace("/sign-in")
+          router.replace("/login")
           return
         }
 
@@ -46,7 +46,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       }
     }
     checkAdmin()
-  }, [])
+  }, [router])
 
   if (loading) {
     return (

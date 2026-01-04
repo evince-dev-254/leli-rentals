@@ -50,7 +50,7 @@ export function UpdatePasswordForm() {
             }
 
             setSuccess(true)
-            setTimeout(() => router.push("/sign-in"), 2000)
+            setTimeout(() => router.push("/login"), 2000)
         } catch (err: any) {
             setError(err.message)
             setLoading(false)
@@ -68,7 +68,7 @@ export function UpdatePasswordForm() {
                     <p className="text-muted-foreground mb-6">
                         Your password has been changed successfully. Redirecting to sign in...
                     </p>
-                    <Button onClick={() => router.push("/sign-in")} className="w-full">
+                    <Button onClick={() => router.push("/login")} className="w-full">
                         Sign In Now
                     </Button>
                 </div>
@@ -81,7 +81,7 @@ export function UpdatePasswordForm() {
             <div className="glass-card rounded-2xl p-8">
                 <div className="text-center mb-8">
                     <Link href="/" className="inline-block mb-6">
-                        <Image src="/logo.svg" alt="leli rentals" width={150} height={40} className="h-10 dark:invert" style={{ width: 'auto' }} />
+                        <Image src="/logo.png" alt="leli rentals" width={150} height={40} className="h-10 dark:invert" style={{ width: 'auto' }} />
                     </Link>
                     <h1 className="text-2xl font-bold mb-2">Set New Password</h1>
                     <p className="text-muted-foreground">Enter your new password below</p>

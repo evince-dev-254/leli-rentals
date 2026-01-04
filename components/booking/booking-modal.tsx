@@ -61,7 +61,7 @@ export function BookingModal({ listing, isOpen, onClose }: BookingModalProps) {
         description: "You need to be logged in as a renter to proceed.",
         action: {
           label: "Sign In",
-          onClick: () => window.location.href = "/sign-in"
+          onClick: () => window.location.href = "/login"
         }
       })
       return
@@ -106,7 +106,7 @@ export function BookingModal({ listing, isOpen, onClose }: BookingModalProps) {
           description: "Your session may have expired. Please sign in again.",
           action: {
             label: "Sign In",
-            onClick: () => window.location.href = "/sign-in"
+            onClick: () => window.location.href = "/login"
           }
         })
       } else {

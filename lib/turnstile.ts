@@ -111,6 +111,6 @@ export class TurnstileValidator {
 // Use production secret key if provided and in production, otherwise fallback to the "Always Pass" test key
 const SECRET_KEY = process.env.NODE_ENV === 'production' && process.env.TURNSTILE_SECRET_KEY
     ? process.env.TURNSTILE_SECRET_KEY
-    : (process.env.TURNSTILE_SECRET_KEY || '1x0000000000000000000000000000000AA');
+    : (process.env.TURNSTILE_SECRET_KEY || '1x00000000000000000000AA');
 
 export const turnstileValidator = new TurnstileValidator(SECRET_KEY);

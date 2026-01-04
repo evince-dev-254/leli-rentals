@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
+import Image from "next/image"
+import { supabase } from "@/lib/supabase"
 import {
   ArrowLeft,
   Heart,
@@ -56,10 +58,6 @@ export function ListingDetailContent({ listing }: ListingDetailContentProps) {
   const [correctedCoords, setCorrectedCoords] = useState<{ lat: number; lng: number } | null>(null)
   const [showShareToast, setShowShareToast] = useState(false)
 
-  // Default Nairobi coordinates used in CreateListing
-  const DEFAULT_NAIROBI_LAT = -1.2921
-  const DEFAULT_NAIROBI_LNG = 36.8219
-
   useEffect(() => {
     const checkAndFixCoordinates = async () => {
       // Check if coordinates match default Nairobi AND location string doesn't mention Nairobi
@@ -101,10 +99,28 @@ export function ListingDetailContent({ listing }: ListingDetailContentProps) {
   const { startConversation } = useMessages()
   const isLiked = isFavorite(listing.id)
 
-  // MOCK: Get user role (replace with actual auth hook when available)
-  // Options: "renter", "owner", "admin"
-  const currentUserRole = "renter"
-  const isRenter = currentUserRole === "renter"
+  const [authenticatedUser, setAuthenticatedUser] = useState<any>(null)
+  const [isAuthLoading, setIsAuthLoading] = useState(true)
+
+  useEffect(() => {
+    // Initial check
+    const getSession = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      setAuthenticatedUser(user)
+      setIsAuthLoading(false)
+    }
+    getSession()
+
+    // Listen for changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setAuthenticatedUser(session?.user ?? null)
+      setIsAuthLoading(false)
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [])
 
   // Listing category is often a UUID from DB, translate back to string slug for lookup
   const categorySlug = getCategoryStringId(listing.category) || listing.category
@@ -167,7 +183,7 @@ export function ListingDetailContent({ listing }: ListingDetailContentProps) {
         <div className="flex items-center justify-between mb-4 sm:mb-6">
           <BackButton
             href={`/categories/${categorySlug}`}
-            label={`Back to ${listing.categoryName || category?.name || "Categories"}`}
+            label={`Back to ${category?.name || "Categories"}`}
           />
 
           <div className="flex gap-2">
@@ -195,10 +211,12 @@ export function ListingDetailContent({ listing }: ListingDetailContentProps) {
           <div className="lg:col-span-2 space-y-6">
             {/* Image Gallery */}
             <div className="relative aspect-[16/10] sm:aspect-[16/9] rounded-2xl overflow-hidden glass-card shadow-lg group">
-              <img
+              <Image
                 src={listing.images[currentImageIndex] || "/placeholder.svg"}
                 alt={listing.title}
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                fill
+                className="object-cover transition-transform duration-700 group-hover:scale-105"
+                priority
               />
 
               {listing.images.length > 1 && (
@@ -342,14 +360,24 @@ export function ListingDetailContent({ listing }: ListingDetailContentProps) {
                         <span>&bull; {listing.reviewCount} total reviews</span>
                       </div>
                     </div>
-                    <LeaveReviewDialog
-                      bookingId="placeholder-booking-id"
-                      listingId={listing.id}
-                      listingTitle={listing.title}
-                      listingImage={listing.images[0]}
-                    >
-                      <Button className="rounded-full px-6">Rate this Rental</Button>
-                    </LeaveReviewDialog>
+                    {authenticatedUser ? (
+                      <LeaveReviewDialog
+                        bookingId="placeholder-booking-id"
+                        listingId={listing.id}
+                        listingTitle={listing.title}
+                        listingImage={listing.images[0]}
+                      >
+                        <Button className="rounded-full px-6">Rate this Rental</Button>
+                      </LeaveReviewDialog>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        className="rounded-full px-6"
+                        onClick={() => window.location.href = `/login?next=${encodeURIComponent(window.location.pathname)}`}
+                      >
+                        Login to Review
+                      </Button>
+                    )}
                   </div>
 
                   <div className="space-y-6">
@@ -489,16 +517,16 @@ export function ListingDetailContent({ listing }: ListingDetailContentProps) {
               <div className="space-y-4">
                 <Button
                   className="w-full h-14 text-lg font-bold rounded-2xl bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 text-white shadow-lg shadow-purple-500/20 transition-all hover:scale-[1.02] active:scale-95"
-                  onClick={() => setIsBookingOpen(true)}
-                  disabled={!isRenter}
+                  onClick={() => {
+                    if (!authenticatedUser) {
+                      window.location.href = "/login"
+                    } else {
+                      setIsBookingOpen(true)
+                    }
+                  }}
                 >
-                  {isRenter ? "Reserve Now" : "Register to Book"}
+                  {authenticatedUser ? "Reserve Now" : "Sign In to Book"}
                 </Button>
-                {!isRenter && (
-                  <p className="text-xs text-center text-destructive font-medium">
-                    Owner accounts are for listing management only.
-                  </p>
-                )}
                 <Button
                   variant="outline"
                   className="w-full h-12 rounded-xl bg-transparent font-semibold border-2"
@@ -535,10 +563,15 @@ export function ListingDetailContent({ listing }: ListingDetailContentProps) {
           </div>
           <Button
             className="flex-1 max-w-[200px] h-12 text-base font-bold rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-lg shadow-purple-500/20"
-            onClick={() => setIsBookingOpen(true)}
-            disabled={!isRenter}
+            onClick={() => {
+              if (!authenticatedUser) {
+                window.location.href = "/login"
+              } else {
+                setIsBookingOpen(true)
+              }
+            }}
           >
-            Reserve
+            {authenticatedUser ? "Reserve" : "Login"}
           </Button>
         </div>
       </div>
@@ -564,11 +597,12 @@ export function ListingDetailContent({ listing }: ListingDetailContentProps) {
           </DialogHeader>
           <div className="space-y-6 pt-4">
             <div className="flex gap-4 p-4 bg-secondary/20 rounded-2xl border border-secondary/30">
-              <div className="w-20 h-16 shrink-0 rounded-xl overflow-hidden shadow-sm">
-                <img
+              <div className="w-20 h-16 shrink-0 rounded-xl overflow-hidden shadow-sm relative">
+                <Image
                   src={listing.images[0] || "/placeholder.svg"}
                   alt={listing.title}
-                  className="w-full h-full object-cover"
+                  fill
+                  className="object-cover"
                 />
               </div>
               <div className="flex flex-col justify-center">

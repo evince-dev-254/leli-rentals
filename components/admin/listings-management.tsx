@@ -41,7 +41,7 @@ export function ListingsManagement() {
 
         const ownerIds = Array.from(new Set((ls || []).map((l: any) => l.owner_id).filter(Boolean)))
 
-        let us = [];
+        let us: any[] = [];
         if (ownerIds.length > 0) {
           const { data, error: usErr } = await supabase
             .from("user_profiles")

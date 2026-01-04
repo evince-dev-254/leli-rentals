@@ -191,7 +191,7 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
   ) => {
     if (!currentUserId) {
       toast.error("You must be logged in to send messages")
-      router.push("/sign-in")
+      router.push("/login")
       return
     }
 

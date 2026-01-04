@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
         console.error('Auth error:', error)
-        return NextResponse.redirect(new URL('/sign-in?error=auth_failed', request.url))
+        return NextResponse.redirect(new URL('/login?error=auth_failed', request.url))
     }
 
     if (sessionData?.user) {
@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Default redirect if no code/hash but somehow reached here (unlikely without params)
-    return NextResponse.redirect(new URL('/sign-in', request.url))
+    return NextResponse.redirect(new URL('/login', request.url))
 }
 
 function getRoleRedirect(role: string): string {

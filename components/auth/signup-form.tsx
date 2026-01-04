@@ -323,7 +323,7 @@ export function SignupForm() {
         {/* Header */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-block mb-6">
-            <Image src="/logo.png" alt="leli rentals" width={150} height={40} className="h-10 dark:invert" style={{ width: 'auto' }} />
+            <Image src="/logo.png" alt="leli rentals" width={150} height={40} className="h-10 w-auto dark:invert" />
           </Link>
           <h1 className="text-2xl font-bold mb-2">Create Account</h1>
           <p className="text-muted-foreground">
@@ -498,21 +498,22 @@ export function SignupForm() {
           </form>
         )}
 
-        <div className="my-6 flex justify-center">
+        <div className="my-6 flex justify-center" style={{ minHeight: '65px' }}>
           <Turnstile
-            siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA"}
+            siteKey={process.env.NODE_ENV === 'development' ? "1x00000000000000000000AA" : (process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA")}
             onSuccess={(token) => setCaptchaToken(token)}
             onExpire={() => setCaptchaToken(null)}
             onError={() => setCaptchaToken(null)}
             options={{
               theme: 'auto',
+              appearance: 'always',
             }}
           />
         </div>
 
         <p className="text-center text-sm text-muted-foreground mt-6">
           Already have an account?{" "}
-          <Link href="/sign-in" className="text-primary font-medium hover:underline">
+          <Link href="/login" className="text-primary font-medium hover:underline">
             Sign in
           </Link>
         </p>

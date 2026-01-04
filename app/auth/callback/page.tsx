@@ -42,7 +42,7 @@ export default function AuthCallbackPage() {
                     if (sessionError) {
                         console.error('Error setting session:', sessionError)
                         setError('Failed to authenticate. Please try again.')
-                        setTimeout(() => router.push('/sign-in'), 2000)
+                        setTimeout(() => router.push('/login'), 2000)
                         return
                     }
 
@@ -102,7 +102,7 @@ export default function AuthCallbackPage() {
                     if (exchangeError) {
                         console.error('Code exchange error:', exchangeError)
                         setError('Authentication failed. Please try again.')
-                        setTimeout(() => router.push('/sign-in'), 2000)
+                        setTimeout(() => router.push('/login'), 2000)
                         return
                     }
 

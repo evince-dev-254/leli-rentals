@@ -51,7 +51,7 @@ export function ForgotPasswordForm() {
         {/* Header */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-block mb-6">
-            <Image src="/logo.svg" alt="leli rentals" width={150} height={40} className="h-10 dark:invert" style={{ width: 'auto' }} />
+            <Image src="/logo.png" alt="leli rentals" width={150} height={40} className="h-10 dark:invert" style={{ width: 'auto' }} />
           </Link>
 
           {!isSubmitted ? (
@@ -126,7 +126,7 @@ export function ForgotPasswordForm() {
         {/* Back to Login */}
         <div className="mt-6">
           <Link
-            href="/sign-in"
+            href="/login"
             className="flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
