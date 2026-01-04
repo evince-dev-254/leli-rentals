@@ -115,11 +115,12 @@ export function SignupForm() {
         provider: 'google',
         options: {
           redirectTo: `${redirectUrl}/auth/callback?ref=${getEffectiveRefCode() || ''}`,
+          captchaToken: captchaToken || undefined,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
           },
-        },
+        } as any,
       })
 
       if (error) throw error
@@ -346,7 +347,7 @@ export function SignupForm() {
                 variant="outline"
                 className="w-full h-12 bg-transparent"
                 onClick={handleGoogleSignup}
-                disabled={isGoogleLoading}
+                disabled={isGoogleLoading || isLoading || !captchaToken}
               >
                 {isGoogleLoading ? (
                   <Loader2 className="h-5 w-5 mr-2 animate-spin" />
@@ -485,17 +486,6 @@ export function SignupForm() {
               </RadioGroup>
             </div>
 
-            <div className="my-4 flex justify-center">
-              <Turnstile
-                siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA"}
-                onSuccess={(token) => setCaptchaToken(token)}
-                onExpire={() => setCaptchaToken(null)}
-                onError={() => setCaptchaToken(null)}
-                options={{
-                  theme: 'auto',
-                }}
-              />
-            </div>
 
             <div className="flex gap-3">
               <Button type="button" variant="outline" className="flex-1" onClick={() => setStep(1)} disabled={isLoading}>
@@ -507,6 +497,18 @@ export function SignupForm() {
             </div>
           </form>
         )}
+
+        <div className="my-6 flex justify-center">
+          <Turnstile
+            siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA"}
+            onSuccess={(token) => setCaptchaToken(token)}
+            onExpire={() => setCaptchaToken(null)}
+            onError={() => setCaptchaToken(null)}
+            options={{
+              theme: 'auto',
+            }}
+          />
+        </div>
 
         <p className="text-center text-sm text-muted-foreground mt-6">
           Already have an account?{" "}

@@ -133,11 +133,12 @@ export function LoginForm() {
         provider: 'google',
         options: {
           redirectTo: `${redirectUrl}/auth/callback`,
+          captchaToken: captchaToken || undefined,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
           },
-        },
+        } as any,
       })
 
       if (error) throw error
@@ -170,7 +171,7 @@ export function LoginForm() {
             variant="outline"
             className="w-full h-12 bg-transparent"
             onClick={handleGoogleLogin}
-            disabled={isGoogleLoading || isLoading || isCheckingEmail}
+            disabled={isGoogleLoading || isLoading || isCheckingEmail || !captchaToken}
           >
             {isGoogleLoading ? (
               <Loader2 className="h-5 w-5 mr-2 animate-spin" />
