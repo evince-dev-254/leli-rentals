@@ -266,7 +266,7 @@ export function LoginForm() {
           <Button
             type="submit"
             className="w-full h-12 bg-primary text-primary-foreground mt-2"
-            disabled={isCheckingEmail || isLoading}
+            disabled={isCheckingEmail || isLoading || !captchaToken}
           >
             {isCheckingEmail || isLoading ? (
               <Loader2 className="h-5 w-5 animate-spin" />

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from '@/lib/supabase-server'
 import { EmailOtpType } from '@supabase/supabase-js'
 
 export async function GET(request: NextRequest) {
@@ -10,10 +10,7 @@ export async function GET(request: NextRequest) {
     const type = requestUrl.searchParams.get('type') as EmailOtpType | null
     const next = requestUrl.searchParams.get('next') || '/dashboard'
 
-    const supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
+    const supabase = await createClient()
 
     let sessionData = null
     let error = null

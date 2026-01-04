@@ -142,6 +142,7 @@ export function Header() {
               alt="Leli Rentals"
               width={100}
               height={28}
+              priority
               className="h-4 sm:h-5 w-auto invert"
             />
           </Link>

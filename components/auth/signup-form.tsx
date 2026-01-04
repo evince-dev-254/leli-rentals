@@ -501,7 +501,7 @@ export function SignupForm() {
               <Button type="button" variant="outline" className="flex-1" onClick={() => setStep(1)} disabled={isLoading}>
                 Back
               </Button>
-              <Button type="submit" className="flex-1 bg-primary text-primary-foreground" disabled={isLoading}>
+              <Button type="submit" className="flex-1 bg-primary text-primary-foreground" disabled={isLoading || !captchaToken}>
                 {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Complete Signup"}
               </Button>
             </div>

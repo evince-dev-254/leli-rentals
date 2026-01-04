@@ -164,8 +164,11 @@ export function ListingDetailContent({ listing }: ListingDetailContentProps) {
     <div className="gradient-mesh min-h-screen pb-24 sm:pb-8 pt-8 px-4">
       <div className="container mx-auto max-w-7xl">
         {/* Breadcrumb and Top Actions */}
-        <div className="flex items-center justify-between mb-6">
-          <BackButton href={`/categories/${categorySlug}`} label={`Back to ${category?.name || "Categories"}`} />
+        <div className="flex items-center justify-between mb-4 sm:mb-6">
+          <BackButton
+            href={`/categories/${categorySlug}`}
+            label={`Back to ${listing.categoryName || category?.name || "Categories"}`}
+          />
 
           <div className="flex gap-2">
             <Button
@@ -255,15 +258,15 @@ export function ListingDetailContent({ listing }: ListingDetailContentProps) {
                     {listing.subcategory}
                   </Badge>
                   <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight mb-3">{listing.title}</h1>
-                  <div className="flex flex-wrap items-center gap-y-2 gap-x-5 text-muted-foreground">
-                    <div className="flex items-center text-sm font-medium">
-                      <MapPin className="h-4 w-4 mr-1.5 text-primary" />
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-y-3 gap-x-6 text-muted-foreground mt-4">
+                    <div className="flex items-center text-sm font-semibold bg-secondary/30 w-fit px-3 py-1.5 rounded-full border border-border/50">
+                      <MapPin className="h-4 w-4 mr-2 text-primary" />
                       {listing.location}
                     </div>
-                    <div className="flex items-center text-sm">
-                      <Star className="h-4 w-4 fill-yellow-500 text-yellow-500 mr-1.5" />
-                      <span className="font-bold text-foreground">{listing.rating}</span>
-                      <span className="ml-1.5 opacity-80">({listing.reviewCount} reviews)</span>
+                    <div className="flex items-center text-sm px-1">
+                      <Star className="h-4 w-4 fill-yellow-500 text-yellow-500 mr-2" />
+                      <span className="font-extrabold text-foreground text-base">{listing.rating}</span>
+                      <span className="ml-2 text-xs opacity-70 font-medium">({listing.reviewCount} reviews)</span>
                     </div>
                   </div>
                 </div>
@@ -273,10 +276,10 @@ export function ListingDetailContent({ listing }: ListingDetailContentProps) {
 
               {/* Tabs */}
               <Tabs defaultValue="description" className="w-full">
-                <TabsList className="grid w-full max-w-[400px] grid-cols-3 mb-8 bg-secondary/30">
-                  <TabsTrigger value="description">Details</TabsTrigger>
-                  <TabsTrigger value="amenities">Features</TabsTrigger>
-                  <TabsTrigger value="reviews">Reviews</TabsTrigger>
+                <TabsList className="flex w-full overflow-x-auto sm:grid sm:grid-cols-3 mb-6 bg-secondary/30 p-1 h-auto sm:h-10">
+                  <TabsTrigger value="description" className="flex-1 py-2 text-sm">Details</TabsTrigger>
+                  <TabsTrigger value="amenities" className="flex-1 py-2 text-sm">Features</TabsTrigger>
+                  <TabsTrigger value="reviews" className="flex-1 py-2 text-sm">Reviews</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="description" className="mt-0 space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
