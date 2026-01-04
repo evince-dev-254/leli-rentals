@@ -100,7 +100,6 @@ export default function RootLayout({
             <MessagesProvider>
               {children}
               <Toaster position="top-center" richColors />
-              <AiAssistant />
               <CookieConsent />
               <Analytics />
               <GoogleAnalytics gaId="G-7MHZ00M71E" />

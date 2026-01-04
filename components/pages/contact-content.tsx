@@ -3,9 +3,10 @@
 import type React from "react"
 
 import { useState } from "react"
-import { Phone, Mail, MapPin, MessageCircle, Clock, Send } from "lucide-react"
+import { Phone, Mail, MapPin, MessageCircle, Clock, Send, Sparkles } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import Link from "next/link"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
@@ -15,6 +16,15 @@ import { toast } from "sonner"
 import { Loader2 } from "lucide-react"
 
 const contactMethods = [
+  {
+    icon: Sparkles,
+    title: "Leli AI Assistant",
+    value: "Instant Support",
+    description: "Available 24/7 for quick answers",
+    action: "Chat with AI",
+    href: "/ai",
+    isInternal: true,
+  },
   {
     icon: MessageCircle,
     title: "WhatsApp",
@@ -124,9 +134,15 @@ export function ContactContent() {
                   <p className="text-foreground font-medium">{method.value}</p>
                   <p className="text-sm text-muted-foreground mb-4">{method.description}</p>
                   <Button asChild variant="outline" size="sm" className="w-full bg-transparent">
-                    <a href={method.href} target="_blank" rel="noopener noreferrer">
-                      {method.action}
-                    </a>
+                    {method.isInternal ? (
+                      <Link href={method.href}>
+                        {method.action}
+                      </Link>
+                    ) : (
+                      <a href={method.href} target="_blank" rel="noopener noreferrer">
+                        {method.action}
+                      </a>
+                    )}
                   </Button>
                 </CardContent>
               </Card>
