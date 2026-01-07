@@ -47,6 +47,15 @@ export async function getOwnerStats(userId: string) {
 
     const totalEarnings = earningsData?.reduce((sum, booking) => sum + (Number(booking.total_amount) || 0), 0) || 0;
 
+    // Get total withdrawn for balance calculation
+    const { data: payouts } = await supabase
+        .from('payout_requests')
+        .select('amount')
+        .eq('user_id', userId)
+        .in('status', ['pending', 'approved', 'paid']);
+
+    const totalWithdrawn = payouts?.reduce((sum, p) => sum + (Number(p.amount) || 0), 0) || 0;
+
     // Get total views from listings
     const { data: listingsData, error: viewsError } = await supabase
         .from('listings')
@@ -60,6 +69,8 @@ export async function getOwnerStats(userId: string) {
         listingsCount: listingsCount || 0,
         activeBookingsCount: activeBookingsCount || 0,
         totalEarnings,
+        availableBalance: totalEarnings - totalWithdrawn,
+        totalWithdrawn,
         totalViews
     };
 }
@@ -485,13 +496,56 @@ export async function getEarnings(userId: string) {
     if (error) throw error;
 
     // Transform to transaction format
-    return data.map((b: any) => ({
+    const transactions = (data || []).map((b: any) => ({
         id: b.id,
         type: 'earning',
         desc: b.listing?.title || 'Rental',
         date: new Date(b.end_date).toLocaleDateString(),
         amount: b.total_amount
     }));
+
+    // Add affiliate referrals if user is an affiliate
+    const { data: referrals } = await supabase
+        .from('affiliate_referrals')
+        .select(`
+            id,
+            commission_amount,
+            created_at,
+            listing:listings(title)
+        `)
+        .eq('affiliate_id', (await supabase.from('affiliates').select('id').eq('user_id', userId).single()).data?.id)
+        .eq('status', 'paid');
+
+    if (referrals) {
+        const refTrans = referrals.map((r: any) => ({
+            id: r.id,
+            type: 'earning',
+            desc: `Referral: ${r.listing?.title || 'Booking'}`,
+            date: new Date(r.created_at).toLocaleDateString(),
+            amount: r.commission_amount
+        }));
+        transactions.push(...refTrans);
+    }
+
+    // Add payouts to transaction history
+    const { data: payouts } = await supabase
+        .from('payout_requests')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+    if (payouts) {
+        const payoutTrans = payouts.map((p: any) => ({
+            id: p.id,
+            type: 'payout',
+            desc: `Withdrawal (${p.status})`,
+            date: new Date(p.created_at).toLocaleDateString(),
+            amount: -p.amount
+        }));
+        transactions.push(...payoutTrans);
+    }
+
+    return transactions.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
 
 /** Update Verification Document Status */

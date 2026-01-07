@@ -40,6 +40,7 @@ export function SignupForm() {
   const [showOtpInput, setShowOtpInput] = useState(false)
   const [otp, setOtp] = useState("")
   const [captchaToken, setCaptchaToken] = useState<string | null>(null)
+  const [captchaError, setCaptchaError] = useState(false)
   // Persist referral code
   useEffect(() => {
     const urlRef = searchParams.get("ref")
@@ -492,7 +493,17 @@ export function SignupForm() {
                 Back
               </Button>
               <Button type="submit" className="flex-1 bg-primary text-primary-foreground" disabled={isLoading || !captchaToken}>
-                {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Complete Signup"}
+                {isLoading ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : captchaError ? (
+                  "Captcha Failed"
+                ) : !captchaToken ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" /> Verifying...
+                  </span>
+                ) : (
+                  "Complete Signup"
+                )}
               </Button>
             </div>
           </form>
@@ -501,9 +512,15 @@ export function SignupForm() {
         <div className="my-6 flex justify-center" style={{ minHeight: '65px' }}>
           <Turnstile
             siteKey={process.env.NODE_ENV === 'development' ? "1x00000000000000000000AA" : (process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA")}
-            onSuccess={(token) => setCaptchaToken(token)}
+            onSuccess={(token) => {
+              setCaptchaToken(token)
+              setCaptchaError(false)
+            }}
             onExpire={() => setCaptchaToken(null)}
-            onError={() => setCaptchaToken(null)}
+            onError={() => {
+              setCaptchaToken(null)
+              setCaptchaError(true)
+            }}
             options={{
               theme: 'auto',
               appearance: 'always',

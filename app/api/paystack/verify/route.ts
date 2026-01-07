@@ -100,6 +100,26 @@ export async function POST(req: Request) {
             throw new Error("Failed to update subscription record")
         }
 
+        // 5. Trigger Affiliate Commission Calculation
+        try {
+            // We call the database function `calculate_affiliate_commission`
+            // passing booking_id (or null if subscription), amount, and payer user_id
+            const { data: commissionData, error: commissionError } = await supabaseAdmin
+                .rpc('calculate_affiliate_commission', {
+                    p_booking_id: null, // It's a subscription, so no booking ID
+                    p_transaction_amount: amount,
+                    p_user_id: userId
+                })
+
+            if (commissionError) {
+                console.error("Commission calculation error:", commissionError)
+            } else {
+                console.log("Commission processed:", commissionData)
+            }
+        } catch (commErr) {
+            console.error("Failed to trigger commission logic:", commErr)
+        }
+
         return NextResponse.json({ success: true, endDate })
 
     } catch (error: any) {

@@ -4,6 +4,8 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 import { updateProfile } from "@/lib/actions/dashboard-actions"
+import { updatePaymentInfo } from "@/lib/actions/affiliate-actions"
+import { detectKenyanProvider } from "@/lib/utils/phone-utils"
 import { toast } from "sonner"
 import { User, Bell, Save, CreditCard, Plus, AlertCircle, Loader2, Eye, EyeOff, ArrowLeft } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -20,10 +22,12 @@ import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
 import { LoadingLogo } from "@/components/ui/loading-logo"
 import { LocationSearch } from "@/components/ui/location-search"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export function SettingsPage() {
   const router = useRouter()
   // const { toast } = useToast() // Assuming you have a toast component, if not, use alert or console
+  const [user, setUser] = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -40,11 +44,18 @@ export function SettingsPage() {
   const [confirmPassword, setConfirmPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
 
+  // Payment Settings State
+  const [paymentProvider, setPaymentProvider] = useState("mpesa")
+  const [accountNumber, setAccountNumber] = useState("")
+  const [accountName, setAccountName] = useState("")
+  const [savingPayment, setSavingPayment] = useState(false)
+
   useEffect(() => {
     const getProfile = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser()
         if (user) {
+          setUser(user) // Store user in state
           const { data } = await supabase
             .from('user_profiles')
             .select('*')
@@ -64,15 +75,11 @@ export function SettingsPage() {
             bio: data?.bio || ""
           })
 
-          // Auto-save if profile is empty but we have metadata? 
-          // User requested "auto saved". We could trigger an update here if data was missing but metadata exists.
-          // However, simpler to just pre-fill and let them click "Save" or just rely on them seeing it's there.
-          // User said "in settings ... should be auto saved". 
-          // If they mean "persistently saved to DB without user action", we might want to do that.
-          // But usually "validating" it by hitting save is better. 
-          // Let's stick to pre-filling for now unless "auto saved" strictly means background sync.
-          // Actually, if it's "auto saved... since creation", they probably just mean "it should be there".
-          // So pre-filling solves the "it should be there" part.
+          if (data?.payment_info) {
+            setPaymentProvider(data.payment_info.provider || "mpesa")
+            setAccountNumber(data.payment_info.account_number || "")
+            setAccountName(data.payment_info.account_name || "")
+          }
         }
       } catch (error) {
         console.error("Error fetching profile:", error)
@@ -88,27 +95,96 @@ export function SettingsPage() {
     setFormData(prev => ({ ...prev, [name]: value }))
   }
 
-  const handleSave = async () => {
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault()
+    console.log("[DEBUG] handleSave started")
     setSaving(true)
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+      if (!user) {
+        console.error("[DEBUG] No user found in handleSave")
+        toast.error("Session expired. Please refresh the page.")
+        return
+      }
+      console.log("[DEBUG] User ID:", user.id)
 
-      await updateProfile(user.id, {
+      const updates = {
+        id: user.id,
         full_name: formData.full_name,
+        email: formData.email,
         phone: formData.phone,
         location: formData.location,
         bio: formData.bio,
-        // email is usually handled via specific auth update flow, but keeping it here for display
-      })
-      toast.success("Profile updated successfully")
-    } catch (error: any) {
-      console.error("Error updating profile:", error)
-      toast.error("Failed to update profile", {
-        description: error.message || "Please check your information and try again."
+      }
+
+      const result = await updateProfile(updates)
+      console.log("[DEBUG] updateProfile result:", result)
+
+      if (result.success) {
+        toast.success("Profile updated successfully!")
+        setProfile((prev: any) => ({ ...prev, ...updates }))
+      } else {
+        console.error("[DEBUG] updateProfile failed:", result.error)
+        toast.error("Failed to update profile", {
+          description: result.error
+        })
+      }
+    } catch (e: any) {
+      console.error("[DEBUG] Error in handleSave:", e)
+      toast.error("An error occurred", {
+        description: e.message
       })
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleAccountChange = (val: string) => {
+    setAccountNumber(val)
+    const detected = detectKenyanProvider(val)
+    if (detected) {
+      setPaymentProvider(detected)
+    }
+  }
+
+  const handleSavePayment = async (e: React.FormEvent) => {
+    e.preventDefault()
+    console.log("[DEBUG] handleSavePayment started")
+    setSavingPayment(true)
+    try {
+      if (!user) {
+        console.error("[DEBUG] No user found in handleSavePayment")
+        toast.error("Session expired. Please refresh the page.")
+        return
+      }
+      console.log("[DEBUG] User ID:", user.id)
+
+      const paymentInfo = {
+        type: 'mobile_money',
+        provider: paymentProvider,
+        account_number: accountNumber,
+        account_name: accountName
+      }
+      console.log("[DEBUG] Payment Info:", paymentInfo)
+
+      const result = await updatePaymentInfo(user.id, paymentInfo)
+      console.log("[DEBUG] updatePaymentInfo result:", result)
+
+      if (result.success) {
+        toast.success("Payment details saved!")
+        setProfile((prev: any) => ({ ...prev, payment_info: paymentInfo }))
+      } else {
+        console.error("[DEBUG] updatePaymentInfo failed:", result.error)
+        toast.error("Failed to save payment info", {
+          description: result.error
+        })
+      }
+    } catch (e: any) {
+      console.error("[DEBUG] Error in handleSavePayment:", e)
+      toast.error("An error occurred", {
+        description: e.message
+      })
+    } finally {
+      setSavingPayment(false)
     }
   }
 
@@ -408,33 +484,55 @@ export function SettingsPage() {
         <TabsContent value="payment">
           <Card className="glass-card">
             <CardHeader>
-              <CardTitle>Payment Methods</CardTitle>
-              <CardDescription>Manage your saved payment methods</CardDescription>
+              <CardTitle className="flex items-center gap-2">
+                <CreditCard className="h-5 w-5" />
+                Payout Details
+              </CardTitle>
+              <CardDescription>Manage where you receive your earnings</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="grid gap-4 md:grid-cols-2">
-                <Card className="border border-primary bg-primary/5">
-                  <CardContent className="p-4 flex flex-col justify-between h-32">
-                    <div className="flex justify-between items-start">
-                      <Badge variant="outline">Default</Badge>
-                      <CreditCard className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <p className="font-medium">•••• •••• •••• 4242</p>
-                      <p className="text-xs text-muted-foreground">Expires 12/28</p>
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card className="border border-dashed border-muted-foreground/30 flex items-center justify-center h-32 hover:bg-muted/20 cursor-pointer transition-colors">
-                  <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                    <Plus className="h-6 w-6" />
-                    <span className="text-sm font-medium">Add Payment Method</span>
-                  </div>
-                </Card>
-              </div>
+              <form onSubmit={handleSavePayment} className="space-y-4 max-w-md">
+                <div className="space-y-2">
+                  <Label>Payment Provider</Label>
+                  <Select value={paymentProvider} onValueChange={setPaymentProvider}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Provider" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="mpesa">M-Pesa (Mobile Money)</SelectItem>
+                      <SelectItem value="airtel">Airtel Money</SelectItem>
+                      <SelectItem value="bank">Bank Transfer</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Account Number / Phone</Label>
+                  <Input
+                    value={accountNumber}
+                    onChange={(e) => handleAccountChange(e.target.value)}
+                    placeholder={paymentProvider === 'mpesa' ? "e.g. 0712345678" : paymentProvider === 'airtel' ? "e.g. 0733..." : "Bank Account Number"}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Account Name</Label>
+                  <Input
+                    value={accountName}
+                    onChange={(e) => setAccountName(e.target.value)}
+                    placeholder="Full Name as on Account"
+                    required
+                  />
+                </div>
+                <Button type="submit" disabled={savingPayment}>
+                  {savingPayment && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  <Save className="h-4 w-4 mr-2" />
+                  Save Payment Details
+                </Button>
+              </form>
+
               <div className="bg-blue-500/10 p-4 rounded-lg flex gap-3 text-sm text-blue-600">
                 <AlertCircle className="h-5 w-5 shrink-0" />
-                <p>Your payment information is securely stored with Paystack. leli rentals does not store your full card details.</p>
+                <p>Ensure your details are correct. Incorrect information may lead to failed or lost payouts.</p>
               </div>
             </CardContent>
           </Card>

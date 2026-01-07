@@ -128,6 +128,7 @@ export default function CookiePolicyPage() {
                     <li>Language preferences: Remember your language settings</li>
                     <li>Location data: Provide location-based services</li>
                     <li>User preferences: Remember your display preferences</li>
+                    <li>Technical cookies (e.g. <code>lswt-*</code>): Used to verify local storage availability and manage session state</li>
                   </ul>
                 </div>
 

@@ -2,7 +2,24 @@ import { type NextRequest } from "next/server";
 import { updateSession } from "@/utils/supabase/middleware";
 
 export default async function proxy(request: NextRequest) {
-    return await updateSession(request);
+    const response = await updateSession(request);
+
+    // Handle Affiliate Referral Tracking
+    const url = request.nextUrl
+    const refCode = url.searchParams.get('ref')
+
+    if (refCode) {
+        response.cookies.set({
+            name: 'affiliate_ref',
+            value: refCode,
+            path: '/',
+            maxAge: 60 * 60 * 24 * 30, // 30 days
+            httpOnly: true,
+            sameSite: 'lax'
+        })
+    }
+
+    return response;
 }
 
 export const config = {

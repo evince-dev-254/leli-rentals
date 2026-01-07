@@ -2,6 +2,7 @@
 
 import { supabase } from "@/lib/supabase"
 import { supabaseAdmin } from "@/lib/supabase-admin"
+import { createServerClient } from '@supabase/ssr'
 
 // ... existing joinAffiliateProgram ...
 
@@ -90,4 +91,147 @@ export async function joinAffiliateProgram(userId: string, email: string) {
     }
 
     return { success: true, data };
+}
+
+export async function requestWithdrawal(
+    userId: string,
+    amount: number,
+    paymentMethod: string,
+    paymentDetails: any,
+    role: string = 'affiliate'
+) {
+    try {
+        // 1. Validate balance based on role
+        let availableBalance = 0;
+
+        if (role === 'affiliate') {
+            const { data: affiliate } = await supabaseAdmin
+                .from('affiliates')
+                .select('pending_earnings')
+                .eq('user_id', userId)
+                .single()
+            availableBalance = affiliate?.pending_earnings || 0;
+        } else {
+            // Owner balance calculation (Rental income - already withdrawn)
+            // For now, we'll fetch completed bookings sum
+            const { data: bookings } = await supabaseAdmin
+                .from('bookings')
+                .select('total_amount')
+                .eq('owner_id', userId)
+                .eq('status', 'completed');
+
+            const totalEarnings = bookings?.reduce((sum, b) => sum + (Number(b.total_amount) || 0), 0) || 0;
+
+            // Subtract already requested/paid payouts
+            const { data: payouts } = await supabaseAdmin
+                .from('payout_requests')
+                .select('amount')
+                .eq('user_id', userId)
+                .in('status', ['pending', 'approved', 'paid']);
+
+            const totalWithdrawn = payouts?.reduce((sum, p) => sum + (Number(p.amount) || 0), 0) || 0;
+            availableBalance = totalEarnings - totalWithdrawn;
+        }
+
+        if (amount < 100) throw new Error("Minimum withdrawal is KES 100")
+        if (amount > 10000) throw new Error("Maximum withdrawal is KES 10,000") // Increased for owners
+        if (amount > availableBalance) throw new Error("Insufficient balance")
+
+        // 2. Create Payout Request
+        const { data: payout, error: insertError } = await supabaseAdmin
+            .from('payout_requests')
+            .insert({
+                user_id: userId,
+                amount,
+                payment_method: paymentMethod,
+                payment_details: paymentDetails,
+                status: 'pending',
+                role
+            })
+            .select()
+            .single()
+
+        if (insertError) throw insertError
+
+        // 3. If affiliate, deduct from pending_earnings to prevent double withdrawal
+        if (role === 'affiliate') {
+            const { data: affiliate } = await supabaseAdmin
+                .from('affiliates')
+                .select('pending_earnings')
+                .eq('user_id', userId)
+                .single();
+
+            await supabaseAdmin
+                .from('affiliates')
+                .update({
+                    pending_earnings: (affiliate?.pending_earnings || 0) - amount
+                })
+                .eq('user_id', userId)
+        }
+
+        return { success: true, data: payout }
+
+    } catch (e: any) {
+        console.error('Withdrawal error:', e);
+        return { success: false, error: e.message }
+    }
+}
+
+export async function updatePaymentInfo(userId: string, paymentInfo: any) {
+    console.log(`[SERVER] updatePaymentInfo called for user: ${userId}`);
+    try {
+        // Use a fresh admin client to ensure env vars are read correctly in server context
+        const adminSupabase = createServerClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY!,
+            {
+                cookies: {
+                    get(name: string) { return undefined },
+                },
+            }
+        );
+
+        // 1. Update user_profile
+        const { error: profileError } = await adminSupabase
+            .from('user_profiles')
+            .update({ payment_info: paymentInfo })
+            .eq('id', userId);
+
+        if (profileError) {
+            console.error('[SERVER] Profile update error:', profileError);
+            throw profileError;
+        }
+
+        // 2. Update affiliate (if exists)
+        const { error: affiliateError } = await adminSupabase
+            .from('affiliates')
+            .update({ payment_info: paymentInfo })
+            .eq('user_id', userId);
+
+        if (affiliateError) {
+            console.error('[SERVER] Affiliate update error:', affiliateError);
+            // We don't necessarily throw here if profile updated but affiliate doesn't exist
+            // but since we are using .eq(), it won't error if no rows found.
+        }
+
+        console.log(`[SERVER] updatePaymentInfo success for user: ${userId}`);
+        return { success: true }
+    } catch (e: any) {
+        console.error('[SERVER] updatePaymentInfo exception:', e);
+        return { success: false, error: e.message }
+    }
+}
+
+export async function getWithdrawalHistory(userId: string) {
+    const { data, error } = await supabaseAdmin
+        .from('payout_requests')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+
+    if (error) {
+        console.error('Error fetching withdrawal history:', error)
+        return []
+    }
+    return data
 }
