@@ -112,7 +112,7 @@ export function Footer() {
         {/* Bottom Bar */}
         <div className="mt-12 pt-8 border-t border-border/50 flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="flex flex-col md:flex-row gap-2 items-center">
-            <p className="text-sm text-muted-foreground">© 2025 Leli Rentals. All rights reserved.</p>
+            <p className="text-sm text-muted-foreground">© {new Date().getFullYear()} Leli Rentals. All rights reserved.</p>
             <span className="hidden md:inline text-muted-foreground">•</span>
             <p className="text-sm text-muted-foreground">
               Developed by <a href="#" className="hover:text-primary transition-colors">GuruCrafts Agency</a>

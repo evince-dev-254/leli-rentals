@@ -42,7 +42,8 @@ export async function GET(request: NextRequest) {
             sessionData.user.id,
             sessionData.user.email!,
             sessionData.user.user_metadata || {},
-            sessionData.user.user_metadata?.role || undefined
+            sessionData.user.user_metadata?.role || undefined,
+            sessionData.user.user_metadata?.ref_code || null
         )
 
         if (!result.success) {

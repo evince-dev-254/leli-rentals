@@ -28,7 +28,7 @@ export async function GET(request: Request) {
                     user.email!,
                     user.user_metadata || {},
                     role || undefined,
-                    ref || null
+                    ref || user.user_metadata?.ref_code || null
                 )
             }
 
