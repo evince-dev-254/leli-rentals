@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { useRouter, useSearchParams } from "next/navigation"
@@ -18,7 +18,8 @@ import { Message } from "@/components/ui/message"
 import { OTPInput } from "@/components/ui/otp-input"
 import { supabase } from "@/lib/supabase"
 import { toast } from "sonner"
-import { Turnstile } from '@marsidev/react-turnstile'
+import { TurnstileWidget } from "./turnstile-widget"
+import { type TurnstileInstance } from "@marsidev/react-turnstile"
 
 type AccountType = "renter" | "owner" | "affiliate"
 
@@ -41,6 +42,7 @@ export function SignupForm() {
   const [otp, setOtp] = useState("")
   const [captchaToken, setCaptchaToken] = useState<string | null>(null)
   const [captchaError, setCaptchaError] = useState(false)
+  const turnstileRef = useRef<TurnstileInstance>(null)
   // Persist referral code
   useEffect(() => {
     const urlRef = searchParams.get("ref")
@@ -127,6 +129,8 @@ export function SignupForm() {
       if (error) throw error
     } catch (error: any) {
       setGeneralError(error.message || "Failed to sign up with Google")
+      setCaptchaToken(null)
+      turnstileRef.current?.reset()
       toast.error("Google Signup Failed", {
         description: error.message || "Something went wrong. Please try again."
       })
@@ -182,6 +186,8 @@ export function SignupForm() {
 
     } catch (error: any) {
       setGeneralError(error.message || "Failed to sign up")
+      setCaptchaToken(null)
+      turnstileRef.current?.reset()
       toast.error("Signup Failed", {
         description: error.message || "Please check your details and try again."
       })
@@ -238,6 +244,7 @@ export function SignupForm() {
         options: {
           emailRedirectTo: `${redirectUrl}/auth/confirm`,
           shouldCreateUser: true,
+          captchaToken: captchaToken || undefined,
           data: {
             full_name: fullName,
             phone: phone,
@@ -255,6 +262,8 @@ export function SignupForm() {
       setTimeLeft(60) // Reset timer
     } catch (error: any) {
       setGeneralError(error.message || "Failed to resend code")
+      setCaptchaToken(null)
+      turnstileRef.current?.reset()
       toast.error("Failed to resend code", {
         description: error.message
       })
@@ -307,7 +316,7 @@ export function SignupForm() {
             <Button
               variant="link"
               onClick={handleResendCode}
-              disabled={isLoading || timeLeft > 0}
+              disabled={isLoading || timeLeft > 0 || !captchaToken}
               className="text-sm text-primary h-auto p-0"
             >
               {timeLeft > 0 ? `Resend in ${timeLeft}s` : "Resend Code"}
@@ -324,7 +333,7 @@ export function SignupForm() {
         {/* Header */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-block mb-6">
-            <Image src="/logo.png" alt="leli rentals" width={150} height={40} className="h-10 w-auto dark:invert" />
+            <Image src="/logo.png" alt="leli rentals" width={150} height={40} className="h-10 w-auto dark:invert" style={{ height: "auto" }} />
           </Link>
           <h1 className="text-2xl font-bold mb-2">Create Account</h1>
           <p className="text-muted-foreground">
@@ -509,9 +518,9 @@ export function SignupForm() {
           </form>
         )}
 
-        <div className="my-6 flex justify-center" style={{ minHeight: '65px' }}>
-          <Turnstile
-            siteKey={process.env.NODE_ENV === 'development' ? "1x00000000000000000000AA" : (process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA")}
+        <div className="my-6">
+          <TurnstileWidget
+            ref={turnstileRef}
             onSuccess={(token) => {
               setCaptchaToken(token)
               setCaptchaError(false)
@@ -520,10 +529,6 @@ export function SignupForm() {
             onError={() => {
               setCaptchaToken(null)
               setCaptchaError(true)
-            }}
-            options={{
-              theme: 'auto',
-              appearance: 'always',
             }}
           />
         </div>

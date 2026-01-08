@@ -144,6 +144,7 @@ export function Header() {
               height={28}
               priority
               className="h-4 sm:h-5 w-auto invert"
+              style={{ height: "auto" }}
             />
           </Link>
 

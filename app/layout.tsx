@@ -7,6 +7,7 @@ import { GoogleAnalytics } from '@next/third-parties/google'
 import { Toaster } from "@/components/ui/sonner"
 import { CookieConsent } from "@/components/cookie-consent"
 import { AiAssistant } from "@/components/ai-assistant"
+import { OfflineBanner } from "@/components/ui/offline-banner"
 import { FavoritesProvider } from "@/lib/favorites-context"
 import { MessagesProvider } from "@/lib/messages-context"
 import { ThemeProvider } from "@/components/theme-provider"
@@ -101,6 +102,8 @@ export default function RootLayout({
               {children}
               <Toaster position="top-center" richColors />
               <CookieConsent />
+              <AiAssistant />
+              <OfflineBanner />
               <Analytics />
               <GoogleAnalytics gaId="G-7MHZ00M71E" />
               {/* Tawk.to Live Chat */}

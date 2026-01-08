@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { useRouter, useSearchParams } from "next/navigation"
@@ -14,7 +14,8 @@ import { Message } from "@/components/ui/message"
 import { supabase } from "@/lib/supabase"
 import { toast } from "sonner"
 import { checkUserExists } from "@/lib/actions/auth-actions"
-import { Turnstile } from '@marsidev/react-turnstile'
+import { TurnstileWidget } from "./turnstile-widget"
+import { type TurnstileInstance } from "@marsidev/react-turnstile"
 
 export function LoginForm() {
   const router = useRouter()
@@ -50,6 +51,7 @@ export function LoginForm() {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const [error, setError] = useState("")
   const [captchaToken, setCaptchaToken] = useState<string | null>(null)
+  const turnstileRef = useRef<TurnstileInstance>(null)
 
   const handleEmailCheck = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -131,6 +133,8 @@ export function LoginForm() {
       }
     } catch (err: any) {
       setError(err.message || "Invalid login credentials")
+      setCaptchaToken(null)
+      turnstileRef.current?.reset()
     } finally {
       setIsLoading(false)
     }
@@ -161,6 +165,8 @@ export function LoginForm() {
       if (error) throw error
     } catch (error: any) {
       setError(error.message || "Failed to sign in with Google")
+      setCaptchaToken(null)
+      turnstileRef.current?.reset()
       toast.error("Google Login Failed", {
         description: error.message || "Something went wrong. Please try again."
       })
@@ -176,7 +182,7 @@ export function LoginForm() {
         {/* Header */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-block mb-6">
-            <Image src="/logo.png" alt="leli rentals" width={150} height={40} className="h-10 w-auto dark:invert" />
+            <Image src="/logo.png" alt="leli rentals" width={150} height={40} className="h-10 w-auto dark:invert" style={{ height: "auto" }} />
           </Link>
           <h1 className="text-2xl font-bold mb-2">Welcome Back</h1>
           <p className="text-muted-foreground">Sign in to your account</p>
@@ -306,9 +312,9 @@ export function LoginForm() {
                 )}
               </Button>
 
-              <div className="my-4 flex justify-center" style={{ minHeight: '65px' }}>
-                <Turnstile
-                  siteKey={process.env.NODE_ENV === 'development' ? "1x00000000000000000000AA" : (process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA")}
+              <div className="my-4">
+                <TurnstileWidget
+                  ref={turnstileRef}
                   onSuccess={(token) => {
                     setCaptchaToken(token)
                     setCaptchaError(false)
@@ -317,10 +323,6 @@ export function LoginForm() {
                   onError={() => {
                     setCaptchaToken(null)
                     setCaptchaError(true)
-                  }}
-                  options={{
-                    theme: 'auto',
-                    appearance: 'always',
                   }}
                 />
               </div>
