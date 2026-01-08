@@ -10,12 +10,15 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { supabase } from "@/lib/supabase"
 import { Message } from "@/components/ui/message"
+import { Turnstile } from '@marsidev/react-turnstile'
 
 export function ForgotPasswordForm() {
   const [email, setEmail] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [error, setError] = useState("")
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null)
+  const [captchaError, setCaptchaError] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -23,6 +26,12 @@ export function ForgotPasswordForm() {
     setError("")
 
     try {
+      if (!captchaToken) {
+        setError("Please complete the captcha verification")
+        setIsLoading(false)
+        return
+      }
+
       // Use current origin for development, NEXT_PUBLIC_SITE_URL for production
       const redirectUrl = window.location.origin.includes('localhost')
         ? window.location.origin
@@ -30,6 +39,7 @@ export function ForgotPasswordForm() {
 
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${redirectUrl}/update-password`,
+        captchaToken: captchaToken,
       })
 
       if (error) {
@@ -95,8 +105,42 @@ export function ForgotPasswordForm() {
               </div>
             </div>
 
-            <Button type="submit" className="w-full h-12 bg-primary text-primary-foreground" disabled={isLoading}>
-              {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Send Reset Link"}
+            {/* Turnstile Captcha */}
+            <div className="flex justify-center" style={{ minHeight: '65px' }}>
+              <Turnstile
+                siteKey={process.env.NODE_ENV === 'development' ? "1x00000000000000000000AA" : (process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA")}
+                onSuccess={(token) => {
+                  setCaptchaToken(token)
+                  setCaptchaError(false)
+                }}
+                onExpire={() => setCaptchaToken(null)}
+                onError={() => {
+                  setCaptchaToken(null)
+                  setCaptchaError(true)
+                }}
+                options={{
+                  theme: 'auto',
+                  appearance: 'always',
+                }}
+              />
+            </div>
+
+            <Button
+              type="submit"
+              className="w-full h-12 bg-primary text-primary-foreground"
+              disabled={isLoading || !captchaToken}
+            >
+              {isLoading ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : captchaError ? (
+                "Captcha Failed"
+              ) : !captchaToken ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" /> Verifying...
+                </span>
+              ) : (
+                "Send Reset Link"
+              )}
             </Button>
           </form>
         ) : (
@@ -105,7 +149,7 @@ export function ForgotPasswordForm() {
               variant="outline"
               className="w-full h-12 bg-transparent"
               onClick={handleSubmit}
-              disabled={isLoading}
+              disabled={isLoading || !captchaToken}
             >
               {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Resend Reset Link"}
             </Button>
@@ -116,6 +160,7 @@ export function ForgotPasswordForm() {
               onClick={() => {
                 setIsSubmitted(false)
                 setEmail("")
+                setCaptchaToken(null)
               }}
             >
               Try Another Email
