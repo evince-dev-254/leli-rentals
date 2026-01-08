@@ -89,17 +89,28 @@ async function handleReferral(referredUserId: string, refCode: string) {
     try {
         const { data: affiliate } = await supabaseAdmin
             .from('affiliates')
-            .select('id')
+            .select('id, user_id')
             .eq('invite_code', refCode)
             .single()
 
         if (affiliate) {
+            // Record the referral
             await supabaseAdmin.from('affiliate_referrals').insert({
                 affiliate_id: affiliate.id,
                 referred_user_id: referredUserId,
                 commission_amount: 0,
                 commission_status: 'pending'
             })
+
+            // Label the referred user
+            await supabaseAdmin
+                .from('user_profiles')
+                .update({
+                    is_referred: true,
+                    referred_by: affiliate.user_id
+                })
+                .eq('id', referredUserId)
+
             console.log(`[handleReferral] Referral recorded for user ${referredUserId} from affiliate ${affiliate.id}`)
         }
     } catch (e) {

@@ -99,7 +99,7 @@ export default function RootLayout({
           <FavoritesProvider>
             <MessagesProvider>
               {children}
-              <Toaster position="top-center" richColors duration={8000} />
+              <Toaster position="top-center" richColors duration={12000} />
               <CookieConsent />
               <OfflineBanner />
               <Analytics />

@@ -26,6 +26,7 @@ export interface User {
   lastLoginAt: Date | null
   // Affiliate specific
   affiliateCode: string | null
+  isReferred: boolean
   referredBy: string | null
   totalReferrals: number
   totalEarnings: number

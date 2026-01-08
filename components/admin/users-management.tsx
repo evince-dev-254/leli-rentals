@@ -55,7 +55,14 @@ export function UsersManagement() {
   async function loadUsers() {
     setLoadingUsers(true)
     try {
-      const { data, error } = await supabase.from("user_profiles").select("*")
+      const { data, error } = await supabase
+        .from("user_profiles")
+        .select(`
+          *,
+          referrer:referred_by (
+            full_name
+          )
+        `)
       if (error) {
         console.error("Error fetching user_profiles:", error.message || error)
         toast({ title: "Error", description: "Failed to load users", variant: "destructive" })
@@ -80,7 +87,8 @@ export function UsersManagement() {
         updatedAt: u.updated_at ? new Date(u.updated_at) : new Date(),
         lastLoginAt: u.last_login_at ? new Date(u.last_login_at) : null,
         affiliateCode: u.affiliate_code ?? null,
-        referredBy: u.referred_by ?? null,
+        isReferred: u.is_referred ?? false,
+        referredBy: u.referrer?.full_name ?? u.referred_by ?? null,
         totalReferrals: u.total_referrals ?? 0,
         totalEarnings: u.total_earnings ?? 0,
       }))
@@ -351,7 +359,14 @@ export function UsersManagement() {
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="font-medium">{user.fullName}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium">{user.fullName}</p>
+                          {user.isReferred && (
+                            <Badge variant="outline" className="h-5 py-0 px-2 bg-pink-50 text-pink-600 border-pink-100 uppercase text-[10px] font-bold">
+                              Referred
+                            </Badge>
+                          )}
+                        </div>
                         <p className="text-sm text-muted-foreground">{user.email}</p>
                       </div>
                     </div>
@@ -470,6 +485,20 @@ export function UsersManagement() {
                   <p className="text-sm text-muted-foreground">Last Login</p>
                   <p className="font-medium">{selectedUser.lastLoginAt?.toLocaleDateString() || "Never"}</p>
                 </div>
+                {selectedUser.isReferred && (
+                  <div className="p-4 rounded-lg bg-pink-500/5 border border-pink-500/20 col-span-2">
+                    <p className="text-sm text-pink-600 font-semibold mb-1 flex items-center gap-2">
+                      <Users className="h-4 w-4" />
+                      Referred Account
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      This user joined via a referral.
+                    </p>
+                    {selectedUser.referredBy && (
+                      <p className="mt-1 font-medium">Referred by: {selectedUser.referredBy}</p>
+                    )}
+                  </div>
+                )}
                 {selectedUser.role === "affiliate" && (
                   <>
                     <div className="p-4 rounded-lg bg-secondary/50">
