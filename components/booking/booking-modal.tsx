@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { CreditCard, Check, Loader2 } from "lucide-react"
+import { usePaystackPayment } from "react-paystack"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -35,7 +36,7 @@ export function BookingModal({ listing, isOpen, onClose }: BookingModalProps) {
     phone: "",
   })
 
-  const calculateTotal = () => {
+  const calculateSubtotal = () => {
     if (!dateRange?.from || !dateRange?.to) return 0
     const days = Math.ceil((dateRange.to.getTime() - dateRange.from.getTime()) / (1000 * 60 * 60 * 24))
 
@@ -47,76 +48,96 @@ export function BookingModal({ listing, isOpen, onClose }: BookingModalProps) {
     return days * listing.pricePerDay
   }
 
+  const calculateServiceFee = (subtotal: number) => {
+    return Math.round(subtotal * 0.05) // 5% service fee
+  }
+
+  const calculateTotal = () => {
+    const subtotal = calculateSubtotal()
+    return subtotal + calculateServiceFee(subtotal)
+  }
+
   const getDays = () => {
     if (!dateRange?.from || !dateRange?.to) return 0
     return Math.ceil((dateRange.to.getTime() - dateRange.from.getTime()) / (1000 * 60 * 60 * 24))
   }
 
+  const config = {
+    reference: (new Date()).getTime().toString(),
+    email: formData.email,
+    amount: calculateTotal() * 100, // Paystack expects cents
+    publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "",
+    currency: 'KES',
+    metadata: {
+      listing_id: listing.id,
+      renter_name: formData.fullName,
+      custom_fields: [
+        {
+          display_name: "Listing",
+          variable_name: "listing_title",
+          value: listing.title
+        }
+      ]
+    }
+  };
+
+  const initializePayment = usePaystackPayment(config);
+
   const handlePayWithPaystack = async () => {
-    // 1. Initial auth check before anything else
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
       toast.error("Please sign in to book this rental", {
         description: "You need to be logged in as a renter to proceed.",
-        action: {
-          label: "Sign In",
-          onClick: () => window.location.href = "/login"
-        }
+        action: { label: "Sign In", onClick: () => window.location.href = "/login" }
       })
       return
     }
 
-    setIsProcessing(true)
-
-    try {
-      // Simulate Paystack payment processing delay
-      await new Promise(resolve => setTimeout(resolve, 2000))
-
-      const total = calculateTotal()
-
-      // Create booking in DB (which sends email)
-      const result = await createBooking({
-        listing_id: listing.id,
-        renter_id: user.id,
-        owner_id: listing.ownerId || listing.id, // Fallback if ownerId missing in listing type
-        start_date: dateRange!.from!.toISOString(),
-        end_date: dateRange!.to!.toISOString(),
-        total_days: getDays(),
-        price_per_day: listing.pricePerDay,
-        subtotal: total,
-        service_fee: 0,
-        total_amount: total,
-        payment_status: 'paid', // Simulated
-        status: 'confirmed'
-      }, formData.email, formData.fullName, listing.title)
-
-      if (!result.success) throw new Error(result.error)
-
-      toast.success("Booking confirmed!", {
-        description: `Your reservation for ${listing.title} has been successfully created.`
-      })
-      setStep("success")
-    } catch (error: any) {
-      console.error("Booking error:", error)
-      const isAuthError = error.message?.includes("User not logged in") || error.message?.includes("unauthorized")
-
-      if (isAuthError) {
-        toast.error("Please sign in to book this rental", {
-          description: "Your session may have expired. Please sign in again.",
-          action: {
-            label: "Sign In",
-            onClick: () => window.location.href = "/login"
-          }
-        })
-      } else {
-        toast.error("Booking Failed", {
-          description: error.message || "Something went wrong while processing your booking. Please try again."
-        })
-      }
-    } finally {
-      setIsProcessing(false)
+    if (!formData.email || !formData.fullName) {
+      toast.error("Contact information missing", { description: "Please provide your name and email." })
+      setStep("details")
+      return
     }
+
+    initializePayment({
+      onSuccess: async (reference: any) => {
+        setIsProcessing(true)
+        try {
+          const subtotal = calculateSubtotal()
+          const serviceFee = calculateServiceFee(subtotal)
+          const total = subtotal + serviceFee
+
+          const result = await createBooking({
+            listing_id: listing.id,
+            renter_id: user.id,
+            owner_id: listing.ownerId || listing.id,
+            start_date: dateRange!.from!.toISOString(),
+            end_date: dateRange!.to!.toISOString(),
+            total_days: getDays(),
+            price_per_day: listing.pricePerDay,
+            subtotal: subtotal,
+            service_fee: serviceFee,
+            total_amount: total,
+            payment_status: 'paid',
+            status: 'confirmed'
+          }, formData.email, formData.fullName, listing.title)
+
+          if (!result.success) throw new Error(result.error)
+
+          toast.success("Booking confirmed!", { description: `Your reservation for ${listing.title} has been successfully created.` })
+          setStep("success")
+        } catch (error: any) {
+          console.error("Booking creation error after payment:", error)
+          toast.error("Booking Record Failed", { description: "Payment was successful but we failed to record your booking. Please contact support with reference: " + reference.reference })
+        } finally {
+          setIsProcessing(false)
+        }
+      },
+      onClose: () => {
+        toast.info("Payment cancelled")
+      }
+    });
   }
 
   const resetAndClose = () => {
@@ -202,13 +223,22 @@ export function BookingModal({ listing, isOpen, onClose }: BookingModalProps) {
             />
 
             {dateRange?.from && dateRange?.to && (
-              <div className="p-3 bg-primary/10 rounded-lg">
+              <div className="p-3 bg-primary/10 rounded-lg space-y-1">
                 <div className="flex justify-between text-sm">
                   <span>Duration:</span>
                   <span className="font-medium">{getDays()} days</span>
                 </div>
-                <div className="flex justify-between text-sm mt-1">
-                  <span>Total:</span>
+                <div className="flex justify-between text-sm">
+                  <span>Subtotal:</span>
+                  <span className="font-medium">KSh {calculateSubtotal().toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span>Service Fee (5%):</span>
+                  <span className="font-medium">KSh {calculateServiceFee(calculateSubtotal()).toLocaleString()}</span>
+                </div>
+                <Separator className="my-1 ring-white/10" />
+                <div className="flex justify-between text-sm">
+                  <span>Total Amount:</span>
                   <span className="font-bold text-primary">KSh {calculateTotal().toLocaleString()}</span>
                 </div>
               </div>
@@ -275,8 +305,16 @@ export function BookingModal({ listing, isOpen, onClose }: BookingModalProps) {
                 <span>{getDays()} days</span>
               </div>
               <div className="flex justify-between font-bold text-base pt-2 border-t">
+                <span>Subtotal:</span>
+                <span>KSh {calculateSubtotal().toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between font-bold text-base">
+                <span>Service Fee:</span>
+                <span>KSh {calculateServiceFee(calculateSubtotal()).toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between font-bold text-lg pt-2 border-t text-primary">
                 <span>Total:</span>
-                <span className="text-primary">KSh {calculateTotal().toLocaleString()}</span>
+                <span>KSh {calculateTotal().toLocaleString()}</span>
               </div>
             </div>
 

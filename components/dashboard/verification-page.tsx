@@ -79,8 +79,26 @@ export function VerificationPage() {
   }
 
   useEffect(() => {
+    const checkRole = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data: profile } = await supabase
+          .from('user_profiles')
+          .select('role')
+          .eq('id', user.id)
+          .maybeSingle()
+
+        if (profile && profile.role !== 'owner') {
+          router.push('/dashboard')
+          toast.info("Verification is only required for owners.")
+        }
+      } else {
+        router.push('/login')
+      }
+    }
+    checkRole()
     fetchDocuments()
-  }, [])
+  }, [router])
 
   const handleUpload = async () => {
     if (!frontUrl || !backUrl || !selfieUrl) return

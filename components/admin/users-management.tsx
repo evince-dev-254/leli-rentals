@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Search, Filter, MoreHorizontal, Eye, Ban, CheckCircle, Mail, Download, UserPlus, Trash2, Send, X } from "lucide-react"
+import { Search, Filter, MoreHorizontal, Eye, Ban, CheckCircle, Mail, Download, UserPlus, Trash2, Send, X, Users } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -78,7 +78,7 @@ export function UsersManagement() {
         avatarUrl: u.avatar_url ?? null,
         role: (u.role as any) ?? "renter",
         accountStatus: (u.account_status as any) ?? "active",
-        verificationStatus: (u.verification_status as any) ?? "pending",
+        verificationStatus: (u.verification_status as any) || (u.role === 'owner' ? "pending" : null),
         verificationDeadline: u.verification_deadline ? new Date(u.verification_deadline) : null,
         verificationDocuments: [],
         subscriptionPlan: (u.subscription_plan as any) ?? null,
@@ -374,17 +374,21 @@ export function UsersManagement() {
                   <TableCell>{getRoleBadge(user.role)}</TableCell>
                   <TableCell>{getStatusBadge(user.accountStatus)}</TableCell>
                   <TableCell>
-                    <Badge
-                      variant={
-                        user.verificationStatus === "verified"
-                          ? "default"
-                          : user.verificationStatus === "submitted"
-                            ? "secondary"
-                            : "outline"
-                      }
-                    >
-                      {user.verificationStatus}
-                    </Badge>
+                    {user.role === 'owner' ? (
+                      <Badge
+                        variant={
+                          user.verificationStatus === "verified"
+                            ? "default"
+                            : user.verificationStatus === "submitted"
+                              ? "secondary"
+                              : "outline"
+                        }
+                      >
+                        {user.verificationStatus || "pending"}
+                      </Badge>
+                    ) : (
+                      <span className="text-xs text-muted-foreground italic">Not Required</span>
+                    )}
                   </TableCell>
                   <TableCell className="text-muted-foreground">{user.createdAt.toLocaleDateString()}</TableCell>
                   <TableCell className="text-muted-foreground">
@@ -475,7 +479,7 @@ export function UsersManagement() {
                 </div>
                 <div className="p-4 rounded-lg bg-secondary/50">
                   <p className="text-sm text-muted-foreground">Verification Status</p>
-                  <p className="font-medium capitalize">{selectedUser.verificationStatus}</p>
+                  <p className="font-medium capitalize">{selectedUser.role === 'owner' ? (selectedUser.verificationStatus || "pending") : "Not Required"}</p>
                 </div>
                 <div className="p-4 rounded-lg bg-secondary/50">
                   <p className="text-sm text-muted-foreground">Joined</p>

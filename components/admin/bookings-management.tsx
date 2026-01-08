@@ -124,6 +124,21 @@ export function BookingsManagement() {
         <Card className="glass-card">
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
+              <div className="p-3 rounded-full bg-orange-500/20">
+                <DollarSign className="h-6 w-6 text-orange-500" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">
+                  KSh {bookings.reduce((sum, b) => sum + Number(b.service_fee || 0), 0).toLocaleString()}
+                </p>
+                <p className="text-sm text-muted-foreground">Platform Fees</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="glass-card">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-4">
               <div className="p-3 rounded-full bg-primary/20">
                 <DollarSign className="h-6 w-6 text-primary" />
               </div>
@@ -153,7 +168,9 @@ export function BookingsManagement() {
                 <TableHead>Renter</TableHead>
                 <TableHead>Owner</TableHead>
                 <TableHead>Dates</TableHead>
-                <TableHead>Amount</TableHead>
+                <TableHead>Subtotal</TableHead>
+                <TableHead>Fee</TableHead>
+                <TableHead>Total</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Payment</TableHead>
               </TableRow>
@@ -174,7 +191,9 @@ export function BookingsManagement() {
                     <TableCell className="text-sm">
                       {startDate && endDate ? `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}` : 'N/A'}
                     </TableCell>
-                    <TableCell>KSh {Number(booking.total_amount || 0).toLocaleString()}</TableCell>
+                    <TableCell>KSh {Number(booking.subtotal || 0).toLocaleString()}</TableCell>
+                    <TableCell className="text-orange-600">KSh {Number(booking.service_fee || 0).toLocaleString()}</TableCell>
+                    <TableCell className="font-bold">KSh {Number(booking.total_amount || 0).toLocaleString()}</TableCell>
                     <TableCell>
                       <Badge
                         className={

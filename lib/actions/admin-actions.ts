@@ -4,7 +4,6 @@ import { revalidatePath } from "next/cache"
 import { supabaseAdmin } from "@/lib/supabase-admin"
 import { resend } from "@/lib/resend"
 import WelcomeEmail from "@/components/emails/welcome-email" // Fallback template for generic messages if needed, or we just send text
-import { createClient } from "@/utils/supabase/server"
 
 export async function suspendUsers(userIds: string[]) {
     try {
@@ -70,7 +69,7 @@ export async function sendBulkReminders(userIds: string[], subject: string, mess
         for (const user of users) {
             // 1. Send Email
             await resend.emails.send({
-                from: "leli rentals <updates@leli.rentals>",
+                from: "leli rentals <notifications@leli.rentals>",
                 to: user.email,
                 subject: subject,
                 html: `<p>Hello ${user.full_name || 'User'},</p><p>${message}</p><p>Regards,<br/>Leli Rentals Team</p>`,

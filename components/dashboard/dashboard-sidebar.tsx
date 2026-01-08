@@ -39,7 +39,7 @@ export const allLinks = [
   { href: "/dashboard/payments", label: "Payments", icon: Receipt, roles: ["renter"] },
   { href: "/dashboard/reviews", label: "My Reviews", icon: Star, roles: ["renter", "owner"] },
   { href: "/dashboard/subscription", label: "Subscription", icon: CreditCard, roles: ["owner"] },
-  { href: "/dashboard/verification", label: "Verification", icon: ShieldCheck, badge: "Pending", roles: ["owner"] },
+  { href: "/dashboard/verification", label: "Verification", icon: ShieldCheck, roles: ["owner"] },
   { href: "/dashboard/switch-account", label: "Switch Account", icon: UserCog, roles: ["owner", "renter", "affiliate"] },
   { href: "/dashboard/settings", label: "Settings", icon: Settings, roles: ["owner", "renter", "affiliate"] },
 ]

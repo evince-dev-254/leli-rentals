@@ -178,7 +178,11 @@ export function AffiliatesManagement() {
                     <TableCell className="font-medium">KSh {(affiliate.total_earnings ?? 0).toLocaleString()}</TableCell>
                     <TableCell>{getStatusBadge(affiliate.status)}</TableCell>
                     <TableCell className="text-right">
-                      <Button variant="outline" size="sm">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => window.location.href = `/admin/users?search=${email}`}
+                      >
                         <ExternalLink className="h-4 w-4 mr-2" />
                         View
                       </Button>
