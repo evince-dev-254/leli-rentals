@@ -6,7 +6,6 @@ import { Analytics } from "@vercel/analytics/next"
 import { GoogleAnalytics } from '@next/third-parties/google'
 import { Toaster } from "@/components/ui/sonner"
 import { CookieConsent } from "@/components/cookie-consent"
-import { AiAssistant } from "@/components/ai-assistant"
 import { OfflineBanner } from "@/components/ui/offline-banner"
 import { FavoritesProvider } from "@/lib/favorites-context"
 import { MessagesProvider } from "@/lib/messages-context"
@@ -100,9 +99,8 @@ export default function RootLayout({
           <FavoritesProvider>
             <MessagesProvider>
               {children}
-              <Toaster position="top-center" richColors />
+              <Toaster position="top-center" richColors duration={8000} />
               <CookieConsent />
-              <AiAssistant />
               <OfflineBanner />
               <Analytics />
               <GoogleAnalytics gaId="G-7MHZ00M71E" />

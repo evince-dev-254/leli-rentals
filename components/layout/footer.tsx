@@ -38,7 +38,7 @@ export function Footer() {
                 width={140}
                 height={36}
                 className="h-9 w-auto dark:invert"
-                style={{ height: "auto" }}
+                style={{ width: "auto" }}
               />
             </Link>
             <p className="text-muted-foreground mb-6 max-w-sm">

@@ -62,7 +62,7 @@ export default function OAuthConsentPage() {
                                 width={150}
                                 height={40}
                                 className="h-10 w-auto dark:invert mx-auto"
-                                style={{ height: "auto" }}
+                                style={{ width: "auto" }}
                             />
                         </Link>
 

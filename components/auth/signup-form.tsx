@@ -333,7 +333,7 @@ export function SignupForm() {
         {/* Header */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-block mb-6">
-            <Image src="/logo.png" alt="leli rentals" width={150} height={40} className="h-10 w-auto dark:invert" style={{ height: "auto" }} />
+            <Image src="/logo.png" alt="leli rentals" width={150} height={40} className="h-10 w-auto dark:invert" style={{ width: "auto" }} />
           </Link>
           <h1 className="text-2xl font-bold mb-2">Create Account</h1>
           <p className="text-muted-foreground">
