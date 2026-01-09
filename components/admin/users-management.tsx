@@ -1,4 +1,6 @@
+"use client"
 import { Search, Filter, MoreHorizontal, Eye, Ban, CheckCircle, Mail, Download, UserPlus, Trash2, Send, X, Users, Shield, ShieldOff } from "lucide-react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
