@@ -78,7 +78,16 @@ export function DashboardHeader() {
   }
 
   return (
-    <header className="md:sticky md:top-0 z-40 h-14 md:h-16 border-b border-border bg-card/95 backdrop-blur-xl px-3 md:px-6 flex items-center justify-between">
+    <header className="relative sticky top-0 z-40 h-14 md:h-16 border-b border-border bg-card/95 backdrop-blur-xl px-3 md:px-6 flex items-center justify-between">
+      {profile?.account_status === 'suspended' && (
+        <div className="absolute top-full left-0 right-0 bg-destructive text-destructive-foreground py-2 px-4 shadow-lg flex items-center justify-center gap-2 animate-in slide-in-from-top duration-300">
+          <Badge variant="outline" className="bg-destructive-foreground text-destructive border-none font-bold">Action Required</Badge>
+          <span className="text-xs sm:text-sm font-medium">Account Suspended: Please submit verification documents to reactivate.</span>
+          <Button size="sm" variant="secondary" className="h-7 text-xs" asChild>
+            <Link href="/dashboard/verification">Verify Now</Link>
+          </Button>
+        </div>
+      )}
       {/* Search - Hidden on mobile */}
       <div className="hidden md:flex flex-1 max-w-md">
         <div className="relative w-full">

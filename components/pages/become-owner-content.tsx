@@ -79,7 +79,7 @@ const affiliateTiers = [
 
 const steps = [
   { step: 1, title: "Sign Up", description: "Create your account in minutes" },
-  { step: 2, title: "Get Verified", description: "Submit documents within 5 days" },
+  { step: 2, title: "Get Verified", description: "Owners: Submit documents within 5 days" },
   { step: 3, title: "Choose Plan", description: "Select owner or affiliate path" },
   { step: 4, title: "Start Earning", description: "List items or share your code" },
 ]
@@ -230,21 +230,19 @@ export function BecomeOwnerContent() {
                 {affiliateTiers.map((tier, index) => (
                   <div
                     key={index}
-                    className={`grid grid-cols-3 p-4 border-t border-border/50 ${
-                      index === affiliateTiers.length - 1 ? "bg-primary/10" : ""
-                    }`}
+                    className={`grid grid-cols-3 p-4 border-t border-border/50 ${index === affiliateTiers.length - 1 ? "bg-primary/10" : ""
+                      }`}
                   >
                     <div className="flex items-center gap-2">
                       <BadgeCheck
-                        className={`h-5 w-5 ${
-                          index === 0
+                        className={`h-5 w-5 ${index === 0
                             ? "text-gray-400"
                             : index === 1
                               ? "text-amber-600"
                               : index === 2
                                 ? "text-gray-300"
                                 : "text-yellow-500"
-                        }`}
+                          }`}
                       />
                       <span className="font-medium">{tier.tier}</span>
                     </div>

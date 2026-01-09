@@ -1,3 +1,4 @@
+import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { CategoryDetailContent } from "@/components/categories/category-detail-content"
 import { BackButton } from "@/components/ui/back-button"
@@ -31,7 +32,8 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
 
   return (
     <div className="min-h-screen flex flex-col">
-      <main className="flex-1">
+      <Header />
+      <main className="flex-1 pt-24 min-h-screen">
         <div className="container mx-auto px-4 py-4">
           <BackButton href="/" label="Back to Home" />
         </div>

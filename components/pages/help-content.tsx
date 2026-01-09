@@ -39,7 +39,7 @@ const faqs = [
     questions: [
       {
         q: "Why do I need to verify my account?",
-        a: "Verification builds trust in our community. Owners and affiliates must verify within 5 days of registration to ensure safe transactions. This includes submitting a valid ID and business documents if applicable.",
+        a: "Verification builds trust in our community. Owners must verify within 5 days of registration to ensure safe transactions. This includes submitting a valid ID and business documents if applicable.",
       },
       {
         q: "What documents do I need?",

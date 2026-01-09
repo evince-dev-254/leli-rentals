@@ -7,6 +7,7 @@ const platformLinks = [
   { name: "About Us", href: "/about" },
   { name: "Pricing", href: "/pricing" },
   { name: "Contact", href: "/contact" },
+  { name: "Privacy Policy", href: "/privacy" },
 ]
 
 const categoryLinks = [
