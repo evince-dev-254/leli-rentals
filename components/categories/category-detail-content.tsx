@@ -211,7 +211,7 @@ export function CategoryDetailContent({ categoryId }: CategoryDetailContentProps
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
               <Input
                 placeholder={`Search ${category.name.toLowerCase()}...`}
-                className="pl-12 sm:pl-10 h-11 sm:h-10 text-base sm:text-sm"
+                className="!pl-12 sm:!pl-10 h-11 sm:h-10 text-base sm:text-sm"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />

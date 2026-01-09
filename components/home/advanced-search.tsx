@@ -89,7 +89,7 @@ export function AdvancedSearch() {
                         placeholder="Search keywords..."
                         value={query}
                         onChange={(e) => handleQueryChange(e.target.value)}
-                        className="h-9 sm:h-11 pl-10 bg-white/10 dark:bg-white/5 border-none text-foreground placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0 rounded-full sm:rounded-l-full sm:rounded-r-none text-sm font-medium"
+                        className="h-9 sm:h-11 !pl-10 bg-white/10 dark:bg-white/5 border-none text-foreground placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0 rounded-full sm:rounded-l-full sm:rounded-r-none text-sm font-medium"
                     />
                 </div>
 

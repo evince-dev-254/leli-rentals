@@ -112,7 +112,7 @@ export function LocationSearch({
                     value={inputValue}
                     onChange={(e) => handleSearch(e.target.value)}
                     onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
-                    className={`pl-10 pr-10 ${className}`}
+                    className={`!pl-10 !pr-10 ${className}`}
                 />
                 <div className="absolute right-3 top-1/2 -translate-y-1/2">
                     {isSearching ? <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" /> : <SearchIcon className="h-4 w-4 text-muted-foreground" />}
