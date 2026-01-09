@@ -31,7 +31,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { supabase } from "@/lib/supabase"
 import type { User, VerificationDocument } from "@/lib/types"
-import { updateDocumentStatus } from "@/lib/actions/dashboard-actions"
+import { updateDocumentStatus, getAdminVerificationsAppData } from "@/lib/actions/dashboard-actions"
 import { toast } from "sonner"
 
 export function VerificationsManagement() {
@@ -50,35 +50,7 @@ export function VerificationsManagement() {
     async function loadData() {
       setLoading(true)
       try {
-        const { data: docs, error: docsError } = await supabase.from("verification_documents").select("*")
-        if (docsError) {
-          console.error("Error fetching verification_documents:", docsError)
-          return
-        }
-
-        // collect unique user ids
-        const { data: listings, error: listingsError } = await supabase
-          .from("listings")
-          .select("*")
-          .eq("status", "pending")
-
-        if (listingsError) {
-          console.error("Error fetching pending listings:", listingsError)
-        }
-
-        // collect unique user ids from docs and listings
-        const docUserIds = (docs || []).map((d: any) => d.user_id)
-        const listingOwnerIds = (listings || []).map((l: any) => l.owner_id)
-        const userIds = Array.from(new Set([...docUserIds, ...listingOwnerIds]))
-
-        const { data: users, error: usersError } = await supabase
-          .from("user_profiles")
-          .select("*")
-          .in("id", userIds.length ? userIds : ["null"])
-
-        if (usersError) {
-          console.error("Error fetching user_profiles:", usersError.message || usersError)
-        }
+        const { docs, listings, users } = await getAdminVerificationsAppData()
 
         if (!mounted) return
 
@@ -129,6 +101,9 @@ export function VerificationsManagement() {
         }))
 
         setRelatedUsers(mappedUsers)
+      } catch (err) {
+        console.error("Error loading admin data:", err)
+        toast.error("Failed to load verification data")
       } finally {
         setLoading(false)
       }

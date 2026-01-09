@@ -36,10 +36,10 @@ const contactMethods = [
   {
     icon: Mail,
     title: "Email",
-    value: "support@leli.rentals",
+    value: "support@gurucrafts.agency",
     description: "We reply within 24 hours",
     action: "Send Email",
-    href: "mailto:support@leli.rentals",
+    href: "mailto:support@gurucrafts.agency",
   },
   {
     icon: Phone,

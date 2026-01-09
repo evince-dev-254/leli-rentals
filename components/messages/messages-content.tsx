@@ -7,6 +7,11 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { useMessages, type Conversation } from "@/lib/messages-context"
 import { cn } from "@/lib/utils"
 import { supabase } from "@/lib/supabase"
@@ -203,7 +208,26 @@ export function MessagesContent() {
 
                   {/* Message Input */}
                   <div className="p-4 border-t border-border">
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 items-center">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary">
+                            <span className="text-xl">😊</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start" className="w-64 p-2 grid grid-cols-6 gap-1">
+                          {["😊", "😂", "🥰", "😍", "🤩", "🤔", "🙄", "😴", "😋", "😎", "😭", "😤", "👍", "👎", "❤️", "🔥", "✨", "🙌", "👏", "🤌", "🤝", "🙏", "🚩", "✅"].map(emoji => (
+                            <Button
+                              key={emoji}
+                              variant="ghost"
+                              className="h-8 w-8 p-0 text-lg"
+                              onClick={() => setNewMessage(prev => prev + emoji)}
+                            >
+                              {emoji}
+                            </Button>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                       <Input
                         placeholder="Type a message..."
                         value={newMessage}

@@ -116,7 +116,7 @@ export function SettingsPage() {
         bio: formData.bio,
       }
 
-      const result = await updateProfile(updates)
+      const result = await updateProfile(user.id, updates)
       console.log("[DEBUG] updateProfile result:", result)
 
       if (result.success) {
@@ -124,13 +124,13 @@ export function SettingsPage() {
         setProfile((prev: any) => ({ ...prev, ...updates }))
       } else {
         console.error("[DEBUG] updateProfile failed:", result.error)
-        toast.error("Failed to update profile", {
-          description: result.error
+        toast.error(result.error || "Failed to update profile", {
+          description: result.details
         })
       }
     } catch (e: any) {
       console.error("[DEBUG] Error in handleSave:", e)
-      toast.error("An error occurred", {
+      toast.error("An unexpected error occurred", {
         description: e.message
       })
     } finally {
@@ -174,17 +174,17 @@ export function SettingsPage() {
         setProfile((prev: any) => ({ ...prev, payment_info: paymentInfo }))
       } else {
         console.error("[DEBUG] updatePaymentInfo failed:", result.error)
-        toast.error("Failed to save payment info", {
-          description: result.error
+        toast.error(result.error || "Failed to save payment info", {
+          description: result.details
         })
       }
     } catch (e: any) {
       console.error("[DEBUG] Error in handleSavePayment:", e)
-      toast.error("An error occurred", {
+      toast.error("An unexpected error occurred", {
         description: e.message
       })
     } finally {
-      setSavingPayment(false)
+      setSaving(false)
     }
   }
 

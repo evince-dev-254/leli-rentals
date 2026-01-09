@@ -69,10 +69,10 @@ export async function sendBulkReminders(userIds: string[], subject: string, mess
         for (const user of users) {
             // 1. Send Email
             await resend.emails.send({
-                from: "leli rentals <notifications@leli.rentals>",
+                from: "GuruCrafts Agency <support@gurucrafts.agency>",
                 to: user.email,
                 subject: subject,
-                html: `<p>Hello ${user.full_name || 'User'},</p><p>${message}</p><p>Regards,<br/>Leli Rentals Team</p>`,
+                html: `<p>Hello ${user.full_name || 'User'},</p><p>${message}</p><p>Regards,<br/>GuruCrafts Agency Team</p>`,
             })
 
             // 2. Prepare database notification

@@ -177,7 +177,9 @@ export async function requestWithdrawal(
     }
 }
 
-export async function updatePaymentInfo(userId: string, paymentInfo: any) {
+import { ActionResponse, handleServerError } from '../error-handler';
+
+export async function updatePaymentInfo(userId: string, paymentInfo: any): Promise<ActionResponse> {
     console.log(`[SERVER] updatePaymentInfo called for user: ${userId}`);
     try {
         // Use a fresh admin client to ensure env vars are read correctly in server context
@@ -198,8 +200,7 @@ export async function updatePaymentInfo(userId: string, paymentInfo: any) {
             .eq('id', userId);
 
         if (profileError) {
-            console.error('[SERVER] Profile update error:', profileError);
-            throw profileError;
+            return handleServerError(profileError, "Failed to update profile payment information");
         }
 
         // 2. Update affiliate (if exists)
@@ -211,14 +212,12 @@ export async function updatePaymentInfo(userId: string, paymentInfo: any) {
         if (affiliateError) {
             console.error('[SERVER] Affiliate update error:', affiliateError);
             // We don't necessarily throw here if profile updated but affiliate doesn't exist
-            // but since we are using .eq(), it won't error if no rows found.
         }
 
         console.log(`[SERVER] updatePaymentInfo success for user: ${userId}`);
         return { success: true }
     } catch (e: any) {
-        console.error('[SERVER] updatePaymentInfo exception:', e);
-        return { success: false, error: e.message }
+        return handleServerError(e, "An unexpected error occurred while updating payment information");
     }
 }
 

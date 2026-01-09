@@ -20,9 +20,9 @@ import ContactFormEmail from "@/components/emails/contact-submission-email"
 export async function sendWelcomeEmail(email: string, firstName: string) {
     try {
         const data = await resend.emails.send({
-            from: "leli rentals <onboarding@leli.rentals>", // Use verified domain
+            from: "GuruCrafts Agency <onboarding@gurucrafts.agency>", // Use verified domain
             to: email,
-            subject: "Welcome to leli rentals!",
+            subject: "Welcome to GuruCrafts Agency!",
             react: WelcomeEmail({ userFirstname: firstName }),
         })
         return { success: true, data }
@@ -40,9 +40,9 @@ export async function sendPaymentSuccessEmail(
 ) {
     try {
         const data = await resend.emails.send({
-            from: "leli rentals <payments@leli.rentals>",
+            from: "GuruCrafts Agency <payments@gurucrafts.agency>",
             to: email,
-            subject: "Payment Receipt - leli rentals",
+            subject: "Payment Receipt - GuruCrafts Agency",
             react: PaymentSuccessEmail({
                 userFirstname: firstName,
                 amount,
@@ -60,9 +60,9 @@ export async function sendPaymentSuccessEmail(
 export async function sendMissYouEmail(email: string, firstName: string) {
     try {
         const data = await resend.emails.send({
-            from: "leli rentals <hello@leli.rentals>",
+            from: "GuruCrafts Agency <hello@gurucrafts.agency>",
             to: email,
-            subject: "We miss you at leli rentals!",
+            subject: "We miss you at GuruCrafts Agency!",
             react: MissYouEmail({ userFirstname: firstName }),
         })
         return { success: true, data }
@@ -74,7 +74,7 @@ export async function sendMissYouEmail(email: string, firstName: string) {
 export async function sendPromoEmail(email: string, firstName: string) {
     try {
         const data = await resend.emails.send({
-            from: "leli rentals <deals@leli.rentals>",
+            from: "GuruCrafts Agency <deals@gurucrafts.agency>",
             to: email,
             subject: "Mega Sale: Up to 30% OFF!",
             react: FestivePromoEmail({ userFirstname: firstName }),
@@ -90,9 +90,9 @@ export async function sendPromoEmail(email: string, firstName: string) {
 export async function sendConfirmSignUpEmail(email: string, firstName: string, token: string) {
     try {
         const data = await resend.emails.send({
-            from: "leli rentals <onboarding@leli.rentals>",
+            from: "GuruCrafts Agency <onboarding@gurucrafts.agency>",
             to: email,
-            subject: "Confirm your leli rentals account",
+            subject: "Confirm your GuruCrafts Agency account",
             react: ConfirmSignUpEmail({ userFirstname: firstName, confirmLink: `${process.env.NEXT_PUBLIC_APP_URL}/confirm?token=${token}` }),
         })
         return { success: true, data }
@@ -104,9 +104,9 @@ export async function sendConfirmSignUpEmail(email: string, firstName: string, t
 export async function sendInviteEmail(email: string, inviterName: string, inviteCode: string) {
     try {
         const data = await resend.emails.send({
-            from: "leli rentals <onboarding@leli.rentals>",
+            from: "GuruCrafts Agency <onboarding@gurucrafts.agency>",
             to: email,
-            subject: "You are invited to join leli rentals",
+            subject: "You are invited to join GuruCrafts Agency",
             react: InviteEmail({ inviterName, inviteLink: `${process.env.NEXT_PUBLIC_APP_URL}/signup?ref=${inviteCode}` }),
         })
         return { success: true, data }
@@ -118,7 +118,7 @@ export async function sendInviteEmail(email: string, inviterName: string, invite
 export async function sendMagicLinkEmail(email: string, firstName: string, token: string) {
     try {
         const data = await resend.emails.send({
-            from: "leli rentals <onboarding@leli.rentals>",
+            from: "GuruCrafts Agency <onboarding@gurucrafts.agency>",
             to: email,
             subject: "Your magic sign‑in link",
             react: MagicLinkEmail({ userFirstname: firstName, magicLink: `${process.env.NEXT_PUBLIC_APP_URL}/magic-link?token=${token}` }),
@@ -132,7 +132,7 @@ export async function sendMagicLinkEmail(email: string, firstName: string, token
 export async function sendChangeEmailVerification(email: string, firstName: string, token: string) {
     try {
         const data = await resend.emails.send({
-            from: "leli rentals <onboarding@leli.rentals>",
+            from: "GuruCrafts Agency <onboarding@gurucrafts.agency>",
             to: email,
             subject: "Verify your new email address",
             react: ChangeEmailVerification({ userFirstname: firstName, verifyLink: `${process.env.NEXT_PUBLIC_APP_URL}/verify-email?token=${token}` }),
@@ -146,7 +146,7 @@ export async function sendChangeEmailVerification(email: string, firstName: stri
 export async function sendResetPasswordEmail(email: string, firstName: string, token: string) {
     try {
         const data = await resend.emails.send({
-            from: "leli rentals <onboarding@leli.rentals>",
+            from: "GuruCrafts Agency <onboarding@gurucrafts.agency>",
             to: email,
             subject: "Reset your password",
             react: ResetPasswordEmail({ userFirstname: firstName, resetLink: `${process.env.NEXT_PUBLIC_APP_URL}/reset-password?token=${token}` }),
@@ -160,7 +160,7 @@ export async function sendResetPasswordEmail(email: string, firstName: string, t
 export async function sendReauthEmail(email: string, firstName: string, token: string) {
     try {
         const data = await resend.emails.send({
-            from: "leli rentals <onboarding@leli.rentals>",
+            from: "GuruCrafts Agency <onboarding@gurucrafts.agency>",
             to: email,
             subject: "Re‑authenticate your account",
             react: ReauthEmail({ userFirstname: firstName, reauthLink: `${process.env.NEXT_PUBLIC_APP_URL}/reauth?token=${token}` }),
@@ -174,9 +174,9 @@ export async function sendReauthEmail(email: string, firstName: string, token: s
 export async function sendNewListingEmail(email: string, firstName: string, listingTitle: string, listingId: string) {
     try {
         const data = await resend.emails.send({
-            from: "leli rentals <notifications@leli.rentals>",
+            from: "GuruCrafts Agency <notifications@gurucrafts.agency>",
             to: email,
-            subject: "Listing Created Successfully - leli rentals",
+            subject: "Listing Created Successfully - GuruCrafts Agency",
             react: NewListingEmail({
                 userFirstname: firstName,
                 listingTitle,
@@ -200,9 +200,9 @@ export async function sendBookingConfirmationEmail(
 ) {
     try {
         const data = await resend.emails.send({
-            from: "leli rentals <bookings@leli.rentals>",
+            from: "GuruCrafts Agency <bookings@gurucrafts.agency>",
             to: email,
-            subject: `Booking Confirmed: ${listingTitle} - leli rentals`,
+            subject: `Booking Confirmed: ${listingTitle} - GuruCrafts Agency`,
             react: BookingConfirmationEmail({
                 userFirstname: firstName,
                 listingTitle,
@@ -227,7 +227,7 @@ export async function sendNewMessageEmail(
 ) {
     try {
         const data = await resend.emails.send({
-            from: "leli rentals <messages@leli.rentals>",
+            from: "GuruCrafts Agency <messages@gurucrafts.agency>",
             to: email,
             subject: `New message from ${senderName}`,
             react: NewMessageEmail({
@@ -248,9 +248,9 @@ export async function sendNewMessageEmail(
 export async function sendNewsletterConfirmationEmail(email: string) {
     try {
         const data = await resend.emails.send({
-            from: "leli rentals <updates@leli.rentals>",
+            from: "GuruCrafts Agency <updates@gurucrafts.agency>",
             to: email,
-            subject: "You're subscribed to leli rentals newsletter!",
+            subject: "You're subscribed to GuruCrafts Agency newsletter!",
             react: SubscriptionConfirmationEmail(),
         })
         return { success: true, data }
@@ -269,7 +269,7 @@ export async function sendContactFormEmail(formData: {
 }) {
     try {
         const data = await resend.emails.send({
-            from: "leli rentals <support@leli.rentals>",
+            from: "GuruCrafts Agency <support@gurucrafts.agency>",
             to: "lelirentalsmail@gmail.com",
             replyTo: formData.email,
             subject: `Contact Form: ${formData.subject}`,

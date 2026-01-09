@@ -15,6 +15,7 @@ import {
   ChevronLeft,
   ChevronRight,
   MessageSquare,
+  Send,
   Key,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -28,6 +29,7 @@ const sidebarLinks = [
   { href: "/admin/listings", label: "Listings", icon: Package },
   { href: "/admin/bookings", label: "Bookings", icon: CalendarCheck },
   { href: "/admin/affiliates", label: "Affiliates", icon: UserPlus },
+  { href: "/admin/communications", label: "Communications", icon: Send },
   { href: "/admin/reviews", label: "Reviews", icon: MessageSquare },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ]

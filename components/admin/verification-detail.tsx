@@ -32,7 +32,7 @@ import {
 } from "@/components/ui/dialog"
 import { toast } from "sonner"
 import { supabase } from "@/lib/supabase"
-import { updateDocumentStatus } from "@/lib/actions/dashboard-actions"
+import { updateDocumentStatus, getAdminVerificationDetail } from "@/lib/actions/dashboard-actions"
 import type { User as UserType, VerificationDocument } from "@/lib/types"
 
 interface VerificationDetailProps {
@@ -54,24 +54,7 @@ export function VerificationDetail({ verificationId }: VerificationDetailProps) 
     const loadDocument = async () => {
         try {
             setLoading(true)
-            // Fetch document
-            const { data: docData, error: docError } = await supabase
-                .from("verification_documents")
-                .select("*")
-                .eq("id", verificationId)
-                .single()
-
-            if (docError) throw docError
-            if (!docData) throw new Error("Document not found")
-
-            // Fetch user
-            const { data: userData, error: userError } = await supabase
-                .from("user_profiles")
-                .select("*")
-                .eq("id", docData.user_id)
-                .single()
-
-            if (userError) throw userError
+            const { doc: docData, user: userData } = await getAdminVerificationDetail(verificationId)
 
             // Map User
             const user: UserType = {

@@ -18,6 +18,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { supabase } from "@/lib/supabase"
+import { getAdminListingsData } from "@/lib/actions/dashboard-actions"
 
 export function ListingsManagement() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -33,32 +34,14 @@ export function ListingsManagement() {
     async function load() {
       setLoading(true)
       try {
-        const { data: ls, error: lsErr } = await supabase.from("listings").select("*")
-        if (lsErr) {
-          console.error("Error fetching listings:", lsErr)
-          return
-        }
-
-        const ownerIds = Array.from(new Set((ls || []).map((l: any) => l.owner_id).filter(Boolean)))
-
-        let us: any[] = [];
-        if (ownerIds.length > 0) {
-          const { data, error: usErr } = await supabase
-            .from("user_profiles")
-            .select("id, full_name, avatar_url, email")
-            .in("id", ownerIds);
-
-          if (usErr) {
-            console.error("Error fetching listing owners:", usErr);
-          } else {
-            us = data || [];
-          }
-        }
+        const { listings: ls, users: us } = await getAdminListingsData()
 
         if (!mounted) return
 
         setListings(ls || [])
         setUsers(us || [])
+      } catch (err) {
+        console.error("Error loading admin listings:", err)
       } finally {
         setLoading(false)
       }

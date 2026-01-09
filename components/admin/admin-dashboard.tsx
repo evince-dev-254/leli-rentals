@@ -21,6 +21,7 @@ import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase"
 import Link from "next/link"
 import { formatDistanceToNow } from "date-fns"
+import { getAdminDashboardData } from "@/lib/actions/dashboard-actions"
 
 import { LoadingLogo } from "@/components/ui/loading-logo"
 
@@ -47,81 +48,13 @@ export function AdminDashboard() {
 
     async function loadStats() {
       try {
-        // counts
-        const [
-          { data: tu, error: tuErr, count: totalUsers },
-          { data: ownersData, error: ownersErr, count: totalOwners },
-          { data: affiliatesData, error: affErr, count: totalAffiliates },
-          { data: listingsData, error: listingsErr, count: activeListings },
-          { data: bookingsData, error: bookingsErr, count: totalBookings },
-          { data: reviewsData, error: reviewsErr, count: totalReviews }, // Added reviews count fetch
-        ] = await Promise.all([
-          supabase.from("user_profiles").select("id", { count: "exact", head: true }),
-          supabase.from("user_profiles").select("id", { count: "exact", head: true }).eq("role", "owner"),
-          supabase.from("user_profiles").select("id", { count: "exact", head: true }).eq("role", "affiliate"),
-          supabase.from("listings").select("id", { count: "exact", head: true }).eq("status", "approved"),
-          supabase.from("bookings").select("id", { count: "exact", head: true }),
-          supabase.from("reviews").select("id", { count: "exact", head: true }), // Fetch reviews count
-        ])
-
-        // compute total revenue from bookings
-        const { data: revenueRows, error: revenueErr } = await supabase.from("bookings").select("total_amount")
-        const totalRevenue = revenueErr ? 0 : (revenueRows || []).reduce((s: number, r: any) => s + Number(r.total_amount || 0), 0)
-
-        const { data: suspended, error: suspendedErr } = await supabase.from("user_profiles").select("*").eq("account_status", "suspended").limit(5)
-        const { data: pendingV, error: pendingVErr } = await supabase
-          .from("user_profiles")
-          .select("*")
-          .or("account_status.eq.pending_verification,role.eq.owner,role.eq.affiliate")
-          .limit(5)
-
-        // Fetch recent activities
-        const { data: recentUsers } = await supabase.from('user_profiles').select('id, full_name, role, created_at').order('created_at', { ascending: false }).limit(5)
-        const { data: recentListings } = await supabase.from('listings').select('id, title, owner_id, created_at').order('created_at', { ascending: false }).limit(5)
-        const { data: recentBookings } = await supabase.from('bookings').select('id, listing_id, renter_id, created_at, total_amount').order('created_at', { ascending: false }).limit(5)
-
-        // Combine and format activities
-        const activities = [
-          ...(recentUsers || []).map((u: any) => ({
-            type: 'user',
-            action: `New ${u.role} registration`,
-            user: u.full_name || 'Unknown User',
-            time: u.created_at,
-            details: u.role
-          })),
-          ...(recentListings || []).map((l: any) => ({
-            type: 'listing',
-            action: 'New listing created',
-            user: l.title, // Using title as "user" field for layout compatibility or we can fetch owner name
-            time: l.created_at,
-            details: l.title
-          })),
-          ...(recentBookings || []).map((b: any) => ({
-            type: 'booking',
-            action: 'New booking',
-            user: `Booking #${b.id.slice(0, 8)} `,
-            time: b.created_at,
-            details: `KSh ${b.total_amount} `
-          }))
-        ].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()).slice(0, 10)
-
+        const { stats: s, pendingVerifications: pV, suspendedUsers: sU, activities } = await getAdminDashboardData()
 
         if (!mounted) return
 
-        setStats({
-          totalUsers: Number(totalUsers) || 0,
-          totalOwners: Number(totalOwners) || 0,
-          totalAffiliates: Number(totalAffiliates) || 0,
-          pendingVerifications: (pendingV && pendingV.length) || 0,
-          activeListings: Number(activeListings) || 0,
-          totalBookings: Number(totalBookings) || 0,
-          totalRevenue,
-          suspendedAccounts: (suspended && suspended.length) || 0,
-          totalReviews: Number(totalReviews) || 0, // Set totalReviews
-        })
-
-        setPendingVerifications(pendingV || [])
-        setSuspendedUsers(suspended || [])
+        setStats(s)
+        setPendingVerifications(pV || [])
+        setSuspendedUsers(sU || [])
         setRecentActivity(activities)
 
       } catch (err) {

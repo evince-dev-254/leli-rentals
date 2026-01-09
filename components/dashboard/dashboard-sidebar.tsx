@@ -30,18 +30,18 @@ import { useState, useEffect } from "react"
 import { supabase } from "@/lib/supabase"
 
 export const allLinks = [
-  { href: "/dashboard", label: "Overview", icon: LayoutDashboard, roles: ["owner", "renter", "affiliate"] },
-  { href: "/dashboard/listings", label: "My Listings", icon: Package, roles: ["owner", "renter"] },
-  { href: "/dashboard/bookings", label: "Bookings", icon: CalendarCheck, roles: ["owner", "renter"] },
-  { href: "/dashboard/messages", label: "Messages", icon: MessageCircle, roles: ["owner", "renter"] },
-  { href: "/dashboard/earnings", label: "Earnings", icon: DollarSign, roles: ["owner", "affiliate"] },
-  { href: "/dashboard/affiliate/referrals", label: "My Referees", icon: Users, roles: ["affiliate"] },
-  { href: "/dashboard/payments", label: "Payments", icon: Receipt, roles: ["renter"] },
-  { href: "/dashboard/reviews", label: "My Reviews", icon: Star, roles: ["renter", "owner"] },
-  { href: "/dashboard/subscription", label: "Subscription", icon: CreditCard, roles: ["owner"] },
-  { href: "/dashboard/verification", label: "Verification", icon: ShieldCheck, roles: ["owner"] },
-  { href: "/dashboard/switch-account", label: "Switch Account", icon: UserCog, roles: ["owner", "renter", "affiliate"] },
-  { href: "/dashboard/settings", label: "Settings", icon: Settings, roles: ["owner", "renter", "affiliate"] },
+  { href: "/dashboard/switch-account", label: "Switch Account", icon: UserCog, roles: ["owner", "renter", "affiliate"], badge: "" },
+  { href: "/dashboard", label: "Overview", icon: LayoutDashboard, roles: ["owner", "renter", "affiliate"], badge: "" },
+  { href: "/dashboard/listings", label: "My Listings", icon: Package, roles: ["owner", "renter"], badge: "" },
+  { href: "/dashboard/bookings", label: "Bookings", icon: CalendarCheck, roles: ["owner", "renter"], badge: "" },
+  { href: "/dashboard/messages", label: "Messages", icon: MessageCircle, roles: ["owner", "renter"], badge: "" },
+  { href: "/dashboard/earnings", label: "Earnings", icon: DollarSign, roles: ["owner", "affiliate"], badge: "" },
+  { href: "/dashboard/affiliate/referrals", label: "My Referees", icon: Users, roles: ["affiliate"], badge: "" },
+  { href: "/dashboard/payments", label: "Payments", icon: Receipt, roles: ["renter"], badge: "" },
+  { href: "/dashboard/reviews", label: "My Reviews", icon: Star, roles: ["renter", "owner"], badge: "" },
+  { href: "/dashboard/subscription", label: "Subscription", icon: CreditCard, roles: ["owner"], badge: "" },
+  { href: "/dashboard/verification", label: "Verification", icon: ShieldCheck, roles: ["owner"], badge: "" },
+  { href: "/dashboard/settings", label: "Settings", icon: Settings, roles: ["owner", "renter", "affiliate"], badge: "" },
 ]
 
 export function DashboardSidebar() {

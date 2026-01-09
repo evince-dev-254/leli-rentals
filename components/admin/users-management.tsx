@@ -25,6 +25,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { supabase } from "@/lib/supabase"
 import type { User } from "@/lib/types"
 import { suspendUsers, reactivateUsers, deleteUsers, sendBulkReminders } from "@/lib/actions/admin-actions"
+import { getAdminUsersData } from "@/lib/actions/dashboard-actions"
 
 export function UsersManagement() {
   const { toast } = useToast()
@@ -55,19 +56,7 @@ export function UsersManagement() {
   async function loadUsers() {
     setLoadingUsers(true)
     try {
-      const { data, error } = await supabase
-        .from("user_profiles")
-        .select(`
-          *,
-          referrer:referred_by (
-            full_name
-          )
-        `)
-      if (error) {
-        console.error("Error fetching user_profiles:", error.message || error)
-        toast({ title: "Error", description: "Failed to load users", variant: "destructive" })
-        return
-      }
+      const data = await getAdminUsersData()
 
       // Map DB fields to the User interface expected by this component
       const mapped: User[] = (data || []).map((u: any) => ({

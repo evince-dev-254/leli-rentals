@@ -318,21 +318,28 @@ export async function uploadVerification(userId: string, frontUrl: string, backU
     return data;
 }
 
+import { handleServerError, ActionResponse } from '../error-handler';
+
+// ... (other imports)
+
 /** Update user profile */
-export async function updateProfile(userId: string, updates: any) {
-    const supabase = getAdminSupabase() // Use Admin Client to bypass RLS
-    // Security check: ensure we are only updating valid fields, not role/is_admin (unless handled elsewhere)
-    // For now, trust the input "updates" but in prod strict whitelist is better.
+export async function updateProfile(userId: string, updates: any): Promise<ActionResponse> {
+    try {
+        const supabase = getAdminSupabase() // Use Admin Client to bypass RLS
 
-    const { data, error } = await supabase
-        .from('user_profiles')
-        .update(updates)
-        .eq('id', userId)
-        .select()
-        .maybeSingle();
+        const { data, error } = await supabase
+            .from('user_profiles')
+            .update(updates)
+            .eq('id', userId)
+            .select()
+            .maybeSingle();
 
-    if (error) throw error;
-    return data;
+        if (error) return handleServerError(error, "Failed to update profile");
+
+        return { success: true, data };
+    } catch (error) {
+        return handleServerError(error, "An unexpected error occurred while updating profile");
+    }
 }
 
 /** Fetch data for the Affiliate dashboard */
@@ -413,6 +420,279 @@ export async function getAdminData() {
         usersCount: usersRes.count || 0,
         listingsCount: listingsRes.count || 0,
     };
+}
+
+/** Fetch all data needed for the Admin Verifications Management panel */
+export async function getAdminVerificationsAppData() {
+    // 1. Verify User is an Admin before proceeding
+    const authSupabase = await createClient()
+    const { data: { user } } = await authSupabase.auth.getUser()
+
+    if (!user) throw new Error("Not authenticated")
+
+    const { data: profile } = await authSupabase
+        .from('user_profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+
+    if (profile?.role !== 'admin') {
+        throw new Error("Unauthorized: Admin access required")
+    }
+
+    // 2. Use Admin Client to fetch all data bypassing RLS
+    const adminSupabase = getAdminSupabase()
+
+    const [docsRes, listingsRes] = await Promise.all([
+        adminSupabase.from('verification_documents').select('*'),
+        adminSupabase.from('listings').select('*').eq('status', 'pending')
+    ])
+
+    if (docsRes.error) throw docsRes.error
+    if (listingsRes.error) throw listingsRes.error
+
+    const docs = docsRes.data || []
+    const listings = listingsRes.data || []
+
+    // 3. Collect all user IDs from docs and listings
+    const userIds = Array.from(new Set([
+        ...docs.map(d => d.user_id),
+        ...listings.map(l => l.owner_id)
+    ]))
+
+    // 4. Fetch profiles for these users
+    const { data: users, error: usersError } = await adminSupabase
+        .from('user_profiles')
+        .select('*')
+        .in('id', userIds.length ? userIds : ['null'])
+
+    if (usersError) throw usersError
+
+    return {
+        docs,
+        listings,
+        users: users || []
+    }
+}
+
+/** Fetch all users for Admin User Management bypassing RLS */
+export async function getAdminUsersData() {
+    const authSupabase = await createClient()
+    const { data: { user } } = await authSupabase.auth.getUser()
+
+    if (!user) throw new Error("Not authenticated")
+
+    const { data: profile } = await authSupabase
+        .from('user_profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+
+    if (profile?.role !== 'admin') {
+        throw new Error("Unauthorized: Admin access required")
+    }
+
+    const adminSupabase = getAdminSupabase()
+    const { data, error } = await adminSupabase
+        .from("user_profiles")
+        .select(`
+            *,
+            referrer:referred_by (
+                full_name
+            )
+        `)
+        .order('created_at', { ascending: false });
+
+    if (error) throw error
+    return data || []
+}
+
+/** Fetch all listings for Admin Listing Management bypassing RLS */
+export async function getAdminListingsData() {
+    const authSupabase = await createClient()
+    const { data: { user } } = await authSupabase.auth.getUser()
+
+    if (!user) throw new Error("Not authenticated")
+
+    const { data: profile } = await authSupabase
+        .from('user_profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+
+    if (profile?.role !== 'admin') {
+        throw new Error("Unauthorized: Admin access required")
+    }
+
+    const adminSupabase = getAdminSupabase()
+    const { data: listings, error: lsErr } = await adminSupabase.from("listings").select("*")
+    if (lsErr) throw lsErr
+
+    const ownerIds = Array.from(new Set((listings || []).map((l: any) => l.owner_id).filter(Boolean)))
+
+    let users: any[] = [];
+    if (ownerIds.length > 0) {
+        const { data, error: usErr } = await adminSupabase
+            .from("user_profiles")
+            .select("id, full_name, avatar_url, email")
+            .in("id", ownerIds);
+
+        if (usErr) throw usErr
+        users = data || [];
+    }
+
+    return {
+        listings: listings || [],
+        users
+    }
+}
+
+/** Fetch a single verification document and related user data bypassing RLS */
+export async function getAdminVerificationDetail(docId: string) {
+    const authSupabase = await createClient()
+    const { data: { user } } = await authSupabase.auth.getUser()
+
+    if (!user) throw new Error("Not authenticated")
+
+    const { data: profile } = await authSupabase
+        .from('user_profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+
+    if (profile?.role !== 'admin') {
+        throw new Error("Unauthorized: Admin access required")
+    }
+
+    const adminSupabase = getAdminSupabase()
+
+    const { data: doc, error: docError } = await adminSupabase
+        .from("verification_documents")
+        .select("*")
+        .eq("id", docId)
+        .single()
+
+    if (docError) throw docError
+    if (!doc) throw new Error("Document not found")
+
+    const { data: userData, error: userError } = await adminSupabase
+        .from("user_profiles")
+        .select("*")
+        .eq("id", doc.user_id)
+        .single()
+
+    if (userError) throw userError
+
+    return {
+        doc,
+        user: userData
+    }
+}
+
+/** Fetch all summary data for the Admin Dashboard bypassing RLS */
+export async function getAdminDashboardData() {
+    const authSupabase = await createClient()
+    const { data: { user } } = await authSupabase.auth.getUser()
+
+    if (!user) throw new Error("Not authenticated")
+
+    const { data: profile } = await authSupabase
+        .from('user_profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+
+    if (profile?.role !== 'admin') {
+        throw new Error("Unauthorized: Admin access required")
+    }
+
+    const adminSupabase = getAdminSupabase()
+
+    // 1. Fetch Counts
+    const [
+        { count: totalUsers },
+        { count: totalOwners },
+        { count: totalAffiliates },
+        { count: activeListings },
+        { count: totalBookings },
+        { count: totalReviews }
+    ] = await Promise.all([
+        adminSupabase.from("user_profiles").select("id", { count: "exact", head: true }),
+        adminSupabase.from("user_profiles").select("id", { count: "exact", head: true }).eq("role", "owner"),
+        adminSupabase.from("user_profiles").select("id", { count: "exact", head: true }).eq("role", "affiliate"),
+        adminSupabase.from("listings").select("id", { count: "exact", head: true }).eq("status", "approved"),
+        adminSupabase.from("bookings").select("id", { count: "exact", head: true }),
+        adminSupabase.from("reviews").select("id", { count: "exact", head: true }),
+    ])
+
+    // 2. Fetch Revenue
+    const { data: revenueRows } = await adminSupabase.from("bookings").select("total_amount")
+    const totalRevenue = (revenueRows || []).reduce((s: number, r: any) => s + Number(r.total_amount || 0), 0)
+
+    // 3. Fetch Suspended and Pending (using simple heuristic for pending)
+    const { data: suspended } = await adminSupabase.from("user_profiles").select("*").eq("account_status", "suspended").limit(10)
+
+    // For pending verifications, we'll look for users with pending documents or owners/affiliates without approved docs
+    const { data: pendingDocs } = await adminSupabase.from("verification_documents").select("user_id").eq("status", "pending")
+    const pendingUserIds = Array.from(new Set((pendingDocs || []).map(d => d.user_id)))
+
+    let pendingUsers: any[] = []
+    if (pendingUserIds.length > 0) {
+        const { data: pUsers } = await adminSupabase.from("user_profiles").select("*").in("id", pendingUserIds).limit(10)
+        pendingUsers = pUsers || []
+    }
+
+    // 4. Fetch Recent Activities
+    const [
+        { data: recentUsers },
+        { data: recentListings },
+        { data: recentBookings }
+    ] = await Promise.all([
+        adminSupabase.from('user_profiles').select('id, full_name, role, created_at').order('created_at', { ascending: false }).limit(5),
+        adminSupabase.from('listings').select('id, title, owner_id, created_at').order('created_at', { ascending: false }).limit(5),
+        adminSupabase.from('bookings').select('id, listing_id, renter_id, created_at, total_amount').order('created_at', { ascending: false }).limit(5)
+    ])
+
+    const activities = [
+        ...(recentUsers || []).map((u: any) => ({
+            type: 'user',
+            action: `New ${u.role} registration`,
+            user: u.full_name || 'Unknown User',
+            time: u.created_at,
+            details: u.role
+        })),
+        ...(recentListings || []).map((l: any) => ({
+            type: 'listing',
+            action: 'New listing created',
+            user: l.title,
+            time: l.created_at,
+            details: l.title
+        })),
+        ...(recentBookings || []).map((b: any) => ({
+            type: 'booking',
+            action: 'New booking',
+            user: `Booking #${b.id.slice(0, 8)}`,
+            time: b.created_at,
+            details: `KSh ${b.total_amount}`
+        }))
+    ].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()).slice(0, 10)
+
+    return {
+        stats: {
+            totalUsers: totalUsers || 0,
+            totalOwners: totalOwners || 0,
+            totalAffiliates: totalAffiliates || 0,
+            pendingVerifications: pendingUserIds.length,
+            activeListings: activeListings || 0,
+            totalBookings: totalBookings || 0,
+            totalRevenue,
+            suspendedAccounts: (suspended || []).length,
+            totalReviews: totalReviews || 0
+        },
+        pendingVerifications: pendingUsers,
+        suspendedUsers: suspended || [],
+        activities
+    }
 }
 
 
