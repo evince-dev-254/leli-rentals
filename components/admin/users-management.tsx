@@ -1,7 +1,4 @@
-"use client"
-
-import { useState, useEffect } from "react"
-import { Search, Filter, MoreHorizontal, Eye, Ban, CheckCircle, Mail, Download, UserPlus, Trash2, Send, X, Users } from "lucide-react"
+import { Search, Filter, MoreHorizontal, Eye, Ban, CheckCircle, Mail, Download, UserPlus, Trash2, Send, X, Users, Shield, ShieldOff } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -25,7 +22,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { supabase } from "@/lib/supabase"
 import type { User } from "@/lib/types"
 import { suspendUsers, reactivateUsers, deleteUsers, sendBulkReminders } from "@/lib/actions/admin-actions"
-import { getAdminUsersData } from "@/lib/actions/dashboard-actions"
+import { getAdminUsersData, updateProfile } from "@/lib/actions/dashboard-actions"
 
 export function UsersManagement() {
   const { toast } = useToast()
@@ -176,6 +173,21 @@ export function UsersManagement() {
       setSelectedUserIds([])
     } else {
       toast({ title: "Error", description: "Failed to send reminders", variant: "destructive" })
+    }
+  }
+
+  const handleUpdateRole = async (userId: string, newRole: string) => {
+    if (!confirm(`Are you sure you want to change this user's role to ${newRole}?`)) return
+
+    setActionLoading(true)
+    const result = await updateProfile(userId, { role: newRole })
+    setActionLoading(false)
+
+    if (result.success) {
+      toast({ title: "Success", description: `User role updated to ${newRole}` })
+      loadUsers()
+    } else {
+      toast({ title: "Error", description: result.error || "Failed to update role", variant: "destructive" })
     }
   }
 
@@ -422,6 +434,18 @@ export function UsersManagement() {
                             Suspend Account
                           </DropdownMenuItem>
                         )}
+                        <DropdownMenuSeparator />
+                        {user.role === "admin" ? (
+                          <DropdownMenuItem className="text-orange-600" onClick={() => handleUpdateRole(user.id, "renter")}>
+                            <ShieldOff className="h-4 w-4 mr-2" />
+                            Revoke Admin
+                          </DropdownMenuItem>
+                        ) : (
+                          <DropdownMenuItem className="text-purple-600" onClick={() => handleUpdateRole(user.id, "admin")}>
+                            <Shield className="h-4 w-4 mr-2" />
+                            Promote to Admin
+                          </DropdownMenuItem>
+                        )}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -535,6 +559,23 @@ export function UsersManagement() {
                     setSelectedUserIds([selectedUser.id])
                     handleBulkSuspend()
                   }}>Suspend Account</Button>
+                )}
+                {selectedUser.role === "admin" ? (
+                  <Button variant="outline" className="text-orange-600 border-orange-200 hover:bg-orange-50" onClick={() => {
+                    handleUpdateRole(selectedUser.id, "renter")
+                    setSelectedUser(null)
+                  }}>
+                    <ShieldOff className="h-4 w-4 mr-2" />
+                    Revoke Admin
+                  </Button>
+                ) : (
+                  <Button variant="outline" className="text-purple-600 border-purple-200 hover:bg-purple-50" onClick={() => {
+                    handleUpdateRole(selectedUser.id, "admin")
+                    setSelectedUser(null)
+                  }}>
+                    <Shield className="h-4 w-4 mr-2" />
+                    Promote to Admin
+                  </Button>
                 )}
               </div>
             </div>

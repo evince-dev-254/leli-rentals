@@ -13,7 +13,7 @@ export function OfflineBanner() {
             setShowBackOnline(false)
         } else if (isOnline && !showBackOnline) {
             setShowBackOnline(true)
-            const timer = setTimeout(() => setShowBackOnline(false), 10000)
+            const timer = setTimeout(() => setShowBackOnline(false), 30000)
             return () => clearTimeout(timer)
         }
     }, [isOnline, showBackOnline])

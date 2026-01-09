@@ -461,17 +461,21 @@ export async function getAdminVerificationsAppData() {
     ]))
 
     // 4. Fetch profiles for these users
-    const { data: users, error: usersError } = await adminSupabase
-        .from('user_profiles')
-        .select('*')
-        .in('id', userIds.length ? userIds : ['null'])
+    let users = []
+    if (userIds.length > 0) {
+        const { data, error: usersError } = await adminSupabase
+            .from('user_profiles')
+            .select('*')
+            .in('id', userIds)
 
-    if (usersError) throw usersError
+        if (usersError) throw usersError
+        users = data || []
+    }
 
     return {
         docs,
         listings,
-        users: users || []
+        users
     }
 }
 
@@ -639,8 +643,25 @@ export async function getAdminDashboardData() {
     let pendingUsers: any[] = []
     if (pendingUserIds.length > 0) {
         const { data: pUsers } = await adminSupabase.from("user_profiles").select("*").in("id", pendingUserIds).limit(10)
-        pendingUsers = pUsers || []
+        pendingUsers = (pUsers || []).map(u => ({
+            id: u.id,
+            fullName: u.full_name,
+            email: u.email,
+            avatarUrl: u.avatar_url,
+            role: u.role,
+            verificationStatus: 'submitted', // If they have a pending doc, it's submitted
+            verificationDeadline: u.created_at ? new Date(new Date(u.created_at).getTime() + (7 * 24 * 60 * 60 * 1000)) : null // 7 days from signup as a shim
+        }))
     }
+
+    // Map suspended users as well
+    const mappedSuspended = (suspended || []).map(u => ({
+        id: u.id,
+        fullName: u.full_name,
+        email: u.email,
+        avatarUrl: u.avatar_url,
+        role: u.role
+    }))
 
     // 4. Fetch Recent Activities
     const [
@@ -686,11 +707,11 @@ export async function getAdminDashboardData() {
             activeListings: activeListings || 0,
             totalBookings: totalBookings || 0,
             totalRevenue,
-            suspendedAccounts: (suspended || []).length,
+            suspendedAccounts: mappedSuspended.length,
             totalReviews: totalReviews || 0
         },
         pendingVerifications: pendingUsers,
-        suspendedUsers: suspended || [],
+        suspendedUsers: mappedSuspended,
         activities
     }
 }

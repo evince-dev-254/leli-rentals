@@ -27,7 +27,7 @@ type CommunicationChannels = {
     message: boolean;
 }
 
-type UserCategory = 'all' | 'owners' | 'renters' | 'affiliates' | 'selected';
+type UserCategory = 'all' | 'owners' | 'renters' | 'affiliates' | 'selected' | 'broadcast' | 'owners_only' | 'renters_only' | 'affiliates_only' | 'individual';
 
 /**
  * Sends bulk communication to users via selected channels
@@ -65,22 +65,32 @@ export async function sendAdminBulkCommunication(
             return handleServerError("Unauthorized: Admin access required");
         }
 
-        // 2. Fetch target users
-        let query = supabase.from('user_profiles').select('id, email, full_name');
+        // 2. Resolve Target Users
+        let users: any[] = []
 
-        if (target.category === 'owners') {
-            query = query.eq('role', 'owner');
-        } else if (target.category === 'renters') {
-            query = query.eq('role', 'renter');
-        } else if (target.category === 'affiliates') {
-            query = query.eq('role', 'affiliate');
+        if (target.category === 'all' || target.category === 'broadcast') {
+            const { data } = await supabase.from('user_profiles').select('id, email, full_name')
+            users = data || []
+        } else if (target.category === 'owners' || target.category === 'owners_only') {
+            const { data } = await supabase.from('user_profiles').select('id, email, full_name').eq('role', 'owner')
+            users = data || []
+        } else if (target.category === 'renters' || target.category === 'renters_only') {
+            const { data } = await supabase.from('user_profiles').select('id, email, full_name').eq('role', 'renter')
+            users = data || []
+        } else if (target.category === 'affiliates' || target.category === 'affiliates_only') {
+            const { data } = await supabase.from('user_profiles').select('id, email, full_name').eq('role', 'affiliate')
+            users = data || []
         } else if (target.category === 'selected' && target.userIds) {
-            query = query.in('id', target.userIds);
+            const { data } = await supabase.from('user_profiles').select('id, email, full_name').in('id', target.userIds)
+            users = data || []
+        } else if (target.category === 'individual' && (target as any).userId) {
+            const { data } = await supabase.from('user_profiles').select('id, email, full_name').eq('id', (target as any).userId)
+            users = data || []
         }
 
-        const { data: users, error: usersError } = await query;
-        if (usersError) return handleServerError(usersError, "Failed to fetch target users");
-        if (!users || users.length === 0) return { success: true, data: { count: 0 } };
+        if (users.length === 0) {
+            return { success: true, data: { count: 0, message: "No users found for the selected target audience" } };
+        }
 
         const results = {
             successCount: 0,
@@ -96,20 +106,30 @@ export async function sendAdminBulkCommunication(
             // A. Send Email via Resend
             if (channels.email && user.email) {
                 try {
-                    await resend.emails.send({
-                        from: "GuruCrafts Agency <support@gurucrafts.agency>",
+                    console.log(`[DEBUG] Attempting to send email to: ${user.email} from updates@updates.leli.rentals`);
+                    const emailResult = await resend.emails.send({
+                        from: 'Leli Rentals <updates@updates.leli.rentals>',
                         to: user.email,
                         subject: content.subject,
-                        html: `<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
-                                <h1 style="color: #333; font-size: 18px;">Hello ${user.full_name || 'User'},</h1>
-                                <p style="color: #555; line-height: 1.6;">${content.message.replace(/\n/g, '<br/>')}</p>
-                                <p style="color: #888; font-size: 12px; margin-top: 30px; border-top: 1px solid #eee; padding-top: 10px;">
-                                    Regards,<br/>GuruCrafts Agency Team
-                                </p>
-                               </div>`,
+                        html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #6366f1;">Leli Rentals Update</h2>
+          <div style="padding: 20px; background: #f9fafb; border-radius: 8px;">
+            ${content.message.replace(/\n/g, '<br>')}
+          </div>
+          <p style="color: #6b7280; font-size: 14px; margin-top: 20px;">
+            You received this email because you are a registered user on Leli Rentals.
+          </p>
+          <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 20px 0;">
+          <p style="text-align: center; color: #9ca3af; font-size: 12px;">
+            &copy; ${new Date().getFullYear()} Leli Rentals. All rights reserved.
+          </p>
+        </div>
+      `,
                     });
+                    console.log(`[DEBUG] Resend result for ${user.email}:`, JSON.stringify(emailResult));
                 } catch (e: any) {
-                    console.error(`Email failed for ${user.email}:`, e);
+                    console.error(`[ERROR] Email failed for ${user.email}:`, e);
                     errors.push(`Email: ${e.message}`);
                     userSuccess = false;
                 }
@@ -138,7 +158,6 @@ export async function sendAdminBulkCommunication(
             if (channels.message) {
                 try {
                     // Find or create conversation without a listing
-                    // We check if a conversation already exists between admin and user where listing_id is null
                     const { data: existingConv } = await supabase
                         .from('conversations')
                         .select('id')

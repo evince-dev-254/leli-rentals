@@ -1,6 +1,4 @@
-"use client"
-
-import { UserPlus, DollarSign, Users, TrendingUp, Copy, ExternalLink } from "lucide-react"
+import { UserPlus, DollarSign, Users, TrendingUp, Copy, ExternalLink, List } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -8,16 +6,25 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase"
-import { getAllAffiliates } from "@/lib/actions/affiliate-actions"
+import { getAllAffiliates, getAffiliateReferralsAdmin } from "@/lib/actions/affiliate-actions"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 export function AffiliatesManagement() {
   const [affiliates, setAffiliates] = useState<any[]>([])
   const [loading, setLoading] = useState<boolean>(true)
+  const [selectedAffiliate, setSelectedAffiliate] = useState<any | null>(null)
+  const [referrals, setReferrals] = useState<any[]>([])
+  const [loadingReferrals, setLoadingReferrals] = useState(false)
 
   useEffect(() => {
     let mounted = true
-
-
 
     async function loadAffiliates() {
       setLoading(true)
@@ -38,6 +45,19 @@ export function AffiliatesManagement() {
       mounted = false
     }
   }, [])
+
+  const handleViewReferrals = async (affiliate: any) => {
+    setSelectedAffiliate(affiliate)
+    setLoadingReferrals(true)
+    try {
+      const data = await getAffiliateReferralsAdmin(affiliate.id)
+      setReferrals(data || [])
+    } catch (error) {
+      console.error("Error loading referrals:", error)
+    } finally {
+      setLoadingReferrals(false)
+    }
+  }
 
   const totalEarnings = affiliates.reduce((sum, a) => sum + (a.total_earnings ?? 0), 0)
   const totalReferrals = affiliates.reduce((sum, a) => sum + (a.total_referrals ?? 0), 0)
@@ -65,6 +85,7 @@ export function AffiliatesManagement() {
 
       {/* Stats */}
       <div className="grid gap-4 md:grid-cols-4">
+        {/* ... (Keep existing stats cards) */}
         <Card className="glass-card">
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
@@ -178,14 +199,24 @@ export function AffiliatesManagement() {
                     <TableCell className="font-medium">KSh {(affiliate.total_earnings ?? 0).toLocaleString()}</TableCell>
                     <TableCell>{getStatusBadge(affiliate.status)}</TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => window.location.href = `/admin/users?search=${email}`}
-                      >
-                        <ExternalLink className="h-4 w-4 mr-2" />
-                        View
-                      </Button>
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleViewReferrals(affiliate)}
+                        >
+                          <List className="h-4 w-4 mr-2" />
+                          Referrals
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => window.location.href = `/admin/users?search=${email}`}
+                        >
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          View
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 )
@@ -194,6 +225,69 @@ export function AffiliatesManagement() {
           </Table>
         </CardContent>
       </Card>
+
+      {/* Referrals Dialog */}
+      <Dialog open={!!selectedAffiliate} onOpenChange={() => setSelectedAffiliate(null)}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Referral History</DialogTitle>
+            <DialogDescription>
+              Referrals for {selectedAffiliate?.user_profiles?.full_name || "Affiliate"}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            {loadingReferrals ? (
+              <div className="text-center py-8">Loading referrals...</div>
+            ) : referrals.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">No referrals found for this affiliate.</div>
+            ) : (
+              <ScrollArea className="h-[400px]">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Referred User</TableHead>
+                      <TableHead>Listing</TableHead>
+                      <TableHead>Commission</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Date</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {referrals.map((ref) => (
+                      <TableRow key={ref.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Avatar className="h-8 w-8">
+                              <AvatarImage src={ref.referred_user?.avatar_url} />
+                              <AvatarFallback>{ref.referred_user?.full_name?.[0] || "?"}</AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <p className="text-sm font-medium">{ref.referred_user?.full_name || "Unknown"}</p>
+                              <p className="text-xs text-muted-foreground">{ref.referred_user?.email}</p>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="max-w-[200px] truncate">
+                          {ref.listing?.title || "N/A"}
+                        </TableCell>
+                        <TableCell>KSh {ref.commission_amount || 0}</TableCell>
+                        <TableCell>
+                          <Badge variant={ref.commission_status === 'paid' ? 'default' : 'secondary'} className="capitalize">
+                            {ref.commission_status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-xs">
+                          {new Date(ref.created_at).toLocaleDateString()}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </ScrollArea>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

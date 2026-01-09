@@ -68,12 +68,27 @@ export async function sendBulkReminders(userIds: string[], subject: string, mess
         // Send emails and prepare notifications
         for (const user of users) {
             // 1. Send Email
-            await resend.emails.send({
-                from: "GuruCrafts Agency <support@gurucrafts.agency>",
+            const { data: emailData, error: emailError } = await resend.emails.send({
+                from: "Leli Rentals <updates@updates.leli.rentals>",
                 to: user.email,
                 subject: subject,
-                html: `<p>Hello ${user.full_name || 'User'},</p><p>${message}</p><p>Regards,<br/>GuruCrafts Agency Team</p>`,
+                html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #6366f1;">Leli Rentals Update</h2>
+          <div style="padding: 20px; background: #f9fafb; border-radius: 8px;">
+            ${message.replace(/\n/g, "<br>")}
+          </div>
+          <p style="color: #6b7280; font-size: 14px; margin-top: 20px;">
+            You received this email because you are a registered user on Leli Rentals.
+          </p>
+          <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 20px 0;">
+          <p style="text-align: center; color: #9ca3af; font-size: 12px;">
+            &copy; ${new Date().getFullYear()} Leli Rentals. All rights reserved.
+          </p>
+        </div>
+      `,
             })
+            if (emailError) throw emailError
 
             // 2. Prepare database notification
             notifications.push({

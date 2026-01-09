@@ -14,7 +14,7 @@ export function FavoritesContent() {
   const favoriteListings = allListings.filter((listing) => favorites.includes(listing.id))
 
   return (
-    <div className="gradient-mesh min-h-screen py-8 px-4">
+    <div className="gradient-mesh min-h-screen py-20 px-4">
       <div className="container mx-auto max-w-6xl">
         {/* Header */}
         <div className="mb-8">

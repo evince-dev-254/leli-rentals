@@ -44,6 +44,7 @@ export default function AdminCommunicationsPage() {
     })
 
     const [target, setTarget] = useState<string>("all")
+    const [userId, setUserId] = useState("")
     const [subject, setSubject] = useState("")
     const [message, setMessage] = useState("")
 
@@ -64,7 +65,10 @@ export default function AdminCommunicationsPage() {
         try {
             const res = await sendAdminBulkCommunication(
                 channels,
-                { category: target as any },
+                {
+                    category: target as any,
+                    userId: target === 'individual' ? userId : undefined
+                } as any,
                 { subject, message }
             )
 
@@ -126,13 +130,27 @@ export default function AdminCommunicationsPage() {
                                         <SelectValue placeholder="Select who to reach" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="all">All Registered Users</SelectItem>
-                                        <SelectItem value="owners">Owners Only</SelectItem>
-                                        <SelectItem value="renters">Renters Only</SelectItem>
-                                        <SelectItem value="affiliates">Affiliates Only</SelectItem>
+                                        <SelectItem value="all">Broadcast to All Users</SelectItem>
+                                        <SelectItem value="owners_only">Owners Only</SelectItem>
+                                        <SelectItem value="renters_only">Renters Only</SelectItem>
+                                        <SelectItem value="affiliates_only">Affiliates Only</SelectItem>
+                                        <SelectItem value="individual">Individual User</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
+
+                            {target === 'individual' && (
+                                <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                                    <Label htmlFor="userId">User ID</Label>
+                                    <Input
+                                        id="userId"
+                                        placeholder="Enter User UUID (e.g. 550e8400-e29b-41d4-a716-446655440000)"
+                                        value={userId}
+                                        onChange={(e) => setUserId(e.target.value)}
+                                    />
+                                    <p className="text-[10px] text-muted-foreground">You can find User IDs in the User Management section.</p>
+                                </div>
+                            )}
 
                             <Separator />
 

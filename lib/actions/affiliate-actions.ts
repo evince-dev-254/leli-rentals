@@ -234,3 +234,28 @@ export async function getWithdrawalHistory(userId: string) {
     }
     return data
 }
+
+export async function getAffiliateReferralsAdmin(affiliateId: string) {
+    const { data, error } = await supabaseAdmin
+        .from('affiliate_referrals')
+        .select(`
+            *,
+            referred_user:user_profiles!referred_user_id(
+                full_name,
+                email,
+                avatar_url
+            ),
+            listing:listings(
+                title
+            )
+        `)
+        .eq('affiliate_id', affiliateId)
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error('Error fetching affiliate referrals for admin:', error);
+        return [];
+    }
+
+    return data;
+}

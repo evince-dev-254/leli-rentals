@@ -56,15 +56,24 @@ export function DashboardHeader() {
         // Fetch notifications
         try {
           const notifs = await getNotifications(user.id)
-          setNotifications(notifs || [])
-          setUnreadCount(notifs?.filter((n: any) => !n.is_read).length || 0)
+          const currentNotifs = notifs || []
+          const newUnreadCount = currentNotifs.filter((n: any) => !n.is_read).length
+
+          // Sound Alert if unread count increased
+          if (newUnreadCount > unreadCount && unreadCount !== 0) {
+            const audio = new Audio("https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3")
+            audio.play().catch(e => console.log("Sound play failed:", e))
+          }
+
+          setNotifications(currentNotifs)
+          setUnreadCount(newUnreadCount)
         } catch (e) {
           console.error("Error fetching notifications", e)
         }
       }
     }
     getData()
-  }, [])
+  }, [unreadCount])
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
@@ -131,6 +140,7 @@ export function DashboardHeader() {
                               : "text-muted-foreground hover:bg-muted hover:text-foreground"
                           )}
                         >
+                          <link.icon className="h-5 w-5" />
                           <span className="font-medium">{link.label}</span>
                         </Link>
                       </li>

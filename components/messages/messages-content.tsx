@@ -215,17 +215,33 @@ export function MessagesContent() {
                             <span className="text-xl">😊</span>
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start" className="w-64 p-2 grid grid-cols-6 gap-1">
-                          {["😊", "😂", "🥰", "😍", "🤩", "🤔", "🙄", "😴", "😋", "😎", "😭", "😤", "👍", "👎", "❤️", "🔥", "✨", "🙌", "👏", "🤌", "🤝", "🙏", "🚩", "✅"].map(emoji => (
-                            <Button
-                              key={emoji}
-                              variant="ghost"
-                              className="h-8 w-8 p-0 text-lg"
-                              onClick={() => setNewMessage(prev => prev + emoji)}
-                            >
-                              {emoji}
-                            </Button>
-                          ))}
+                        <DropdownMenuContent align="start" className="w-80 p-2">
+                          <ScrollArea className="h-48">
+                            <div className="grid grid-cols-8 gap-1">
+                              {[
+                                // Smiles
+                                "😊", "😂", "🥰", "😍", "🤩", "🤔", "🙄", "😴",
+                                "😋", "😎", "😭", "😤", "👋", "👌", "🤝", "🙏",
+                                "🥳", "😇", "🤐", "🥵", "🥶", "😱", "🤡", "💩",
+                                // Gestures
+                                "👍", "👎", "❤️", "🔥", "✨", "🙌", "👏", "🤌",
+                                "🎉", "🎈", "🎁", "🎂", "🥂", "🍕", "🍔", "☕",
+                                // Others
+                                "✅", "❌", "🚩", "📍", "⏰", "📱", "💻", "💡",
+                                "🌟", "🌈", "⚡", "☔", "🏠", "🏢", "🚗", "✈️",
+                                "🎵", "🎨", "🎮", "⚽", "🏀", "💼", "💰", "🔒"
+                              ].map(emoji => (
+                                <Button
+                                  key={emoji}
+                                  variant="ghost"
+                                  className="h-8 w-8 p-0 text-lg hover:bg-primary/10"
+                                  onClick={() => setNewMessage(prev => prev + emoji)}
+                                >
+                                  {emoji}
+                                </Button>
+                              ))}
+                            </div>
+                          </ScrollArea>
                         </DropdownMenuContent>
                       </DropdownMenu>
                       <Input
