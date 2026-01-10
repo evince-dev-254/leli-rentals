@@ -162,7 +162,7 @@ export default function SelectRolePage() {
                             How will you use <span className="text-primary">Leli Rentals</span>?
                         </h1>
                         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                            Choose your primary account type to get started. Don't worry, you can verify your identity to list items later.
+                            Choose your primary account type to get started. Don&apos;t worry, you can verify your identity to list items later.
                         </p>
                     </div>
 
