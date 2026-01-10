@@ -64,7 +64,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <div className="flex pt-20">
         <AdminSidebar />
         <div className="flex-1 flex flex-col min-h-[calc(100vh-80px)]">
-          <main className="flex-1 p-6">{children}</main>
+          <main className="flex-1 p-6 gradient-mesh-admin">{children}</main>
         </div>
       </div>
     </div>

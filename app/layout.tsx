@@ -3,9 +3,7 @@ import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 import Script from "next/script"
 import { Analytics } from "@vercel/analytics/next"
-import { GoogleAnalytics } from '@next/third-parties/google'
 import { Toaster } from "@/components/ui/sonner"
-import { CookieConsent } from "@/components/cookie-consent"
 import { OfflineBanner } from "@/components/ui/offline-banner"
 import { FavoritesProvider } from "@/lib/favorites-context"
 import { MessagesProvider } from "@/lib/messages-context"
@@ -94,20 +92,66 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* Consent Manager CMP - Must load BEFORE any tracking scripts */}
+        <Script
+          id="cmp-config"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.cmp_id = 96403;
+              window.cmp_host = "delivery.consentmanager.net";
+              window.cmp_cdn = "cdn.consentmanager.net";
+              window.cmp_proto = "https:";
+            `
+          }}
+        />
+        <Script
+          id="cmp-script"
+          strategy="beforeInteractive"
+          src="https://cdn.consentmanager.net/delivery/cmp.min.js"
+        />
+      </head>
       <body className={`font-sans antialiased hide-scrollbar`} suppressHydrationWarning>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
           <FavoritesProvider>
             <MessagesProvider>
               {children}
               <Toaster position="top-center" richColors duration={12000} />
-              <CookieConsent />
               <OfflineBanner />
+
+              {/* Vercel Analytics - First-party, essential */}
               <Analytics />
-              <GoogleAnalytics gaId="G-7MHZ00M71E" />
-              {/* Tawk.to Live Chat */}
+
+              {/* Google Analytics - BLOCKED until consent */}
+              <Script
+                id="google-analytics"
+                strategy="afterInteractive"
+                data-cmp-ab="1"
+                src={`https://www.googletagmanager.com/gtag/js?id=G-7MHZ00M71E`}
+              />
+              <Script
+                id="google-analytics-config"
+                strategy="afterInteractive"
+                data-cmp-ab="1"
+                dangerouslySetInnerHTML={{
+                  __html: `
+                    window.dataLayer = window.dataLayer || [];
+                    function gtag(){dataLayer.push(arguments);}
+                    gtag('js', new Date());
+                    gtag('config', 'G-7MHZ00M71E', {
+                      page_path: window.location.pathname,
+                    });
+                  `
+                }}
+              />
+
+              {/* Tawk.to Live Chat - BLOCKED until consent */}
               <Script
                 id="tawk-script"
-                strategy="afterInteractive"
+                type="text/plain"
+                data-cmp-vendor="s26"
+                data-cmp-src="https://embed.tawk.to/6954cc957665ef197dae18b7/1jdpjuar6"
                 dangerouslySetInnerHTML={{
                   __html: `
                     var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();

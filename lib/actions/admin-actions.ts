@@ -115,3 +115,86 @@ export async function sendBulkReminders(userIds: string[], subject: string, mess
         return { success: false, error: "Failed to send reminders" }
     }
 }
+
+export async function getUserDetails(userId: string) {
+    try {
+        // Fetch user profile
+        const { data: profile, error: profileError } = await supabaseAdmin
+            .from("user_profiles")
+            .select("*")
+            .eq("id", userId)
+            .single()
+
+        if (profileError) throw profileError
+
+        // Fetch verification documents if owner or affiliate
+        let verificationDocs = null
+        if (profile.role === "owner" || profile.role === "affiliate") {
+            const { data: docs } = await supabaseAdmin
+                .from("verification_documents")
+                .select("*")
+                .eq("user_id", userId)
+                .order("created_at", { ascending: false })
+
+            verificationDocs = docs || []
+        }
+
+        // Fetch listings if owner
+        let listings = null
+        if (profile.role === "owner") {
+            const { data: listingsData } = await supabaseAdmin
+                .from("listings")
+                .select("id, title, status, created_at, price_per_day, images")
+                .eq("owner_id", userId)
+                .order("created_at", { ascending: false })
+                .limit(10)
+
+            listings = listingsData || []
+        }
+
+        // Fetch bookings (as renter or owner)
+        const { data: bookingsAsRenter } = await supabaseAdmin
+            .from("bookings")
+            .select("id, status, created_at, total_amount, listing:listings(title)")
+            .eq("renter_id", userId)
+            .order("created_at", { ascending: false })
+            .limit(10)
+
+        const { data: bookingsAsOwner } = await supabaseAdmin
+            .from("bookings")
+            .select("id, status, created_at, total_amount, listing:listings(title)")
+            .eq("owner_id", userId)
+            .order("created_at", { ascending: false })
+            .limit(10)
+
+        // Fetch referrals if affiliate
+        let referrals = null
+        if (profile.role === "affiliate") {
+            const { data: referralsData } = await supabaseAdmin
+                .from("referrals")
+                .select(`
+                    *,
+                    referred_user:user_profiles!referrals_referred_user_id_fkey(id, full_name, email, role)
+                `)
+                .eq("referrer_id", userId)
+                .order("created_at", { ascending: false })
+
+            referrals = referralsData || []
+        }
+
+        return {
+            success: true,
+            data: {
+                profile,
+                verificationDocs,
+                listings,
+                bookingsAsRenter: bookingsAsRenter || [],
+                bookingsAsOwner: bookingsAsOwner || [],
+                referrals
+            }
+        }
+    } catch (error) {
+        console.error("Error fetching user details:", error)
+        return { success: false, error: "Failed to fetch user details" }
+    }
+}

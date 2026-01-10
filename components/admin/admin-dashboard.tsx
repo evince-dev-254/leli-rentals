@@ -192,6 +192,9 @@ export function AdminDashboard() {
                             {daysLeft}d left
                           </Badge>
                         )}
+                        <Button size="sm" variant="outline" asChild>
+                          <Link href={`/admin/users/${user.id}`}>Review</Link>
+                        </Button>
                       </div>
                     </div>
                   )

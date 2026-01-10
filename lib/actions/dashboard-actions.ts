@@ -636,22 +636,40 @@ export async function getAdminDashboardData() {
     // 3. Fetch Suspended and Pending (using simple heuristic for pending)
     const { data: suspended } = await adminSupabase.from("user_profiles").select("*").eq("account_status", "suspended").limit(10)
 
-    // For pending verifications, we'll look for users with pending documents or owners/affiliates without approved docs
-    const { data: pendingDocs } = await adminSupabase.from("verification_documents").select("user_id").eq("status", "pending")
-    const pendingUserIds = Array.from(new Set((pendingDocs || []).map(d => d.user_id)))
+    // For pending verifications, fetch documents with submitted/pending status
+    const { data: pendingDocs } = await adminSupabase
+        .from("verification_documents")
+        .select("id, user_id, status, created_at")
+        .in("status", ["pending", "submitted"])
+        .order("created_at", { ascending: false })
+        .limit(20)
+
+    // Group docs by user_id and get latest for each user
+    const docsByUser = new Map()
+    pendingDocs?.forEach(doc => {
+        if (!docsByUser.has(doc.user_id)) {
+            docsByUser.set(doc.user_id, doc)
+        }
+    })
+
+    const pendingUserIds = Array.from(docsByUser.keys())
 
     let pendingUsers: any[] = []
     if (pendingUserIds.length > 0) {
         const { data: pUsers } = await adminSupabase.from("user_profiles").select("*").in("id", pendingUserIds).limit(10)
-        pendingUsers = (pUsers || []).map(u => ({
-            id: u.id,
-            fullName: u.full_name,
-            email: u.email,
-            avatarUrl: u.avatar_url,
-            role: u.role,
-            verificationStatus: 'submitted', // If they have a pending doc, it's submitted
-            verificationDeadline: u.created_at ? new Date(new Date(u.created_at).getTime() + (7 * 24 * 60 * 60 * 1000)) : null // 7 days from signup as a shim
-        }))
+        pendingUsers = (pUsers || []).map(u => {
+            const doc = docsByUser.get(u.id)
+            return {
+                id: u.id,
+                fullName: u.full_name,
+                email: u.email,
+                avatarUrl: u.avatar_url,
+                role: u.role,
+                verificationStatus: doc?.status || 'submitted',
+                verificationId: doc?.id, // Include document ID for linking
+                verificationDeadline: u.created_at ? new Date(new Date(u.created_at).getTime() + (7 * 24 * 60 * 60 * 1000)) : null
+            }
+        })
     }
 
     // Map suspended users as well
