@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Search, Send, User, Loader2, ArrowLeft } from "lucide-react"
+import { Search, Send, User, Loader2 } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import { getConversations, getMessages, sendMessage } from "@/lib/actions/dashboard-actions"
 import { BackButton } from "@/components/ui/back-button"
@@ -170,9 +170,7 @@ export function MessagesPage() {
                 {selectedChatId ? (
                     <>
                         <div className="p-4 border-b border-border/50 flex items-center gap-3">
-                            <Button variant="ghost" size="icon" className="md:hidden mr-2" onClick={() => setSelectedChatId(null)}>
-                                <ArrowLeft className="h-4 w-4" />
-                            </Button>
+                            <BackButton onClick={() => setSelectedChatId(null)} className="md:hidden mr-2" label="" />
                             <Avatar>
                                 <AvatarImage src={selectedChatUser?.avatar_url} />
                                 <AvatarFallback>{selectedChatUser?.full_name?.[0] || 'U'}</AvatarFallback>

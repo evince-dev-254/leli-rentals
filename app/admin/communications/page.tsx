@@ -11,9 +11,9 @@ import {
     CheckCircle2,
     AlertCircle,
     Loader2,
-    ArrowLeft,
     ShieldCheck
 } from "lucide-react"
+import { BackButton } from "@/components/ui/back-button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -94,13 +94,7 @@ export default function AdminCommunicationsPage() {
         <div className="max-w-4xl mx-auto py-8 px-4 space-y-8">
             {/* Header */}
             <div className="flex items-center gap-4">
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => router.push('/admin')}
-                >
-                    <ArrowLeft className="h-5 w-5" />
-                </Button>
+                <BackButton href="/admin" />
                 <div>
                     <h1 className="text-3xl font-bold flex items-center gap-2">
                         <ShieldCheck className="h-8 w-8 text-primary" />

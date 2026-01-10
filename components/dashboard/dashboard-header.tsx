@@ -22,6 +22,7 @@ import { useTheme } from "next-themes"
 import { supabase } from "@/lib/supabase"
 import { getNotifications, markNotificationAsRead } from "@/lib/actions/dashboard-actions"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { BackButton } from "@/components/ui/back-button"
 import { allLinks } from "@/components/dashboard/dashboard-sidebar"
 import { cn } from "@/lib/utils"
 
@@ -113,51 +114,77 @@ export function DashboardHeader() {
               <Menu className="h-6 w-6" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="w-[300px] p-0 border-r border-border bg-card">
-            <div className="p-6 border-b border-border">
-              <Link href="/" className="flex items-center gap-2 group">
-                <div className="h-8 w-8 rounded-lg bg-gradient-to-tr from-primary to-purple-600 flex items-center justify-center shadow-md shadow-primary/20">
-                  <HandHoldingKey className="h-5 w-5 text-white" />
+          <SheetContent side="left" className="w-full sm:w-[320px] p-0 border-r border-border bg-card flex flex-col">
+            {/* Back Button for mobile navigation */}
+            <div className="px-4 pt-4 flex items-center justify-between lg:hidden">
+              <BackButton className="text-muted-foreground hover:text-foreground" label="Back" />
+            </div>
+
+            <div className="p-6 pt-6 border-b border-border bg-gradient-to-b from-muted/50 to-card">
+              <Link href="/" className="flex items-center gap-3 group">
+                <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-primary to-purple-600 flex items-center justify-center shadow-lg shadow-primary/20 transition-transform group-active:scale-95">
+                  <HandHoldingKey className="h-6 w-6 text-white" />
                 </div>
-                <span className="text-sm uppercase font-black tracking-wider text-primary">Portal</span>
+                <div className="flex flex-col">
+                  <span className="text-xs uppercase font-black tracking-[0.2em] text-primary/70">Leli Rentals</span>
+                  <span className="text-lg font-bold tracking-tight">Portal</span>
+                </div>
               </Link>
             </div>
-            <nav className="flex-1 overflow-y-auto py-6 px-4">
-              <h3 className="text-xs font-semibold text-muted-foreground mb-4 uppercase tracking-wider px-2">Menu</h3>
-              <ul className="grid gap-2">
-                {allLinks
-                  .filter(link => profile?.role && link.roles.includes(profile.role))
-                  .map((link) => {
-                    const isActive = pathname === link.href
-                    return (
-                      <li key={link.href}>
-                        <Link
-                          href={link.href}
-                          className={cn(
-                            "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200",
-                            isActive
-                              ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
-                              : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                          )}
-                        >
-                          <link.icon className="h-5 w-5" />
-                          <span className="font-medium">{link.label}</span>
-                        </Link>
-                      </li>
-                    )
-                  })}
-              </ul>
+
+            <nav className="flex-1 overflow-y-auto py-6 px-4 space-y-8">
+              <div>
+                <h3 className="text-[10px] font-bold text-muted-foreground mb-4 uppercase tracking-[0.2em] px-4">Management</h3>
+                <ul className="grid gap-1.5">
+                  {allLinks
+                    .filter(link => profile?.role && link.roles.includes(profile.role))
+                    .map((link) => {
+                      const isActive = pathname === link.href
+                      return (
+                        <li key={link.href}>
+                          <Link
+                            href={link.href}
+                            className={cn(
+                              "flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 group",
+                              isActive
+                                ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
+                                : "text-muted-foreground hover:bg-muted hover:text-foreground active:scale-[0.98]"
+                            )}
+                          >
+                            <link.icon className={cn("h-5 w-5 transition-transform group-hover:scale-110", isActive ? "text-primary-foreground" : "text-primary/60")} />
+                            <span className="font-semibold">{link.label}</span>
+                          </Link>
+                        </li>
+                      )
+                    })}
+                </ul>
+              </div>
             </nav>
-            <div className="p-6 border-t border-border mt-auto bg-muted/20">
-              <div className="flex items-center gap-3 px-2">
-                <Avatar className="h-10 w-10 ring-2 ring-background">
-                  <AvatarImage src={profile?.avatar_url} />
-                  <AvatarFallback>{profile?.full_name?.[0] || 'U'}</AvatarFallback>
-                </Avatar>
-                <div className="flex flex-col overflow-hidden">
-                  <span className="text-sm font-semibold truncate">{profile?.full_name}</span>
-                  <span className="text-xs text-muted-foreground truncate">{profile?.email}</span>
+
+            <div className="mt-auto border-t border-border">
+              {/* Profile Section */}
+              <div className="p-4 bg-muted/20">
+                <div className="flex items-center gap-3 px-2 py-2">
+                  <Avatar className="h-12 w-12 ring-2 ring-primary/10 shadow-md">
+                    <AvatarImage src={profile?.avatar_url} />
+                    <AvatarFallback className="bg-primary/10 text-primary font-bold">{profile?.full_name?.[0] || 'U'}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex flex-col overflow-hidden">
+                    <span className="text-sm font-bold truncate text-foreground">{profile?.full_name}</span>
+                    <span className="text-xs text-muted-foreground truncate">{profile?.email}</span>
+                  </div>
                 </div>
+              </div>
+
+              {/* Logout Button */}
+              <div className="p-6 bg-card">
+                <Button
+                  variant="outline"
+                  onClick={handleSignOut}
+                  className="w-full border-destructive/20 bg-destructive/5 text-destructive hover:bg-destructive hover:text-white rounded-xl py-6 font-bold transition-all shadow-sm"
+                >
+                  Sign Out
+                </Button>
               </div>
             </div>
           </SheetContent>

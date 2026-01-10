@@ -5,40 +5,47 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { supabase } from "@/lib/supabase"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Card, CardContent } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
-import { Header } from "@/components/layout/header"
-import { Users, Building2, TrendingUp, Loader2, ArrowLeft } from "lucide-react"
+import { Users, Building2, TrendingUp, Loader2, Check } from "lucide-react"
 import Image from "next/image"
+import { BackButton } from "@/components/ui/back-button"
+import { toast } from "sonner"
 
 const accountTypes = [
     {
         value: "renter",
-        label: "Renter",
-        description: "Browse and rent items from verified owners",
+        label: "I want to Rent",
+        description: "Browse thousands of items for rent. From cameras to cars.",
         icon: Users,
-        features: ["Browse all categories", "Book items instantly", "Rate and review", "Save favorites"]
+        color: "bg-blue-500/10 text-blue-600 border-blue-500/20",
+        ring: "ring-blue-500",
+        features: ["Instant bookings", "Secure payments", "Verified reviews"]
     },
     {
         value: "owner",
-        label: "Owner",
-        description: "List your items and earn money",
+        label: "I want to Host",
+        description: "Earn money by renting out your idle equipment and items.",
         icon: Building2,
-        features: ["List unlimited items", "Set your own prices", "Manage bookings", "Subscription required"]
+        color: "bg-purple-500/10 text-purple-600 border-purple-500/20",
+        ring: "ring-purple-500",
+        features: ["Payment protection", "Insurance options", "Manage listings"]
     },
     {
         value: "affiliate",
-        label: "Affiliate",
-        description: "Earn commissions by referring users",
+        label: "Become an Affiliate",
+        description: "Promote Leli Rentals and earn lifetime commissions.",
         icon: TrendingUp,
-        features: ["Unique referral link", "Track earnings", "Monthly payouts", "Marketing materials"]
+        color: "bg-orange-500/10 text-orange-600 border-orange-500/20",
+        ring: "ring-orange-500",
+        features: ["High commissions", "Monthly payouts", "Marketing kit"]
     }
 ]
 
 export default function SelectRolePage() {
     const [selectedRole, setSelectedRole] = useState("renter")
     const [loading, setLoading] = useState(false)
+    const [initializing, setInitializing] = useState(true)
     const [user, setUser] = useState<any>(null)
     const router = useRouter()
 
@@ -46,29 +53,30 @@ export default function SelectRolePage() {
         const checkUser = async () => {
             const { data: { user } } = await supabase.auth.getUser()
             if (!user) {
-                router.push('/login') // Corrected signin route
+                router.push('/login')
                 return
             }
             setUser(user)
 
-            // Get search params to check for force flag
+            // Get search params
             const params = new URLSearchParams(window.location.search)
             const force = params.get('force') === 'true'
 
             if (!force) {
-                // Check if user already has a profile with a role
                 const { data: profile } = await supabase
                     .from('user_profiles')
                     .select('role')
                     .eq('id', user.id)
                     .single()
 
-                if (profile && profile.role && profile.role !== 'renter') {
-                    // User already selected a role, redirect them
-                    const redirectUrl = getRoleRedirect(profile.role)
-                    router.push(redirectUrl)
+                if (profile && profile.role) {
+                    // Already has a role, redirect
+                    console.log('User already has role:', profile.role)
+                    router.replace(getRoleRedirect(profile.role))
+                    return
                 }
             }
+            setInitializing(false)
         }
 
         checkUser()
@@ -80,153 +88,155 @@ export default function SelectRolePage() {
         setLoading(true)
 
         try {
-            // First, check if user profile exists
-            const { data: existingProfile, error: checkError } = await supabase
+            // Check if profile exists
+            const { data: existingProfile } = await supabase
                 .from('user_profiles')
-                .select('id')
+                .select('*')
                 .eq('id', user.id)
                 .single()
 
-            if (checkError && checkError.code !== 'PGRST116') { // PGRST116 = no rows returned
-                console.error('Error checking profile:', checkError)
-                alert('Failed to check account status. Please try again.')
-                return
-            }
+            let error
 
-            let res
             if (!existingProfile) {
-                // Profile doesn't exist, create it
-                console.log('Creating new profile for user:', user.id)
-                res = await supabase
+                // Create new profile
+                const { error: insertError } = await supabase
                     .from('user_profiles')
                     .insert({
                         id: user.id,
-                        user_id: user.id, // Explicitly add user_id to fix "null value in column user_id" error
                         email: user.email,
                         role: selectedRole,
-                        full_name: user.user_metadata?.full_name || 'Unknown User',
-                        phone: user.user_metadata?.phone || '',
-                        date_of_birth: user.user_metadata?.date_of_birth || null
+                        full_name: user.user_metadata?.full_name || user.user_metadata?.name || 'Unknown User',
+                        avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
+                        last_login_at: new Date().toISOString()
                     })
-                    .select()
-                    .single()
+                error = insertError
             } else {
-                // Profile exists, update role
-                console.log('Updating existing profile for user:', user.id)
-                res = await supabase
+                // Update existing
+                const { error: updateError } = await supabase
                     .from('user_profiles')
                     .update({ role: selectedRole })
                     .eq('id', user.id)
-                    .select()
-                    .single()
+                error = updateError
             }
 
-            console.debug('Role update response:', res)
+            if (error) throw error
 
-            if (res.error) {
-                const errObj = {
-                    message: res.error.message,
-                    details: (res.error as any).details ?? null,
-                    hint: (res.error as any).hint ?? null,
-                }
-                console.error('Error updating role:', errObj)
-                alert('Failed to update account type. ' + (res.error.message || 'Please try again.'))
-                return
-            }
+            toast.success("Account set up successfully!")
 
-            // Redirect based on role
-            const redirectUrl = getRoleRedirect(selectedRole)
-            router.push(redirectUrl)
-        } catch (err) {
-            console.error('Exception while updating role:', err)
-            alert('Failed to update account type due to a network error. Please try again.')
-        } finally {
+            // Artificial delay for UX
+            setTimeout(() => {
+                router.push(getRoleRedirect(selectedRole))
+            }, 800)
+
+        } catch (err: any) {
+            console.error('Error updating role:', err)
+            toast.error(err.message || 'Failed to update account type')
             setLoading(false)
         }
     }
 
-    return (
-        <div className="min-h-screen flex flex-col">
-            <main className="flex-1 flex items-center justify-center py-12 px-4">
-                <div className="w-full max-w-4xl">
-                    <div className="flex items-center gap-4 mb-6">
-                        <Button variant="ghost" asChild className="text-muted-foreground hover:text-foreground">
-                            <Link href="/dashboard" className="flex items-center gap-2">
-                                <ArrowLeft className="h-4 w-4" />
-                                Back to Dashboard
-                            </Link>
-                        </Button>
-                    </div>
-                    <Card className="glass-card">
-                        <CardHeader className="text-center">
-                            <div className="flex justify-center mb-4">
-                                <Image src="/logo.png" alt="leli rentals" width={150} height={40} className="h-10 w-auto dark:invert" />
-                            </div>
-                            <CardTitle className="text-2xl">Choose Your Account Type</CardTitle>
-                            <CardDescription>
-                                Select how you want to use leli rentals. You can change this later in settings.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-6">
-                            <RadioGroup value={selectedRole} onValueChange={setSelectedRole}>
-                                <div className="grid gap-4">
-                                    {accountTypes.map((type) => {
-                                        const Icon = type.icon
-                                        return (
-                                            <label
-                                                key={type.value}
-                                                className={`cursor-pointer transition-all ${selectedRole === type.value ? 'ring-2 ring-primary' : ''
-                                                    }`}
-                                            >
-                                                <Card className={selectedRole === type.value ? 'border-primary' : ''}>
-                                                    <CardContent className="p-6">
-                                                        <div className="flex items-start gap-4">
-                                                            <RadioGroupItem value={type.value} id={type.value} className="mt-1" />
-                                                            <div className="flex-1">
-                                                                <div className="flex items-center gap-3 mb-2">
-                                                                    <Icon className="h-6 w-6 text-primary" />
-                                                                    <div>
-                                                                        <Label htmlFor={type.value} className="text-lg font-semibold cursor-pointer">
-                                                                            {type.label}
-                                                                        </Label>
-                                                                        <p className="text-sm text-muted-foreground">{type.description}</p>
-                                                                    </div>
-                                                                </div>
-                                                                <ul className="mt-3 space-y-1">
-                                                                    {type.features.map((feature, index) => (
-                                                                        <li key={index} className="text-sm text-muted-foreground flex items-center gap-2">
-                                                                            <span className="text-primary">✓</span>
-                                                                            {feature}
-                                                                        </li>
-                                                                    ))}
-                                                                </ul>
-                                                            </div>
-                                                        </div>
-                                                    </CardContent>
-                                                </Card>
-                                            </label>
-                                        )
-                                    })}
-                                </div>
-                            </RadioGroup>
+    if (initializing) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-background">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+        )
+    }
 
-                            <Button
-                                onClick={handleContinue}
-                                disabled={loading}
-                                className="w-full h-12"
-                                size="lg"
-                            >
-                                {loading ? (
-                                    <>
-                                        <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                                        Setting up your account...
-                                    </>
-                                ) : (
-                                    'Continue'
-                                )}
-                            </Button>
-                        </CardContent>
-                    </Card>
+    return (
+        <div className="min-h-screen flex flex-col bg-background relative overflow-hidden">
+            {/* Background Elements */}
+            <div className="absolute top-0 left-0 w-full h-96 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
+            <div className="absolute -top-20 -right-20 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute top-40 -left-20 w-60 h-60 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
+
+            <main className="flex-1 flex flex-col items-center justify-center py-12 px-4 relative z-10">
+                <div className="w-full max-w-5xl">
+                    <div className="mb-8 flex items-center justify-between">
+                        <BackButton href="/dashboard" label="Back to Dashboard" />
+                        <Image src="/logo.png" alt="Leli Rentals" width={120} height={32} className="h-8 w-auto dark:invert opacity-50" />
+                    </div>
+
+                    <div className="text-center mb-12 space-y-4">
+                        <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
+                            How will you use <span className="text-primary">Leli Rentals</span>?
+                        </h1>
+                        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+                            Choose your primary account type to get started. Don't worry, you can verify your identity to list items later.
+                        </p>
+                    </div>
+
+                    <div className="grid md:grid-cols-3 gap-6 mb-12">
+                        {accountTypes.map((type) => {
+                            const Icon = type.icon
+                            const isSelected = selectedRole === type.value
+
+                            return (
+                                <div
+                                    key={type.value}
+                                    onClick={() => setSelectedRole(type.value)}
+                                    className={`
+                                        cursor-pointer group relative rounded-2xl transition-all duration-300
+                                        ${isSelected
+                                            ? `ring-4 ${type.ring} ring-offset-4 ring-offset-background scale-105 shadow-xl`
+                                            : "hover:scale-102 hover:shadow-lg border border-transparent hover:border-border/50 bg-card/50"
+                                        }
+                                    `}
+                                >
+                                    <div className={`absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-br from-white/5 to-transparent pointer-events-none`} />
+
+                                    <div className="h-full p-8 flex flex-col items-center text-center glass-card border-0 bg-transparent">
+                                        <div className={`w-20 h-20 rounded-2xl flex items-center justify-center mb-6 transition-transform group-hover:scale-110 duration-500 ${type.color}`}>
+                                            <Icon className="h-10 w-10" />
+                                        </div>
+
+                                        <h3 className="text-2xl font-bold mb-3">{type.label}</h3>
+                                        <p className="text-muted-foreground mb-6 leading-relaxed">
+                                            {type.description}
+                                        </p>
+
+                                        <div className="mt-auto space-y-3 w-full text-left">
+                                            {type.features.map((feature, i) => (
+                                                <div key={i} className="flex items-center text-sm text-foreground/80">
+                                                    <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center mr-3 shrink-0">
+                                                        <Check className="h-3 w-3 text-primary" />
+                                                    </div>
+                                                    {feature}
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        <div className={`mt-8 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors
+                                            ${isSelected ? `border-primary bg-primary text-white` : "border-muted-foreground/30"}
+                                        `}>
+                                            {isSelected && <Check className="h-3 w-3" />}
+                                        </div>
+                                    </div>
+                                </div>
+                            )
+                        })}
+                    </div>
+
+                    <div className="max-w-md mx-auto">
+                        <Button
+                            onClick={handleContinue}
+                            disabled={loading}
+                            className="w-full h-14 text-lg font-semibold rounded-xl shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all"
+                            size="lg"
+                        >
+                            {loading ? (
+                                <>
+                                    <Loader2 className="h-5 w-5 mr-3 animate-spin" />
+                                    Setting up your profile...
+                                </>
+                            ) : (
+                                'Continue to Dashboard'
+                            )}
+                        </Button>
+                        <p className="text-center text-sm text-muted-foreground mt-4">
+                            By continuing, you agree to our Terms of Service and Privacy Policy.
+                        </p>
+                    </div>
                 </div>
             </main>
         </div>

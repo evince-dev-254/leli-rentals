@@ -7,7 +7,8 @@ import { updateProfile } from "@/lib/actions/dashboard-actions"
 import { updatePaymentInfo } from "@/lib/actions/affiliate-actions"
 import { detectKenyanProvider } from "@/lib/utils/phone-utils"
 import { toast } from "sonner"
-import { User, Bell, Save, CreditCard, Plus, AlertCircle, Loader2, Eye, EyeOff, ArrowLeft } from "lucide-react"
+import { User, Bell, Save, CreditCard, Plus, AlertCircle, Loader2, Eye, EyeOff } from "lucide-react"
+import { BackButton } from "@/components/ui/back-button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -194,14 +195,7 @@ export function SettingsPage() {
     <div className="space-y-6">
       {/* Page Header */}
       <div className="flex items-center gap-4">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-9 w-9"
-          onClick={() => router.push('/dashboard')}
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
+        <BackButton />
         <div>
           <h1 className="text-3xl font-bold">Settings</h1>
           <p className="text-muted-foreground">Manage your account preferences</p>

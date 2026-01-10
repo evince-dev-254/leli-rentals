@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { Search, Filter, MapPin, Star, Heart, ArrowLeft, Grid3X3, List, SlidersHorizontal, Loader2, Map as MapIcon } from "lucide-react"
+import { Search, Filter, MapPin, Star, Heart, Grid3X3, List, SlidersHorizontal, Loader2, Map as MapIcon } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -12,6 +12,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { getCategoryById } from "@/lib/categories-data"
 import { supabase } from "@/lib/supabase"
 import { getCategoryUUID } from "@/lib/category-uuid-map"
+import { BackButton } from "@/components/ui/back-button"
 
 interface CategoryDetailContentProps {
   categoryId: string
@@ -137,13 +138,7 @@ export function CategoryDetailContent({ categoryId }: CategoryDetailContentProps
       {/* Hero Section */}
       <section className={`py-12 px-4 bg-gradient-to-br ${category.color}`}>
         <div className="container mx-auto">
-          <Link
-            href="/categories"
-            className="inline-flex items-center text-muted-foreground hover:text-foreground mb-6 transition-colors"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Categories
-          </Link>
+          <BackButton href="/categories" label="Back to Categories" className="mb-6" />
 
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
             <div className="flex items-start gap-4">

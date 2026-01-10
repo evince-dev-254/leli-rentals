@@ -21,6 +21,8 @@ export async function GET(request: Request) {
             // Get the user after successful session exchange
             const { data: { user } } = await supabase.auth.getUser()
 
+            let redirectPath = '/categories'
+
             if (user) {
                 // Sync profile
                 await syncUserProfile(
@@ -30,13 +32,21 @@ export async function GET(request: Request) {
                     role || undefined,
                     ref || user.user_metadata?.ref_code || null
                 )
-            }
 
-            // Determine redirect URL
-            let redirectPath = '/categories'
-            if (role === 'owner') redirectPath = '/dashboard/owner'
-            else if (role === 'affiliate') redirectPath = '/dashboard/affiliate'
-            else if (role === 'admin') redirectPath = '/admin'
+                // Check if user has a role. If not (and not explicitly requesting one), redirect to selection
+                const { data: profile } = await supabase
+                    .from('user_profiles')
+                    .select('role')
+                    .eq('id', user.id)
+                    .single()
+
+                if (!role && (!profile || !profile.role)) {
+                    redirectPath = '/select-role'
+                }
+                else if (role === 'owner' || profile?.role === 'owner') redirectPath = '/dashboard/owner'
+                else if (role === 'affiliate') redirectPath = '/dashboard/affiliate'
+                else if (role === 'admin') redirectPath = '/admin'
+            }
 
             const forwardedHost = request.headers.get('x-forwarded-host') // original origin before load balancer
             const isLocalEnv = process.env.NODE_ENV === 'development'

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Image from "next/image"
-import { MessageCircle, Send, ArrowLeft, Search } from "lucide-react"
+import { MessageCircle, Send, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -144,14 +144,11 @@ export function MessagesContent() {
                 <>
                   {/* Chat Header */}
                   <div className="p-4 border-b border-border flex items-center gap-3">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="md:hidden"
+                    <BackButton
                       onClick={() => setActiveConversation(null)}
-                    >
-                      <ArrowLeft className="h-5 w-5" />
-                    </Button>
+                      className="md:hidden"
+                      label=""
+                    />
                     <Avatar className="h-10 w-10">
                       <AvatarImage src={activeConversation.participantAvatar || "/placeholder.svg"} />
                       <AvatarFallback>

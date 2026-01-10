@@ -4,7 +4,8 @@ import Image from "next/image"
 import Link from "next/link"
 import { cookies } from "next/headers"
 import { createServerClient } from "@supabase/ssr"
-import { MapPin, Calendar, ShieldCheck, Star, Mail, Phone, Crown, ArrowLeft } from "lucide-react"
+import { MapPin, Calendar, ShieldCheck, Star, Mail, Phone, Crown } from "lucide-react"
+import { BackButton } from "@/components/ui/back-button"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -103,13 +104,8 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
             <main className="flex-1 pt-24 pb-12 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-6xl mx-auto space-y-8">
 
-                    <div className="flex items-center gap-4 mb-2">
-                        <Button variant="ghost" asChild className="-ml-4 text-muted-foreground hover:text-foreground">
-                            <Link href="/dashboard" className="flex items-center gap-2">
-                                <ArrowLeft className="h-4 w-4" />
-                                Back to Dashboard
-                            </Link>
-                        </Button>
+                    <div className="flex items-center gap-4 mb-2 -ml-2">
+                        <BackButton href="/dashboard" label="Back to Dashboard" />
                     </div>
 
                     {/* Profile Header Card */}

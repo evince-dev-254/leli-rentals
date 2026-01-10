@@ -4,7 +4,8 @@ import type React from "react"
 import { useState, useRef } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { ArrowLeft, Loader2, Mail, CheckCircle } from "lucide-react"
+import { Loader2, Mail, CheckCircle } from "lucide-react"
+import { BackButton } from "@/components/ui/back-button"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -166,15 +167,8 @@ export function ForgotPasswordForm() {
           </div>
         )}
 
-        {/* Back to Login */}
-        <div className="mt-6">
-          <Link
-            href="/login"
-            className="flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Sign In
-          </Link>
+        <div className="mt-6 flex justify-center">
+          <BackButton href="/login" label="Back to Sign In" />
         </div>
       </div>
     </div>

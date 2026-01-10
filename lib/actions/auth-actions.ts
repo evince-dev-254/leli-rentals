@@ -32,13 +32,24 @@ export async function syncUserProfile(userId: string, email: string, metadata: a
                 .update({ last_login_at: new Date().toISOString() })
                 .eq('id', userId)
 
+            // If profile exists but has NO role (legacy or interrupted signup), and we have a requested role, update it
+            if (!profile.role && requestedRole) {
+                console.log(`[syncUserProfile] Updating role for ${userId} to ${requestedRole}`)
+                await supabaseAdmin
+                    .from('user_profiles')
+                    .update({ role: requestedRole })
+                    .eq('id', userId)
+
+                profile.role = requestedRole
+            }
+
             return { success: true, profile, exists: true }
         }
 
         // 2. Profile doesn't exist, create it
         console.log(`[syncUserProfile] Creating new profile for ${userId} (${email}) with role ${requestedRole || 'renter'}`)
 
-        const role = requestedRole || 'renter'
+        const role = requestedRole || null // Default to null for new users to force selection
         const profileData: any = {
             id: userId,
             email: email,

@@ -12,6 +12,7 @@ import { supabase } from "@/lib/supabase" // Import Supabase client
 import { useRouter } from "next/navigation"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { BackButton } from "@/components/ui/back-button"
 
 const categories = [
   { name: "Vehicles", href: "/categories/vehicles", count: "1,800+" },
@@ -261,33 +262,85 @@ export function Header() {
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="bg-[#1a1a2e] border-[#2a2a4e] w-[300px] px-6 py-6 overflow-y-auto">
+              <SheetContent side="right" className="bg-[#0f0f1a] border-[#1e1e30] w-full sm:w-[350px] p-0 overflow-y-auto flex flex-col">
                 <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
-                <div className="flex flex-col gap-6 mt-6">
 
-                  {/* Mobile Login/Profile Button - Highlighted at Top */}
+                {/* Back Button for mobile navigation */}
+                <div className="px-4 pt-4 flex items-center justify-between">
+                  <BackButton className="text-gray-400 hover:text-white" label="Close Menu" />
+                </div>
+
+                {/* User Profile / Login Header */}
+                <div className="p-6 pt-10 bg-gradient-to-b from-[#1a1a2e] to-[#0f0f1a] border-b border-white/5">
                   {user ? (
-                    <Link href="/dashboard" className="w-full">
-                      <Button className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-xl py-6 shadow-lg shadow-green-900/20">
-                        <User className="mr-2 h-5 w-5" />
-                        <span className="text-lg">Dashboard</span>
-                      </Button>
-                    </Link>
+                    <div className="flex items-center gap-4">
+                      <Avatar className="h-14 w-14 ring-2 ring-purple-500/20 shadow-lg shadow-purple-500/10">
+                        <AvatarImage src={user.user_metadata?.avatar_url || user.user_metadata?.picture} />
+                        <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white text-lg">
+                          {user.email?.[0]?.toUpperCase() || 'U'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex flex-col">
+                        <span className="text-lg font-bold text-white tracking-tight">
+                          {user.user_metadata?.full_name || user.user_metadata?.name || 'User'}
+                        </span>
+                        <span className="text-sm text-gray-400 truncate max-w-[180px]">
+                          {user.email}
+                        </span>
+                      </div>
+                    </div>
                   ) : (
-                    <Link href="/login" className="w-full">
-                      <Button className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-xl py-6 shadow-lg shadow-purple-900/20">
+                    <Link href="/login" className="block">
+                      <Button className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl py-6 shadow-lg shadow-purple-900/30 font-bold transition-all active:scale-[0.98]">
                         <User className="mr-2 h-5 w-5" />
-                        <span className="text-lg">Sign In / Sign Up</span>
+                        <span className="text-lg">Sign In / Join Leli</span>
                       </Button>
                     </Link>
                   )}
+                </div>
 
-                  <div className="flex flex-col space-y-2">
+                <div className="flex-1 px-4 py-6 space-y-8">
+                  {/* Action Grid */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <Link href="/messages" className="group">
+                      <div className="h-28 rounded-2xl bg-[#1a1a2e] border border-white/5 p-4 flex flex-col items-center justify-center gap-2 transition-all group-active:scale-[0.97] hover:bg-[#252540] hover:border-white/10 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-12 h-12 bg-blue-500/10 rounded-full blur-2xl -mr-6 -mt-6"></div>
+                        <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center">
+                          <MessageCircle className="h-6 w-6 text-blue-400" />
+                        </div>
+                        <span className="text-sm font-semibold text-gray-200">Messages</span>
+                        {unreadMessages > 0 && (
+                          <span className="absolute top-3 right-3 flex h-3 w-3">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-3 w-3 bg-orange-500"></span>
+                          </span>
+                        )}
+                      </div>
+                    </Link>
+                    <Link href="/favorites" className="group">
+                      <div className="h-28 rounded-2xl bg-[#1a1a2e] border border-white/5 p-4 flex flex-col items-center justify-center gap-2 transition-all group-active:scale-[0.97] hover:bg-[#252540] hover:border-white/10 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-12 h-12 bg-rose-500/10 rounded-full blur-2xl -mr-6 -mt-6"></div>
+                        <div className="w-10 h-10 rounded-full bg-rose-500/10 flex items-center justify-center">
+                          <ShoppingBag className="h-6 w-6 text-rose-400" />
+                        </div>
+                        <span className="text-sm font-semibold text-gray-200">Favorites</span>
+                        {unreadNotifications > 0 && (
+                          <span className="absolute top-3 right-3 h-3 w-3 rounded-full bg-orange-500 ring-2 ring-[#1a1a2e]" />
+                        )}
+                      </div>
+                    </Link>
+                  </div>
+
+                  {/* Main Links */}
+                  <div className="space-y-1">
                     {user && (
                       <Link
                         href="/dashboard"
-                        className="text-lg font-medium text-gray-200 hover:text-white py-3 px-2 rounded-lg hover:bg-white/5 transition-colors"
+                        className="flex items-center gap-3 text-lg font-medium text-gray-200 hover:text-white py-3 px-3 rounded-xl hover:bg-white/5 transition-all"
                       >
+                        <div className="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center">
+                          <User className="h-4 w-4 text-green-400" />
+                        </div>
                         Dashboard
                       </Link>
                     )}
@@ -295,8 +348,11 @@ export function Header() {
                       <Link
                         key={link.name}
                         href={link.href}
-                        className="text-lg font-medium text-gray-200 hover:text-white py-3 px-2 rounded-lg hover:bg-white/5 transition-colors"
+                        className="flex items-center gap-3 text-lg font-medium text-gray-200 hover:text-white py-3 px-3 rounded-xl hover:bg-white/5 transition-all"
                       >
+                        <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center">
+                          <div className="w-1.5 h-1.5 rounded-full bg-gray-600"></div>
+                        </div>
                         {link.name}
                       </Link>
                     ))}
@@ -304,37 +360,37 @@ export function Header() {
 
                   {/* Accordion Sections */}
                   <Accordion type="single" collapsible className="w-full">
-                    <AccordionItem value="categories" className="border-gray-800">
-                      <AccordionTrigger className="text-gray-200 hover:text-white text-lg font-medium py-3 px-2 hover:no-underline">
-                        Categories
+                    <AccordionItem value="categories" className="border-white/5">
+                      <AccordionTrigger className="text-gray-200 hover:text-white text-lg font-medium py-4 px-3 hover:no-underline">
+                        Explore Categories
                       </AccordionTrigger>
-                      <AccordionContent>
-                        <div className="flex flex-col space-y-1 pl-4 pb-2">
+                      <AccordionContent className="pt-2 pb-4">
+                        <div className="grid grid-cols-1 gap-1 px-2">
                           {categories.map((category) => (
                             <Link
                               key={category.name}
                               href={category.href}
-                              className="text-gray-400 hover:text-white py-2 px-2 text-base rounded-md hover:bg-white/5 transition-colors flex justify-between items-center"
+                              className="text-gray-400 hover:text-white py-3 px-3 text-base rounded-xl hover:bg-white/5 transition-colors flex justify-between items-center"
                             >
                               <span>{category.name}</span>
-                              <span className="text-xs text-gray-600">{category.count}</span>
+                              <span className="text-[10px] font-bold py-0.5 px-2 bg-white/5 rounded-full text-gray-500">{category.count}</span>
                             </Link>
                           ))}
-                          <Link href="/categories" className="text-purple-400 font-medium py-2 px-2 mt-2">
-                            View All Categories
+                          <Link href="/categories" className="text-purple-400 font-semibold py-3 px-3 mt-1 inline-flex items-center gap-2">
+                            View All Categories <ChevronDown className="h-4 w-4 -rotate-90" />
                           </Link>
                         </div>
                       </AccordionContent>
                     </AccordionItem>
 
-                    <AccordionItem value="more" className="border-gray-800">
-                      <AccordionTrigger className="text-gray-200 hover:text-white text-lg font-medium py-3 px-2 hover:no-underline">
-                        More Options
+                    <AccordionItem value="more" className="border-white/5">
+                      <AccordionTrigger className="text-gray-200 hover:text-white text-lg font-medium py-4 px-3 hover:no-underline">
+                        Resources
                       </AccordionTrigger>
-                      <AccordionContent>
-                        <div className="flex flex-col space-y-1 pl-4 pb-2">
+                      <AccordionContent className="pt-2 pb-4">
+                        <div className="flex flex-col space-y-1 px-2">
                           {moreLinks.map((link) => (
-                            <Link key={link.name} href={link.href} className="text-gray-400 hover:text-white py-2 px-2 text-base rounded-md hover:bg-white/5">
+                            <Link key={link.name} href={link.href} className="text-gray-400 hover:text-white py-3 px-3 text-base rounded-xl hover:bg-white/5">
                               {link.name}
                             </Link>
                           ))}
@@ -342,28 +398,29 @@ export function Header() {
                       </AccordionContent>
                     </AccordionItem>
                   </Accordion>
+                </div>
 
-                  <div className="grid grid-cols-2 gap-4 pt-6 pb-8">
-                    <Link href="/messages" className="w-full">
-                      <Button className="w-full bg-gradient-to-br from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white h-24 flex flex-col items-center justify-center gap-2 rounded-2xl shadow-lg shadow-blue-900/20 border-0 transition-transform active:scale-95">
-                        <MessageCircle className="h-7 w-7" />
-                        <span className="text-sm font-semibold tracking-wide">Messages</span>
-                        {unreadMessages > 0 && (
-                          <span className="absolute top-2 right-2 h-3 w-3 rounded-full bg-orange-500 ring-2 ring-white/20" />
-                        )}
-                      </Button>
-                    </Link>
-                    <Link href="/favorites" className="w-full">
-                      <Button className="w-full bg-gradient-to-br from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700 text-white h-24 flex flex-col items-center justify-center gap-2 rounded-2xl shadow-lg shadow-rose-900/20 border-0 transition-transform active:scale-95">
-                        <ShoppingBag className="h-7 w-7" />
-                        <span className="text-sm font-semibold tracking-wide">Favorites</span>
-                        {unreadNotifications > 0 && (
-                          <span className="absolute top-2 right-2 h-3 w-3 rounded-full bg-orange-500 ring-2 ring-white/20" />
-                        )}
-                      </Button>
-                    </Link>
+                {/* Footer / Logout */}
+                <div className="p-6 mt-auto bg-gradient-to-t from-[#1a1a2e] to-transparent border-t border-white/5">
+                  {user ? (
+                    <Button
+                      variant="outline"
+                      onClick={async () => {
+                        await supabase.auth.signOut()
+                        router.push('/')
+                      }}
+                      className="w-full border-rose-500/20 bg-rose-500/5 text-rose-500 hover:bg-rose-500 hover:text-white rounded-xl py-6 font-bold transition-all"
+                    >
+                      Logout Device
+                    </Button>
+                  ) : (
+                    <p className="text-center text-sm text-gray-500">
+                      Experience the best of Leli Rentals
+                    </p>
+                  )}
+                  <div className="mt-6 flex justify-center gap-6 grayscale opacity-50">
+                    <Image src="/logo.png" alt="Leli" width={60} height={15} className="invert" />
                   </div>
-
                 </div>
               </SheetContent>
             </Sheet>

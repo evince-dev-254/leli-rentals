@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import {
-    ArrowLeft,
     CheckCircle,
     XCircle,
     Download,
@@ -15,6 +14,7 @@ import {
     Phone,
     Mail
 } from "lucide-react"
+import { BackButton } from "@/components/ui/back-button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -143,9 +143,7 @@ export function VerificationDetail({ verificationId }: VerificationDetailProps) 
         <div className="space-y-6 max-w-5xl mx-auto pb-10">
             {/* Header */}
             <div className="flex items-center gap-4">
-                <Button variant="ghost" size="icon" onClick={() => router.push("/admin/verifications")}>
-                    <ArrowLeft className="h-5 w-5" />
-                </Button>
+                <BackButton href="/admin/verifications" />
                 <div>
                     <h1 className="text-2xl font-bold">Review Verification</h1>
                     <p className="text-muted-foreground">Review document and approve or reject user verification</p>

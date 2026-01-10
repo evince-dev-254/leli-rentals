@@ -2,7 +2,8 @@
 
 import { useRef, useCallback, useState, useEffect } from "react"
 import Webcam from "react-webcam"
-import { ShieldCheck, Upload, FileText, Clock, CheckCircle, AlertTriangle, X, Loader2, Camera, RefreshCw, ArrowLeft } from "lucide-react"
+import { ShieldCheck, Upload, FileText, Clock, CheckCircle, AlertTriangle, X, Loader2, Camera, RefreshCw } from "lucide-react"
+import { BackButton } from "@/components/ui/back-button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -217,14 +218,7 @@ export function VerificationPage() {
     <div className="space-y-6">
       {/* Page Header */}
       <div className="flex items-center gap-4">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-9 w-9"
-          onClick={() => router.push('/dashboard')}
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
+        <BackButton />
         <div>
           <h1 className="text-3xl font-bold">Verification</h1>
           <p className="text-muted-foreground">Complete your account verification to start listing</p>

@@ -7,16 +7,20 @@ import { useState, useEffect } from "react"
 export function OfflineBanner() {
     const isOnline = useOnlineStatus()
     const [showBackOnline, setShowBackOnline] = useState(false)
+    const [hasBeenOffline, setHasBeenOffline] = useState(false)
 
     useEffect(() => {
         if (!isOnline) {
+            setHasBeenOffline(true)
             setShowBackOnline(false)
-        } else if (isOnline && !showBackOnline) {
+        } else if (isOnline && hasBeenOffline) {
             setShowBackOnline(true)
-            const timer = setTimeout(() => setShowBackOnline(false), 30000)
+            setHasBeenOffline(false)
+            // Show restoration message for 6 seconds (enough to be seen but not annoying)
+            const timer = setTimeout(() => setShowBackOnline(false), 6000)
             return () => clearTimeout(timer)
         }
-    }, [isOnline, showBackOnline])
+    }, [isOnline, hasBeenOffline])
 
     if (!isOnline) {
         return (

@@ -1,7 +1,8 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { ArrowLeft, HelpCircle, DollarSign, Settings, Mail } from "lucide-react";
+import { HelpCircle, DollarSign, Settings, Mail } from "lucide-react";
+import { BackButton } from "@/components/ui/back-button"
 
 export default function AffiliateFAQPage() {
     return (
@@ -21,12 +22,11 @@ export default function AffiliateFAQPage() {
 
                 <div className="container mx-auto px-4 relative z-10 text-center">
                     <div className="max-w-3xl mx-auto">
-                        <Button variant="ghost" size="sm" asChild className="mb-8 text-white/70 hover:text-white hover:bg-white/10">
-                            <Link href="/dashboard/affiliate">
-                                <ArrowLeft className="mr-2 h-4 w-4" />
-                                Back to Dashboard
-                            </Link>
-                        </Button>
+                        <BackButton
+                            href="/dashboard/affiliate"
+                            className="mb-8 text-white/70 hover:text-white hover:bg-white/10"
+                            label="Back to Dashboard"
+                        />
                         <h1 className="text-4xl md:text-5xl font-bold mb-6 text-balance text-white">
                             Affiliate <span className="text-primary">Support Center</span>
                         </h1>

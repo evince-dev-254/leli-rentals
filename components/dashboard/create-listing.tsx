@@ -4,7 +4,8 @@ import type React from "react"
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, Upload, X, Loader2, Plus } from "lucide-react"
+import { Upload, X, Loader2, Plus } from "lucide-react"
+import { BackButton } from "@/components/ui/back-button"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -96,7 +97,7 @@ export function CreateListing() {
     setIsSubmitting(true)
 
     try {
-      const { data: { user } } = await supabase.auth.getUser()
+      const { data: { user } = { user: null } } = await supabase.auth.getUser()
       if (!user) {
         router.push('/login')
         return
@@ -192,11 +193,7 @@ export function CreateListing() {
   return (
     <div className="max-w-4xl mx-auto space-y-4 md:space-y-6">
       <div className="flex items-center gap-2 md:gap-4">
-        <Button variant="ghost" size="icon" asChild className="touch-target">
-          <Link href="/dashboard/listings">
-            <ArrowLeft className="h-5 w-5" />
-          </Link>
-        </Button>
+        <BackButton href="/dashboard/listings" />
         <div>
           <h1 className="text-2xl md:text-3xl font-bold">Create Listing</h1>
           <p className="text-sm md:text-base text-muted-foreground">Add a new item for rent</p>

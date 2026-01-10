@@ -16,7 +16,6 @@ import {
     Copy,
     Check,
     Loader2,
-    ArrowLeft,
     RefreshCw,
     Instagram,
     Share2,
