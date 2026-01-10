@@ -17,6 +17,7 @@ import {
   MessageSquare,
   Send,
   Key,
+  UserCog,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -25,6 +26,7 @@ import { useState } from "react"
 const sidebarLinks = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/users", label: "Users", icon: Users },
+  { href: "/admin/admins", label: "Manage Admins", icon: UserCog }, // Added Manage Admins link
   { href: "/admin/verifications", label: "Verifications", icon: ShieldCheck },
   { href: "/admin/listings", label: "Listings", icon: Package },
   { href: "/admin/bookings", label: "Bookings", icon: CalendarCheck },

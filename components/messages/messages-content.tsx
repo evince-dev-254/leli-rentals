@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Image from "next/image"
-import { MessageCircle, Send, Search } from "lucide-react"
+import { MessageCircle, Send, Search, Shield } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -111,7 +111,7 @@ export function MessagesContent() {
                           <Avatar className="h-12 w-12">
                             <AvatarImage src={conv.participantAvatar || "/placeholder.svg"} />
                             <AvatarFallback>
-                              {conv.participantName
+                              {conv.participantName === "Leli Support" || conv.participantRole === 'admin' ? "LS" : conv.participantName
                                 .split(" ")
                                 .map((n) => n[0])
                                 .join("")}
@@ -119,7 +119,16 @@ export function MessagesContent() {
                           </Avatar>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between mb-1">
-                              <span className="font-medium truncate">{conv.participantName}</span>
+                              <span className="font-medium truncate">
+                                {activeConversation?.participantRole === 'admin' || conv.participantName === 'Leli Support' ? (
+                                  <span className="flex items-center gap-1 text-purple-600">
+                                    <Shield className="h-3 w-3" />
+                                    Leli Support
+                                  </span>
+                                ) : (
+                                  conv.participantName
+                                )}
+                              </span>
                               <span className="text-xs text-muted-foreground">{formatTime(conv.lastMessageTime)}</span>
                             </div>
                             <p className="text-sm text-muted-foreground truncate">{conv.listingTitle}</p>
@@ -152,14 +161,23 @@ export function MessagesContent() {
                     <Avatar className="h-10 w-10">
                       <AvatarImage src={activeConversation.participantAvatar || "/placeholder.svg"} />
                       <AvatarFallback>
-                        {activeConversation.participantName
+                        {activeConversation.participantName === "Leli Support" || activeConversation.participantRole === 'admin' ? "LS" : activeConversation.participantName
                           .split(" ")
                           .map((n) => n[0])
                           .join("")}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1">
-                      <p className="font-medium">{activeConversation.participantName}</p>
+                      <p className="font-medium flex items-center gap-1">
+                        {activeConversation.participantRole === 'admin' || activeConversation.participantName === 'Leli Support' ? (
+                          <>
+                            <Shield className="h-4 w-4 text-purple-600" />
+                            <span className="text-purple-600">Leli Support</span>
+                          </>
+                        ) : (
+                          activeConversation.participantName
+                        )}
+                      </p>
                       <p className="text-sm text-muted-foreground">{activeConversation.listingTitle}</p>
                     </div>
                     <div className="relative h-10 w-14 overflow-hidden rounded">

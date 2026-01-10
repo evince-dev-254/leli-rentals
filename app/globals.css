@@ -176,12 +176,49 @@ html {
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* Dashboard Background Gradients */
 .gradient-mesh {
-  background: radial-gradient(at 40% 20%, rgba(249, 115, 22, 0.15) 0px, transparent 50%),
-    radial-gradient(at 80% 0%, rgba(236, 72, 153, 0.1) 0px, transparent 50%),
-    radial-gradient(at 0% 50%, rgba(139, 92, 246, 0.1) 0px, transparent 50%),
-    radial-gradient(at 80% 50%, rgba(249, 115, 22, 0.1) 0px, transparent 50%),
-    radial-gradient(at 0% 100%, rgba(236, 72, 153, 0.1) 0px, transparent 50%);
+  /* Default: Purple/Pink Blend (Owner/General) */
+  background-color: #fdf4ff;
+  /* Light Fuchsia Base */
+  background-image:
+    radial-gradient(at 0% 0%, rgba(216, 180, 254, 0.3) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(249, 168, 212, 0.3) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(192, 132, 252, 0.3) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, rgba(244, 114, 182, 0.3) 0px, transparent 50%);
+}
+
+.gradient-mesh-affiliate {
+  /* Affiliate: Warm Sunset (Rose/Amber) */
+  background-color: #fff1f2;
+  /* Rose Base */
+  background-image:
+    radial-gradient(at 0% 0%, rgba(251, 113, 133, 0.25) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(251, 146, 60, 0.25) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(244, 63, 94, 0.2) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, rgba(252, 211, 77, 0.25) 0px, transparent 50%);
+}
+
+.gradient-mesh-admin {
+  /* Admin: Deep Professional (Indigo/Violet) */
+  background-color: #f5f3ff;
+  /* Violet Base */
+  background-image:
+    radial-gradient(at 0% 0%, rgba(139, 92, 246, 0.25) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(99, 102, 241, 0.25) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(167, 139, 250, 0.2) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, rgba(129, 140, 248, 0.25) 0px, transparent 50%);
+}
+
+.gradient-mesh-renter {
+  /* Renter: Fresh & Modern (Teal/Pink) */
+  background-color: #f0fdfa;
+  /* Teal Base */
+  background-image:
+    radial-gradient(at 0% 0%, rgba(45, 212, 191, 0.2) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(232, 121, 249, 0.2) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(94, 234, 212, 0.2) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, rgba(192, 132, 252, 0.2) 0px, transparent 50%);
 }
 
 /* Hide scrollbar for cleaner appearance */

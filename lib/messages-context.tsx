@@ -29,6 +29,7 @@ export interface Conversation {
   lastMessage: string
   lastMessageTime: Date
   unreadCount: number
+  participantRole?: string
 }
 
 interface MessagesContextType {
@@ -65,8 +66,8 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
         .from('conversations')
         .select(`
           id,
-          participant_1:user_profiles!participant_1_id(id, full_name, avatar_url),
-          participant_2:user_profiles!participant_2_id(id, full_name, avatar_url),
+          participant_1:user_profiles!participant_1_id(id, full_name, avatar_url, role),
+          participant_2:user_profiles!participant_2_id(id, full_name, avatar_url, role),
           listing:listings(id, title, images),
           messages(id, content, created_at, sender_id, is_read)
         `)
@@ -107,7 +108,8 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
           })).sort((a: any, b: any) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()),
           lastMessage: lastMsg?.content || "No messages",
           lastMessageTime: lastMsg ? new Date(lastMsg.created_at) : new Date(),
-          unreadCount: unread
+          unreadCount: unread,
+          participantRole: otherUser?.role
         }
       })
 

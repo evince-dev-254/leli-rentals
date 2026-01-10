@@ -5,28 +5,29 @@ import {
   UserCheck,
   UserPlus,
   ShieldAlert,
-  Package,
-  CalendarCheck,
-  DollarSign,
   TrendingUp,
   AlertTriangle,
   Clock,
-  Star, // Added Star icon
+  Star,
+  ArrowUpRight
 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useEffect, useState } from "react"
-import { supabase } from "@/lib/supabase"
 import Link from "next/link"
 import { formatDistanceToNow } from "date-fns"
 import { getAdminDashboardData } from "@/lib/actions/dashboard-actions"
-
 import { LoadingLogo } from "@/components/ui/loading-logo"
+import { DashboardWelcomeHeader } from "@/components/dashboard/dashboard-welcome-header"
+import { DashboardStatCard } from "@/components/dashboard/dashboard-stat-card"
+import { supabase } from "@/lib/supabase"
 
 export function AdminDashboard() {
   const [loading, setLoading] = useState(true)
+  const [user, setUser] = useState<any>(null)
+
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalOwners: 0,
@@ -36,7 +37,7 @@ export function AdminDashboard() {
     totalBookings: 0,
     totalRevenue: 0,
     suspendedAccounts: 0,
-    totalReviews: 0, // Added totalReviews to stats state
+    totalReviews: 0,
   })
 
   const [pendingVerifications, setPendingVerifications] = useState<any[]>([])
@@ -48,6 +49,9 @@ export function AdminDashboard() {
 
     async function loadStats() {
       try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (mounted) setUser(user)
+
         const { stats: s, pendingVerifications: pV, suspendedUsers: sU, activities } = await getAdminDashboardData()
 
         if (!mounted) return
@@ -55,7 +59,7 @@ export function AdminDashboard() {
         setStats(s)
         setPendingVerifications(pV || [])
         setSuspendedUsers(sU || [])
-        setRecentActivity(activities)
+        setRecentActivity(activities || [])
 
       } catch (err) {
         console.error(err)
@@ -80,180 +84,147 @@ export function AdminDashboard() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <div>
-        <h1 className="text-3xl font-bold">Dashboard</h1>
-        <p className="text-muted-foreground">Welcome back, Admin. Here is what is happening today.</p>
-      </div>
+    <div className="space-y-8 pb-10">
+      {/* Unified Welcome Header */}
+      <DashboardWelcomeHeader
+        user={user}
+        subtitle="Overview of platform administration and management"
+        role="Admin"
+      />
 
       {/* Stats Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="glass-card">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Users</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalUsers}</div>
-            <div className="flex items-center gap-1 mt-1">
-              <TrendingUp className="h-3 w-3 text-green-500" />
-              <span className="text-xs text-green-500">+12% from last month</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="glass-card">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Active Owners</CardTitle>
-            <UserCheck className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalOwners}</div>
-            <div className="flex items-center gap-1 mt-1">
-              <TrendingUp className="h-3 w-3 text-green-500" />
-              <span className="text-xs text-green-500">+8% from last month</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="glass-card">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Affiliates</CardTitle>
-            <UserPlus className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalAffiliates}</div>
-            <div className="flex items-center gap-1 mt-1">
-              <TrendingUp className="h-3 w-3 text-green-500" />
-              <span className="text-xs text-green-500">+15% from last month</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="glass-card">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Pending Verifications</CardTitle>
-            <ShieldAlert className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.pendingVerifications}</div>
-            <div className="flex items-center gap-1 mt-1">
-              <TrendingUp className="h-3 w-3 text-muted-foreground" />
-              <span className="text-xs text-muted-foreground">Recent changes</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* New Card for Total Reviews */}
-        <Card className="glass-card">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Reviews</CardTitle>
-            <Star className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalReviews}</div>
-            <div className="flex items-center gap-1 mt-1">
-              <TrendingUp className="h-3 w-3 text-green-500" />
-              <span className="text-xs text-green-500">+10% from last month</span>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <DashboardStatCard
+          title="Total Users"
+          value={stats.totalUsers}
+          icon={Users}
+          color="indigo"
+          description="+12% from last month"
+        />
+        <DashboardStatCard
+          title="Active Owners"
+          value={stats.totalOwners}
+          icon={UserCheck}
+          color="warm-blend"
+          description="Verified hosts"
+        />
+        <DashboardStatCard
+          title="Affiliates"
+          value={stats.totalAffiliates}
+          icon={UserPlus}
+          color="rose-highlight"
+          description="Marketing partners"
+        />
+        <DashboardStatCard
+          title="Total Reviews"
+          value={stats.totalReviews}
+          icon={Star}
+          color="amber-glow"
+          description={`Avg. Rating: 4.8`}
+        />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Pending Verifications */}
-        <Card className="glass-card">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <ShieldAlert className="h-5 w-5 text-orange-500" />
-                Pending Verifications
-              </CardTitle>
-              <CardDescription>Users awaiting document verification</CardDescription>
+        <Card className="glass-card border-none shadow-md overflow-hidden">
+          <CardHeader className="bg-white/50 dark:bg-black/20 border-b border-border/50">
+            <div className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <ShieldAlert className="h-5 w-5 text-orange-500" />
+                  Pending Verifications
+                </CardTitle>
+                <CardDescription>Users awaiting document verification</CardDescription>
+              </div>
+              <Button variant="outline" size="sm" asChild>
+                <Link href="/admin/verifications">View All</Link>
+              </Button>
             </div>
-            <Button variant="outline" size="sm" asChild>
-              <Link href="/admin/verifications">View All</Link>
-            </Button>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {pendingVerifications.slice(0, 4).map((user) => {
-                const daysLeft = user.verificationDeadline
-                  ? Math.ceil((user.verificationDeadline.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
-                  : 0
-                const isUrgent = daysLeft <= 2
+          <CardContent className="p-0">
+            <div className="divide-y divide-border/50">
+              {pendingVerifications.length === 0 ? (
+                <p className="text-muted-foreground text-center py-8">No pending verifications</p>
+              ) : (
+                pendingVerifications.slice(0, 4).map((user) => {
+                  const daysLeft = user.verificationDeadline
+                    ? Math.ceil((user.verificationDeadline.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+                    : 0
+                  const isUrgent = daysLeft <= 2
 
-                return (
-                  <div key={user.id} className="flex items-center justify-between p-3 rounded-lg bg-background/50">
-                    <div className="flex items-center gap-3">
-                      <Avatar>
-                        <AvatarImage src={user.avatarUrl || undefined} />
-                        <AvatarFallback>
-                          {(user.fullName || "User")
-                            .split(" ")
-                            .map((n: string) => n[0])
-                            .join("")}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-medium">{user.fullName}</p>
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline" className="text-xs">
-                            {user.role}
-                          </Badge>
-                          <span className="text-xs text-muted-foreground">{user.email}</span>
+                  return (
+                    <div key={user.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 hover:bg-muted/30 transition-colors gap-3 sm:gap-0">
+                      <div className="flex items-center gap-3 w-full sm:w-auto">
+                        <Avatar>
+                          <AvatarImage src={user.avatarUrl || undefined} />
+                          <AvatarFallback>
+                            {(user.fullName || "User")
+                              .split(" ")
+                              .map((n: string) => n[0])
+                              .join("")}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="font-medium">{user.fullName}</p>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5">
+                              {user.role}
+                            </Badge>
+                            <span className="text-xs text-muted-foreground">{user.email}</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge
-                        variant={
-                          user.verificationStatus === "submitted"
-                            ? "default"
-                            : user.verificationStatus === "pending"
-                              ? "secondary"
-                              : "destructive"
-                        }
-                      >
-                        {user.verificationStatus}
-                      </Badge>
-                      {daysLeft > 0 && (
-                        <Badge variant={isUrgent ? "destructive" : "outline"} className="flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          {daysLeft}d left
+                      <div className="flex items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0 justify-between sm:justify-end">
+                        <Badge
+                          variant={
+                            user.verificationStatus === "submitted"
+                              ? "default"
+                              : user.verificationStatus === "pending"
+                                ? "secondary"
+                                : "destructive"
+                          }
+                        >
+                          {user.verificationStatus}
                         </Badge>
-                      )}
+                        {daysLeft > 0 && (
+                          <Badge variant={isUrgent ? "destructive" : "outline"} className="flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {daysLeft}d left
+                          </Badge>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                )
-              })}
+                  )
+                })
+              )}
             </div>
           </CardContent>
         </Card>
 
         {/* Suspended Accounts */}
-        <Card className="glass-card">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-red-500" />
-                Suspended Accounts
-              </CardTitle>
-              <CardDescription>Accounts suspended due to verification issues</CardDescription>
+        <Card className="glass-card border-none shadow-md overflow-hidden">
+          <CardHeader className="bg-white/50 dark:bg-black/20 border-b border-border/50">
+            <div className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5 text-red-500" />
+                  Suspended Accounts
+                </CardTitle>
+                <CardDescription>Accounts suspended due to verification issues</CardDescription>
+              </div>
+              <Button variant="outline" size="sm" asChild>
+                <Link href="/admin/users?status=suspended">View All</Link>
+              </Button>
             </div>
-            <Button variant="outline" size="sm" asChild>
-              <Link href="/admin/users?status=suspended">View All</Link>
-            </Button>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
+          <CardContent className="p-0">
+            <div className="divide-y divide-border/50">
               {suspendedUsers.length === 0 ? (
                 <p className="text-muted-foreground text-center py-8">No suspended accounts</p>
               ) : (
                 suspendedUsers.map((user) => (
-                  <div key={user.id} className="flex items-center justify-between p-3 rounded-lg bg-background/50">
-                    <div className="flex items-center gap-3">
+                  <div key={user.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 hover:bg-muted/30 transition-colors gap-3 sm:gap-0">
+                    <div className="flex items-center gap-3 w-full sm:w-auto">
                       <Avatar>
                         <AvatarImage src={user.avatarUrl || undefined} />
                         <AvatarFallback>
@@ -266,17 +237,17 @@ export function AdminDashboard() {
                       <div>
                         <p className="font-medium">{user.fullName}</p>
                         <div className="flex items-center gap-2">
-                          <Badge variant="outline" className="text-xs">
+                          <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5">
                             {user.role}
                           </Badge>
                           <span className="text-xs text-muted-foreground">{user.email}</span>
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0 justify-between sm:justify-end">
                       <Badge variant="destructive">Suspended</Badge>
-                      <Button size="sm" variant="outline">
-                        Review
+                      <Button size="sm" variant="outline" asChild>
+                        <Link href={`/admin/users/${user.id}`}>Review</Link>
                       </Button>
                     </div>
                   </div>
@@ -288,35 +259,35 @@ export function AdminDashboard() {
       </div>
 
       {/* Recent Activity */}
-      <Card className="glass-card">
-        <CardHeader>
+      <Card className="glass-card border-none shadow-md overflow-hidden">
+        <CardHeader className="bg-white/50 dark:bg-black/20 border-b border-border/50">
           <CardTitle>Recent Activity</CardTitle>
           <CardDescription>Latest actions across the platform</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
+        <CardContent className="p-0">
+          <div className="divide-y divide-border/50">
             {recentActivity.map((activity, index) => (
-              <div key={index} className="flex items-center justify-between py-2 border-b border-border last:border-0">
-                <div className="flex items-center gap-3">
+              <div key={index} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 hover:bg-muted/30 transition-colors gap-2 sm:gap-0">
+                <div className="flex items-center gap-3 w-full sm:w-auto">
                   <div
-                    className={`h-2 w-2 rounded-full ${activity.type === "suspension"
-                      ? "bg-red-500"
+                    className={`h-2.5 w-2.5 rounded-full ring-2 ring-offset-2 ${activity.type === "suspension"
+                      ? "bg-red-500 ring-red-100"
                       : activity.type === "verification"
-                        ? "bg-orange-500"
+                        ? "bg-orange-500 ring-orange-100"
                         : activity.type === "booking"
-                          ? "bg-green-500"
-                          : "bg-blue-500"
+                          ? "bg-green-500 ring-green-100"
+                          : "bg-blue-500 ring-blue-100"
                       }`}
                   />
                   <div>
-                    <p className="font-medium">{activity.action}</p>
-                    <p className="text-sm text-muted-foreground">{activity.user}</p>
+                    <p className="font-medium text-sm">{activity.action}</p>
+                    <p className="text-xs text-muted-foreground">{activity.user}</p>
                   </div>
                 </div>
-                <span className="text-sm text-muted-foreground">{formatDistanceToNow(new Date(activity.time), { addSuffix: true })}</span>
+                <span className="text-xs text-muted-foreground whitespace-nowrap w-full sm:w-auto text-left sm:text-right mt-1 sm:mt-0">{formatDistanceToNow(new Date(activity.time), { addSuffix: true })}</span>
               </div>
             ))}
-            {recentActivity.length === 0 && <p className="text-center text-muted-foreground">No recent activity</p>}
+            {recentActivity.length === 0 && <p className="text-center text-muted-foreground py-8">No recent activity</p>}
           </div>
         </CardContent>
       </Card>

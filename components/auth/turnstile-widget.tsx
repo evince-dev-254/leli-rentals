@@ -15,7 +15,9 @@ export const TurnstileWidget = forwardRef<TurnstileInstance, TurnstileWidgetProp
 
         useImperativeHandle(ref, () => innerRef.current!)
 
-        const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA"
+        const siteKey = process.env.NODE_ENV === 'production'
+            ? process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA"
+            : "1x00000000000000000000AA"
 
         return (
             <div className="flex justify-center" style={{ minHeight: '65px' }}>

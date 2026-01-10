@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Save, Bell, Shield, CreditCard, Globe, UserCog, Plus, Trash2, Search, Eye, EyeOff, Loader2 } from "lucide-react"
+import { Save, Bell, Shield, CreditCard, Globe, Eye, EyeOff, Loader2 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -9,7 +9,6 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { getAdmins, getUserByEmail, updateProfile } from "@/lib/actions/dashboard-actions"
 import { toast } from "sonner"
 import { supabase } from "@/lib/supabase"
@@ -21,9 +20,9 @@ interface AdminSetting {
 }
 
 export function AdminSettings() {
-  const [admins, setAdmins] = useState<any[]>([])
-  const [newAdminEmail, setNewAdminEmail] = useState("")
-  const [loading, setLoading] = useState(true)
+  // const [admins, setAdmins] = useState<any[]>([]) // Moved to separate page
+  // const [newAdminEmail, setNewAdminEmail] = useState("") // Moved
+  // const [loading, setLoading] = useState(true) // Moved
   const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null)
 
   // Settings State
@@ -41,7 +40,7 @@ export function AdminSettings() {
   const [showAdminPassword, setShowAdminPassword] = useState(false)
 
   useEffect(() => {
-    loadAdmins()
+    // loadAdmins() // Moved
     getCurrentUser()
     loadSettings()
   }, [])
@@ -83,17 +82,9 @@ export function AdminSettings() {
     }
   }
 
-  const loadAdmins = async () => {
-    try {
-      const data = await getAdmins()
-      setAdmins(data || [])
-    } catch (error) {
-      console.error("Error loading admins:", error)
-      toast.error("Failed to load admins")
-    } finally {
-      setLoading(false)
-    }
-  }
+  /* 
+  const loadAdmins = async () => { ... } // Moved to separate page
+  */
 
   const loadSettings = async () => {
     try {
@@ -137,6 +128,13 @@ export function AdminSettings() {
 
       if (error) throw error
 
+      // Force settings revalidation 
+      // Assuming there is a server action for this, usually. 
+      // If we are just updating the table, we might need a server action to clear cache or we rely on client re-fetch.
+      // Since `loadSettings` runs on mount, internal nav is fine.
+      // But if other parts of the site use `unstable_cache`, we need to invalidate it.
+      // For now, let's assume direct client update is handled by the client state, but we'll add a cache buster if we find one.
+
       toast.success("Settings saved successfully")
     } catch (error) {
       console.error("Error saving settings:", error)
@@ -146,63 +144,10 @@ export function AdminSettings() {
     }
   }
 
-  const handleAddAdmin = async () => {
-    if (!newAdminEmail) return
-
-    try {
-      const user = await getUserByEmail(newAdminEmail)
-      if (!user) {
-        toast.error("User with this email not found")
-        return
-      }
-
-      if (user.is_admin || user.role === 'admin') {
-        toast.info("User is already an admin")
-        setNewAdminEmail("")
-        return
-      }
-
-      await updateProfile(user.id, { is_admin: true })
-      toast.success(`${user.email} promoted to admin`)
-      setNewAdminEmail("")
-      loadAdmins()
-    } catch (error: any) {
-      console.error("Error adding admin:", error)
-
-      // Show specific error messages
-      if (error.message) {
-        toast.error(error.message)
-      } else if (error.code === 'PGRST116') {
-        toast.error("User with this email not found")
-      } else {
-        toast.error("Failed to add admin. Please check the email and try again.")
-      }
-    }
-  }
-
-  const handleRemoveAdmin = async (adminId: string, email: string) => {
-    if (email === currentUserEmail) {
-      toast.error("You cannot remove yourself from admins")
-      return
-    }
-
-    if (!confirm(`Are you sure you want to remove admin rights from ${email}?`)) return
-
-    try {
-      const adminUser = admins.find(a => a.id === adminId);
-      const updates: any = { is_admin: false };
-      if (adminUser?.role === 'admin') {
-        updates.role = 'renter';
-      }
-
-      await updateProfile(adminId, updates)
-      toast.success(`${email} removed from admins`)
-      loadAdmins()
-    } catch (error) {
-      console.error("Error removing admin:", error)
-      toast.error("Failed to remove admin")
-    }
-  }
+  /* 
+  const handleAddAdmin = ... // Moved
+  const handleRemoveAdmin = ... // Moved
+  */
 
   return (
     <div className="space-y-6">
@@ -216,7 +161,7 @@ export function AdminSettings() {
         <TabsList>
           <TabsTrigger value="general">General</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
-          <TabsTrigger value="admins">Admins</TabsTrigger>
+          {/* <TabsTrigger value="admins">Admins</TabsTrigger> Moved to separate page */}
           <TabsTrigger value="verification">Verification</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
           <TabsTrigger value="payments">Payments</TabsTrigger>
@@ -335,84 +280,6 @@ export function AdminSettings() {
                 {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
                 Save Changes
               </Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="admins">
-          <Card className="glass-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <UserCog className="h-5 w-5" />
-                Manage Admins
-              </CardTitle>
-              <CardDescription>View and manage administrators with access to this dashboard</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Add Admin logic unchanged */}
-              <div className="flex gap-4 items-end">
-                <div className="flex-1 space-y-2">
-                  <Label htmlFor="new-admin-email">Add New Admin</Label>
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="new-admin-email"
-                      placeholder="Enter user email address..."
-                      className="pl-10"
-                      value={newAdminEmail}
-                      onChange={(e) => setNewAdminEmail(e.target.value)}
-                    />
-                  </div>
-                </div>
-                <Button onClick={handleAddAdmin} disabled={!newAdminEmail}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Admin
-                </Button>
-              </div>
-
-              <Separator />
-
-              {/* Admins List logic unchanged */}
-              <div className="space-y-4">
-                <h4 className="font-medium">Current Admins</h4>
-                {loading ? (
-                  <p className="text-muted-foreground">Loading admins...</p>
-                ) : (
-                  <div className="grid gap-4">
-                    {admins.map((admin) => (
-                      <div key={admin.id} className="flex items-center justify-between p-4 rounded-lg border border-border bg-card/50">
-                        {/* Admin Item Content */}
-                        <div className="flex items-center gap-4">
-                          <Avatar>
-                            <AvatarImage src={admin.avatar_url || undefined} />
-                            <AvatarFallback>
-                              {admin.full_name?.split(" ").map((n: string) => n[0]).join("") || "U"}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <p className="font-medium">{admin.full_name || "Unknown Name"}</p>
-                            <p className="text-sm text-muted-foreground">{admin.email}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-4">
-                          {admin.email === currentUserEmail && (
-                            <span className="text-xs text-muted-foreground bg-secondary px-2 py-1 rounded">You</span>
-                          )}
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                            onClick={() => handleRemoveAdmin(admin.id, admin.email)}
-                            disabled={admin.email === currentUserEmail}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
             </CardContent>
           </Card>
         </TabsContent>

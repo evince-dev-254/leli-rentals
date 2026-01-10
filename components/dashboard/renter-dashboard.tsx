@@ -8,23 +8,25 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Loader2, CalendarCheck, Heart, Star, MessageCircle, MapPin } from "lucide-react"
+import { Loader2, CalendarCheck, Heart, Star, MessageCircle, MapPin, Search, ArrowUpRight, DollarSign, Wallet } from "lucide-react"
 import Link from "next/link"
+import Image from "next/image"
 import { LeaveReviewDialog } from "./leave-review-dialog"
 import { LoadingLogo } from "@/components/ui/loading-logo"
+import { DashboardWelcomeHeader } from "@/components/dashboard/dashboard-welcome-header"
 
 export function RenterDashboard() {
     const [loading, setLoading] = useState(true)
     const [bookings, setBookings] = useState<any[]>([])
     const [favorites, setFavorites] = useState<any[]>([])
     const [reviews, setReviews] = useState<any[]>([])
-    const [userId, setUserId] = useState<string | null>(null)
+    const [user, setUser] = useState<any>(null)
 
     useEffect(() => {
         async function init() {
             const { data: { user } } = await supabase.auth.getUser()
             if (user) {
-                setUserId(user.id)
+                setUser(user)
 
                 // 1. Fetch Bookings
                 const b = await getBookings(user.id, 'renter')
@@ -59,10 +61,10 @@ export function RenterDashboard() {
 
     const getStatusBadge = (status: string) => {
         switch (status) {
-            case "confirmed": return <Badge className="bg-green-500/20 text-green-600">Confirmed</Badge>
-            case "pending": return <Badge className="bg-orange-500/20 text-orange-600">Pending</Badge>
-            case "completed": return <Badge className="bg-blue-500/20 text-blue-600">Completed</Badge>
-            case "cancelled": return <Badge className="bg-red-500/20 text-red-600">Cancelled</Badge>
+            case "confirmed": return <Badge className="bg-green-500/20 text-green-600 dark:bg-green-900/30 dark:text-green-400">Confirmed</Badge>
+            case "pending": return <Badge className="bg-orange-500/20 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400">Pending</Badge>
+            case "completed": return <Badge className="bg-blue-500/20 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">Completed</Badge>
+            case "cancelled": return <Badge className="bg-red-500/20 text-red-600 dark:bg-red-900/30 dark:text-red-400">Cancelled</Badge>
             default: return <Badge variant="outline">{status}</Badge>
         }
     }
@@ -75,18 +77,26 @@ export function RenterDashboard() {
         )
     }
 
+    // Filter for payments: Bookings that are confirmed or completed (assuming payment happened)
+    const paymentHistory = bookings.filter(b => ['confirmed', 'completed'].includes(b.status));
+
     return (
-        <div className="container mx-auto py-8 px-4 space-y-8">
-            <div>
-                <h1 className="text-3xl font-bold">Renter Dashboard</h1>
-                <p className="text-muted-foreground">Manage your trips, favorites, and reviews</p>
-            </div>
+        <div className="container mx-auto py-8 px-4 space-y-8 pb-20">
+            <DashboardWelcomeHeader
+                user={user}
+                subtitle="Manage your bookings, payments, and favorite items."
+                role="Renter"
+            />
 
             <Tabs defaultValue="bookings" className="space-y-6">
-                <TabsList>
+                <TabsList className="bg-muted/50 p-1 overflow-x-auto flex w-full justify-start md:justify-center md:hidden">
                     <TabsTrigger value="bookings" className="flex items-center gap-2">
                         <CalendarCheck className="h-4 w-4" />
-                        My Bookings
+                        Bookings
+                    </TabsTrigger>
+                    <TabsTrigger value="payments" className="flex items-center gap-2">
+                        <Wallet className="h-4 w-4" />
+                        Payments
                     </TabsTrigger>
                     <TabsTrigger value="favorites" className="flex items-center gap-2">
                         <Heart className="h-4 w-4" />
@@ -94,61 +104,94 @@ export function RenterDashboard() {
                     </TabsTrigger>
                     <TabsTrigger value="reviews" className="flex items-center gap-2">
                         <Star className="h-4 w-4" />
-                        My Reviews
+                        Reviews
+                    </TabsTrigger>
+                </TabsList>
+
+                <TabsList className="bg-muted/50 p-1 hidden md:inline-flex">
+                    <TabsTrigger value="bookings" className="flex items-center gap-2">
+                        <CalendarCheck className="h-4 w-4" />
+                        Bookings
+                    </TabsTrigger>
+                    <TabsTrigger value="payments" className="flex items-center gap-2">
+                        <Wallet className="h-4 w-4" />
+                        Payments
+                    </TabsTrigger>
+                    <TabsTrigger value="favorites" className="flex items-center gap-2">
+                        <Heart className="h-4 w-4" />
+                        Favorites
+                    </TabsTrigger>
+                    <TabsTrigger value="reviews" className="flex items-center gap-2">
+                        <Star className="h-4 w-4" />
+                        Reviews
                     </TabsTrigger>
                 </TabsList>
 
                 {/* BOOKINGS TAB */}
                 <TabsContent value="bookings">
-                    <Card className="glass-card">
+                    <Card className="glass-card border-none shadow-md">
                         <CardHeader>
-                            <CardTitle>Booking History</CardTitle>
-                            <CardDescription>View status of your rental requests</CardDescription>
+                            <CardTitle>My Bookings</CardTitle>
+                            <CardDescription>Track the status of your rental requests</CardDescription>
                         </CardHeader>
                         <CardContent>
                             {bookings.length === 0 ? (
                                 <div className="text-center py-12">
-                                    <p className="text-muted-foreground">You haven&apos;t made any bookings yet.</p>
-                                    <Button className="mt-4" asChild>
+                                    <div className="bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <Search className="h-8 w-8 text-primary" />
+                                    </div>
+                                    <h3 className="font-semibold text-lg">No bookings yet</h3>
+                                    <p className="text-muted-foreground mb-6">Find something you need and make your first booking!</p>
+                                    <Button size="lg" asChild>
                                         <Link href="/categories">Browse Listings</Link>
                                     </Button>
                                 </div>
                             ) : (
                                 <div className="space-y-4">
                                     {bookings.map((booking) => (
-                                        <div key={booking.id} className="flex flex-col md:flex-row gap-4 p-4 rounded-lg bg-background/50 border border-border">
-                                            <img
-                                                src={booking.listing?.images?.[0] || "/placeholder.svg"}
-                                                alt={booking.listing?.title}
-                                                className="w-full md:w-48 h-32 object-cover rounded-lg"
-                                            />
+                                        <div key={booking.id} className="flex flex-col md:flex-row gap-4 p-4 rounded-xl bg-background/50 border border-border/50 shadow-sm hover:shadow-md transition-all">
+                                            <div className="relative w-full md:w-48 h-32 shrink-0">
+                                                {booking.listing?.images?.[0] ? (
+                                                    <Image
+                                                        src={booking.listing.images[0]}
+                                                        alt={booking.listing?.title || "Listing"}
+                                                        fill
+                                                        className="object-cover rounded-lg"
+                                                    />
+                                                ) : (
+                                                    <div className="w-full h-full bg-muted flex items-center justify-center rounded-lg">
+                                                        <CalendarCheck className="h-8 w-8 opacity-20" />
+                                                    </div>
+                                                )}
+                                            </div>
                                             <div className="flex-1 space-y-2">
-                                                <div className="flex justify-between items-start">
+                                                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
                                                     <div>
-                                                        <h3 className="font-semibold text-lg">{booking.listing?.title}</h3>
-                                                        <p className="text-sm text-muted-foreground">
+                                                        <h3 className="font-semibold text-lg line-clamp-1">{booking.listing?.title}</h3>
+                                                        <p className="text-sm text-muted-foreground flex items-center gap-1">
+                                                            <CalendarCheck className="h-3 w-3" />
                                                             {new Date(booking.start_date).toLocaleDateString()} - {new Date(booking.end_date).toLocaleDateString()}
                                                         </p>
                                                     </div>
                                                     {getStatusBadge(booking.status)}
                                                 </div>
 
-                                                <div className="flex items-center gap-2 text-sm">
+                                                <div className="flex items-center gap-2 text-sm pt-1">
                                                     <span className="text-muted-foreground">Owner:</span>
                                                     <Avatar className="h-5 w-5">
                                                         <AvatarImage src={booking.owner?.avatar_url} />
                                                         <AvatarFallback>O</AvatarFallback>
                                                     </Avatar>
-                                                    <span>{booking.owner?.full_name || 'Unknown'}</span>
+                                                    <span className="font-medium">{booking.owner?.full_name || 'Unknown'}</span>
                                                 </div>
 
-                                                <div className="flex items-center justify-between mt-4">
-                                                    <p className="font-semibold">Total: KSh {booking.total_amount?.toLocaleString()}</p>
+                                                <div className="flex flex-wrap items-center justify-between gap-4 mt-4 pt-2 border-t border-border/30">
+                                                    <p className="font-bold text-lg">KSh {booking.total_amount?.toLocaleString()}</p>
                                                     <div className="flex gap-2">
                                                         <Button variant="outline" size="sm" asChild>
                                                             <Link href="/messages">
                                                                 <MessageCircle className="h-4 w-4 mr-2" />
-                                                                Chat Owner
+                                                                Message
                                                             </Link>
                                                         </Button>
                                                         {booking.status === 'completed' && (
@@ -157,11 +200,54 @@ export function RenterDashboard() {
                                                                 listingId={booking.listing?.id}
                                                                 listingTitle={booking.listing?.title}
                                                                 listingImage={booking.listing?.images?.[0]}
-                                                                onReviewSubmitted={() => window.location.reload()} // Simple reload to refresh 'My Reviews' tab
+                                                                onReviewSubmitted={() => window.location.reload()}
                                                             />
                                                         )}
                                                     </div>
                                                 </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+
+                {/* PAYMENTS TAB */}
+                <TabsContent value="payments">
+                    <Card className="glass-card border-none shadow-md">
+                        <CardHeader>
+                            <CardTitle>Payment History</CardTitle>
+                            <CardDescription>Record of your completed transactions</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            {paymentHistory.length === 0 ? (
+                                <div className="text-center py-12">
+                                    <div className="bg-green-100 dark:bg-green-900/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <DollarSign className="h-8 w-8 text-green-600 dark:text-green-400" />
+                                    </div>
+                                    <h3 className="font-semibold text-lg">No payments recorded</h3>
+                                    <p className="text-muted-foreground">Payments for confirmed bookings will appear here.</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-0 divide-y divide-border/50">
+                                    {paymentHistory.map((payment) => (
+                                        <div key={payment.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 hover:bg-muted/30 transition-colors gap-3">
+                                            <div className="flex items-center gap-4 w-full sm:w-auto">
+                                                <div className="h-10 w-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-green-600 dark:text-green-400 shrink-0">
+                                                    <ArrowUpRight className="h-5 w-5" />
+                                                </div>
+                                                <div>
+                                                    <p className="font-medium">Payment for {payment.listing?.title}</p>
+                                                    <p className="text-xs text-muted-foreground">{new Date(payment.start_date).toLocaleDateString()}</p>
+                                                </div>
+                                            </div>
+                                            <div className="text-right w-full sm:w-auto flex flex-row sm:flex-col justify-between sm:justify-end items-center sm:items-end">
+                                                <p className="font-bold text-foreground">- KSh {payment.total_amount?.toLocaleString()}</p>
+                                                <Badge variant="outline" className="text-[10px] text-green-600 border-green-200 dark:border-green-800">
+                                                    Paid
+                                                </Badge>
                                             </div>
                                         </div>
                                     ))}
@@ -178,36 +264,57 @@ export function RenterDashboard() {
                             <Heart className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                             <h3 className="text-lg font-medium">No favorites yet</h3>
                             <p className="text-muted-foreground">Save listings you like to view them here.</p>
+                            <Button className="mt-4" variant="secondary" asChild>
+                                <Link href="/categories">Start Exploring</Link>
+                            </Button>
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {favorites.map((fav: any) => (
-                                <Link key={fav.id} href={`/listings/${fav.listing.id}`} className="block group">
-                                    <Card className="glass-card overflow-hidden hover:ring-2 ring-primary/50 transition-all">
-                                        <div className="aspect-video relative">
-                                            <img
-                                                src={fav.listing.images?.[0] || "/placeholder.svg"}
+                                <Card key={fav.id} className="glass-card overflow-hidden hover:shadow-xl transition-all group flex flex-col h-full border-none">
+                                    <div className="aspect-video relative overflow-hidden">
+                                        {fav.listing.images?.[0] ? (
+                                            <Image
+                                                src={fav.listing.images[0]}
                                                 alt={fav.listing.title}
-                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                                fill
+                                                className="object-cover group-hover:scale-105 transition-transform duration-500"
                                             />
-                                            <div className="absolute top-2 right-2 p-2 bg-white/80 rounded-full">
-                                                <Heart className="h-4 w-4 fill-red-500 text-red-500" />
+                                        ) : (
+                                            <div className="w-full h-full bg-muted flex items-center justify-center">
+                                                <Heart className="h-12 w-12 opacity-10" />
                                             </div>
+                                        )}
+                                        <div className="absolute top-2 right-2 p-2 bg-white/90 dark:bg-black/60 rounded-full backdrop-blur-sm z-10">
+                                            <Heart className="h-4 w-4 fill-red-500 text-red-500" />
                                         </div>
-                                        <CardContent className="p-4">
-                                            <h3 className="font-semibold truncate">{fav.listing.title}</h3>
+                                        <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/50 text-white text-xs rounded backdrop-blur-md flex items-center gap-1 z-10">
+                                            <MapPin className="h-3 w-3" />
+                                            {fav.listing.location}
+                                        </div>
+                                    </div>
+
+                                    <div className="p-4 flex flex-col flex-1">
+                                        <div className="flex-1">
+                                            <Link href={`/listings/${fav.listing.id}`} className="hover:underline">
+                                                <h3 className="font-semibold truncate text-lg">{fav.listing.title}</h3>
+                                            </Link>
                                             <div className="flex items-center gap-1 text-sm text-yellow-500 my-1">
                                                 <Star className="h-4 w-4 fill-current" />
                                                 <span>{fav.listing.rating_average || 0}</span>
                                             </div>
-                                            <div className="flex items-center gap-1 text-muted-foreground text-xs mb-2">
-                                                <MapPin className="h-3 w-3" />
-                                                {fav.listing.location}
-                                            </div>
-                                            <p className="font-bold text-primary">KSh {fav.listing.price_per_day?.toLocaleString()}/day</p>
-                                        </CardContent>
-                                    </Card>
-                                </Link>
+                                        </div>
+
+                                        <div className="flex items-center justify-between mt-4 border-t pt-4 border-dashed">
+                                            <p className="font-bold text-xl text-primary">KSh {fav.listing.price_per_day?.toLocaleString()}<span className="text-xs font-normal text-muted-foreground">/day</span></p>
+                                            <Button size="sm" asChild className="shadow-lg shadow-primary/20">
+                                                <Link href={`/listings/${fav.listing.id}`}>
+                                                    Book Now
+                                                </Link>
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </Card>
                             ))}
                         </div>
                     )}
@@ -215,7 +322,7 @@ export function RenterDashboard() {
 
                 {/* REVIEWS TAB */}
                 <TabsContent value="reviews">
-                    <Card className="glass-card">
+                    <Card className="glass-card border-none shadow-md">
                         <CardHeader>
                             <CardTitle>My Reviews</CardTitle>
                             <CardDescription>Reviews you&apos;ve left for items</CardDescription>
@@ -228,18 +335,25 @@ export function RenterDashboard() {
                             ) : (
                                 <div className="space-y-4">
                                     {reviews.map((review) => (
-                                        <div key={review.id} className="p-4 rounded-lg bg-background/50 border border-border">
-                                            <div className="flex gap-4">
-                                                <img
-                                                    src={review.listing?.images?.[0]}
-                                                    className="w-16 h-16 rounded object-cover"
-                                                    alt="Item"
-                                                />
+                                        <div key={review.id} className="p-4 rounded-xl bg-background/50 border border-border/50">
+                                            <div className="flex flex-col sm:flex-row gap-4">
+                                                <div className="relative w-16 h-16 shrink-0">
+                                                    {review.listing?.images?.[0] ? (
+                                                        <Image
+                                                            src={review.listing.images[0]}
+                                                            alt={review.listing?.title || "Item"}
+                                                            fill
+                                                            className="rounded-lg object-cover"
+                                                        />
+                                                    ) : (
+                                                        <div className="w-full h-full bg-muted rounded-lg" />
+                                                    )}
+                                                </div>
                                                 <div>
-                                                    <h4 className="font-medium">{review.listing?.title}</h4>
+                                                    <h4 className="font-medium text-lg">{review.listing?.title}</h4>
                                                     <div className="flex items-center gap-1 text-yellow-500 my-1">
                                                         {[...Array(5)].map((_, i) => (
-                                                            <Star key={i} className={`h-3 w-3 ${i < review.rating ? "fill-current" : "text-gray-300"}`} />
+                                                            <Star key={i} className={`h-4 w-4 ${i < review.rating ? "fill-current" : "text-gray-300"}`} />
                                                         ))}
                                                     </div>
                                                     <p className="text-sm text-muted-foreground italic">&quot;{review.comment}&quot;</p>
