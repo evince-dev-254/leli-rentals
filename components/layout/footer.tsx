@@ -129,6 +129,9 @@ export function Footer() {
             <Link href="/cookies" className="text-muted-foreground hover:text-foreground transition-colors">
               Cookies
             </Link>
+            <a href="?cmpscreen" className="cmpfooterlink cmpfooterlinkcmp text-muted-foreground hover:text-foreground transition-colors">
+              Privacy Settings
+            </a>
           </div>
         </div>
       </div>
