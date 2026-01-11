@@ -25,7 +25,10 @@ export const TurnstileWidget = forwardRef<TurnstileInstance, TurnstileWidgetProp
                     ref={innerRef}
                     siteKey={siteKey}
                     onSuccess={onSuccess}
-                    onError={onError}
+                    onError={(err) => {
+                        console.error("Turnstile Error:", err)
+                        if (onError) onError()
+                    }}
                     onExpire={onExpire}
                     options={{
                         theme: 'auto',

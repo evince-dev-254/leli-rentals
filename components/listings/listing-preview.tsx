@@ -60,7 +60,8 @@ export function ListingPreview({
                                     src={listingData.images[0] || '/placeholder.svg'}
                                     alt={listingData.title}
                                     fill
-                                    className="object-cover transition-opacity duration-300"
+                                    className="object-cover transition-opacity duration-300 cmp-ignore"
+                                    data-cmp-ignore
                                     onError={(e) => {
                                         e.currentTarget.src = '/placeholder.svg';
                                     }}

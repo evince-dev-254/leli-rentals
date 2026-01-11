@@ -229,24 +229,21 @@ export function ListingDetailContent({ listing }: ListingDetailContentProps) {
             <div className="relative aspect-[16/10] sm:aspect-[16/9] rounded-2xl overflow-hidden glass-card shadow-lg group bg-gradient-to-br from-gray-100 to-gray-200">
               {listing.images && listing.images.length > 0 ? (
                 <>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={listing.images[currentImageIndex] || '/placeholder.svg'}
-                    alt={`${listing.title} - Image ${currentImageIndex + 1}`}
-                    className="w-full h-full object-cover transition-all duration-700 group-hover:scale-105"
+                    src={listing.images[currentImageIndex] || "/placeholder.svg"}
+                    alt={listing.title}
+                    className="h-full w-full object-cover cmp-ignore"
+                    loading="eager"
+                    fetchPriority="high"
+                    data-cmp-ignore
                     onError={(e) => {
-                      console.warn('Image failed to load:', listing.images[currentImageIndex]);
-                      e.currentTarget.src = '/placeholder.svg';
+                      e.currentTarget.src = "/placeholder.svg"
                     }}
-                    onLoad={(e) => {
-                      e.currentTarget.style.opacity = '1';
-                    }}
-                    style={{ opacity: '0' }}
                     suppressHydrationWarning
                   />
-                  {/* Loading state */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-purple-400 via-pink-400 to-blue-400 flex items-center justify-center transition-opacity duration-300" style={{ opacity: '0' }}>
-                    <span className="text-white text-lg font-semibold">Loading...</span>
-                  </div>
+                  {/* Loading state indicator - subtle pulse instead of blocking overlay */}
+                  <div className="absolute inset-0 bg-secondary/20 animate-pulse pointer-events-none" />
                 </>
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-purple-400 via-pink-400 to-blue-400 flex items-center justify-center">
@@ -635,6 +632,7 @@ export function ListingDetailContent({ listing }: ListingDetailContentProps) {
           <div className="space-y-6 pt-4">
             <div className="flex gap-4 p-4 bg-secondary/20 rounded-2xl border border-secondary/30">
               <div className="w-20 h-16 shrink-0 rounded-xl overflow-hidden shadow-sm relative">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={listing.images[0] || "/placeholder.svg"}
                   alt={listing.title}

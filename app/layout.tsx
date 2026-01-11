@@ -5,10 +5,10 @@ import Script from "next/script"
 import { Analytics } from "@vercel/analytics/next"
 import { Toaster } from "@/components/ui/sonner"
 import { OfflineBanner } from "@/components/ui/offline-banner"
+import { ConsentManager } from "@/components/consent-manager"
 import { FavoritesProvider } from "@/lib/favorites-context"
 import { MessagesProvider } from "@/lib/messages-context"
 import { ThemeProvider } from "@/components/theme-provider"
-import { ConsentManager } from "@/components/consent-manager"
 import "./globals.css"
 
 const _geist = Geist({ subsets: ["latin"] })
@@ -151,6 +151,11 @@ export default function RootLayout({
                     })();
                   `
                 }}
+              />
+              {/* Consent Manager Trackless Analytics */}
+              <Script
+                src="https://cdn.consentmanager.net/trackless/delivery/35d955c214de.js"
+                strategy="afterInteractive"
               />
             </MessagesProvider>
           </FavoritesProvider>

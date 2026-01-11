@@ -179,9 +179,10 @@ export function CategoryDetailContent({ categoryId }: CategoryDetailContentProps
                   <img
                     src={sub.image || "/placeholder.svg"}
                     alt={sub.name}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300 cmp-ignore"
                     loading="eager"
                     fetchPriority="high"
+                    data-cmp-ignore
                     onError={(e) => {
                       console.warn('Subcategory image failed to load:', sub.image);
                       e.currentTarget.src = '/placeholder.svg';
@@ -333,10 +334,12 @@ export function CategoryDetailContent({ categoryId }: CategoryDetailContentProps
                       <div className="glass-card rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300">
                         <div className="aspect-[4/3] relative overflow-hidden">
                           {listing.images && listing.images[0] ? (
+
                             <img
                               src={listing.images[0]}
                               alt={listing.title}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cmp-ignore"
+                              data-cmp-ignore
                               onError={(e) => {
                                 e.currentTarget.src = '/placeholder.svg'
                               }}
@@ -398,12 +401,16 @@ export function CategoryDetailContent({ categoryId }: CategoryDetailContentProps
                         <div className="flex gap-6">
                           <div className="w-48 h-36 rounded-xl overflow-hidden shrink-0 relative">
                             {listing.images && listing.images[0] ? (
-                              <Image
+
+                              <img
                                 src={listing.images[0]}
                                 alt={listing.title}
-                                fill
-                                className="object-cover group-hover:scale-105 transition-transform duration-500"
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cmp-ignore"
+                                data-cmp-ignore
                                 suppressHydrationWarning
+                                onError={(e) => {
+                                  e.currentTarget.src = '/placeholder.svg';
+                                }}
                               />
                             ) : (
                               <div className="w-full h-full bg-muted flex items-center justify-center">

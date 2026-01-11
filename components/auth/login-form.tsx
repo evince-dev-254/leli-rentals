@@ -297,10 +297,26 @@ export function LoginForm() {
               <Button
                 type="submit"
                 className="w-full h-12 bg-primary text-primary-foreground mt-2"
-                disabled={isCheckingEmail || isLoading || !captchaToken}
+                disabled={isCheckingEmail || isLoading || (!captchaToken && !captchaError)}
+                onClick={(e) => {
+                  if (captchaError) {
+                    e.preventDefault()
+                    setCaptchaError(false)
+                    turnstileRef.current?.reset()
+                  }
+                  // Normal submit flow continues if not strictly preventing default here, 
+                  // but for the error case we want to just reset. 
+                  // The form onSubmit handles the actual login.
+                  // However, since this is type="submit", we need to be careful.
+                  // If captchaError is true, we want to reset.
+                }}
               >
                 {isCheckingEmail || isLoading ? (
                   <Loader2 className="h-5 w-5 animate-spin" />
+                ) : captchaError ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 text-red-500" /> Retry Verification
+                  </span>
                 ) : !captchaToken ? (
                   <span className="flex items-center gap-2">
                     <Loader2 className="h-4 w-4 animate-spin" /> Verifying...

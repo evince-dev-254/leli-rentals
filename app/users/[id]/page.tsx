@@ -115,16 +115,17 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                             <div className="relative flex flex-col sm:flex-row items-start sm:items-end -mt-12 gap-6">
                                 <div className="relative">
                                     <div className="h-32 w-32 rounded-full border-4 border-background overflow-hidden bg-muted relative">
-                                        <img
-                                            src={avatarUrl}
-                                            alt={profile.full_name}
-                                            className="w-full h-full object-cover"
-                                            loading="eager"
-                                            fetchPriority="high"
-                                            onError={(e) => {
-                                                e.currentTarget.src = "/african-man-portrait.png"
-                                            }}
-                                        />
+                                            <img
+                                                src={avatarUrl}
+                                                alt={profile.full_name}
+                                                className="w-full h-full object-cover cmp-ignore"
+                                                loading="eager"
+                                                fetchPriority="high"
+                                                data-cmp-ignore
+                                                onError={(e) => {
+                                                    e.currentTarget.src = "/african-man-portrait.png"
+                                                }}
+                                            />
                                     </div>
                                     {isVerified && (
                                         <div className="absolute bottom-1 right-1 bg-green-500 text-white p-1 rounded-full border-2 border-background" title="Verified Owner">
@@ -224,10 +225,12 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                                         <Card className="h-full overflow-hidden border-border/50 hover:border-primary/50 transition-all duration-300 hover:shadow-lg glass-card">
                                             <div className="relative aspect-[4/3] bg-muted overflow-hidden">
                                                 {listing.images && listing.images[0] ? (
+                                                    // eslint-disable-next-line @next/next/no-img-element
                                                     <img
                                                         src={listing.images[0]}
                                                         alt={listing.title}
-                                                        className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                                                        className="w-full h-full object-cover transition-transform group-hover:scale-105 cmp-ignore"
+                                                        data-cmp-ignore
                                                         onError={(e) => {
                                                             e.currentTarget.src = "/placeholder.svg"
                                                         }}

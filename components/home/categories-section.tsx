@@ -86,12 +86,14 @@ export function CategoriesSection() {
           {/* Featured Category - Vehicles (Large) */}
           <Link href={categories[0].href} className="md:col-span-2 md:row-span-2 group">
             <div className="relative h-full min-h-[400px] rounded-2xl overflow-hidden">
+                // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={categories[0].image || "/placeholder.svg"}
                 alt={categories[0].name}
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 cmp-ignore"
                 loading="eager"
                 fetchPriority="high"
+                data-cmp-ignore
                 onError={(e) => {
                   console.warn('Category image failed to load:', categories[0].image);
                   e.currentTarget.src = '/placeholder.svg';
@@ -121,12 +123,14 @@ export function CategoriesSection() {
           {/* Homes (Medium) */}
           <Link href={categories[1].href} className="md:row-span-2 group">
             <div className="relative h-full min-h-[400px] rounded-2xl overflow-hidden">
+                // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={categories[1].image || "/placeholder.svg"}
                 alt={categories[1].name}
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 cmp-ignore"
                 loading="eager"
                 fetchPriority="high"
+                data-cmp-ignore
                 onError={(e) => {
                   e.currentTarget.src = '/placeholder.svg';
                 }}
@@ -266,12 +270,14 @@ export function CategoriesSection() {
           {/* Event Spaces */}
           <Link href={categories[6].href} className="md:col-span-2 group">
             <div className="relative h-[190px] rounded-2xl overflow-hidden">
+                // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={categories[6].image || "/placeholder.svg"}
                 alt={categories[6].name}
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 cmp-ignore"
                 loading="eager"
                 fetchPriority="high"
+                data-cmp-ignore
                 onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />

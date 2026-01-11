@@ -96,20 +96,15 @@ export function FeaturedListings() {
                 {/* Image with gradient fallback */}
                 <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-pink-400 via-purple-400 to-blue-400">
                   {listing.images && listing.images[0] ? (
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      src={listing.images[0]}
+                      src={listing.images[0] || "/placeholder.svg"} // Fallback immediately
                       alt={listing.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110 cmp-ignore"
+                      data-cmp-ignore
                       onError={(e) => {
-                        console.warn('Featured listing image failed to load:', listing.images[0]);
-                        // Instead of hiding, show placeholder
-                        e.currentTarget.src = '/placeholder.svg';
-                        e.currentTarget.className = 'w-full h-full object-contain p-8 opacity-50';
+                        e.currentTarget.src = "/placeholder.svg" // Fallback on error
                       }}
-                      onLoad={(e) => {
-                        e.currentTarget.style.opacity = '1';
-                      }}
-                      style={{ opacity: '0' }}
                       suppressHydrationWarning
                     />
                   ) : (

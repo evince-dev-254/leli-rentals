@@ -23,6 +23,7 @@ export function ConsentManager() {
             window.cmp_host = "delivery.consentmanager.net";
             window.cmp_cdn = "cdn.consentmanager.net";
             window.cmp_proto = "https:";
+            window.gdprAppliesGlobally = true;
           `
                 }}
             />
@@ -31,11 +32,14 @@ export function ConsentManager() {
                 strategy="afterInteractive"
                 src="https://cdn.consentmanager.net/delivery/cmp.min.js"
             />
-            <Script
+            {/* Auto-blocking disabled to allow Unsplash/Supabase images to load. 
+                Trackers (GA, Tawk) are manually blocked in layout.tsx using type="text/plain" 
+            */}
+            {/* <Script
                 id="cmp-autoblocking"
                 strategy="afterInteractive"
                 src="https://cdn.consentmanager.net/delivery/autoblocking/96403.js"
-            />
+            /> */ }
         </>
     )
 }

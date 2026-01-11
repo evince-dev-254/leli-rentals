@@ -168,12 +168,16 @@ function SearchResults() {
                             <div className="glass-card rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                                 <div className="aspect-[4/3] relative overflow-hidden">
                                     {listing.images && listing.images[0] ? (
-                                        <Image
+
+                                        <img
                                             src={listing.images[0]}
                                             alt={listing.title}
-                                            fill
-                                            className="object-cover group-hover:scale-110 transition-transform duration-700"
+                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 cmp-ignore"
+                                            data-cmp-ignore
                                             suppressHydrationWarning
+                                            onError={(e) => {
+                                                e.currentTarget.src = '/placeholder.svg';
+                                            }}
                                         />
                                     ) : (
                                         <div className="w-full h-full bg-muted flex items-center justify-center">
@@ -232,12 +236,16 @@ function SearchResults() {
                                 <div className="flex flex-col sm:flex-row gap-6">
                                     <div className="w-full sm:w-64 h-48 rounded-xl overflow-hidden shrink-0 relative">
                                         {listing.images && listing.images[0] ? (
-                                            <Image
+
+                                            <img
                                                 src={listing.images[0]}
                                                 alt={listing.title}
-                                                fill
-                                                className="object-cover group-hover:scale-105 transition-transform duration-500"
+                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cmp-ignore"
+                                                data-cmp-ignore
                                                 suppressHydrationWarning
+                                                onError={(e) => {
+                                                    e.currentTarget.src = '/placeholder.svg';
+                                                }}
                                             />
                                         ) : (
                                             <div className="w-full h-full bg-muted flex items-center justify-center">
@@ -284,13 +292,18 @@ function SearchResults() {
                                                     )}
                                                 </div>
                                                 <div className="flex items-center text-sm text-muted-foreground">
-                                                    <Image
+
+                                                    <img
                                                         src={listing.owner?.avatar_url || "/placeholder-user.jpg"}
                                                         alt={listing.owner?.full_name || "Owner"}
                                                         width={20}
                                                         height={20}
-                                                        className="rounded-full mr-2"
+                                                        className="rounded-full mr-2 cmp-ignore"
+                                                        data-cmp-ignore
                                                         suppressHydrationWarning
+                                                        onError={(e) => {
+                                                            e.currentTarget.src = '/placeholder-user.jpg';
+                                                        }}
                                                     />
                                                     {listing.owner?.full_name || "Verified Owner"}
                                                 </div>

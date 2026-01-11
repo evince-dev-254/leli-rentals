@@ -11,6 +11,7 @@ const nextConfig = {
     'http://localhost:3000',
     'http://127.0.0.1:3000',
     'http://192.168.100.231:3000',
+    'http://192.168.100.56:3000',
     // Add other local network IPs as needed
   ],
 }
