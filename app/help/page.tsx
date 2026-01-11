@@ -11,7 +11,7 @@ export default function HelpPage() {
   return (
     <>
       <Header />
-      <main className="min-h-screen">
+      <main className="min-h-screen pt-24">
         <HelpContent />
       </main>
       <Footer />

@@ -111,6 +111,11 @@ export default function RootLayout({
           strategy="beforeInteractive"
           src="https://cdn.consentmanager.net/delivery/cmp.min.js"
         />
+        <Script
+          id="cmp-autoblocking"
+          strategy="beforeInteractive"
+          src="https://cdn.consentmanager.net/delivery/autoblocking/96403.js"
+        />
       </head>
       <body className={`font-sans antialiased hide-scrollbar`} suppressHydrationWarning>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>

@@ -53,7 +53,7 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
 
   return (
     <div className="min-h-screen flex flex-col">
-      <main className="flex-1">
+      <main className="flex-1 pt-24">
         <ListingDetailContent listing={transformedListing} />
       </main>
       <Footer />
