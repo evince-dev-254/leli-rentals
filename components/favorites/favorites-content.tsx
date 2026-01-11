@@ -44,6 +44,7 @@ export function FavoritesContent() {
                     src={listing.images[0] || "/placeholder.svg"}
                     alt={listing.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    suppressHydrationWarning
                   />
                   <Button
                     variant="ghost"

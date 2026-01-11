@@ -55,21 +55,30 @@ export function ListingPreview({
                     {/* Images */}
                     {listingData.images && listingData.images.length > 0 && (
                         <div className="grid grid-cols-2 gap-2">
-                            <div className="col-span-2 aspect-video relative rounded-lg overflow-hidden">
+                            <div className="col-span-2 aspect-video relative rounded-lg overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200">
                                 <Image
                                     src={listingData.images[0] || '/placeholder.svg'}
                                     alt={listingData.title}
                                     fill
-                                    className="object-cover"
+                                    className="object-cover transition-opacity duration-300"
+                                    onError={(e) => {
+                                        e.currentTarget.src = '/placeholder.svg';
+                                    }}
+                                    priority
+                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                                 />
                             </div>
                             {listingData.images.slice(1, 5).map((image, index) => (
-                                <div key={index} className="aspect-video relative rounded-lg overflow-hidden">
+                                <div key={index} className="aspect-video relative rounded-lg overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200">
                                     <Image
                                         src={image || '/placeholder.svg'}
                                         alt={`${listingData.title} ${index + 2}`}
                                         fill
-                                        className="object-cover"
+                                        className="object-cover transition-opacity duration-300"
+                                        onError={(e) => {
+                                            e.currentTarget.src = '/placeholder.svg';
+                                        }}
+                                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                                     />
                                 </div>
                             ))}

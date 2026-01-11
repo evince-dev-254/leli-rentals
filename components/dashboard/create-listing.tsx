@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { Upload, X, Loader2, Plus } from "lucide-react"
 import { BackButton } from "@/components/ui/back-button"
@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import Image from "next/image"
-import { categories } from "@/lib/categories-data"
+import { categories, type Subcategory } from "@/lib/categories-data"
 import { LocationSearch } from "@/components/ui/location-search"
 import { kenyaCounties } from "@/lib/kenya-counties"
 import { ImageUpload } from "@/components/ui/image-upload"
@@ -186,9 +186,11 @@ export function CreateListing() {
     setAmenities(amenities.filter((a) => a !== amenity))
   }
 
-  const subcategories = selectedCategory
-    ? categories.find((c) => c.id === selectedCategory)?.subcategories || []
-    : []
+  const subcategories: Subcategory[] = useMemo(() => {
+    if (!selectedCategory) return []
+    const category = categories.find((c) => c.id === selectedCategory)
+    return category ? category.subcategories : []
+  }, [selectedCategory])
 
   return (
     <div className="max-w-4xl mx-auto space-y-4 md:space-y-6">

@@ -78,7 +78,7 @@ export function ImageUpload({
                         id={uploadId}
                         fileName="upload.png"
                         folder={folder}
-                        validateFile={(file) => file.size < maxSizeMB * 1024 * 1024} // Dynamic Limit
+                        validateFile={(file: File) => file.size < maxSizeMB * 1024 * 1024} // Dynamic Limit
                         onUploadStart={onUploadStart}
                         onSuccess={handleSuccess}
                         onError={handleError}

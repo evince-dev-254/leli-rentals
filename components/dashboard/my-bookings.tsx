@@ -145,12 +145,18 @@ export function MyBookings() {
                 {bookings.map((booking) => (
                   <div key={booking.id} className="flex items-center gap-4 p-4 rounded-lg bg-background/50">
                     <div className="relative w-24 h-16 mr-1">
-                      <Image
-                        src={booking.listing?.images?.[0] || "/placeholder.svg"}
-                        alt={booking.listing?.title}
-                        fill
-                        className="rounded-lg object-cover"
-                      />
+                      {booking.listing?.images?.[0] ? (
+                        <img
+                          src={booking.listing.images[0]}
+                          alt={booking.listing?.title}
+                          className="w-full h-full rounded-lg object-cover"
+                          onError={(e) => {
+                            e.currentTarget.src = '/placeholder.svg'
+                          }}
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-muted rounded-lg" />
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <h4 className="font-semibold">{booking.listing?.title}</h4>

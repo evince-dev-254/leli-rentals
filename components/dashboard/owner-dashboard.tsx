@@ -140,12 +140,13 @@ export default function OwnerDashboard() {
                                         <div className="flex items-center gap-3 min-w-0">
                                             <div className="h-12 w-12 rounded-lg bg-secondary overflow-hidden shrink-0 border border-border relative">
                                                 {l.images && l.images[0] ? (
-                                                    <Image
+                                                    <img
                                                         src={l.images[0]}
                                                         alt={l.title}
-                                                        fill
-                                                        className="object-cover"
-                                                        sizes="48px"
+                                                        className="h-full w-full object-cover"
+                                                        onError={(e) => {
+                                                            e.currentTarget.src = '/placeholder.svg'
+                                                        }}
                                                     />
                                                 ) : (
                                                     <div className="h-full w-full flex items-center justify-center bg-gray-100 dark:bg-gray-800">

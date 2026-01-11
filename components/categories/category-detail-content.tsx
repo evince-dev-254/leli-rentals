@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { FavoriteButton } from "@/components/listings/favorite-button"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { getCategoryById } from "@/lib/categories-data"
 import { supabase } from "@/lib/supabase"
@@ -179,6 +180,8 @@ export function CategoryDetailContent({ categoryId }: CategoryDetailContentProps
                     src={sub.image || "/placeholder.svg"}
                     alt={sub.name}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                    loading="eager"
+                    fetchPriority="high"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                   <span className="absolute bottom-2 left-2 right-2 text-white text-xs sm:text-sm font-medium truncate">
@@ -326,27 +329,23 @@ export function CategoryDetailContent({ categoryId }: CategoryDetailContentProps
                       <div className="glass-card rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300">
                         <div className="aspect-[4/3] relative overflow-hidden">
                           {listing.images && listing.images[0] ? (
-                            <Image
+                            <img
                               src={listing.images[0]}
                               alt={listing.title}
-                              fill
-                              className="object-cover group-hover:scale-105 transition-transform duration-500"
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                              onError={(e) => {
+                                e.currentTarget.src = '/placeholder.svg'
+                              }}
+                              suppressHydrationWarning
                             />
                           ) : (
                             <div className="w-full h-full bg-muted flex items-center justify-center">
                               <span className="text-muted-foreground">No image</span>
                             </div>
                           )}
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="absolute top-3 right-3 bg-white/80 backdrop-blur-sm hover:bg-white"
-                            onClick={(e) => {
-                              e.preventDefault()
-                            }}
-                          >
-                            <Heart className="h-4 w-4" />
-                          </Button>
+                          <div className="absolute top-3 right-3 z-10" onClick={(e) => e.preventDefault()}>
+                            <FavoriteButton listingId={listing.id} />
+                          </div>
                           {listing.is_featured && <Badge className="absolute top-3 left-3 bg-primary">Featured</Badge>}
                         </div>
 
@@ -400,6 +399,7 @@ export function CategoryDetailContent({ categoryId }: CategoryDetailContentProps
                                 alt={listing.title}
                                 fill
                                 className="object-cover group-hover:scale-105 transition-transform duration-500"
+                                suppressHydrationWarning
                               />
                             ) : (
                               <div className="w-full h-full bg-muted flex items-center justify-center">

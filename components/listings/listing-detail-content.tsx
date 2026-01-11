@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import Image from "next/image"
+import dynamic from "next/dynamic"
 import { supabase } from "@/lib/supabase"
 import {
   ArrowLeft,
@@ -18,6 +18,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Send,
+  Loader2,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { BackButton } from "@/components/ui/back-button"
@@ -36,7 +37,10 @@ import { getCategoryById } from "@/lib/categories-data"
 import { getCategoryStringId } from "@/lib/category-uuid-map"
 import { useFavorites } from "@/lib/favorites-context"
 import { useMessages } from "@/lib/messages-context"
-import { BookingModal } from "@/components/booking/booking-modal"
+const BookingModal = dynamic(() => import("@/components/booking/booking-modal").then(mod => mod.BookingModal), {
+  ssr: false,
+  loading: () => <div className="p-4 flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+})
 import type { Listing } from "@/lib/listings-data"
 import { cn } from "@/lib/utils"
 
@@ -127,11 +131,23 @@ export function ListingDetailContent({ listing }: ListingDetailContentProps) {
   const category = getCategoryById(categorySlug)
 
   const nextImage = () => {
-    setCurrentImageIndex((prev) => (prev + 1) % listing.images.length)
+    if (listing.images && listing.images.length > 0) {
+      setCurrentImageIndex((prev) => {
+        const nextIndex = (prev + 1) % listing.images.length;
+        console.log('Moving to next image:', nextIndex, 'of', listing.images.length);
+        return nextIndex;
+      });
+    }
   }
 
   const prevImage = () => {
-    setCurrentImageIndex((prev) => (prev - 1 + listing.images.length) % listing.images.length)
+    if (listing.images && listing.images.length > 0) {
+      setCurrentImageIndex((prev) => {
+        const prevIndex = (prev - 1 + listing.images.length) % listing.images.length;
+        console.log('Moving to previous image:', prevIndex, 'of', listing.images.length);
+        return prevIndex;
+      });
+    }
   }
 
   const handleShare = async () => {
@@ -210,14 +226,33 @@ export function ListingDetailContent({ listing }: ListingDetailContentProps) {
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Image Gallery */}
-            <div className="relative aspect-[16/10] sm:aspect-[16/9] rounded-2xl overflow-hidden glass-card shadow-lg group">
-              <Image
-                src={listing.images[currentImageIndex] || "/placeholder.svg"}
-                alt={listing.title}
-                fill
-                className="object-cover transition-transform duration-700 group-hover:scale-105"
-                priority
-              />
+            <div className="relative aspect-[16/10] sm:aspect-[16/9] rounded-2xl overflow-hidden glass-card shadow-lg group bg-gradient-to-br from-gray-100 to-gray-200">
+              {listing.images && listing.images.length > 0 ? (
+                <>
+                  <img
+                    src={listing.images[currentImageIndex] || '/placeholder.svg'}
+                    alt={`${listing.title} - Image ${currentImageIndex + 1}`}
+                    className="w-full h-full object-cover transition-all duration-700 group-hover:scale-105"
+                    onError={(e) => {
+                      console.warn('Image failed to load:', listing.images[currentImageIndex]);
+                      e.currentTarget.src = '/placeholder.svg';
+                    }}
+                    onLoad={(e) => {
+                      e.currentTarget.style.opacity = '1';
+                    }}
+                    style={{ opacity: '0' }}
+                    suppressHydrationWarning
+                  />
+                  {/* Loading state */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-purple-400 via-pink-400 to-blue-400 flex items-center justify-center transition-opacity duration-300" style={{ opacity: '0' }}>
+                    <span className="text-white text-lg font-semibold">Loading...</span>
+                  </div>
+                </>
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-purple-400 via-pink-400 to-blue-400 flex items-center justify-center">
+                  <span className="text-white text-lg font-semibold">No Image Available</span>
+                </div>
+              )}
 
               {listing.images.length > 1 && (
                 <>
@@ -455,9 +490,11 @@ export function ListingDetailContent({ listing }: ListingDetailContentProps) {
                         <MessageCircle className="h-4 w-4 mr-2" />
                         Chat with Owner
                       </Button>
-                      <Button variant="ghost" className="rounded-full px-5">
-                        View Profile
-                      </Button>
+                      <Link href={`/users/${listing.ownerId}`}>
+                        <Button variant="ghost" className="rounded-full px-5">
+                          View Profile
+                        </Button>
+                      </Link>
                     </div>
                   </div>
                 </div>
@@ -598,11 +635,14 @@ export function ListingDetailContent({ listing }: ListingDetailContentProps) {
           <div className="space-y-6 pt-4">
             <div className="flex gap-4 p-4 bg-secondary/20 rounded-2xl border border-secondary/30">
               <div className="w-20 h-16 shrink-0 rounded-xl overflow-hidden shadow-sm relative">
-                <Image
+                <img
                   src={listing.images[0] || "/placeholder.svg"}
                   alt={listing.title}
-                  fill
-                  className="object-cover"
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.src = '/placeholder.svg';
+                  }}
+                  suppressHydrationWarning
                 />
               </div>
               <div className="flex flex-col justify-center">

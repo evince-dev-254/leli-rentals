@@ -173,6 +173,7 @@ function SearchResults() {
                                             alt={listing.title}
                                             fill
                                             className="object-cover group-hover:scale-110 transition-transform duration-700"
+                                            suppressHydrationWarning
                                         />
                                     ) : (
                                         <div className="w-full h-full bg-muted flex items-center justify-center">
@@ -236,6 +237,7 @@ function SearchResults() {
                                                 alt={listing.title}
                                                 fill
                                                 className="object-cover group-hover:scale-105 transition-transform duration-500"
+                                                suppressHydrationWarning
                                             />
                                         ) : (
                                             <div className="w-full h-full bg-muted flex items-center justify-center">
@@ -288,6 +290,7 @@ function SearchResults() {
                                                         width={20}
                                                         height={20}
                                                         className="rounded-full mr-2"
+                                                        suppressHydrationWarning
                                                     />
                                                     {listing.owner?.full_name || "Verified Owner"}
                                                 </div>

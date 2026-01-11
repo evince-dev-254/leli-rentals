@@ -27,15 +27,15 @@ export const categories = [
       "Find the perfect vehicle for any occasion. From luxury cars for special events to practical trucks for moving, we have it all.",
     count: 1800,
     icon: Car,
-    image: "/luxury-car-showroom-with-sports-cars-and-sedans.jpg",
+    image: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&q=80",
     color: "from-orange-500/20 to-orange-600/10",
     featured: true,
     subcategories: [
-      { name: "Sedans", image: "/mercedes-s-class-black-luxury.jpg" },
-      { name: "SUVs", image: "/bmw-x5-suv-luxury.jpg" },
+      { name: "Sedans", image: "https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=400&h=300&fit=crop" },
+      { name: "SUVs", image: "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=400&h=300&fit=crop" },
       {
         name: "Luxury Cars",
-        image: "/toyota-land-cruiser-black-luxury-suv.jpg",
+        image: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=400&h=300&fit=crop",
       },
       { name: "Sports Cars", image: "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=400&h=300&fit=crop" },
       { name: "Motorcycles", image: "https://images.unsplash.com/photo-1558981285-6f0c94958bb6?w=400&h=300&fit=crop" },
@@ -62,7 +62,7 @@ export const categories = [
       "Discover comfortable stays for your trips. From cozy apartments to luxurious vacation homes across Kenya.",
     count: 2500,
     icon: Home,
-    image: "/modern-apartment-interior-nairobi.jpg",
+    image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80",
     color: "from-blue-500/20 to-blue-600/10",
     featured: true,
     subcategories: [
@@ -109,7 +109,7 @@ export const categories = [
       "Access professional-grade equipment without the purchase cost. Perfect for construction, landscaping, and DIY projects.",
     count: 3200,
     icon: Wrench,
-    image: "/construction-excavator-machinery-on-site.jpg",
+    image: "https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=800&q=80",
     color: "from-green-500/20 to-green-600/10",
     featured: true,
     subcategories: [
@@ -164,7 +164,7 @@ export const categories = [
       "Rent the latest technology without the full investment. Perfect for events, projects, or trying before buying.",
     count: 950,
     icon: Smartphone,
-    image: "/modern-tech-gadgets-laptop-headphones-smart-device.jpg",
+    image: "https://images.unsplash.com/photo-1468495244123-6c6c332eeece?w=800&q=80",
     color: "from-purple-500/20 to-purple-600/10",
     featured: false,
     subcategories: [
@@ -208,7 +208,7 @@ export const categories = [
       "Look stunning for special occasions without buying. Rent designer pieces and accessories for any event.",
     count: 1200,
     icon: Shirt,
-    image: "/designer-colorful-suits-on-mannequins-fashion-stor.jpg",
+    image: "https://images.unsplash.com/photo-1558171813-4c088753af8f?w=800&q=80",
     color: "from-pink-500/20 to-pink-600/10",
     featured: false,
     subcategories: [
@@ -227,7 +227,7 @@ export const categories = [
       { name: "Shoes", image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=300&fit=crop" },
       {
         name: "Traditional Wear",
-        image: "https://images.unsplash.com/photo-1583391733956-6c78276477e2?w=400&h=300&fit=crop",
+        image: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400&h=300&fit=crop",
       },
       { name: "Costumes", image: "https://images.unsplash.com/photo-1509783236416-c9ad59bae472?w=400&h=300&fit=crop" },
       { name: "Watches", image: "https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=400&h=300&fit=crop" },
@@ -249,7 +249,7 @@ export const categories = [
       "Everything you need for entertainment. From musical instruments to party supplies and gaming setups.",
     count: 850,
     icon: Music,
-    image: "/dj-equipment-pioneer-setup.jpg",
+    image: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800&q=80",
     color: "from-yellow-500/20 to-yellow-600/10",
     featured: false,
     subcategories: [
@@ -259,7 +259,7 @@ export const categories = [
       },
       {
         name: "DJ Equipment",
-        image: "https://images.unsplash.com/photo-1571266028243-d220c6a8b6d2?w=400&h=300&fit=crop",
+        image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=300&fit=crop",
       },
       {
         name: "Gaming Consoles",
@@ -311,7 +311,7 @@ export const categories = [
       "Find the perfect venue for weddings, conferences, parties, and more. Various sizes and styles available.",
     count: 600,
     icon: PartyPopper,
-    image: "/luxury-wedding-venue-ballroom-with-flowers.jpg",
+    image: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=800&q=80",
     color: "from-teal-500/20 to-teal-600/10",
     featured: true,
     subcategories: [
@@ -354,7 +354,7 @@ export const categories = [
     longDescription: "Professional photography gear for your shoots. From cameras to lighting setups and backdrops.",
     count: 450,
     icon: Camera,
-    image: "/sony-a7iv-camera-mirrorless.jpg",
+    image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&q=80",
     color: "from-indigo-500/20 to-indigo-600/10",
     featured: false,
     subcategories: [
@@ -372,8 +372,8 @@ export const categories = [
         image: "https://images.unsplash.com/photo-1513379733131-47fc74b45fc7?w=400&h=300&fit=crop",
       },
       { name: "Backdrops", image: "https://images.unsplash.com/photo-1509347528160-9a9e33742cdb?w=400&h=300&fit=crop" },
-      { name: "Tripods", image: "https://images.unsplash.com/photo-1598523253857-4f6f9e7e6b98?w=400&h=300&fit=crop" },
-      { name: "Gimbals", image: "https://images.unsplash.com/photo-1612538498456-e861df91d4d0?w=400&h=300&fit=crop" },
+      { name: "Tripods", image: "https://images.unsplash.com/photo-1606983340126-99ab4feaa64a?w=400&h=300&fit=crop" },
+      { name: "Gimbals", image: "https://images.unsplash.com/photo-1485846234645-a62644f84728?w=400&h=300&fit=crop" },
       {
         name: "Reflectors",
         image: "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=400&h=300&fit=crop",
@@ -400,7 +400,7 @@ export const categories = [
     longDescription: "Stay active with rental fitness equipment. Perfect for home workouts or sports activities.",
     count: 380,
     icon: Dumbbell,
-    image: "/commercial-treadmill-gym.jpg",
+    image: "https://images.unsplash.com/photo-1576678927484-cc907957088c?w=800&q=80",
     color: "from-red-500/20 to-red-600/10",
     featured: false,
     subcategories: [
@@ -566,7 +566,7 @@ export const categories = [
       },
       {
         name: "Kids Bikes",
-        image: "https://images.unsplash.com/photo-1595432541891-a461de67a2f9?w=400&h=300&fit=crop",
+        image: "https://images.unsplash.com/photo-1571068316344-75bc76f77890?w=400&h=300&fit=crop",
       },
       { name: "BMX Bikes", image: "https://images.unsplash.com/photo-1583467875263-d50dec37a88c?w=400&h=300&fit=crop" },
       {

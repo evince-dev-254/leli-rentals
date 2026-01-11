@@ -101,8 +101,16 @@ export function FeaturedListings() {
                       alt={listing.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       onError={(e) => {
-                        e.currentTarget.style.display = 'none'
+                        console.warn('Featured listing image failed to load:', listing.images[0]);
+                        // Instead of hiding, show placeholder
+                        e.currentTarget.src = '/placeholder.svg';
+                        e.currentTarget.className = 'w-full h-full object-contain p-8 opacity-50';
                       }}
+                      onLoad={(e) => {
+                        e.currentTarget.style.opacity = '1';
+                      }}
+                      style={{ opacity: '0' }}
+                      suppressHydrationWarning
                     />
                   ) : (
                     <div className="w-full h-full bg-muted flex items-center justify-center">
@@ -122,7 +130,7 @@ export function FeaturedListings() {
                       </Badge>
                     )}
                   </div>
-                  <div className="absolute top-3 right-3 z-10">
+                  <div className="absolute top-3 right-3 z-10" onClick={(e) => e.preventDefault()}>
                     <FavoriteButton listingId={listing.id} />
                   </div>
                 </div>

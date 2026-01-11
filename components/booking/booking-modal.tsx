@@ -1,9 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useMemo, useCallback } from "react"
 import { CreditCard, Check, Loader2 } from "lucide-react"
-import { usePaystackPayment } from "react-paystack"
-import Image from "next/image"
+import dynamic from "next/dynamic"
+import { usePaystackPayment } from 'react-paystack'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -30,13 +30,17 @@ export function BookingModal({ listing, isOpen, onClose }: BookingModalProps) {
   const [dateRange, setDateRange] = useState<DateRange | undefined>()
   const [rentalPeriod, setRentalPeriod] = useState<"daily" | "weekly" | "monthly">("daily")
   const [isProcessing, setIsProcessing] = useState(false)
+  const [isClient, setIsClient] = useState(false)
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
     phone: "",
   })
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
 
-  const calculateSubtotal = () => {
+  const calculateSubtotal = useCallback(() => {
     if (!dateRange?.from || !dateRange?.to) return 0
     const days = Math.ceil((dateRange.to.getTime() - dateRange.from.getTime()) / (1000 * 60 * 60 * 24))
 
@@ -46,23 +50,23 @@ export function BookingModal({ listing, isOpen, onClose }: BookingModalProps) {
       return Math.ceil(days / 7) * listing.pricePerWeek
     }
     return days * listing.pricePerDay
-  }
+  }, [dateRange, rentalPeriod, listing.pricePerMonth, listing.pricePerWeek, listing.pricePerDay])
 
-  const calculateServiceFee = (subtotal: number) => {
+  const calculateServiceFee = useCallback((subtotal: number) => {
     return Math.round(subtotal * 0.05) // 5% service fee
-  }
+  }, [])
 
-  const calculateTotal = () => {
+  const calculateTotal = useCallback(() => {
     const subtotal = calculateSubtotal()
     return subtotal + calculateServiceFee(subtotal)
-  }
+  }, [calculateSubtotal, calculateServiceFee])
 
-  const getDays = () => {
+  const getDays = useCallback(() => {
     if (!dateRange?.from || !dateRange?.to) return 0
     return Math.ceil((dateRange.to.getTime() - dateRange.from.getTime()) / (1000 * 60 * 60 * 24))
-  }
+  }, [dateRange])
 
-  const config = {
+  const paystackConfig = useMemo(() => ({
     reference: (new Date()).getTime().toString(),
     email: formData.email,
     amount: calculateTotal() * 100, // Paystack expects cents
@@ -79,11 +83,35 @@ export function BookingModal({ listing, isOpen, onClose }: BookingModalProps) {
         }
       ]
     }
-  };
+  }), [formData.email, formData.fullName, listing.id, listing.title, calculateTotal]);
 
-  const initializePayment = usePaystackPayment(config);
+  const initializePayment = usePaystackPayment(paystackConfig);
+
+  const getPaystackConfig = () => ({
+    reference: (new Date()).getTime().toString(),
+    email: formData.email,
+    amount: calculateTotal() * 100, // Paystack expects cents
+    publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "",
+    currency: 'KES',
+    metadata: {
+      listing_id: listing.id,
+      renter_name: formData.fullName,
+      custom_fields: [
+        {
+          display_name: "Listing",
+          variable_name: "listing_title",
+          value: listing.title
+        }
+      ]
+    }
+  });
 
   const handlePayWithPaystack = async () => {
+    if (!isClient || !usePaystackPayment) {
+      toast.error("Payment system loading", { description: "Please wait for the payment system to load." })
+      return
+    }
+
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
@@ -170,11 +198,13 @@ export function BookingModal({ listing, isOpen, onClose }: BookingModalProps) {
             {/* Listing Preview */}
             <div className="flex gap-3 p-3 bg-secondary/50 rounded-lg">
               <div className="relative w-20 h-16 rounded overflow-hidden">
-                <Image
+                <img
                   src={listing.images[0] || "/placeholder.svg"}
                   alt={listing.title}
-                  fill
-                  className="object-cover"
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.src = '/placeholder.svg';
+                  }}
                 />
               </div>
               <div>
@@ -368,11 +398,10 @@ export function BookingModal({ listing, isOpen, onClose }: BookingModalProps) {
                 and mobile money.
               </p>
               <div className="relative h-6 w-32 opacity-50 dark:invert">
-                <Image
+                <img
                   src="https://website-v3-assets.s3.amazonaws.com/assets/img/hero/Paystack-mark-white-twitter.png"
                   alt="Paystack"
-                  fill
-                  className="object-contain"
+                  className="w-full h-full object-contain"
                 />
               </div>
             </div>
@@ -384,12 +413,17 @@ export function BookingModal({ listing, isOpen, onClose }: BookingModalProps) {
               <Button
                 className="flex-1 bg-[#00C3F7] hover:bg-[#00A8D6] text-white"
                 onClick={handlePayWithPaystack}
-                disabled={isProcessing}
+                disabled={isProcessing || !isClient}
               >
                 {isProcessing ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Processing...
+                  </>
+                ) : !isClient ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Loading Payment...
                   </>
                 ) : (
                   <>

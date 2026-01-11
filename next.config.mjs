@@ -13,10 +13,6 @@ const nextConfig = {
     'http://192.168.100.231:3000',
     // Add other local network IPs as needed
   ],
-  // Suppress hydration warnings caused by CMP adding data-cmp-* attributes
-  experimental: {
-    suppressHydrationWarning: true,
-  },
 }
 
 export default nextConfig

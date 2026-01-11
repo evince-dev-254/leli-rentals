@@ -8,6 +8,7 @@ import { OfflineBanner } from "@/components/ui/offline-banner"
 import { FavoritesProvider } from "@/lib/favorites-context"
 import { MessagesProvider } from "@/lib/messages-context"
 import { ThemeProvider } from "@/components/theme-provider"
+import { ConsentManager } from "@/components/consent-manager"
 import "./globals.css"
 
 const _geist = Geist({ subsets: ["latin"] })
@@ -93,32 +94,10 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        {/* Consent Manager CMP - Must load BEFORE any tracking scripts */}
-        <Script
-          id="cmp-config"
-          strategy="beforeInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.cmp_id = 96403;
-              window.cmp_host = "delivery.consentmanager.net";
-              window.cmp_cdn = "cdn.consentmanager.net";
-              window.cmp_proto = "https:";
-            `
-          }}
-        />
-        <Script
-          id="cmp-script"
-          strategy="beforeInteractive"
-          src="https://cdn.consentmanager.net/delivery/cmp.min.js"
-        />
-        <Script
-          id="cmp-autoblocking"
-          strategy="beforeInteractive"
-          src="https://cdn.consentmanager.net/delivery/autoblocking/96403.js"
-        />
       </head>
       <body className={`font-sans antialiased hide-scrollbar`} suppressHydrationWarning>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
+          <ConsentManager />
           <FavoritesProvider>
             <MessagesProvider>
               {children}

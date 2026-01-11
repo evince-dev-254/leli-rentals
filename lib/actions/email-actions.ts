@@ -233,8 +233,7 @@ export async function sendNewMessageEmail(
             react: NewMessageEmail({
                 receiverName: receiverName,
                 senderName,
-                messageSnippet,
-                conversationId
+                messageContent,
             }),
         })
         return { success: true, data }

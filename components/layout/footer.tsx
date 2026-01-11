@@ -39,7 +39,8 @@ export function Footer() {
                 width={140}
                 height={36}
                 className="h-9 w-auto dark:invert"
-                style={{ width: "auto" }}
+                style={{ width: "auto", height: "auto" }}
+                suppressHydrationWarning
               />
             </Link>
             <p className="text-muted-foreground mb-6 max-w-sm">

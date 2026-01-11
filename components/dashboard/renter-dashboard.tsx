@@ -152,11 +152,13 @@ export function RenterDashboard() {
                                         <div key={booking.id} className="flex flex-col md:flex-row gap-4 p-4 rounded-xl bg-background/50 border border-border/50 shadow-sm hover:shadow-md transition-all">
                                             <div className="relative w-full md:w-48 h-32 shrink-0">
                                                 {booking.listing?.images?.[0] ? (
-                                                    <Image
+                                                    <img
                                                         src={booking.listing.images[0]}
                                                         alt={booking.listing?.title || "Listing"}
-                                                        fill
-                                                        className="object-cover rounded-lg"
+                                                        className="w-full h-full object-cover rounded-lg"
+                                                        onError={(e) => {
+                                                            e.currentTarget.src = '/placeholder.svg'
+                                                        }}
                                                     />
                                                 ) : (
                                                     <div className="w-full h-full bg-muted flex items-center justify-center rounded-lg">
@@ -274,11 +276,13 @@ export function RenterDashboard() {
                                 <Card key={fav.id} className="glass-card overflow-hidden hover:shadow-xl transition-all group flex flex-col h-full border-none">
                                     <div className="aspect-video relative overflow-hidden">
                                         {fav.listing.images?.[0] ? (
-                                            <Image
+                                            <img
                                                 src={fav.listing.images[0]}
                                                 alt={fav.listing.title}
-                                                fill
-                                                className="object-cover group-hover:scale-105 transition-transform duration-500"
+                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                                onError={(e) => {
+                                                    e.currentTarget.src = '/placeholder.svg'
+                                                }}
                                             />
                                         ) : (
                                             <div className="w-full h-full bg-muted flex items-center justify-center">
@@ -339,11 +343,13 @@ export function RenterDashboard() {
                                             <div className="flex flex-col sm:flex-row gap-4">
                                                 <div className="relative w-16 h-16 shrink-0">
                                                     {review.listing?.images?.[0] ? (
-                                                        <Image
+                                                        <img
                                                             src={review.listing.images[0]}
                                                             alt={review.listing?.title || "Item"}
-                                                            fill
-                                                            className="rounded-lg object-cover"
+                                                            className="w-full h-full rounded-lg object-cover"
+                                                            onError={(e) => {
+                                                                e.currentTarget.src = '/placeholder.svg'
+                                                            }}
                                                         />
                                                     ) : (
                                                         <div className="w-full h-full bg-muted rounded-lg" />

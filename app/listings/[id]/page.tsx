@@ -1,3 +1,4 @@
+import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { ListingDetailContent } from "@/components/listings/listing-detail-content"
 import { supabase } from "@/lib/supabase"
@@ -53,6 +54,7 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
 
   return (
     <div className="min-h-screen flex flex-col">
+      <Header />
       <main className="flex-1 pt-24">
         <ListingDetailContent listing={transformedListing} />
       </main>

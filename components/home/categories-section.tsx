@@ -1,3 +1,4 @@
+"use client"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -89,6 +90,12 @@ export function CategoriesSection() {
                 src={categories[0].image || "/placeholder.svg"}
                 alt={categories[0].name}
                 className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                loading="eager"
+                fetchPriority="high"
+                onError={(e) => {
+                  console.warn('Category image failed to load:', categories[0].image);
+                  e.currentTarget.src = '/placeholder.svg';
+                }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
@@ -118,6 +125,11 @@ export function CategoriesSection() {
                 src={categories[1].image || "/placeholder.svg"}
                 alt={categories[1].name}
                 className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                loading="eager"
+                fetchPriority="high"
+                onError={(e) => {
+                  e.currentTarget.src = '/placeholder.svg';
+                }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
@@ -143,6 +155,11 @@ export function CategoriesSection() {
                 src={categories[2].image || "/placeholder.svg"}
                 alt={categories[2].name}
                 className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                loading="eager"
+                fetchPriority="high"
+                onError={(e) => {
+                  e.currentTarget.src = '/placeholder.svg';
+                }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
@@ -168,6 +185,9 @@ export function CategoriesSection() {
                 src={categories[3].image || "/placeholder.svg"}
                 alt={categories[3].name}
                 className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                loading="eager"
+                fetchPriority="high"
+                onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
@@ -193,6 +213,9 @@ export function CategoriesSection() {
                 src={categories[4].image || "/placeholder.svg"}
                 alt={categories[4].name}
                 className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                loading="eager"
+                fetchPriority="high"
+                onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
@@ -218,6 +241,9 @@ export function CategoriesSection() {
                 src={categories[5].image || "/placeholder.svg"}
                 alt={categories[5].name}
                 className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                loading="eager"
+                fetchPriority="high"
+                onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
@@ -244,6 +270,9 @@ export function CategoriesSection() {
                 src={categories[6].image || "/placeholder.svg"}
                 alt={categories[6].name}
                 className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                loading="eager"
+                fetchPriority="high"
+                onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 

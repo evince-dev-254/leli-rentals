@@ -81,6 +81,12 @@ export function CategoriesPageContent() {
                         src={category.image || "/placeholder.svg"}
                         alt={category.name}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        loading="eager"
+                        fetchPriority="high"
+                        onError={(e) => {
+                          console.warn('Category page image failed to load:', category.image);
+                          e.currentTarget.src = '/placeholder.svg';
+                        }}
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                       <div className="absolute bottom-4 left-4 right-4">

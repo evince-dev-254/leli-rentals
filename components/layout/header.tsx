@@ -147,6 +147,7 @@ export function Header() {
               priority
               className="h-4 sm:h-5 w-auto invert"
               style={{ width: "auto" }}
+              suppressHydrationWarning
             />
           </Link>
 
@@ -424,7 +425,7 @@ export function Header() {
                     </p>
                   )}
                   <div className="mt-6 flex justify-center gap-6 grayscale opacity-50">
-                    <Image src="/logo.png" alt="Leli" width={60} height={15} className="invert" />
+                    <Image src="/logo.png" alt="Leli" width={60} height={15} className="invert" suppressHydrationWarning />
                   </div>
                 </div>
               </SheetContent>

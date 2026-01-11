@@ -114,12 +114,14 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                         <div className="px-8 pb-8">
                             <div className="relative flex flex-col sm:flex-row items-start sm:items-end -mt-12 gap-6">
                                 <div className="relative">
-                                    <div className="h-32 w-32 rounded-full border-4 border-background overflow-hidden bg-muted">
-                                        <Image
+                                    <div className="h-32 w-32 rounded-full border-4 border-background overflow-hidden bg-muted relative">
+                                        <img
                                             src={avatarUrl}
                                             alt={profile.full_name}
-                                            fill
-                                            className="object-cover"
+                                            className="w-full h-full object-cover"
+                                            onError={(e) => {
+                                                e.currentTarget.src = "/african-man-portrait.png"
+                                            }}
                                         />
                                     </div>
                                     {isVerified && (
@@ -220,11 +222,13 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                                         <Card className="h-full overflow-hidden border-border/50 hover:border-primary/50 transition-all duration-300 hover:shadow-lg glass-card">
                                             <div className="relative aspect-[4/3] bg-muted overflow-hidden">
                                                 {listing.images && listing.images[0] ? (
-                                                    <Image
+                                                    <img
                                                         src={listing.images[0]}
                                                         alt={listing.title}
-                                                        fill
-                                                        className="object-cover transition-transform group-hover:scale-105"
+                                                        className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                                                        onError={(e) => {
+                                                            e.currentTarget.src = "/placeholder.svg"
+                                                        }}
                                                     />
                                                 ) : (
                                                     <div className="w-full h-full flex items-center justify-center text-muted-foreground">
