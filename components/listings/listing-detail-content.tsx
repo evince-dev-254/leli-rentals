@@ -94,8 +94,8 @@ export function ListingDetailContent({ listing }: ListingDetailContentProps) {
     checkAndFixCoordinates()
   }, [listing.latitude, listing.longitude, listing.location])
 
-  const mapLat = correctedCoords ? correctedCoords.lat : listing.latitude
-  const mapLng = correctedCoords ? correctedCoords.lng : listing.longitude
+  const mapLat = correctedCoords?.lat ?? listing.latitude ?? 0
+  const mapLng = correctedCoords?.lng ?? listing.longitude ?? 0
   const mapKey = correctedCoords ? `corrected-${listing.id}` : listing.id
 
 
@@ -352,8 +352,8 @@ export function ListingDetailContent({ listing }: ListingDetailContentProps) {
                         <Map
                           key={mapKey}
                           initialViewState={{
-                            latitude: mapLat ?? 0,
-                            longitude: mapLng ?? 0,
+                            latitude: mapLat,
+                            longitude: mapLng,
                             zoom: 14
                           }}
                           mapStyle="mapbox://styles/mapbox/streets-v11"
@@ -458,7 +458,7 @@ export function ListingDetailContent({ listing }: ListingDetailContentProps) {
                 <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 text-center sm:text-left">
                   <div className="relative">
                     <Avatar className="h-20 w-20 ring-4 ring-background shadow-md">
-                      <AvatarImage src={listing.ownerAvatar || "/placeholder.svg"} />
+                      <AvatarImage src={listing.ownerAvatar || "/placeholder.svg"} loading="eager" fetchPriority="high" />
                       <AvatarFallback className="text-xl font-bold">
                         {listing.ownerName
                           .split(" ")

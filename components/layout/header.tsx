@@ -240,7 +240,7 @@ export function Header() {
             {user ? (
               <Link href="/dashboard">
                 <Avatar className="hidden lg:flex h-10 w-10 ring-2 ring-white/20 hover:ring-white/50 transition-all cursor-pointer">
-                  <AvatarImage src={user.user_metadata?.avatar_url || user.user_metadata?.picture} />
+                  <AvatarImage src={user.user_metadata?.avatar_url || user.user_metadata?.picture} loading="eager" fetchPriority="high" />
                   <AvatarFallback className="bg-gradient-to-br from-green-500 to-emerald-600 text-white">
                     {user.email?.[0]?.toUpperCase() || 'U'}
                   </AvatarFallback>
@@ -281,7 +281,7 @@ export function Header() {
                   {user ? (
                     <div className="flex items-center gap-4">
                       <Avatar className="h-14 w-14 ring-2 ring-purple-500/20 shadow-lg shadow-purple-500/10">
-                        <AvatarImage src={user.user_metadata?.avatar_url || user.user_metadata?.picture} />
+                        <AvatarImage src={user.user_metadata?.avatar_url || user.user_metadata?.picture} loading="eager" fetchPriority="high" />
                         <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white text-lg">
                           {user.email?.[0]?.toUpperCase() || 'U'}
                         </AvatarFallback>

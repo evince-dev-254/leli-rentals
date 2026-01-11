@@ -182,6 +182,10 @@ export function CategoryDetailContent({ categoryId }: CategoryDetailContentProps
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                     loading="eager"
                     fetchPriority="high"
+                    onError={(e) => {
+                      console.warn('Subcategory image failed to load:', sub.image);
+                      e.currentTarget.src = '/placeholder.svg';
+                    }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                   <span className="absolute bottom-2 left-2 right-2 text-white text-xs sm:text-sm font-medium truncate">

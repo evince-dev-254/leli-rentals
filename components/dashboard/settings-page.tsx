@@ -246,7 +246,7 @@ export function SettingsPage() {
               {/* Avatar */}
               <div className="flex items-center gap-6">
                 <Avatar className="h-24 w-24">
-                  <AvatarImage src={profile?.avatar_url || "/placeholder.svg"} />
+                  <AvatarImage src={profile?.avatar_url || "/placeholder.svg"} loading="eager" fetchPriority="high" />
                   <AvatarFallback>{profile?.full_name?.[0] || 'U'}</AvatarFallback>
                 </Avatar>
                 <div className="space-y-2">

@@ -237,7 +237,7 @@ export function DashboardHeader() {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-10 w-10 rounded-full">
               <Avatar className="h-10 w-10">
-                <AvatarImage src={profile?.avatar_url || "/african-man-portrait.png"} />
+                <AvatarImage src={profile?.avatar_url || "/african-man-portrait.png"} loading="eager" fetchPriority="high" />
                 <AvatarFallback>{profile?.full_name?.[0] || profile?.email?.[0] || 'U'}</AvatarFallback>
               </Avatar>
             </Button>

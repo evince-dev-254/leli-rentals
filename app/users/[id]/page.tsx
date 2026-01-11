@@ -119,6 +119,8 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                                             src={avatarUrl}
                                             alt={profile.full_name}
                                             className="w-full h-full object-cover"
+                                            loading="eager"
+                                            fetchPriority="high"
                                             onError={(e) => {
                                                 e.currentTarget.src = "/african-man-portrait.png"
                                             }}
