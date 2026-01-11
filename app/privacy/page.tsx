@@ -23,7 +23,7 @@ export default function PrivacyPage() {
             <p className="text-lg text-muted-foreground">
               How we collect, use, and protect your personal information.
             </p>
-            <p className="text-sm text-muted-foreground mt-2">Last updated: January 2025</p>
+            <p className="text-sm text-muted-foreground mt-2">Last updated: January 2026</p>
           </div>
 
           {/* Quick Overview */}
@@ -98,6 +98,21 @@ export default function PrivacyPage() {
                 <li>Analytics providers (Google Analytics)</li>
                 <li>Verification services (identity verification)</li>
               </ul>
+
+              <h3 className="font-semibold text-lg mb-2 mt-4">2.4 Cookie Usage</h3>
+              <p className="text-muted-foreground leading-relaxed mb-2">We use cookies and similar tracking technologies to:</p>
+              <ul className="list-disc pl-6 space-y-2 text-muted-foreground mb-4">
+                <li><strong>Essential Cookies:</strong> Required for authentication, security, and basic website functionality</li>
+                <li><strong>Analytics Cookies:</strong> Google Analytics tracks user behavior, page views, and site performance</li>
+                <li><strong>Functional Cookies:</strong> Remember your preferences, language settings, and favorites</li>
+                <li><strong>Security Cookies:</strong> Cloudflare Turnstile for bot protection and fraud prevention</li>
+                <li><strong>Support Cookies:</strong> Tawk.to for live chat functionality</li>
+              </ul>
+              <p className="text-muted-foreground leading-relaxed">
+                For detailed information about our cookie usage, please see our{" "}
+                <a href="/cookies" className="text-primary hover:underline font-medium">Cookie Policy</a>.
+                You can manage your cookie preferences through our consent banner or your browser settings.
+              </p>
             </section>
 
             <section>
@@ -165,12 +180,136 @@ export default function PrivacyPage() {
               <h3 className="font-semibold text-lg mb-2 mt-4">4.2 Service Providers</h3>
               <p className="text-muted-foreground leading-relaxed mb-2">We share information with trusted third parties who help us operate:</p>
               <ul className="list-disc pl-6 space-y-2 text-muted-foreground mb-4">
-                <li><strong>Payment Processing:</strong> Paystack (payment transactions)</li>
-                <li><strong>Cloud Storage:</strong> Supabase (database), ImageKit (image hosting)</li>
-                <li><strong>Analytics:</strong> Google Analytics (usage analytics)</li>
-                <li><strong>Email Services:</strong> Resend (transactional emails)</li>
-                <li><strong>Customer Support:</strong> Support chat providers</li>
+                <li><strong>Payment Processing:</strong> Paystack (payment transactions, PCI-DSS compliant)</li>
+                <li><strong>Cloud Storage:</strong> Supabase (database and authentication), ImageKit (image hosting and optimization)</li>
+                <li><strong>Analytics:</strong> Google Analytics (usage analytics, user behavior tracking), Vercel Analytics (performance monitoring)</li>
+                <li><strong>Email Services:</strong> Resend (transactional emails, booking confirmations)</li>
+                <li><strong>Security:</strong> Cloudflare Turnstile (bot protection, fraud prevention)</li>
+                <li><strong>Customer Support:</strong> Tawk.to (live chat support)</li>
               </ul>
+
+              <h3 className="font-semibold text-lg mb-2 mt-6">4.2.1 Detailed Vendor Information</h3>
+
+              <div className="space-y-4 mb-4">
+                <div className="border-l-4 border-blue-500 pl-4 bg-blue-500/5 p-3 rounded-r">
+                  <h4 className="font-semibold mb-2">Google Analytics</h4>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    <strong>Purpose:</strong> Website analytics, user behavior tracking, performance measurement
+                  </p>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    <strong>Data Processed:</strong> IP address, browser information, pages visited, time on site, user interactions, device information, location data
+                  </p>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    <strong>Data Transfer:</strong> May transfer data outside EEA/EU (Google servers worldwide)
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    <strong>Privacy Policy:</strong> <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Google Privacy Policy</a>
+                  </p>
+                </div>
+
+                <div className="border-l-4 border-purple-500 pl-4 bg-purple-500/5 p-3 rounded-r">
+                  <h4 className="font-semibold mb-2">Cloudflare Turnstile</h4>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    <strong>Purpose:</strong> Bot protection, fraud prevention, security
+                  </p>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    <strong>Data Processed:</strong> IP address, browser fingerprint, interaction patterns
+                  </p>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    <strong>Data Transfer:</strong> May transfer data outside EEA/EU
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    <strong>Privacy Policy:</strong> <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Cloudflare Privacy Policy</a>
+                  </p>
+                </div>
+
+                <div className="border-l-4 border-green-500 pl-4 bg-green-500/5 p-3 rounded-r">
+                  <h4 className="font-semibold mb-2">Tawk.to</h4>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    <strong>Purpose:</strong> Live chat support, customer service
+                  </p>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    <strong>Data Processed:</strong> Chat messages, name, email, IP address, browser information
+                  </p>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    <strong>Data Transfer:</strong> Data stored in US (may transfer outside EEA/EU)
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    <strong>Privacy Policy:</strong> <a href="https://www.tawk.to/privacy-policy/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Tawk.to Privacy Policy</a>
+                  </p>
+                </div>
+
+                <div className="border-l-4 border-orange-500 pl-4 bg-orange-500/5 p-3 rounded-r">
+                  <h4 className="font-semibold mb-2">Supabase</h4>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    <strong>Purpose:</strong> Database, authentication, real-time data
+                  </p>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    <strong>Data Processed:</strong> All user data, listings, messages, bookings
+                  </p>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    <strong>Data Location:</strong> EU servers (GDPR compliant)
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    <strong>Privacy Policy:</strong> <a href="https://supabase.com/privacy" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Supabase Privacy Policy</a>
+                  </p>
+                </div>
+
+                <div className="border-l-4 border-pink-500 pl-4 bg-pink-500/5 p-3 rounded-r">
+                  <h4 className="font-semibold mb-2">Paystack</h4>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    <strong>Purpose:</strong> Payment processing
+                  </p>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    <strong>Data Processed:</strong> Payment card details, billing information, transaction data
+                  </p>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    <strong>Compliance:</strong> PCI-DSS Level 1 certified
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    <strong>Privacy Policy:</strong> <a href="https://paystack.com/privacy" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Paystack Privacy Policy</a>
+                  </p>
+                </div>
+
+                <div className="border-l-4 border-cyan-500 pl-4 bg-cyan-500/5 p-3 rounded-r">
+                  <h4 className="font-semibold mb-2">ImageKit</h4>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    <strong>Purpose:</strong> Image hosting, optimization, CDN
+                  </p>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    <strong>Data Processed:</strong> Uploaded images, user-generated content
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    <strong>Privacy Policy:</strong> <a href="https://imagekit.io/privacy-policy" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">ImageKit Privacy Policy</a>
+                  </p>
+                </div>
+
+                <div className="border-l-4 border-indigo-500 pl-4 bg-indigo-500/5 p-3 rounded-r">
+                  <h4 className="font-semibold mb-2">Resend</h4>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    <strong>Purpose:</strong> Transactional email delivery
+                  </p>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    <strong>Data Processed:</strong> Email addresses, email content, delivery status
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    <strong>Privacy Policy:</strong> <a href="https://resend.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Resend Privacy Policy</a>
+                  </p>
+                </div>
+
+                <div className="border-l-4 border-slate-500 pl-4 bg-slate-500/5 p-3 rounded-r">
+                  <h4 className="font-semibold mb-2">Vercel Analytics</h4>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    <strong>Purpose:</strong> Performance monitoring, web vitals tracking
+                  </p>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    <strong>Data Processed:</strong> Page views, performance metrics (first-party, privacy-friendly)
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    <strong>Privacy Policy:</strong> <a href="https://vercel.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Vercel Privacy Policy</a>
+                  </p>
+                </div>
+              </div>
 
               <h3 className="font-semibold text-lg mb-2 mt-4">4.3 Legal Requirements</h3>
               <p className="text-muted-foreground leading-relaxed mb-4">
@@ -272,6 +411,25 @@ export default function PrivacyPage() {
               </h2>
               <p className="text-muted-foreground leading-relaxed">
                 We may update this Privacy Policy from time to time. We will notify you of material changes by posting the updated policy on our Platform and updating the &quot;Last updated&quot; date. Your continued use of the Platform after changes constitutes acceptance of the updated policy.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
+                <span className="text-primary">11.</span> Compliance Monitoring
+              </h2>
+              <p className="text-muted-foreground leading-relaxed mb-4">
+                We are committed to maintaining compliance with data protection regulations including GDPR. Our compliance procedures include:
+              </p>
+              <ul className="list-disc pl-6 space-y-2 text-muted-foreground mb-4">
+                <li><strong>Monthly Crawler Checks:</strong> We use automated tools to scan our website for compliance issues, including cookie usage, vendor tracking, and consent management</li>
+                <li><strong>Consent Rate Monitoring:</strong> We regularly review user consent rates and ensure our consent management platform is functioning correctly</li>
+                <li><strong>Vendor List Updates:</strong> We maintain an up-to-date list of all third-party vendors and review their data processing practices monthly</li>
+                <li><strong>Privacy Policy Reviews:</strong> We review and update this privacy policy as needed to reflect changes in our practices or legal requirements</li>
+                <li><strong>Data Protection Impact Assessments:</strong> We conduct regular assessments of our data processing activities</li>
+              </ul>
+              <p className="text-muted-foreground leading-relaxed">
+                If you have concerns about our compliance practices or data handling, please contact our Data Protection Officer using the contact information below.
               </p>
             </section>
 

@@ -126,14 +126,16 @@ export default function RootLayout({
               {/* Google Analytics - BLOCKED until consent */}
               <Script
                 id="google-analytics"
+                type="text/plain"
+                data-cmp-vendor="s906"
+                data-cmp-src={`https://www.googletagmanager.com/gtag/js?id=G-7MHZ00M71E`}
                 strategy="afterInteractive"
-                data-cmp-ab="1"
-                src={`https://www.googletagmanager.com/gtag/js?id=G-7MHZ00M71E`}
               />
               <Script
                 id="google-analytics-config"
+                type="text/plain"
+                data-cmp-vendor="s906"
                 strategy="afterInteractive"
-                data-cmp-ab="1"
                 dangerouslySetInnerHTML={{
                   __html: `
                     window.dataLayer = window.dataLayer || [];
@@ -151,7 +153,7 @@ export default function RootLayout({
                 id="tawk-script"
                 type="text/plain"
                 data-cmp-vendor="s26"
-                data-cmp-src="https://embed.tawk.to/6954cc957665ef197dae18b7/1jdpjuar6"
+                strategy="afterInteractive"
                 dangerouslySetInnerHTML={{
                   __html: `
                     var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();

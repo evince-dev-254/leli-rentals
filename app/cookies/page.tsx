@@ -23,7 +23,7 @@ export default function CookiePolicyPage() {
             <p className="text-lg text-muted-foreground">
               Learn about how we use cookies to enhance your experience on leli rentals.
             </p>
-            <p className="text-sm text-muted-foreground mt-2">Last updated: January 2025</p>
+            <p className="text-sm text-muted-foreground mt-2">Last updated: January 2026</p>
           </div>
 
           {/* Quick Summary Cards */}
@@ -152,12 +152,16 @@ export default function CookiePolicyPage() {
               <p className="text-muted-foreground leading-relaxed mb-4">
                 In some cases, we use third-party cookies provided by trusted partners for:
               </p>
-              <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
-                <li>Website analytics and performance monitoring</li>
-                <li>Social media integration</li>
-                <li>Payment processing (Paystack)</li>
-                <li>Customer support chat functionality</li>
+              <ul className="list-disc pl-6 space-y-2 text-muted-foreground mb-4">
+                <li><strong>Google Analytics:</strong> Website analytics and performance monitoring</li>
+                <li><strong>Cloudflare Turnstile:</strong> Bot protection and fraud prevention</li>
+                <li><strong>Tawk.to:</strong> Live chat support functionality</li>
+                <li><strong>Social media integration:</strong> Social sharing features</li>
+                <li><strong>Payment processing:</strong> Paystack for secure transactions</li>
               </ul>
+              <p className="text-muted-foreground leading-relaxed">
+                These third-party vendors may set their own cookies to provide their services. We only work with vendors who comply with data protection regulations.
+              </p>
             </section>
 
             <section>

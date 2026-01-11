@@ -41,6 +41,7 @@ export function Header() {
   const [user, setUser] = useState<any>(null)
   const [unreadMessages, setUnreadMessages] = useState(0)
   const [unreadNotifications, setUnreadNotifications] = useState(0)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -256,7 +257,7 @@ export function Header() {
 
 
             {/* Mobile Menu */}
-            <Sheet>
+            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger asChild className="lg:hidden">
                 <Button variant="ghost" size="icon" className="text-gray-200 hover:text-white hover:bg-white/10">
                   <Menu className="h-5 w-5" />
@@ -267,7 +268,11 @@ export function Header() {
 
                 {/* Back Button for mobile navigation */}
                 <div className="px-4 pt-4 flex items-center justify-between">
-                  <BackButton className="text-gray-400 hover:text-white" label="Close Menu" />
+                  <BackButton
+                    className="text-gray-400 hover:text-white"
+                    label="Close Menu"
+                    onClick={() => setMobileMenuOpen(false)}
+                  />
                 </div>
 
                 {/* User Profile / Login Header */}

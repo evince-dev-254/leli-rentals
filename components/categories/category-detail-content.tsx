@@ -199,7 +199,7 @@ export function CategoryDetailContent({ categoryId }: CategoryDetailContentProps
       </section>
 
       {/* Search and Filters Bar */}
-      <section className="sticky top-16 z-30 py-4 px-4 glass-card border-b border-border">
+      <section className="sticky top-24 z-30 py-4 px-4 glass-card border-b border-border mb-6">
         <div className="container mx-auto">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative flex-1">
