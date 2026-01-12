@@ -8,13 +8,14 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { getAdmins, getUserByEmail, updateProfile } from "@/lib/actions/dashboard-actions"
+import { getAdmins, updateProfile } from "@/lib/actions/dashboard-actions"
 import { toast } from "sonner"
 import { supabase } from "@/lib/supabase"
+import { UserSelector } from "./user-selector"
 
 export function AdminsManagement() {
     const [admins, setAdmins] = useState<any[]>([])
-    const [newAdminEmail, setNewAdminEmail] = useState("")
+    const [selectedUser, setSelectedUser] = useState<any>(null)
     const [loading, setLoading] = useState(true)
     const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null)
 
@@ -46,36 +47,22 @@ export function AdminsManagement() {
             return
         }
 
-        if (!newAdminEmail) return
+        if (!selectedUser) return
 
         try {
-            const user = await getUserByEmail(newAdminEmail)
-            if (!user) {
-                toast.error("User with this email not found")
-                return
-            }
-
-            if (user.is_admin || user.role === 'admin') {
+            if (selectedUser.is_admin || selectedUser.role === 'admin') {
                 toast.info("User is already an admin")
-                setNewAdminEmail("")
+                setSelectedUser(null)
                 return
             }
 
-            await updateProfile(user.id, { is_admin: true, role: 'admin' })
-            toast.success(`${user.email} promoted to admin`)
-            setNewAdminEmail("")
+            await updateProfile(selectedUser.id, { is_admin: true, role: 'admin' })
+            toast.success(`${selectedUser.email} promoted to admin`)
+            setSelectedUser(null)
             loadAdmins()
         } catch (error: any) {
             console.error("Error adding admin:", error)
-
-            // Show specific error messages
-            if (error.message) {
-                toast.error(error.message)
-            } else if (error.code === 'PGRST116') {
-                toast.error("User with this email not found")
-            } else {
-                toast.error("Failed to add admin. Please check the email and try again.")
-            }
+            toast.error("Failed to add admin. Please try again.")
         }
     }
 
@@ -131,20 +118,16 @@ export function AdminsManagement() {
                 <CardContent className="space-y-6">
                     <div className="flex gap-4 items-end">
                         <div className="flex-1 space-y-2">
-                            <Label htmlFor="new-admin-email">Add New Admin</Label>
-                            <div className="relative">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                <Input
-                                    id="new-admin-email"
-                                    placeholder="Enter user email address..."
-                                    className="pl-10"
-                                    value={newAdminEmail}
-                                    onChange={(e) => setNewAdminEmail(e.target.value)}
-                                />
-                            </div>
+                            <Label>Select User to Promote</Label>
+                            <UserSelector
+                                onSelect={setSelectedUser}
+                                excludeRoles={['admin']}
+                                placeholder="Search users by name or email..."
+                                disabled={currentUserEmail !== '1paulkihiu@gmail.com'}
+                            />
                         </div>
                         <div className="flex flex-col gap-1">
-                            <Button onClick={handleAddAdmin} disabled={!newAdminEmail}>
+                            <Button onClick={handleAddAdmin} disabled={!selectedUser}>
                                 <Plus className="h-4 w-4 mr-2" />
                                 Add Admin
                             </Button>

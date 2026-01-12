@@ -908,3 +908,19 @@ export async function getAdmins() {
     if (error) throw error;
     return data;
 }
+
+/** Fetch a lightweight list of users for selection in admin/staff promotion */
+export async function getSelectableUsers() {
+    const adminSupabase = getAdminSupabase()
+    const { data, error } = await adminSupabase
+        .from('user_profiles')
+        .select('id, full_name, email, avatar_url, role, is_admin')
+        .order('full_name', { ascending: true });
+
+    if (error) {
+        console.error('Error fetching selectable users:', error);
+        throw error;
+    }
+
+    return data || [];
+}

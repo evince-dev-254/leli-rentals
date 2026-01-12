@@ -21,6 +21,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Label } from "@/components/ui/label"
 import { getAdminStaffData, promoteToStaff, demoteFromStaff } from "@/lib/actions/staff-actions"
 import { suspendUsers, reactivateUsers } from "@/lib/actions/admin-actions"
+import { UserSelector } from "./user-selector"
 
 export function StaffManagement() {
     const { toast } = useToast()
@@ -28,7 +29,7 @@ export function StaffManagement() {
     const [staff, setStaff] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
-    const [newStaffEmail, setNewStaffEmail] = useState("")
+    const [selectedUser, setSelectedUser] = useState<any>(null)
     const [actionLoading, setActionLoading] = useState(false)
 
     const loadStaff = useCallback(async () => {
@@ -47,14 +48,14 @@ export function StaffManagement() {
     }, [loadStaff])
 
     const handlePromote = async () => {
-        if (!newStaffEmail) return
+        if (!selectedUser) return
         setActionLoading(true)
-        const result = await promoteToStaff(newStaffEmail)
+        const result = await promoteToStaff(selectedUser.email)
         setActionLoading(false)
         if (result.success) {
             toast({ title: "Success", description: result.message })
             setIsAddDialogOpen(false)
-            setNewStaffEmail("")
+            setSelectedUser(null)
             loadStaff()
         } else {
             toast({ title: "Error", description: result.error, variant: "destructive" })
@@ -217,19 +218,18 @@ export function StaffManagement() {
                         <DialogDescription>Enter the email address of the user you want to promote to staff.</DialogDescription>
                     </DialogHeader>
                     <div className="py-4 space-y-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="email">User Email</Label>
-                            <Input
-                                id="email"
-                                placeholder="user@example.com"
-                                value={newStaffEmail}
-                                onChange={(e) => setNewStaffEmail(e.target.value)}
+                        <div className="space-y-2 text-center flex flex-col items-center">
+                            <Label className="mb-2">Select User to Promote</Label>
+                            <UserSelector
+                                onSelect={setSelectedUser}
+                                excludeRoles={['staff', 'admin']}
+                                placeholder="Search users to add to staff..."
                             />
                         </div>
                     </div>
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>Cancel</Button>
-                        <Button onClick={handlePromote} disabled={actionLoading || !newStaffEmail}>
+                        <Button onClick={handlePromote} disabled={actionLoading || !selectedUser}>
                             {actionLoading ? "Promoting..." : "Add to Staff"}
                         </Button>
                     </DialogFooter>
