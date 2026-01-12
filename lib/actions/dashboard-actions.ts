@@ -617,6 +617,7 @@ export async function getAdminDashboardData() {
         { count: totalUsers },
         { count: totalOwners },
         { count: totalAffiliates },
+        { count: totalStaff },
         { count: activeListings },
         { count: totalBookings },
         { count: totalReviews }
@@ -624,6 +625,7 @@ export async function getAdminDashboardData() {
         adminSupabase.from("user_profiles").select("id", { count: "exact", head: true }),
         adminSupabase.from("user_profiles").select("id", { count: "exact", head: true }).eq("role", "owner"),
         adminSupabase.from("user_profiles").select("id", { count: "exact", head: true }).eq("role", "affiliate"),
+        adminSupabase.from("user_profiles").select("id", { count: "exact", head: true }).eq("role", "staff"),
         adminSupabase.from("listings").select("id", { count: "exact", head: true }).eq("status", "approved"),
         adminSupabase.from("bookings").select("id", { count: "exact", head: true }),
         adminSupabase.from("reviews").select("id", { count: "exact", head: true }),
@@ -721,6 +723,7 @@ export async function getAdminDashboardData() {
             totalUsers: totalUsers || 0,
             totalOwners: totalOwners || 0,
             totalAffiliates: totalAffiliates || 0,
+            totalStaff: totalStaff || 0,
             pendingVerifications: pendingUserIds.length,
             activeListings: activeListings || 0,
             totalBookings: totalBookings || 0,

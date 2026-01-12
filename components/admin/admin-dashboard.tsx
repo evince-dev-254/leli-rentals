@@ -9,7 +9,9 @@ import {
   AlertTriangle,
   Clock,
   Star,
-  ArrowUpRight
+  ArrowUpRight,
+  UserCog,
+  Key
 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -32,6 +34,7 @@ export function AdminDashboard() {
     totalUsers: 0,
     totalOwners: 0,
     totalAffiliates: 0,
+    totalStaff: 0,
     pendingVerifications: 0,
     activeListings: 0,
     totalBookings: 0,
@@ -114,6 +117,13 @@ export function AdminDashboard() {
           icon={UserPlus}
           color="rose-highlight"
           description="Marketing partners"
+        />
+        <DashboardStatCard
+          title="Staff Team"
+          value={stats.totalStaff}
+          icon={UserCog}
+          color="purple"
+          description="Active support team"
         />
         <DashboardStatCard
           title="Total Reviews"

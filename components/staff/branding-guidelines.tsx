@@ -95,44 +95,77 @@ export function BrandingGuidelines() {
                             <Palette className="h-6 w-6 text-primary" />
                             Visual Identifier
                         </CardTitle>
-                        <CardDescription>Primary marks and downloadable assets</CardDescription>
+                        <CardDescription>Official brand marks and downloadable assets</CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-8">
+                    <CardContent className="space-y-12">
+                        {/* Primary Logos Grid */}
                         <div className="grid md:grid-cols-2 gap-8">
+                            {/* Dark Variant */}
                             <div className="space-y-4">
                                 <div className="flex items-center justify-between">
-                                    <h4 className="font-bold text-sm uppercase tracking-wider text-muted-foreground">Main Logo (PNG)</h4>
+                                    <h4 className="font-bold text-sm uppercase tracking-wider text-muted-foreground">Dark Variant (For Light BG)</h4>
                                     <Button
                                         variant="outline"
                                         size="sm"
                                         className="h-8 gap-2 hover:bg-primary hover:text-white"
-                                        onClick={() => handleDownload('/logo.png', 'leli-logo-primary.png')}
+                                        onClick={() => handleDownload('/logo-black.png', 'leli-logo-black.png')}
                                     >
                                         <Download className="h-3.5 w-3.5" />
                                         Download
                                     </Button>
                                 </div>
-                                <div className="bg-white p-12 rounded-2xl flex items-center justify-center border shadow-xl group relative overflow-hidden">
+                                <div className="bg-white p-12 rounded-2xl flex items-center justify-center border shadow-xl group relative overflow-hidden h-[160px]">
                                     <div className="absolute inset-0 bg-gradient-to-br from-transparent to-black/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                    <Image src="/logo.png" alt="Logo Light" width={240} height={70} className="w-auto h-14 relative z-10" />
+                                    <Image src="/logo-black.png" alt="Logo Black" width={280} height={80} className="w-auto h-20 relative z-10 object-contain" />
                                 </div>
                             </div>
+
+                            {/* Light Variant */}
                             <div className="space-y-4">
                                 <div className="flex items-center justify-between">
-                                    <h4 className="font-bold text-sm uppercase tracking-wider text-muted-foreground">Vector Logo (SVG)</h4>
+                                    <h4 className="font-bold text-sm uppercase tracking-wider text-muted-foreground">Light Variant (For Dark BG)</h4>
                                     <Button
                                         variant="outline"
                                         size="sm"
                                         className="h-8 gap-2 hover:bg-primary hover:text-white"
-                                        onClick={() => handleDownload('/logo.svg', 'leli-logo-vector.svg')}
+                                        onClick={() => handleDownload('/logo-white.png', 'leli-logo-white.png')}
                                     >
                                         <Download className="h-3.5 w-3.5" />
                                         Download
                                     </Button>
                                 </div>
-                                <div className="bg-slate-900 p-12 rounded-2xl flex items-center justify-center border-slate-800 shadow-xl group relative overflow-hidden">
+                                <div className="bg-slate-900 p-12 rounded-2xl flex items-center justify-center border-slate-800 shadow-xl group relative overflow-hidden h-[160px]">
                                     <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                                    <Image src="/logo.svg" alt="Logo Dark" width={240} height={70} className="w-auto h-14 relative z-10 invert" />
+                                    <Image src="/logo-white.png" alt="Logo White" width={280} height={80} className="w-auto h-20 relative z-10 object-contain" />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Presentation Asset */}
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                                <h4 className="font-bold text-sm uppercase tracking-wider text-muted-foreground">Brand Presentation Asset</h4>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-8 gap-2 hover:bg-primary hover:text-white"
+                                    onClick={() => handleDownload('/logo-presentation.png', 'leli-brand-presentation.png')}
+                                >
+                                    <Download className="h-3.5 w-3.5" />
+                                    Download
+                                </Button>
+                            </div>
+                            <div className="rounded-2xl overflow-hidden border shadow-xl group relative aspect-[21/9]">
+                                <Image
+                                    src="/logo-presentation.png"
+                                    alt="Brand Presentation"
+                                    fill
+                                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                                />
+                                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                                    <div className="bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <p className="text-white font-medium text-sm">Background Presentation Variant</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
