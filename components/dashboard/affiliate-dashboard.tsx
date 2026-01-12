@@ -405,7 +405,7 @@ export default function AffiliateDashboard() {
                         <CardHeader>
                             <CardTitle>Performance Overview</CardTitle>
                         </CardHeader>
-                        <CardContent className="h-[300px]">
+                        <CardContent className="h-[350px] pt-4 min-w-0">
                             <ResponsiveContainer width="100%" height="100%">
                                 <AreaChart data={chartData}>
                                     <defs>

@@ -1,12 +1,12 @@
 "use client"
+import { useState, useEffect } from "react"
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Users, TrendingUp, Megaphone, ArrowUpRight } from "lucide-react"
+import { Users, TrendingUp, Megaphone, ArrowUpRight, ShieldCheck, Paintbrush } from "lucide-react"
 import Link from "next/link"
 import { DashboardStatCard } from "@/components/dashboard/dashboard-stat-card"
-import { useState, useEffect } from "react"
-import { getAllAffiliates } from "@/lib/actions/affiliate-actions"
+import { getStaffStats } from "@/lib/actions/staff-actions"
 import { supabase } from "@/lib/supabase"
 import { LoadingLogo } from "@/components/ui/loading-logo"
 
@@ -15,29 +15,16 @@ export default function StaffOverviewPage() {
         totalAffiliates: 0,
         activeAffiliates: 0,
         totalAdvertisers: 0,
-        pendingApprovals: 0
+        pendingApprovals: 0,
+        totalStaff: 0
     })
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
         async function loadStats() {
             try {
-                // Get Affiliates Stats
-                const affiliates = await getAllAffiliates()
-                const activeAffiliates = affiliates.filter((a: any) => a.status === 'active').length
-
-                // Get Advertisers Stats (Owners with promoted/paid intent - mocking loosely as Owners for now)
-                const { count: ownersCount } = await supabase
-                    .from('user_profiles')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('role', 'owner')
-
-                setStats({
-                    totalAffiliates: affiliates.length,
-                    activeAffiliates,
-                    totalAdvertisers: ownersCount || 0,
-                    pendingApprovals: affiliates.filter((a: any) => a.status === 'pending').length
-                })
+                const data = await getStaffStats()
+                setStats(data)
             } catch (error) {
                 console.error(error)
             } finally {
@@ -77,6 +64,13 @@ export default function StaffOverviewPage() {
                     icon={TrendingUp}
                     color="orange"
                     description="Affiliates waiting approval"
+                />
+                <DashboardStatCard
+                    title="Total Staff"
+                    value={stats.totalStaff}
+                    icon={Users}
+                    color="green"
+                    description="Active sales team members"
                 />
             </div>
 

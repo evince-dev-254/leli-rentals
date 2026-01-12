@@ -102,7 +102,10 @@ export function WithdrawalModal({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Request Payout</DialogTitle>
+                    <DialogTitle className="text-2xl">Request Payout</DialogTitle>
+                    <DialogDescription>
+                        Enter the amount you wish to withdraw to your linked payment account.
+                    </DialogDescription>
                     <DialogDescription>
                         {hasPaymentInfo
                             ? `Funds will be sent to your saved ${paymentInfo.provider} account.`

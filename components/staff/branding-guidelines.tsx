@@ -1,216 +1,118 @@
 "use client"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Palette, Type } from "lucide-react"
 import Image from "next/image"
-
-const ColorSwatch = ({ name, variable, description, hex }: { name: string, variable: string, description: string, hex?: string }) => (
-    <div className="space-y-2">
-        <div className={`h-24 w-full rounded-lg shadow-sm border border-border ${variable}`} style={{ backgroundColor: `var(${variable})` }} />
-        <div>
-            <h4 className="font-semibold text-sm">{name}</h4>
-            <p className="text-xs text-muted-foreground">{description}</p>
-            <code className="text-[10px] bg-muted px-1 py-0.5 rounded mt-1 block w-fit">{variable}</code>
-        </div>
-    </div>
-)
 
 export function BrandingGuidelines() {
     return (
-        <div className="space-y-8">
+        <div className="space-y-8 pb-10">
             <div className="flex items-center justify-between">
                 <div>
                     <h2 className="text-3xl font-bold tracking-tight">Brand Identity</h2>
-                    <p className="text-muted-foreground">Official color palette, typography and assets for Leli Rentals.</p>
+                    <p className="text-muted-foreground text-lg">Official color palette, typography and assets for Leli Rentals.</p>
                 </div>
             </div>
 
-            <Tabs defaultValue="colors" className="space-y-6">
-                <TabsList>
-                    <TabsTrigger value="colors">Colors</TabsTrigger>
-                    <TabsTrigger value="typography">Typography</TabsTrigger>
-                    <TabsTrigger value="assets">Logos & Assets</TabsTrigger>
-                </TabsList>
+            {/* Logo Section */}
+            <Card className="glass-card overflow-hidden">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <Palette className="h-5 w-5 text-primary" />
+                        Logo Strategy
+                    </CardTitle>
+                    <CardDescription>Our visual identifier and usage guidelines</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-8">
+                    <div className="grid md:grid-cols-2 gap-8">
+                        <div className="space-y-4">
+                            <h4 className="font-semibold text-sm uppercase tracking-wider">Primary Logo (Light)</h4>
+                            <div className="bg-white p-12 rounded-2xl flex items-center justify-center border shadow-inner">
+                                <Image src="/logo.png" alt="Logo Light" width={200} height={60} className="w-auto h-12" />
+                            </div>
+                            <p className="text-xs text-muted-foreground">Use on light backgrounds. Enforce minimum clear space around the logo.</p>
+                        </div>
+                        <div className="space-y-4">
+                            <h4 className="font-semibold text-sm uppercase tracking-wider">Inverted Logo (Dark)</h4>
+                            <div className="bg-slate-900 p-12 rounded-2xl flex items-center justify-center border-slate-800 shadow-inner">
+                                <Image src="/logo.png" alt="Logo Dark" width={200} height={60} className="w-auto h-12 invert" />
+                            </div>
+                            <p className="text-xs text-muted-foreground">Use on dark backgrounds or the primary brand color gradients.</p>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
 
-                <TabsContent value="colors" className="space-y-8">
-                    {/* Primary Colors */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Primary Colors</CardTitle>
-                            <CardDescription>Core brand colors used for main actions and identity.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                            <div className="space-y-2">
-                                <div className="h-24 w-full rounded-lg shadow-sm bg-primary border border-border" />
-                                <div>
-                                    <h4 className="font-semibold text-sm">Primary Orange</h4>
-                                    <p className="text-xs text-muted-foreground">Main actions, buttons, links</p>
-                                    <code className="text-[10px] bg-muted px-1 py-0.5 rounded mt-1 block w-fit">--primary</code>
-                                </div>
+            {/* Typography Section */}
+            <Card className="glass-card">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <Type className="h-5 w-5 text-primary" />
+                        Typography System
+                    </CardTitle>
+                    <CardDescription>Standardized fonts and hierarchical usage</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-8">
+                    <div className="grid md:grid-cols-2 gap-12">
+                        <div className="space-y-6">
+                            <div>
+                                <h1 className="text-5xl font-extrabold tracking-tight mb-2">Heading 1</h1>
+                                <p className="text-sm text-muted-foreground">ExtraBold / 3rem - Used for main page titles</p>
                             </div>
-                            <div className="space-y-2">
-                                <div className="h-24 w-full rounded-lg shadow-sm bg-primary/90 border border-border" />
-                                <div>
-                                    <h4 className="font-semibold text-sm">Primary Hover</h4>
-                                    <p className="text-xs text-muted-foreground">Hover states for primary elements</p>
-                                    <code className="text-[10px] bg-muted px-1 py-0.5 rounded mt-1 block w-fit">--primary / 0.9</code>
-                                </div>
+                            <div>
+                                <h2 className="text-3xl font-bold tracking-tight mb-2">Heading 2</h2>
+                                <p className="text-sm text-muted-foreground">Bold / 1.875rem - Section headers</p>
                             </div>
-                            <div className="space-y-2">
-                                <div className="h-24 w-full rounded-lg shadow-sm bg-secondary border border-border" />
-                                <div>
-                                    <h4 className="font-semibold text-sm">Secondary</h4>
-                                    <p className="text-xs text-muted-foreground">Secondary actions, backgrounds</p>
-                                    <code className="text-[10px] bg-muted px-1 py-0.5 rounded mt-1 block w-fit">--secondary</code>
-                                </div>
+                            <div>
+                                <h3 className="text-xl font-semibold mb-2">Heading 3</h3>
+                                <p className="text-sm text-muted-foreground">SemiBold / 1.25rem - Component headers</p>
                             </div>
-                            <div className="space-y-2">
-                                <div className="h-24 w-full rounded-lg shadow-sm bg-accent border border-border" />
-                                <div>
-                                    <h4 className="font-semibold text-sm">Accent</h4>
-                                    <p className="text-xs text-muted-foreground">Highlights, features</p>
-                                    <code className="text-[10px] bg-muted px-1 py-0.5 rounded mt-1 block w-fit">--accent</code>
-                                </div>
+                        </div>
+                        <div className="space-y-6">
+                            <div>
+                                <p className="text-lg leading-relaxed">Lead Paragraph</p>
+                                <p className="text-sm text-muted-foreground mt-1">Regular / 1.125rem - Introduction text</p>
                             </div>
-                        </CardContent>
-                    </Card>
-
-                    {/* UI Colors */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>UI System Colors</CardTitle>
-                            <CardDescription>Colors used for structural elements and feedback.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="grid grid-cols-2 md:grid-cols-5 gap-6">
-                            <div className="space-y-2">
-                                <div className="h-16 w-full rounded-lg shadow-sm bg-background border border-border" />
-                                <div>
-                                    <h4 className="font-semibold text-sm">Background</h4>
-                                    <code className="text-[10px] bg-muted px-1 py-0.5 rounded">--background</code>
-                                </div>
-                            </div>
-                            <div className="space-y-2">
-                                <div className="h-16 w-full rounded-lg shadow-sm bg-foreground border border-border" />
-                                <div>
-                                    <h4 className="font-semibold text-sm">Foreground</h4>
-                                    <code className="text-[10px] bg-muted px-1 py-0.5 rounded">--foreground</code>
-                                </div>
-                            </div>
-                            <div className="space-y-2">
-                                <div className="h-16 w-full rounded-lg shadow-sm bg-muted border border-border" />
-                                <div>
-                                    <h4 className="font-semibold text-sm">Muted</h4>
-                                    <code className="text-[10px] bg-muted px-1 py-0.5 rounded">--muted</code>
-                                </div>
-                            </div>
-                            <div className="space-y-2">
-                                <div className="h-16 w-full rounded-lg shadow-sm bg-border border border-border" />
-                                <div>
-                                    <h4 className="font-semibold text-sm">Border</h4>
-                                    <code className="text-[10px] bg-muted px-1 py-0.5 rounded">--border</code>
-                                </div>
-                            </div>
-                            <div className="space-y-2">
-                                <div className="h-16 w-full rounded-lg shadow-sm bg-destructive border border-border" />
-                                <div>
-                                    <h4 className="font-semibold text-sm">Destructive</h4>
-                                    <code className="text-[10px] bg-muted px-1 py-0.5 rounded">--destructive</code>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    {/* Gradients */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Brand Gradients</CardTitle>
-                            <CardDescription>Gradients used for backgrounds and special effects.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="space-y-2">
-                                <div className="h-32 w-full rounded-lg shadow-sm gradient-mesh border border-border" />
-                                <div>
-                                    <h4 className="font-semibold text-sm">Default Mesh</h4>
-                                    <p className="text-xs text-muted-foreground">General dashboard background</p>
-                                    <code className="text-[10px] bg-muted px-1 py-0.5 rounded mt-1 block w-fit">.gradient-mesh</code>
-                                </div>
-                            </div>
-                            <div className="space-y-2">
-                                <div className="h-32 w-full rounded-lg shadow-sm gradient-mesh-affiliate border border-border" />
-                                <div>
-                                    <h4 className="font-semibold text-sm">Affiliate Mesh</h4>
-                                    <p className="text-xs text-muted-foreground">Affiliate dashboard background </p>
-                                    <code className="text-[10px] bg-muted px-1 py-0.5 rounded mt-1 block w-fit">.gradient-mesh-affiliate</code>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </TabsContent>
-
-                <TabsContent value="typography" className="space-y-8">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Typography System</CardTitle>
-                            <CardDescription>Primary font family: Geist Sans</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-8">
-                            <div className="space-y-4">
-                                <h1 className="text-5xl font-bold">Heading 1</h1>
-                                <code className="block text-xs text-muted-foreground">text-5xl font-bold</code>
-                            </div>
-                            <div className="space-y-4">
-                                <h2 className="text-4xl font-bold">Heading 2</h2>
-                                <code className="block text-xs text-muted-foreground">text-4xl font-bold</code>
-                            </div>
-                            <div className="space-y-4">
-                                <h3 className="text-3xl font-semibold">Heading 3</h3>
-                                <code className="block text-xs text-muted-foreground">text-3xl font-semibold</code>
-                            </div>
-                            <div className="space-y-4">
-                                <h4 className="text-xl font-medium">Heading 4</h4>
-                                <code className="block text-xs text-muted-foreground">text-xl font-medium</code>
-                            </div>
-                            <div className="space-y-4">
-                                <p className="text-base leading-relaxed">
-                                    Body Text: Leli Rentals connects people who have things with people who need them.
-                                    This is a sample of the body text used throughout the application. It is designed to be
-                                    highly readable and comfortable for long-form content.
+                            <div>
+                                <p className="text-base text-muted-foreground leading-relaxed">
+                                    The quick brown fox jumps over the lazy dog. Standard body text for all descriptions and general content.
                                 </p>
-                                <code className="block text-xs text-muted-foreground">text-base</code>
+                                <p className="text-sm text-muted-foreground mt-1">Regular / 1rem - Body text</p>
                             </div>
-                            <div className="space-y-4">
-                                <p className="text-sm text-muted-foreground">
-                                    Small Text: Used for captions, help text, and secondary information.
-                                </p>
-                                <code className="block text-xs text-muted-foreground">text-sm text-muted-foreground</code>
+                            <div>
+                                <p className="text-sm font-medium uppercase tracking-widest text-primary">Accent Label</p>
+                                <p className="text-sm text-muted-foreground mt-1">Medium / 0.875rem - Overlines and tags</p>
                             </div>
-                        </CardContent>
-                    </Card>
-                </TabsContent>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
 
-                <TabsContent value="assets" className="space-y-8">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Logo</CardTitle>
-                            <CardDescription>Primary logo variations.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <div className="p-8 rounded-lg border border-border flex items-center justify-center bg-white/50">
-                                <div className="relative h-16 w-48">
-                                    <Image src="/logo.png" alt="Logo Light" fill className="object-contain" />
-                                </div>
-                                <p className="absolute bottom-2 left-2 text-xs text-muted-foreground">Default</p>
-                            </div>
-                            <div className="p-8 rounded-lg border border-border flex items-center justify-center bg-black/90">
-                                <div className="relative h-16 w-48">
-                                    <Image src="/logo.png" alt="Logo Dark" fill className="object-contain invert" />
-                                </div>
-                                <p className="absolute bottom-2 left-2 text-xs text-muted-foreground">Inverted (Dark Mode)</p>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </TabsContent>
-            </Tabs>
+            {/* Visual Elements Section */}
+            <Card className="glass-card">
+                <CardHeader>
+                    <CardTitle>Visual Elements</CardTitle>
+                    <CardDescription>Glassmorphism and gradient patterns</CardDescription>
+                </CardHeader>
+                <CardContent className="grid md:grid-cols-3 gap-6">
+                    <div className="space-y-2">
+                        <div className="aspect-square rounded-2xl border bg-background/80 backdrop-blur-xl flex items-center justify-center p-6 text-center text-sm">
+                            Glassmorphism Card Effect
+                        </div>
+                        <p className="text-xs text-center text-muted-foreground">`backdrop-blur-xl bg-background/80`</p>
+                    </div>
+                    <div className="space-y-2">
+                        <div className="aspect-square rounded-2xl bg-gradient-to-tr from-primary via-purple-500 to-pink-500 opacity-20" />
+                        <p className="text-xs text-center text-muted-foreground">Brand Mesh Gradient</p>
+                    </div>
+                    <div className="space-y-2">
+                        <div className="aspect-square rounded-2xl border border-dashed border-primary/30 flex items-center justify-center p-6 text-center text-xs text-primary font-medium uppercase tracking-widest">
+                            8px <br /> Standard Radius
+                        </div>
+                        <p className="text-xs text-center text-muted-foreground">`rounded-xl` / 12px for cards</p>
+                    </div>
+                </CardContent>
+            </Card>
         </div>
     )
 }

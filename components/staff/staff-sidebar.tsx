@@ -4,15 +4,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import {
-    LayoutDashboard,
-    Users,
-    Megaphone,
-    LogOut,
-    Menu,
-    Settings,
-    Paintbrush,
-} from "lucide-react"
+import { LayoutDashboard, Users, Megaphone, Palette, Settings, UserCog, ShieldCheck, Paintbrush, LogOut, Menu } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { supabase } from "@/lib/supabase"
@@ -49,6 +41,12 @@ export function StaffSidebar({ className }: SidebarProps) {
             icon: Megaphone,
             href: "/staff/advertisers",
             active: pathname === "/staff/advertisers",
+        },
+        {
+            label: "Our Team",
+            icon: ShieldCheck,
+            href: "/staff/team",
+            active: pathname === "/staff/team",
         },
         {
             label: "Brand Identity",
