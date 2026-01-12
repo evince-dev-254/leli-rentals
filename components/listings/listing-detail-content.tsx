@@ -415,7 +415,11 @@ export function ListingDetailContent({ listing }: ListingDetailContentProps) {
                           <Button className="rounded-full px-6">Rate this Rental</Button>
                         </LeaveReviewDialog>
                       ) : (
-                        <Button className="rounded-full px-6" disabled variant="secondary" title="You need to have rented this item to verify it.">
+                        <Button
+                          className="rounded-full px-6"
+                          variant="secondary"
+                          onClick={() => toast.error("You need to have rented and completed a booking for this item to review it.")}
+                        >
                           Rate this Rental
                         </Button>
                       )

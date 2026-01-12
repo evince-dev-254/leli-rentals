@@ -291,28 +291,7 @@ export default function AffiliateDashboard() {
                         </div>
                     </div>
 
-                    <div className="relative hidden md:block">
-                        <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-purple-500/20 rounded-3xl blur-3xl" />
-                        <div className="relative glass-card bg-card/50 backdrop-blur-xl border-border/50 p-8 rounded-3xl shadow-2xl">
-                            <div className="space-y-6 opacity-50 pointer-events-none select-none">
-                                {/* Mock stats for preview */}
-                                <div className="flex justify-between items-center">
-                                    <h3 className="font-bold">Dashboard Preview</h3>
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="p-4 rounded-xl bg-card border shadow-sm">
-                                        <div className="text-sm text-muted-foreground">Total Earnings</div>
-                                        <div className="text-2xl font-bold">Kes 45,000</div>
-                                    </div>
-                                    <div className="p-4 rounded-xl bg-card border shadow-sm">
-                                        <div className="text-sm text-muted-foreground">Referrals</div>
-                                        <div className="text-2xl font-bold">128</div>
-                                    </div>
-                                </div>
-                                <div className="h-32 rounded-xl bg-muted/50 w-full" />
-                            </div>
-                        </div>
-                    </div>
+
                 </div>
             </div>
         )
