@@ -82,3 +82,35 @@ export async function createBooking(bookingData: BookingData, userEmail: string,
         return { success: false, error: "An unexpected error occurred. Please try again later." }
     }
 }
+
+export async function getLastCompletedBookingId(listingId: string, userId: string) {
+    if (!userId || !listingId) return null;
+
+    try {
+        const supabase = await createClient()
+
+        // Find a confirmed or paid booking for this user and listing
+        // Ideally should be completed (end_date < now), but for UX letting them review 
+        // if they have a valid booking record is a good start. 
+        // You can add .lt('end_date', new Date().toISOString()) to strictly enforce past bookings.
+
+        const { data, error } = await supabase
+            .from('bookings')
+            .select('id')
+            .eq('listing_id', listingId)
+            .eq('renter_id', userId)
+            .or('status.eq.confirmed,status.eq.completed')
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single()
+
+        if (error || !data) {
+            return null
+        }
+
+        return data.id
+    } catch (error) {
+        console.error("Error fetching booking for review:", error)
+        return null
+    }
+}

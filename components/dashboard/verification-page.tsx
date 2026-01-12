@@ -282,11 +282,19 @@ export function VerificationPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Relationship</Label>
-                <Input
-                  placeholder="e.g. Spouse"
-                  value={nokRelation}
-                  onChange={(e) => setNokRelation(e.target.value)}
-                />
+                <Select value={nokRelation} onValueChange={setNokRelation}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select relationship" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Parent">Parent</SelectItem>
+                    <SelectItem value="Sibling">Sibling</SelectItem>
+                    <SelectItem value="Spouse">Spouse</SelectItem>
+                    <SelectItem value="Child">Child</SelectItem>
+                    <SelectItem value="Friend">Friend</SelectItem>
+                    <SelectItem value="Other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
                 <Label>Phone Number</Label>

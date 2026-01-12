@@ -41,6 +41,7 @@ const BookingModal = dynamic(() => import("@/components/booking/booking-modal").
   ssr: false,
   loading: () => <div className="p-4 flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
 })
+import { getLastCompletedBookingId } from "@/lib/actions/booking-actions"
 import type { Listing } from "@/lib/listings-data"
 import { cn } from "@/lib/utils"
 
@@ -105,6 +106,7 @@ export function ListingDetailContent({ listing }: ListingDetailContentProps) {
 
   const [authenticatedUser, setAuthenticatedUser] = useState<any>(null)
   const [isAuthLoading, setIsAuthLoading] = useState(true)
+  const [validBookingId, setValidBookingId] = useState<string | null>(null)
 
   useEffect(() => {
     // Initial check
@@ -120,6 +122,16 @@ export function ListingDetailContent({ listing }: ListingDetailContentProps) {
       setAuthenticatedUser(session?.user ?? null)
       setIsAuthLoading(false)
     })
+
+    // Check for valid booking for review
+    const checkBooking = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user && listing.id) {
+        const bookingId = await getLastCompletedBookingId(listing.id, user.id)
+        setValidBookingId(bookingId)
+      }
+    }
+    checkBooking()
 
     return () => {
       subscription.unsubscribe()
@@ -393,14 +405,20 @@ export function ListingDetailContent({ listing }: ListingDetailContentProps) {
                       </div>
                     </div>
                     {authenticatedUser ? (
-                      <LeaveReviewDialog
-                        bookingId="placeholder-booking-id"
-                        listingId={listing.id}
-                        listingTitle={listing.title}
-                        listingImage={listing.images[0]}
-                      >
-                        <Button className="rounded-full px-6">Rate this Rental</Button>
-                      </LeaveReviewDialog>
+                      validBookingId ? (
+                        <LeaveReviewDialog
+                          bookingId={validBookingId}
+                          listingId={listing.id}
+                          listingTitle={listing.title}
+                          listingImage={listing.images[0]}
+                        >
+                          <Button className="rounded-full px-6">Rate this Rental</Button>
+                        </LeaveReviewDialog>
+                      ) : (
+                        <Button className="rounded-full px-6" disabled variant="secondary" title="You need to have rented this item to verify it.">
+                          Rate this Rental
+                        </Button>
+                      )
                     ) : (
                       <Button
                         variant="outline"
