@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Bell, Moon, Sun } from "lucide-react" // Assuming you might want these actions here or just the greeting
+import { Bell, Moon, Sun, ShieldCheck } from "lucide-react" // Assuming you might want these actions here or just the greeting
 import { Button } from "@/components/ui/button"
 
 import { ReactNode } from "react"
@@ -16,9 +16,10 @@ interface DashboardWelcomeHeaderProps {
     subtitle?: string
     role?: string
     children?: ReactNode
+    isVerified?: boolean
 }
 
-export function DashboardWelcomeHeader({ user, subtitle, role, children }: DashboardWelcomeHeaderProps) {
+export function DashboardWelcomeHeader({ user, subtitle, role, children, isVerified }: DashboardWelcomeHeaderProps) {
     const [greeting, setGreeting] = useState("Good Morning")
     const [time, setTime] = useState<string>("")
     const [date, setDate] = useState<string>("")
@@ -61,8 +62,13 @@ export function DashboardWelcomeHeader({ user, subtitle, role, children }: Dashb
                         </AvatarFallback>
                     </Avatar>
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight">
+                        <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
                             {greeting}, {name}!
+                            {isVerified && (
+                                <div className="bg-green-500 text-white p-1 rounded-full shadow-sm" title="Verified Owner">
+                                    <ShieldCheck className="h-5 w-5" />
+                                </div>
+                            )}
                         </h1>
                         <p className="text-blue-100 opacity-90 mt-1">
                             {subtitle || "Ready to achieve great things today?"}

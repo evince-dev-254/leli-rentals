@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image"
 import { motion } from "framer-motion"
 import { supabase } from "@/lib/supabase";
-import { getOwnerData, getOwnerStats, getBookings } from "@/lib/actions/dashboard-actions";
+import { getOwnerData, getOwnerStats, getBookings, getVerifications } from "@/lib/actions/dashboard-actions";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Package, CalendarCheck, DollarSign, BarChart3, PlusCircle, MessageCircle, Settings, ChevronRight } from "lucide-react";
@@ -20,6 +20,7 @@ export default function OwnerDashboard() {
     const [bookings, setBookings] = useState<any[]>([]);
     const [stats, setStats] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+    const [isVerified, setIsVerified] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -37,14 +38,20 @@ export default function OwnerDashboard() {
                 const userWithProfile = { ...user, ...profile };
                 setUser(userWithProfile);
 
-                const [listingsData, statsData, bookingsData] = await Promise.all([
+                const [listingsData, statsData, bookingsData, verifications] = await Promise.all([
                     getOwnerData(user.id),
                     getOwnerStats(user.id),
-                    getBookings(user.id, 'owner')
+                    getBookings(user.id, 'owner'),
+                    getVerifications(user.id)
                 ]);
                 setListings(listingsData || []);
                 setStats(statsData);
                 setBookings(bookingsData || []);
+
+                // Check if any verification document is approved
+                const verified = verifications.some((v: any) => v.status === 'approved');
+                setIsVerified(verified);
+
             } catch (e) {
                 console.error(e);
             } finally {
@@ -69,6 +76,7 @@ export default function OwnerDashboard() {
                 user={user}
                 subtitle="Here's a summary of your rental business performance."
                 role="Owner"
+                isVerified={isVerified}
             />
 
             {/* Stats Grid */}
