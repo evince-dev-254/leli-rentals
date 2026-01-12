@@ -2,6 +2,8 @@
 
 import { supabaseAdmin } from "@/lib/supabase-admin"
 
+import { revalidatePath } from "next/cache"
+
 export async function getStaffStats() {
     try {
         // Fetch counts for affiliates
@@ -68,4 +70,63 @@ export async function getStaffTeam() {
     }
 
     return data
+}
+
+/** Fetch all staff for Admin Management bypassing RLS */
+export async function getAdminStaffData() {
+    try {
+        const { data, error } = await supabaseAdmin
+            .from("user_profiles")
+            .select("*")
+            .eq('role', 'staff')
+            .order('created_at', { ascending: false });
+
+        if (error) throw error
+        return { success: true, data: data || [] }
+    } catch (error) {
+        console.error("Error fetching admin staff data:", error)
+        return { success: false, error: "Failed to fetch staff" }
+    }
+}
+
+export async function promoteToStaff(email: string) {
+    try {
+        const { data: user, error: findError } = await supabaseAdmin
+            .from("user_profiles")
+            .select("id, full_name")
+            .eq("email", email)
+            .single()
+
+        if (findError || !user) throw new Error("User not found")
+
+        const { error: updateError } = await supabaseAdmin
+            .from("user_profiles")
+            .update({ role: "staff" })
+            .eq("id", user.id)
+
+        if (updateError) throw updateError
+
+        revalidatePath("/admin/staff")
+        return { success: true, message: `${user.full_name} promoted to staff` }
+    } catch (error: any) {
+        console.error("Error promoting to staff:", error)
+        return { success: false, error: error.message || "Failed to promote user" }
+    }
+}
+
+export async function demoteFromStaff(userId: string) {
+    try {
+        const { error } = await supabaseAdmin
+            .from("user_profiles")
+            .update({ role: "renter" })
+            .eq("id", userId)
+
+        if (error) throw error
+
+        revalidatePath("/admin/staff")
+        return { success: true, message: "Staff member demoted to renter" }
+    } catch (error) {
+        console.error("Error demoting from staff:", error)
+        return { success: false, error: "Failed to demote staff member" }
+    }
 }

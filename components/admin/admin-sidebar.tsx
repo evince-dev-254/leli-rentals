@@ -29,6 +29,7 @@ import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/s
 const sidebarLinks = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/users", label: "Users", icon: Users },
+  { href: "/admin/staff", label: "Staff Management", icon: ShieldCheck },
   { href: "/admin/admins", label: "Manage Admins", icon: UserCog },
   { href: "/admin/verifications", label: "Verifications", icon: ShieldCheck },
   { href: "/admin/listings", label: "Listings", icon: Package },
