@@ -4,9 +4,16 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet"
-import { Menu, ChevronDown, ShoppingBag, User, MessageCircle, Sun, Moon } from "lucide-react"
+import { Menu, ChevronDown, ShoppingBag, User, MessageCircle, Sun, Moon, Settings, LogOut, LayoutDashboard } from "lucide-react"
 import { useTheme } from "next-themes"
 import { supabase } from "@/lib/supabase" // Import Supabase client
 import { useRouter } from "next/navigation"
@@ -128,6 +135,11 @@ export function Header() {
     }
   }, [user])
 
+  const handleSignOut = async () => {
+    await supabase.auth.signOut()
+    router.push('/')
+  }
+
   return (
     <header className={`fixed top-0 left-0 right-0 z-50 w-full px-2 sm:px-4 py-2 sm:py-4 transition-all duration-300 ${isScrolled ? "bg-background/80 backdrop-blur-md" : ""}`}>
       <div className="container mx-auto">
@@ -151,7 +163,6 @@ export function Header() {
             />
           </Link>
 
-          {/* Desktop Navigation - Centered */}
           <nav className="hidden lg:flex items-center gap-1">
             {navLinks.map((link) => (
               <Link key={link.name} href={link.href}>
@@ -196,17 +207,34 @@ export function Header() {
           </nav>
 
           <div className="flex items-center gap-3">
-            {/* Theme Toggle */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className="text-gray-200 hover:text-orange-400 hover:bg-white/10 relative"
-            >
-              <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-              <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-              <span className="sr-only">Toggle theme</span>
-            </Button>
+            {/* Theme Toggle - Multi-theme support */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-gray-200 hover:text-orange-400 hover:bg-white/10 relative h-9 w-9"
+                >
+                  <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                  <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                  <span className="sr-only">Toggle theme</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="bg-[#1a1a2e] border-[#2a2a4e] text-gray-200">
+                <DropdownMenuItem onClick={() => setTheme("light")} className="hover:bg-white/10 focus:bg-white/10 cursor-pointer">
+                  <Sun className="mr-2 h-4 w-4" />
+                  <span>Light</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTheme("dark")} className="hover:bg-white/10 focus:bg-white/10 cursor-pointer">
+                  <Moon className="mr-2 h-4 w-4" />
+                  <span>Dark</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTheme("system")} className="hover:bg-white/10 focus:bg-white/10 cursor-pointer">
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>System</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
 
             {/* Messages Icon */}
             <Link href="/messages">
@@ -238,14 +266,46 @@ export function Header() {
 
             {/* Login/Profile Button - Desktop */}
             {user ? (
-              <Link href="/dashboard">
-                <Avatar className="hidden lg:flex h-10 w-10 ring-2 ring-white/20 hover:ring-white/50 transition-all cursor-pointer">
-                  <AvatarImage src={user.user_metadata?.avatar_url || user.user_metadata?.picture} loading="eager" fetchPriority="high" />
-                  <AvatarFallback className="bg-gradient-to-br from-green-500 to-emerald-600 text-white">
-                    {user.email?.[0]?.toUpperCase() || 'U'}
-                  </AvatarFallback>
-                </Avatar>
-              </Link>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <div className="hidden lg:flex cursor-pointer">
+                    <Avatar className="h-10 w-10 ring-2 ring-white/20 hover:ring-white/50 transition-all">
+                      <AvatarImage src={user.user_metadata?.avatar_url || user.user_metadata?.picture} loading="eager" fetchPriority="high" />
+                      <AvatarFallback className="bg-gradient-to-br from-green-500 to-emerald-600 text-white">
+                        {user.email?.[0]?.toUpperCase() || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                  </div>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56 bg-[#1a1a2e] border-[#2a2a4e] text-gray-200" align="end" forceMount>
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none text-white">{user.user_metadata?.full_name || "User"}</p>
+                      <p className="text-xs leading-none text-gray-400">
+                        {user.email}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-white/10" />
+                  <DropdownMenuItem asChild className="hover:bg-white/10 focus:bg-white/10 cursor-pointer">
+                    <Link href="/dashboard" className="w-full flex items-center">
+                      <LayoutDashboard className="mr-2 h-4 w-4" />
+                      <span>Dashboard</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="hover:bg-white/10 focus:bg-white/10 cursor-pointer">
+                    <Link href="/dashboard/settings" className="w-full flex items-center">
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>Settings</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-white/10" />
+                  <DropdownMenuItem className="text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 focus:bg-rose-500/10 cursor-pointer" onClick={handleSignOut}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Log out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
               <Link href="/login">
                 <Button className="hidden lg:flex bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-full px-6 font-medium">

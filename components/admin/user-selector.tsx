@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { Check, ChevronsUpDown, Search, User } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import {
     Command,
     CommandEmpty,
@@ -90,11 +91,11 @@ export function UserSelector({ onSelect, excludeRoles = [], placeholder = "Selec
                 </Button>
             </PopoverTrigger>
             <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
-                <Command>
-                    <CommandInput placeholder="Search users by name or email..." />
-                    <CommandList>
-                        <CommandEmpty>No user found.</CommandEmpty>
-                        <CommandGroup>
+                <Command className="rounded-lg border shadow-md">
+                    <CommandInput placeholder="Search users by name or email..." className="h-11" />
+                    <CommandList className="max-h-[300px] overflow-y-auto custom-scrollbar">
+                        <CommandEmpty className="py-6 text-center text-sm">No user found.</CommandEmpty>
+                        <CommandGroup heading="Available Users" className="px-2 pb-2">
                             {filteredUsers.map((user) => (
                                 <CommandItem
                                     key={user.id}
@@ -104,24 +105,32 @@ export function UserSelector({ onSelect, excludeRoles = [], placeholder = "Selec
                                         setOpen(false)
                                         onSelect(user)
                                     }}
-                                    className="flex items-center gap-3 p-3"
+                                    className="flex items-center gap-3 p-3 rounded-md cursor-pointer hover:bg-accent transition-colors"
                                 >
-                                    <Avatar className="h-8 w-8">
-                                        <AvatarImage src={user.avatar_url} />
-                                        <AvatarFallback>
-                                            {user.full_name?.charAt(0) || <User className="h-4 w-4" />}
-                                        </AvatarFallback>
-                                    </Avatar>
-                                    <div className="flex flex-col flex-1 overflow-hidden">
-                                        <span className="font-medium truncate">{user.full_name || "No Name"}</span>
-                                        <span className="text-xs text-muted-foreground truncate">{user.email}</span>
+                                    <div className="relative shrink-0">
+                                        <Avatar className="h-10 w-10 border border-border/50">
+                                            <AvatarImage src={user.avatar_url} />
+                                            <AvatarFallback className="bg-primary/10 text-primary">
+                                                {user.full_name?.charAt(0) || <User className="h-4 w-4" />}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                        <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-background bg-green-500" />
                                     </div>
-                                    <Check
-                                        className={cn(
-                                            "ml-auto h-4 w-4",
-                                            value === user.email ? "opacity-100" : "opacity-0"
-                                        )}
-                                    />
+                                    <div className="flex flex-col flex-1 overflow-hidden">
+                                        <span className="font-semibold text-sm truncate">{user.full_name || "No Name"}</span>
+                                        <span className="text-xs text-muted-foreground truncate">{user.email}</span>
+                                        <div className="flex items-center gap-2 mt-0.5">
+                                            <Badge variant="outline" className="text-[10px] h-4 px-1 capitalize">
+                                                {user.role}
+                                            </Badge>
+                                        </div>
+                                    </div>
+                                    <div className={cn(
+                                        "ml-auto flex h-5 w-5 items-center justify-center rounded-full border transition-all",
+                                        value === user.email ? "bg-primary border-primary scale-110" : "border-muted-foreground/30 opacity-50"
+                                    )}>
+                                        {value === user.email && <Check className="h-3 w-3 text-primary-foreground" />}
+                                    </div>
                                 </CommandItem>
                             ))}
                         </CommandGroup>

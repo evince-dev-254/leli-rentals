@@ -53,6 +53,7 @@ const accountTypes = [
 
 export default function SelectRolePage() {
     const [selectedRole, setSelectedRole] = useState("renter")
+    const [currentRole, setCurrentRole] = useState<string | null>(null)
     const [loading, setLoading] = useState(false)
     const [initializing, setInitializing] = useState(true)
     const [user, setUser] = useState<any>(null)
@@ -71,15 +72,19 @@ export default function SelectRolePage() {
             const params = new URLSearchParams(window.location.search)
             const force = params.get('force') === 'true'
 
-            if (!force) {
-                const { data: profile } = await supabase
-                    .from('user_profiles')
-                    .select('role')
-                    .eq('id', user.id)
-                    .single()
+            // Fetch profile to identify current role
+            const { data: profile } = await supabase
+                .from('user_profiles')
+                .select('role')
+                .eq('id', user.id)
+                .single()
 
-                if (profile && profile.role) {
-                    // Already has a role, redirect
+            if (profile && profile.role) {
+                setCurrentRole(profile.role)
+                setSelectedRole(profile.role)
+
+                if (!force) {
+                    // Already has a role and not forced, redirect
                     console.log('User already has role:', profile.role)
                     router.replace(getRoleRedirect(profile.role))
                     return
@@ -175,48 +180,56 @@ export default function SelectRolePage() {
                         </p>
                     </div>
 
-                    <div className="grid md:grid-cols-3 gap-6 mb-12">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
                         {accountTypes.map((type) => {
                             const Icon = type.icon
                             const isSelected = selectedRole === type.value
+                            const isCurrent = currentRole === type.value
 
                             return (
                                 <div
                                     key={type.value}
                                     onClick={() => setSelectedRole(type.value)}
                                     className={`
-                                        cursor-pointer group relative rounded-2xl transition-all duration-300
+                                        cursor-pointer group relative rounded-xl transition-all duration-300 overflow-hidden
                                         ${isSelected
-                                            ? `ring-4 ${type.ring} ring-offset-4 ring-offset-background scale-105 shadow-xl`
-                                            : "hover:scale-102 hover:shadow-lg border border-transparent hover:border-border/50 bg-card/50"
+                                            ? `ring-2 ${type.ring} ring-offset-2 ring-offset-background shadow-lg scale-[1.02]`
+                                            : "hover:scale-[1.01] hover:shadow-md border border-border/40 bg-card/40"
                                         }
                                     `}
                                 >
-                                    <div className={`absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-br from-white/5 to-transparent pointer-events-none`} />
+                                    {isCurrent && (
+                                        <div className="absolute top-0 right-0 z-20">
+                                            <div className="bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded-bl-lg flex items-center gap-1 shadow-sm">
+                                                <div className="h-1 w-1 rounded-full bg-white animate-pulse" />
+                                                Active Now
+                                            </div>
+                                        </div>
+                                    )}
 
-                                    <div className="h-full p-8 flex flex-col items-center text-center glass-card border-0 bg-transparent">
-                                        <div className={`w-20 h-20 rounded-2xl flex items-center justify-center mb-6 transition-transform group-hover:scale-110 duration-500 ${type.color}`}>
-                                            <Icon className="h-10 w-10" />
+                                    <div className="h-full p-5 flex flex-col items-center text-center relative">
+                                        <div className={`w-14 h-14 rounded-xl flex items-center justify-center mb-4 transition-all duration-500 ${type.color} ${isSelected ? 'scale-110 rotate-3' : 'group-hover:scale-105'}`}>
+                                            <Icon className="h-7 w-7" />
                                         </div>
 
-                                        <h3 className="text-2xl font-bold mb-3">{type.label}</h3>
-                                        <p className="text-muted-foreground mb-6 leading-relaxed">
+                                        <h3 className="text-lg font-bold mb-2 group-hover:text-primary transition-colors">{type.label}</h3>
+                                        <p className="text-sm text-muted-foreground mb-4 line-clamp-2 min-h-[40px]">
                                             {type.description}
                                         </p>
 
-                                        <div className="mt-auto space-y-3 w-full text-left">
-                                            {type.features.map((feature, i) => (
-                                                <div key={i} className="flex items-center text-sm text-foreground/80">
-                                                    <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center mr-3 shrink-0">
-                                                        <Check className="h-3 w-3 text-primary" />
+                                        <div className="space-y-2 w-full text-left mt-auto">
+                                            {type.features.slice(0, 3).map((feature, i) => (
+                                                <div key={i} className="flex items-center text-xs text-foreground/70">
+                                                    <div className="w-4 h-4 rounded-full bg-primary/10 flex items-center justify-center mr-2 shrink-0">
+                                                        <Check className="h-2.5 w-2.5 text-primary" />
                                                     </div>
-                                                    {feature}
+                                                    <span className="truncate">{feature}</span>
                                                 </div>
                                             ))}
                                         </div>
 
-                                        <div className={`mt-8 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors
-                                            ${isSelected ? `border-primary bg-primary text-white` : "border-muted-foreground/30"}
+                                        <div className={`mt-5 w-5 h-5 rounded-full border flex items-center justify-center transition-all
+                                            ${isSelected ? `border-primary bg-primary text-white scale-110 shadow-sm shadow-primary/30` : "border-muted-foreground/20 bg-background/50"}
                                         `}>
                                             {isSelected && <Check className="h-3 w-3" />}
                                         </div>

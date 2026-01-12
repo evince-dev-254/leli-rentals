@@ -217,15 +217,40 @@ export function StaffManagement() {
                         <DialogTitle>Add Staff Member</DialogTitle>
                         <DialogDescription>Enter the email address of the user you want to promote to staff.</DialogDescription>
                     </DialogHeader>
-                    <div className="py-4 space-y-4">
-                        <div className="space-y-2 text-center flex flex-col items-center">
-                            <Label className="mb-2">Select User to Promote</Label>
+                    <div className="pt-6 pb-2 space-y-6">
+                        <div className="flex flex-col items-center text-center space-y-2 mb-4">
+                            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+                                <Shield className="h-6 w-6 text-primary" />
+                            </div>
+                            <Label className="text-lg font-semibold">Select User to Promote</Label>
+                            <p className="text-sm text-muted-foreground max-w-[300px]">
+                                Search and select a verified user to give them staff privileges.
+                            </p>
+                        </div>
+                        <div className="px-1">
                             <UserSelector
                                 onSelect={setSelectedUser}
                                 excludeRoles={['staff', 'admin']}
-                                placeholder="Search users to add to staff..."
+                                placeholder="Search users by name or email..."
                             />
                         </div>
+                        {selectedUser && (
+                            <div className="p-4 rounded-xl bg-muted/50 border border-border animate-in fade-in slide-in-from-top-2">
+                                <div className="flex items-center gap-3">
+                                    <Avatar className="h-12 w-12 border-2 border-primary/20">
+                                        <AvatarImage src={selectedUser.avatar_url} />
+                                        <AvatarFallback className="bg-primary/10 text-primary">{selectedUser.full_name?.charAt(0)}</AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="font-bold truncate">{selectedUser.full_name}</p>
+                                        <p className="text-xs text-muted-foreground truncate">{selectedUser.email}</p>
+                                    </div>
+                                    <Badge className="bg-green-500/10 text-green-600 hover:bg-green-500/20 border-0">
+                                        Ready
+                                    </Badge>
+                                </div>
+                            </div>
+                        )}
                     </div>
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>Cancel</Button>

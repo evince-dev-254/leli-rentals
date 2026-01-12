@@ -39,8 +39,8 @@ export default function StaffOverviewPage() {
     return (
         <div className="space-y-8">
             <div>
-                <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600">Staff Dashboard</h1>
-                <p className="text-muted-foreground text-lg">Detailed overview of sales and affiliate performance.</p>
+                <h1 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600">Staff Dashboard</h1>
+                <p className="text-muted-foreground text-base md:text-lg">Detailed overview of sales and affiliate performance.</p>
             </div>
 
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">

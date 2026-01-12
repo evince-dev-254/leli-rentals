@@ -321,12 +321,12 @@ export default function AffiliateDashboard() {
                 subtitle="Manage your referrals and track your earnings in real-time."
                 role="Affiliate"
             >
-                <div className="flex items-center gap-2 mt-4 md:mt-0">
-                    <Button variant="secondary" size="sm" onClick={handleRefresh} disabled={refreshing} className="bg-white/10 hover:bg-white/20 text-white border-0">
+                <div className="flex flex-wrap items-center gap-2 mt-4 md:mt-0">
+                    <Button variant="secondary" size="sm" onClick={handleRefresh} disabled={refreshing} className="bg-white/10 hover:bg-white/20 text-white border-0 flex-1 sm:flex-none">
                         <RefreshCw className={`mr-2 h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
                         Refresh
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => router.push('/select-role?force=true')} className="bg-transparent text-white border-white/20 hover:bg-white/10 hover:text-white">
+                    <Button variant="outline" size="sm" onClick={() => router.push('/select-role?force=true')} className="bg-transparent text-white border-white/20 hover:bg-white/10 hover:text-white flex-1 sm:flex-none">
                         Switch Account
                     </Button>
                 </div>
@@ -402,10 +402,10 @@ export default function AffiliateDashboard() {
                 <div className="lg:col-span-2 space-y-8">
                     {/* Performance Chart */}
                     <Card className="glass-card border-none shadow-xl bg-gradient-to-br from-white/80 to-white/40 dark:from-black/40 dark:to-black/20">
-                        <CardHeader>
-                            <CardTitle>Performance Overview</CardTitle>
+                        <CardHeader className="p-4 md:p-6">
+                            <CardTitle className="text-xl md:text-2xl">Performance Overview</CardTitle>
                         </CardHeader>
-                        <CardContent className="h-[350px] pt-4 min-w-0">
+                        <CardContent className="h-[250px] md:h-[350px] p-2 md:p-4 pt-4 min-w-0">
                             <ResponsiveContainer width="100%" height="100%">
                                 <AreaChart data={chartData}>
                                     <defs>

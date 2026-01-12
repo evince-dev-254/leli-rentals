@@ -82,7 +82,7 @@ export function RenterDashboard() {
     const paymentHistory = bookings.filter(b => ['confirmed', 'completed'].includes(b.status));
 
     return (
-        <div className="container mx-auto py-8 px-4 space-y-8 pb-20">
+        <div className="container mx-auto py-4 md:py-8 px-2 sm:px-4 space-y-6 md:space-y-8 pb-20">
             <DashboardWelcomeHeader
                 user={user}
                 subtitle="Manage your bookings, payments, and favorite items."
@@ -131,9 +131,9 @@ export function RenterDashboard() {
                 {/* BOOKINGS TAB */}
                 <TabsContent value="bookings">
                     <Card className="glass-card border-none shadow-md">
-                        <CardHeader>
-                            <CardTitle>My Bookings</CardTitle>
-                            <CardDescription>Track the status of your rental requests</CardDescription>
+                        <CardHeader className="p-4 md:p-6">
+                            <CardTitle className="text-xl md:text-2xl">My Bookings</CardTitle>
+                            <CardDescription className="text-xs md:text-sm">Track the status of your rental requests</CardDescription>
                         </CardHeader>
                         <CardContent>
                             {bookings.length === 0 ? (

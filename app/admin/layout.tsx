@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 import { AdminSidebar, MobileAdminSidebar } from "@/components/admin/admin-sidebar"
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
+import { Header } from "@/components/layout/header"
 import { Loader2 } from "lucide-react"
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -59,28 +60,31 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   if (!isAdmin) return null
 
   return (
-    <div className="flex min-h-screen">
-      {/* Desktop Sidebar */}
-      <div className="hidden lg:flex w-64 shadow-xl z-10">
-        <AdminSidebar />
-      </div>
+    <div className="flex flex-col min-h-screen">
+      <Header />
+      <div className="flex flex-1 pt-20 lg:pt-24">
+        {/* Desktop Sidebar */}
+        <div className="hidden lg:flex w-64 shadow-xl z-10">
+          <AdminSidebar />
+        </div>
 
-      <div className="flex-1 flex flex-col min-w-0 bg-background">
-        {/* Header */}
-        <DashboardHeader
-          mobileSidebar={<MobileAdminSidebar />}
-          breadcrumbs={[
-            { label: "Administration", href: "/admin" },
-            { label: "Dashboard" }
-          ]}
-        />
+        <div className="flex-1 flex flex-col min-w-0 bg-background">
+          {/* Header */}
+          <DashboardHeader
+            mobileSidebar={<MobileAdminSidebar />}
+            breadcrumbs={[
+              { label: "Administration", href: "/admin" },
+              { label: "Dashboard" }
+            ]}
+          />
 
-        {/* Main Content */}
-        <main className="flex-1 p-4 lg:p-8 overflow-y-auto">
-          <div className="mx-auto max-w-7xl animate-in fade-in duration-500">
-            {children}
-          </div>
-        </main>
+          {/* Main Content */}
+          <main className="flex-1 p-4 lg:p-8 overflow-y-auto">
+            <div className="mx-auto max-w-7xl animate-in fade-in duration-500">
+              {children}
+            </div>
+          </main>
+        </div>
       </div>
     </div>
   )

@@ -26,7 +26,7 @@ import { supabase } from "@/lib/supabase"
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet"
 
 export const allLinks = [
-  { href: "/dashboard/switch-account", label: "Switch Account", icon: UserCog, roles: ["owner", "renter", "affiliate", "staff"], badge: "" },
+  { href: "/select-role?force=true", label: "Switch Account", icon: UserCog, roles: ["owner", "renter", "affiliate", "staff"], badge: "" },
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard, roles: ["owner", "renter", "affiliate", "staff"], badge: "" },
   { href: "/dashboard/listings", label: "My Listings", icon: Package, roles: ["owner", "renter"], badge: "" },
   { href: "/dashboard/bookings", label: "Bookings", icon: CalendarCheck, roles: ["owner", "renter"], badge: "" },

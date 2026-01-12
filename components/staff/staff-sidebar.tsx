@@ -25,6 +25,12 @@ export function StaffSidebar({ className }: SidebarProps) {
 
     const routes = [
         {
+            label: "Switch Account",
+            icon: UserCog,
+            href: "/select-role?force=true",
+            active: pathname === "/select-role",
+        },
+        {
             label: "Overview",
             icon: LayoutDashboard,
             href: "/staff",
