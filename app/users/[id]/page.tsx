@@ -112,20 +112,20 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                     <Card className="glass-card overflow-hidden border-border/50">
                         <div className="h-32 bg-gradient-to-r from-primary/20 via-primary/10 to-transparent"></div>
                         <div className="px-8 pb-8">
-                            <div className="relative flex flex-col sm:flex-row items-start sm:items-end -mt-12 gap-6">
+                            <div className="relative flex flex-col sm:flex-row items-center sm:items-end -mt-12 gap-6 text-center sm:text-left">
                                 <div className="relative">
                                     <div className="h-32 w-32 rounded-full border-4 border-background overflow-hidden bg-muted relative">
-                                            <img
-                                                src={avatarUrl}
-                                                alt={profile.full_name}
-                                                className="w-full h-full object-cover cmp-ignore"
-                                                loading="eager"
-                                                fetchPriority="high"
-                                                data-cmp-ignore
-                                                onError={(e) => {
-                                                    e.currentTarget.src = "/african-man-portrait.png"
-                                                }}
-                                            />
+                                        <img
+                                            src={avatarUrl}
+                                            alt={profile.full_name}
+                                            className="w-full h-full object-cover cmp-ignore"
+                                            loading="eager"
+                                            fetchPriority="high"
+                                            data-cmp-ignore
+                                            onError={(e) => {
+                                                e.currentTarget.src = "/african-man-portrait.png"
+                                            }}
+                                        />
                                     </div>
                                     {isVerified && (
                                         <div className="absolute bottom-1 right-1 bg-green-500 text-white p-1 rounded-full border-2 border-background" title="Verified Owner">
@@ -135,7 +135,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                                 </div>
 
                                 <div className="flex-1 space-y-2 mb-2">
-                                    <div className="flex items-center gap-3">
+                                    <div className="flex flex-col sm:flex-row items-center gap-3 justify-center sm:justify-start">
                                         <h1 className="text-3xl font-bold">{profile.full_name}</h1>
                                         {isPremium && (
                                             <Badge variant="secondary" className="bg-amber-100 text-amber-800 hover:bg-amber-100 border-amber-200">
@@ -150,7 +150,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                                         )}
                                     </div>
 
-                                    <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                                    <div className="flex flex-wrap gap-4 text-sm text-muted-foreground justify-center sm:justify-start">
                                         <div className="flex items-center gap-1">
                                             <MapPin className="w-4 h-4" />
                                             {profile.location || "Kenya"}
@@ -167,7 +167,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                                 </div>
 
                                 {profile.role === 'owner' && currentUser?.id !== profile.id && (
-                                    <div className="flex gap-3">
+                                    <div className="flex gap-3 justify-center sm:justify-start w-full sm:w-auto mt-4 sm:mt-0">
                                         <Button asChild>
                                             <Link href={`/dashboard/messages?contact=${profile.id}&name=${encodeURIComponent(profile.full_name)}`}>
                                                 Contact Owner

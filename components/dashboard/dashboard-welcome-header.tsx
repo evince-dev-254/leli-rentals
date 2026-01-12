@@ -53,8 +53,8 @@ export function DashboardWelcomeHeader({ user, subtitle, role, children, isVerif
                 <div className="absolute top-1/2 left-1/4 h-32 w-32 rounded-full bg-blue-500 blur-3xl animate-pulse" />
             </div>
 
-            <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between p-6 md:p-10 gap-6">
-                <div className="flex items-center gap-4">
+            <div className="relative z-10 flex flex-col md:flex-row items-center md:items-center justify-between p-6 md:p-10 gap-6 text-center md:text-left">
+                <div className="flex flex-col md:flex-row items-center gap-4">
                     <Avatar className="h-16 w-16 border-2 border-white/20 shadow-lg">
                         <AvatarImage src={avatar} />
                         <AvatarFallback className="bg-primary text-primary-foreground text-xl">
@@ -62,10 +62,10 @@ export function DashboardWelcomeHeader({ user, subtitle, role, children, isVerif
                         </AvatarFallback>
                     </Avatar>
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+                        <h1 className="text-3xl font-bold tracking-tight flex flex-col md:flex-row items-center gap-2 justify-center md:justify-start">
                             {greeting}, {name}!
                             {isVerified && (
-                                <div className="bg-green-500 text-white p-1 rounded-full shadow-sm" title="Verified Owner">
+                                <div className="bg-green-500 text-white p-1 rounded-full shadow-sm mt-2 md:mt-0" title="Verified Owner">
                                     <ShieldCheck className="h-5 w-5" />
                                 </div>
                             )}
