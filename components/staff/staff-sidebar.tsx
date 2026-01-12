@@ -11,6 +11,7 @@ import {
     LogOut,
     Menu,
     Settings,
+    Paintbrush,
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -48,6 +49,12 @@ export function StaffSidebar({ className }: SidebarProps) {
             icon: Megaphone,
             href: "/staff/advertisers",
             active: pathname === "/staff/advertisers",
+        },
+        {
+            label: "Brand Identity",
+            icon: Paintbrush,
+            href: "/staff/branding",
+            active: pathname === "/staff/branding",
         },
         {
             label: "Settings",
