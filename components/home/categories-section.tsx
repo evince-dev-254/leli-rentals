@@ -2,6 +2,7 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { motion } from "framer-motion"
 import { Car, Home, Wrench, Smartphone, Shirt, Music, PartyPopper, ArrowRight } from "lucide-react"
 
 const categories = [
@@ -75,239 +76,321 @@ export function CategoriesSection() {
     <section className="pt-20 pb-10 px-4">
       <div className="container mx-auto">
         {/* Header */}
-        <div className="text-center mb-12">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-12"
+        >
           <h2 className="text-3xl sm:text-4xl font-bold mb-4">Browse by Category</h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
             Find exactly what you&apos;re looking for across our diverse range of rental categories.
           </p>
-        </div>
+        </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-7xl mx-auto">
           {/* Featured Category - Vehicles (Large) */}
-          <Link href={categories[0].href} className="md:col-span-2 md:row-span-2 group">
-            <div className="relative h-full min-h-[400px] rounded-2xl overflow-hidden">
-                // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={categories[0].image || "/placeholder.svg"}
-                alt={categories[0].name}
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 cmp-ignore"
-                loading="eager"
-                fetchPriority="high"
-                data-cmp-ignore
-                onError={(e) => {
-                  console.warn('Category image failed to load:', categories[0].image);
-                  e.currentTarget.src = '/placeholder.svg';
-                }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.0 }}
+            className="md:col-span-2 md:row-span-2 group"
+          >
+            <Link href={categories[0].href} className="block h-full">
+              <div className="relative h-full min-h-[400px] rounded-2xl overflow-hidden">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={categories[0].image || "/placeholder.svg"}
+                  alt={categories[0].name}
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 cmp-ignore"
+                  loading="eager"
+                  width={800}
+                  height={600}
+                  fetchPriority="high"
+                  data-cmp-ignore
+                  onError={(e) => {
+                    console.warn('Category image failed to load:', categories[0].image);
+                    e.currentTarget.src = '/placeholder.svg';
+                  }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
-              {/* Icon Badge */}
-              <div className="absolute top-4 left-4 flex items-center gap-2">
-                <div className={`w-10 h-10 rounded-full ${categories[0].color} flex items-center justify-center`}>
-                  <Car className="h-5 w-5 text-white" />
+                {/* Icon Badge */}
+                <div className="absolute top-4 left-4 flex items-center gap-2">
+                  <div className={`w-10 h-10 rounded-full ${categories[0].color} flex items-center justify-center`}>
+                    <Car className="h-5 w-5 text-white" />
+                  </div>
+                  <Badge className="bg-black/50 text-white border-none">{categories[0].count} items</Badge>
                 </div>
-                <Badge className="bg-black/50 text-white border-none">{categories[0].count} items</Badge>
-              </div>
 
-              {/* Content */}
-              <div className="absolute bottom-0 left-0 right-0 p-6">
-                <h3 className="text-2xl font-bold text-white mb-1">{categories[0].name}</h3>
-                <p className="text-white/80 mb-3">{categories[0].description}</p>
-                <div className="flex items-center text-white font-medium group-hover:underline">
-                  Browse Category <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                {/* Content */}
+                <div className="absolute bottom-0 left-0 right-0 p-6">
+                  <h3 className="text-2xl font-bold text-white mb-1">{categories[0].name}</h3>
+                  <p className="text-white/80 mb-3">{categories[0].description}</p>
+                  <div className="flex items-center text-white font-medium group-hover:underline">
+                    Browse Category <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  </div>
                 </div>
               </div>
-            </div>
-          </Link>
+            </Link>
+          </motion.div>
 
           {/* Homes (Medium) */}
-          <Link href={categories[1].href} className="md:row-span-2 group">
-            <div className="relative h-full min-h-[400px] rounded-2xl overflow-hidden">
-                // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={categories[1].image || "/placeholder.svg"}
-                alt={categories[1].name}
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 cmp-ignore"
-                loading="eager"
-                fetchPriority="high"
-                data-cmp-ignore
-                onError={(e) => {
-                  e.currentTarget.src = '/placeholder.svg';
-                }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="md:row-span-2 group"
+          >
+            <Link href={categories[1].href} className="block h-full">
+              <div className="relative h-full min-h-[400px] rounded-2xl overflow-hidden">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={categories[1].image || "/placeholder.svg"}
+                  alt={categories[1].name}
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 cmp-ignore"
+                  loading="eager"
+                  width={800}
+                  height={600}
+                  fetchPriority="high"
+                  data-cmp-ignore
+                  onError={(e) => {
+                    e.currentTarget.src = '/placeholder.svg';
+                  }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
-              {/* Icon Badge */}
-              <div className="absolute top-4 left-4 flex items-center gap-2">
-                <div className={`w-10 h-10 rounded-full ${categories[1].color} flex items-center justify-center`}>
-                  <Home className="h-5 w-5 text-white" />
+                {/* Icon Badge */}
+                <div className="absolute top-4 left-4 flex items-center gap-2">
+                  <div className={`w-10 h-10 rounded-full ${categories[1].color} flex items-center justify-center`}>
+                    <Home className="h-5 w-5 text-white" />
+                  </div>
+                  <Badge className="bg-black/50 text-white border-none">{categories[1].count} items</Badge>
                 </div>
-                <Badge className="bg-black/50 text-white border-none">{categories[1].count} items</Badge>
-              </div>
 
-              {/* Content */}
-              <div className="absolute bottom-0 left-0 right-0 p-5">
-                <h3 className="text-xl font-bold text-white mb-1">{categories[1].name}</h3>
+                {/* Content */}
+                <div className="absolute bottom-0 left-0 right-0 p-5">
+                  <h3 className="text-xl font-bold text-white mb-1">{categories[1].name}</h3>
+                </div>
               </div>
-            </div>
-          </Link>
+            </Link>
+          </motion.div>
 
           {/* Equipment (Small) */}
-          <Link href={categories[2].href} className="group">
-            <div className="relative h-[190px] rounded-2xl overflow-hidden">
-              <img
-                src={categories[2].image || "/placeholder.svg"}
-                alt={categories[2].name}
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                loading="eager"
-                fetchPriority="high"
-                onError={(e) => {
-                  e.currentTarget.src = '/placeholder.svg';
-                }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="group"
+          >
+            <Link href={categories[2].href} className="block h-full">
+              <div className="relative h-[190px] rounded-2xl overflow-hidden">
+                <img
+                  src={categories[2].image || "/placeholder.svg"}
+                  alt={categories[2].name}
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  loading="eager"
+                  width={800}
+                  height={600}
+                  fetchPriority="high"
+                  onError={(e) => {
+                    e.currentTarget.src = '/placeholder.svg';
+                  }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
-              {/* Icon Badge */}
-              <div className="absolute top-3 right-3 flex items-center gap-2">
-                <div className={`w-8 h-8 rounded-full ${categories[2].color} flex items-center justify-center`}>
-                  <Wrench className="h-4 w-4 text-white" />
+                {/* Icon Badge */}
+                <div className="absolute top-3 right-3 flex items-center gap-2">
+                  <div className={`w-8 h-8 rounded-full ${categories[2].color} flex items-center justify-center`}>
+                    <Wrench className="h-4 w-4 text-white" />
+                  </div>
+                  <Badge className="bg-black/50 text-white border-none text-xs">{categories[2].count} items</Badge>
                 </div>
-                <Badge className="bg-black/50 text-white border-none text-xs">{categories[2].count} items</Badge>
-              </div>
 
-              {/* Content */}
-              <div className="absolute bottom-0 left-0 right-0 p-4">
-                <h3 className="text-lg font-bold text-white">{categories[2].name}</h3>
+                {/* Content */}
+                <div className="absolute bottom-0 left-0 right-0 p-4">
+                  <h3 className="text-lg font-bold text-white">{categories[2].name}</h3>
+                </div>
               </div>
-            </div>
-          </Link>
+            </Link>
+          </motion.div>
 
           {/* Electronics (Small) */}
-          <Link href={categories[3].href} className="group">
-            <div className="relative h-[190px] rounded-2xl overflow-hidden">
-              <img
-                src={categories[3].image || "/placeholder.svg"}
-                alt={categories[3].name}
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                loading="eager"
-                fetchPriority="high"
-                onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="group"
+          >
+            <Link href={categories[3].href} className="block h-full">
+              <div className="relative h-[190px] rounded-2xl overflow-hidden">
+                <img
+                  src={categories[3].image || "/placeholder.svg"}
+                  alt={categories[3].name}
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  loading="eager"
+                  width={800}
+                  height={600}
+                  fetchPriority="high"
+                  onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
-              {/* Icon Badge */}
-              <div className="absolute top-3 right-3 flex items-center gap-2">
-                <div className={`w-8 h-8 rounded-full ${categories[3].color} flex items-center justify-center`}>
-                  <Smartphone className="h-4 w-4 text-white" />
+                {/* Icon Badge */}
+                <div className="absolute top-3 right-3 flex items-center gap-2">
+                  <div className={`w-8 h-8 rounded-full ${categories[3].color} flex items-center justify-center`}>
+                    <Smartphone className="h-4 w-4 text-white" />
+                  </div>
+                  <Badge className="bg-black/50 text-white border-none text-xs">{categories[3].count} items</Badge>
                 </div>
-                <Badge className="bg-black/50 text-white border-none text-xs">{categories[3].count} items</Badge>
-              </div>
 
-              {/* Content */}
-              <div className="absolute bottom-0 left-0 right-0 p-4">
-                <h3 className="text-lg font-bold text-white">{categories[3].name}</h3>
+                {/* Content */}
+                <div className="absolute bottom-0 left-0 right-0 p-4">
+                  <h3 className="text-lg font-bold text-white">{categories[3].name}</h3>
+                </div>
               </div>
-            </div>
-          </Link>
+            </Link>
+          </motion.div>
 
           {/* Fashion (Small) */}
-          <Link href={categories[4].href} className="group">
-            <div className="relative h-[190px] rounded-2xl overflow-hidden">
-              <img
-                src={categories[4].image || "/placeholder.svg"}
-                alt={categories[4].name}
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                loading="eager"
-                fetchPriority="high"
-                onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+            className="group"
+          >
+            <Link href={categories[4].href} className="block h-full">
+              <div className="relative h-[190px] rounded-2xl overflow-hidden">
+                <img
+                  src={categories[4].image || "/placeholder.svg"}
+                  alt={categories[4].name}
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  loading="eager"
+                  width={800}
+                  height={600}
+                  fetchPriority="high"
+                  onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
-              {/* Icon Badge */}
-              <div className="absolute top-3 left-3 flex items-center gap-2">
-                <div className={`w-8 h-8 rounded-full ${categories[4].color} flex items-center justify-center`}>
-                  <Shirt className="h-4 w-4 text-white" />
+                {/* Icon Badge */}
+                <div className="absolute top-3 left-3 flex items-center gap-2">
+                  <div className={`w-8 h-8 rounded-full ${categories[4].color} flex items-center justify-center`}>
+                    <Shirt className="h-4 w-4 text-white" />
+                  </div>
+                  <Badge className="bg-black/50 text-white border-none text-xs">{categories[4].count} items</Badge>
                 </div>
-                <Badge className="bg-black/50 text-white border-none text-xs">{categories[4].count} items</Badge>
-              </div>
 
-              {/* Content */}
-              <div className="absolute bottom-0 left-0 right-0 p-4">
-                <h3 className="text-lg font-bold text-white">{categories[4].name}</h3>
+                {/* Content */}
+                <div className="absolute bottom-0 left-0 right-0 p-4">
+                  <h3 className="text-lg font-bold text-white">{categories[4].name}</h3>
+                </div>
               </div>
-            </div>
-          </Link>
+            </Link>
+          </motion.div>
 
           {/* Entertainment (Medium spanning 2 cols) */}
-          <Link href={categories[5].href} className="md:col-span-2 group">
-            <div className="relative h-[190px] rounded-2xl overflow-hidden">
-              <img
-                src={categories[5].image || "/placeholder.svg"}
-                alt={categories[5].name}
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                loading="eager"
-                fetchPriority="high"
-                onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+            className="md:col-span-2 group"
+          >
+            <Link href={categories[5].href} className="block h-full">
+              <div className="relative h-[190px] rounded-2xl overflow-hidden">
+                <img
+                  src={categories[5].image || "/placeholder.svg"}
+                  alt={categories[5].name}
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  loading="eager"
+                  width={800}
+                  height={600}
+                  fetchPriority="high"
+                  onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
-              {/* Icon Badge */}
-              <div className="absolute top-3 left-3 flex items-center gap-2">
-                <div className={`w-8 h-8 rounded-full ${categories[5].color} flex items-center justify-center`}>
-                  <Music className="h-4 w-4 text-white" />
+                {/* Icon Badge */}
+                <div className="absolute top-3 left-3 flex items-center gap-2">
+                  <div className={`w-8 h-8 rounded-full ${categories[5].color} flex items-center justify-center`}>
+                    <Music className="h-4 w-4 text-white" />
+                  </div>
+                  <Badge className="bg-black/50 text-white border-none text-xs">{categories[5].count} items</Badge>
                 </div>
-                <Badge className="bg-black/50 text-white border-none text-xs">{categories[5].count} items</Badge>
-              </div>
 
-              {/* Content */}
-              <div className="absolute bottom-0 left-0 right-0 p-4">
-                <h3 className="text-lg font-bold text-white">{categories[5].name}</h3>
-                <p className="text-white/70 text-sm">{categories[5].description}</p>
+                {/* Content */}
+                <div className="absolute bottom-0 left-0 right-0 p-4">
+                  <h3 className="text-lg font-bold text-white">{categories[5].name}</h3>
+                  <p className="text-white/70 text-sm">{categories[5].description}</p>
+                </div>
               </div>
-            </div>
-          </Link>
+            </Link>
+          </motion.div>
 
           {/* Event Spaces */}
-          <Link href={categories[6].href} className="md:col-span-2 group">
-            <div className="relative h-[190px] rounded-2xl overflow-hidden">
-                // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={categories[6].image || "/placeholder.svg"}
-                alt={categories[6].name}
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 cmp-ignore"
-                loading="eager"
-                fetchPriority="high"
-                data-cmp-ignore
-                onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.6 }}
+            className="md:col-span-2 group"
+          >
+            <Link href={categories[6].href} className="block h-full">
+              <div className="relative h-[190px] rounded-2xl overflow-hidden">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={categories[6].image || "/placeholder.svg"}
+                  alt={categories[6].name}
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 cmp-ignore"
+                  loading="eager"
+                  width={800}
+                  height={600}
+                  fetchPriority="high"
+                  data-cmp-ignore
+                  onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
-              {/* Icon Badge */}
-              <div className="absolute top-3 left-3 flex items-center gap-2">
-                <div className={`w-8 h-8 rounded-full ${categories[6].color} flex items-center justify-center`}>
-                  <PartyPopper className="h-4 w-4 text-white" />
+                {/* Icon Badge */}
+                <div className="absolute top-3 left-3 flex items-center gap-2">
+                  <div className={`w-8 h-8 rounded-full ${categories[6].color} flex items-center justify-center`}>
+                    <PartyPopper className="h-4 w-4 text-white" />
+                  </div>
+                  <Badge className="bg-black/50 text-white border-none text-xs">{categories[6].count} items</Badge>
                 </div>
-                <Badge className="bg-black/50 text-white border-none text-xs">{categories[6].count} items</Badge>
-              </div>
 
-              {/* Content */}
-              <div className="absolute bottom-0 left-0 right-0 p-4">
-                <h3 className="text-lg font-bold text-white">{categories[6].name}</h3>
-                <p className="text-white/70 text-sm">{categories[6].description}</p>
+                {/* Content */}
+                <div className="absolute bottom-0 left-0 right-0 p-4">
+                  <h3 className="text-lg font-bold text-white">{categories[6].name}</h3>
+                  <p className="text-white/70 text-sm">{categories[6].description}</p>
+                </div>
               </div>
-            </div>
-          </Link>
+            </Link>
+          </motion.div>
         </div>
 
         {/* View All Button */}
-        <div className="text-center mt-10">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.8 }}
+          className="text-center mt-10"
+        >
           <Link href="/categories">
             <Button variant="outline" size="lg" className="glass-card bg-transparent">
               View All Categories
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </Link>
-        </div>
+        </motion.div>
       </div>
     </section>
   )

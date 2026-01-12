@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { motion } from "framer-motion"
 import { Star, Heart, MapPin, ArrowRight, CheckCircle2, Loader2 } from "lucide-react"
 import { FavoriteButton } from "@/components/listings/favorite-button"
 import { supabase } from "@/lib/supabase"
@@ -90,78 +91,86 @@ export function FeaturedListings() {
 
         {/* Listings Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {featuredListings.map((listing) => (
-            <Link key={listing.id} href={`/listings/${listing.id}`} className="group">
-              <div className="glass-card rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 h-full">
-                {/* Image with gradient fallback */}
-                <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-pink-400 via-purple-400 to-blue-400">
-                  {listing.images && listing.images[0] ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={listing.images[0] || "/placeholder.svg"} // Fallback immediately
-                      alt={listing.title}
-                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110 cmp-ignore"
-                      data-cmp-ignore
-                      onError={(e) => {
-                        e.currentTarget.src = "/placeholder.svg" // Fallback on error
-                      }}
-                      suppressHydrationWarning
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-muted flex items-center justify-center">
-                      <span className="text-muted-foreground text-sm">No Image</span>
-                    </div>
-                  )}
-
-                  {/* Overlay Badges */}
-                  <div className="absolute top-3 left-3 flex gap-2">
-                    <Badge className="bg-background/80 text-foreground backdrop-blur-sm">
-                      {listing.category?.name || 'Item'}
-                    </Badge>
-                    {listing.is_verified && (
-                      <Badge className="bg-green-500/90 text-white">
-                        <CheckCircle2 className="h-3 w-3 mr-1" />
-                        Verified
-                      </Badge>
+          {featuredListings.map((listing, index) => (
+            <motion.div
+              key={listing.id}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+            >
+              <Link href={`/listings/${listing.id}`} className="group h-full block">
+                <div className="glass-card rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 h-full">
+                  {/* Image with gradient fallback */}
+                  <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-pink-400 via-purple-400 to-blue-400">
+                    {listing.images && listing.images[0] ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={listing.images[0] || "/placeholder.svg"} // Fallback immediately
+                        alt={listing.title}
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110 cmp-ignore"
+                        data-cmp-ignore
+                        onError={(e) => {
+                          e.currentTarget.src = "/placeholder.svg" // Fallback on error
+                        }}
+                        suppressHydrationWarning
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-muted flex items-center justify-center">
+                        <span className="text-muted-foreground text-sm">No Image</span>
+                      </div>
                     )}
-                  </div>
-                  <div className="absolute top-3 right-3 z-10" onClick={(e) => e.preventDefault()}>
-                    <FavoriteButton listingId={listing.id} />
-                  </div>
-                </div>
 
-                {/* Content */}
-                <div className="p-4">
-                  {/* Price */}
-                  <div className="flex items-baseline gap-1 mb-2">
-                    <span className="text-xl font-bold text-primary">
-                      {listing.currency || 'KES'} {listing.price_per_day?.toLocaleString()}
-                    </span>
-                    <span className="text-sm text-muted-foreground">/ day</span>
-                  </div>
-
-                  {/* Title */}
-                  <h3 className="font-semibold text-lg mb-2 group-hover:text-primary transition-colors line-clamp-1">
-                    {listing.title}
-                  </h3>
-
-                  {/* Location & Rating */}
-                  <div className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-1 text-muted-foreground line-clamp-1 max-w-[60%]">
-                      <MapPin className="h-4 w-4 shrink-0" />
-                      <span className="truncate">{listing.location || 'Nairobi'}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
-                      <span className="font-medium">{listing.rating_average || "New"}</span>
-                      {listing.rating_count > 0 && (
-                        <span className="text-muted-foreground">({listing.rating_count})</span>
+                    {/* Overlay Badges */}
+                    <div className="absolute top-3 left-3 flex gap-2">
+                      <Badge className="bg-background/80 text-foreground backdrop-blur-sm">
+                        {listing.category?.name || 'Item'}
+                      </Badge>
+                      {listing.is_verified && (
+                        <Badge className="bg-green-500/90 text-white">
+                          <CheckCircle2 className="h-3 w-3 mr-1" />
+                          Verified
+                        </Badge>
                       )}
                     </div>
+                    <div className="absolute top-3 right-3 z-10" onClick={(e) => e.preventDefault()}>
+                      <FavoriteButton listingId={listing.id} />
+                    </div>
+                  </div>
+
+                  {/* Content */}
+                  <div className="p-4">
+                    {/* Price */}
+                    <div className="flex items-baseline gap-1 mb-2">
+                      <span className="text-xl font-bold text-primary">
+                        {listing.currency || 'KES'} {listing.price_per_day?.toLocaleString()}
+                      </span>
+                      <span className="text-sm text-muted-foreground">/ day</span>
+                    </div>
+
+                    {/* Title */}
+                    <h3 className="font-semibold text-lg mb-2 group-hover:text-primary transition-colors line-clamp-1">
+                      {listing.title}
+                    </h3>
+
+                    {/* Location & Rating */}
+                    <div className="flex items-center justify-between text-sm">
+                      <div className="flex items-center gap-1 text-muted-foreground line-clamp-1 max-w-[60%]">
+                        <MapPin className="h-4 w-4 shrink-0" />
+                        <span className="truncate">{listing.location || 'Nairobi'}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                        <span className="font-medium">{listing.rating_average || "New"}</span>
+                        {listing.rating_count > 0 && (
+                          <span className="text-muted-foreground">({listing.rating_count})</span>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </Link>
+              </Link>
+            </motion.div>
           ))}
         </div>
       </div>

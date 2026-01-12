@@ -54,6 +54,7 @@
     "cmdk": "latest",
     "date-fns": "^4.1.0",
     "embla-carousel-react": "latest",
+    "framer-motion": "^12.25.0",
     "imagekit": "^6.0.0",
     "imagekitio-react": "^4.3.0",
     "input-otp": "latest",

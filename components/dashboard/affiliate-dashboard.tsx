@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import { getAffiliateData, getAffiliateReferrals } from "@/lib/actions/dashboard-actions";
 import { joinAffiliateProgram } from "@/lib/actions/affiliate-actions";
@@ -20,7 +21,9 @@ import {
     RefreshCw,
     Instagram,
     Share2,
-    Video
+    Video,
+    BarChart3,
+    Wallet
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -330,14 +333,29 @@ export default function AffiliateDashboard() {
             </DashboardWelcomeHeader>
 
             {/* Stats Overview */}
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                <DashboardStatCard
-                    title="Total Earnings"
-                    value={`Kes ${stats?.total_earnings || 0}`}
-                    icon={DollarSign}
-                    color="sunset"
-                    description="Lifetime revenue"
-                />
+            <motion.div
+                className="grid gap-6 md:grid-cols-2 lg:grid-cols-4"
+                initial="hidden"
+                animate="visible"
+                variants={{
+                    hidden: { opacity: 0 },
+                    visible: {
+                        opacity: 1,
+                        transition: {
+                            staggerChildren: 0.1
+                        }
+                    }
+                }}
+            >
+                <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
+                    <DashboardStatCard
+                        title="Total Earnings"
+                        value={`Kes ${stats?.total_earnings || 0}`}
+                        icon={DollarSign}
+                        color="sunset"
+                        description="Lifetime revenue"
+                    />
+                </motion.div>
 
                 <div className="relative group">
                     <DashboardStatCard
@@ -368,14 +386,16 @@ export default function AffiliateDashboard() {
                     description="Registered users"
                 />
 
-                <DashboardStatCard
-                    title="Commission Rate"
-                    value={`${stats?.commission_rate || 10}%`}
-                    icon={MousePointerClick}
-                    color="teal"
-                    description="Per booking"
-                />
-            </div>
+                <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
+                    <DashboardStatCard
+                        title="Commission Rate"
+                        value={`${stats?.commission_rate || 10}%`}
+                        icon={MousePointerClick}
+                        color="teal"
+                        description="Per booking"
+                    />
+                </motion.div>
+            </motion.div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Left Column: Charts & Activity */}
@@ -604,6 +624,6 @@ export default function AffiliateDashboard() {
                     </Card>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }

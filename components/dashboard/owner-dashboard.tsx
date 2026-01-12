@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image"
+import { motion } from "framer-motion"
 import { supabase } from "@/lib/supabase";
 import { getOwnerData, getOwnerStats, getBookings } from "@/lib/actions/dashboard-actions";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -71,39 +72,65 @@ export default function OwnerDashboard() {
             />
 
             {/* Stats Grid */}
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                <DashboardStatCard
-                    title="Total Listings"
-                    value={stats?.listingsCount || 0}
-                    icon={Package}
-                    color="indigo"
-                    description="Active properties"
-                />
-                <DashboardStatCard
-                    title="Active Bookings"
-                    value={stats?.activeBookingsCount || 0}
-                    icon={CalendarCheck}
-                    color="warm-blend"
-                    description="Current & upcoming"
-                />
-                <DashboardStatCard
-                    title="Total Earnings"
-                    value={`KSh ${(stats?.totalEarnings || 0).toLocaleString()}`}
-                    icon={DollarSign}
-                    color="sunset"
-                    description="Lifetime revenue"
-                />
-                <DashboardStatCard
-                    title="Total Views"
-                    value={(stats?.totalViews || 0).toLocaleString()}
-                    icon={BarChart3}
-                    color="teal"
-                    description="Listing impressions"
-                />
-            </div>
+            <motion.div
+                className="grid gap-6 md:grid-cols-2 lg:grid-cols-4"
+                initial="hidden"
+                animate="visible"
+                variants={{
+                    hidden: { opacity: 0 },
+                    visible: {
+                        opacity: 1,
+                        transition: {
+                            staggerChildren: 0.1
+                        }
+                    }
+                }}
+            >
+                <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
+                    <DashboardStatCard
+                        title="Total Listings"
+                        value={stats?.listingsCount || 0}
+                        icon={Package}
+                        color="indigo"
+                        description="Active properties"
+                    />
+                </motion.div>
+                <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
+                    <DashboardStatCard
+                        title="Active Bookings"
+                        value={stats?.activeBookingsCount || 0}
+                        icon={CalendarCheck}
+                        color="warm-blend"
+                        description="Current & upcoming"
+                    />
+                </motion.div>
+                <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
+                    <DashboardStatCard
+                        title="Total Earnings"
+                        value={`KSh ${(stats?.totalEarnings || 0).toLocaleString()}`}
+                        icon={DollarSign}
+                        color="sunset"
+                        description="Lifetime revenue"
+                    />
+                </motion.div>
+                <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
+                    <DashboardStatCard
+                        title="Total Views"
+                        value={(stats?.totalViews || 0).toLocaleString()}
+                        icon={BarChart3}
+                        color="teal"
+                        description="Listing impressions"
+                    />
+                </motion.div>
+            </motion.div>
 
             {/* Main Content Areas */}
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
+            <motion.div
+                className="grid gap-6 md:grid-cols-2 lg:grid-cols-7"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.4 }}
+            >
 
                 {/* Recent Listings */}
                 <Card className="col-span-4 lg:col-span-4 glass-card border-none shadow-md overflow-hidden">
@@ -258,7 +285,7 @@ export default function OwnerDashboard() {
                         </CardContent>
                     </Card>
                 </div>
-            </div>
+            </motion.div>
         </div>
     );
 }

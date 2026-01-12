@@ -82,7 +82,7 @@ export function OTPInput({
                     onPaste={handlePaste}
                     disabled={disabled}
                     className={cn(
-                        "w-12 h-14 text-center text-2xl font-semibold",
+                        "w-10 h-12 sm:w-12 sm:h-14 text-center text-xl sm:text-2xl font-semibold",
                         error && "border-destructive focus-visible:ring-destructive"
                     )}
                     autoComplete="off"

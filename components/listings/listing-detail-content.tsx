@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import dynamic from "next/dynamic"
+import { toast } from "sonner"
 import { supabase } from "@/lib/supabase"
 import {
   ArrowLeft,
@@ -136,7 +137,7 @@ export function ListingDetailContent({ listing }: ListingDetailContentProps) {
     return () => {
       subscription.unsubscribe()
     }
-  }, [])
+  }, [listing.id])
 
   // Listing category is often a UUID from DB, translate back to string slug for lookup
   const categorySlug = getCategoryStringId(listing.category) || listing.category
@@ -247,6 +248,8 @@ export function ListingDetailContent({ listing }: ListingDetailContentProps) {
                     alt={listing.title}
                     className="h-full w-full object-cover cmp-ignore"
                     loading="eager"
+                    width={1200}
+                    height={675}
                     fetchPriority="high"
                     data-cmp-ignore
                     onError={(e) => {
