@@ -132,11 +132,9 @@ export default function RootLayout({
                 }}
               />
 
-              {/* Tawk.to Live Chat - BLOCKED until consent */}
+              {/* Tawk.to Live Chat - Unblocked */}
               <Script
                 id="tawk-script"
-                type="text/plain"
-                data-cmp-vendor="s26"
                 strategy="afterInteractive"
                 dangerouslySetInnerHTML={{
                   __html: `
