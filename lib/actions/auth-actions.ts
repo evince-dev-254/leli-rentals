@@ -1,6 +1,8 @@
 "use server"
 
 import { supabaseAdmin } from "@/lib/supabase-admin"
+import { createNotification } from "./dashboard-actions"
+import { sendWelcomeEmail } from "./email-actions"
 
 export async function checkUserExists(email: string) {
     const { data: { users }, error } = await supabaseAdmin.auth.admin.listUsers()
@@ -77,6 +79,16 @@ export async function syncUserProfile(userId: string, email: string, metadata: a
                     .single()
 
                 if (retryError) throw retryError
+                // Trigger Welcome for retry case too
+                const firstName = profileData.full_name?.split(' ')[0] || 'there'
+                await createNotification(userId, {
+                    title: "Welcome to Leli Rentals! 🚀",
+                    message: `Hi ${firstName}, we're excited to have you on board. Start exploring our categories and find what you need.`,
+                    type: "welcome",
+                    action_url: "/categories"
+                })
+                await sendWelcomeEmail(email, firstName)
+
                 // Handle referral if signup included one
                 if (refCode) await handleReferral(userId, refCode)
                 return { success: true, profile: retryProfile, exists: false }
@@ -84,7 +96,17 @@ export async function syncUserProfile(userId: string, email: string, metadata: a
             throw insertError
         }
 
-        // 3. Handle referral if ref code exists and it's a new user
+        // 3. Trigger Welcome Notification & Email
+        const firstName = profileData.full_name?.split(' ')[0] || 'there'
+        await createNotification(userId, {
+            title: "Welcome to Leli Rentals! 🚀",
+            message: `Hi ${firstName}, we're excited to have you on board. Start exploring our categories and find what you need.`,
+            type: "welcome",
+            action_url: "/categories"
+        })
+        await sendWelcomeEmail(email, firstName)
+
+        // 4. Handle referral if ref code exists and it's a new user
         if (refCode) {
             await handleReferral(userId, refCode)
         }

@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase-server'
 import { sendBookingConfirmationEmail } from "@/lib/actions/email-actions"
+import { createNotification } from "./dashboard-actions"
 
 interface BookingData {
     listing_id: string
@@ -59,9 +60,16 @@ export async function createBooking(bookingData: BookingData, userEmail: string,
 
         console.log("Booking created:", data.id)
 
-        // If booking is confirmed/paid, send confirmation email
+        // If booking is confirmed/paid, send confirmation email and notification
         if (bookingData.status === "confirmed" || bookingData.payment_status === "paid") {
             try {
+                await createNotification(bookingData.renter_id, {
+                    title: "Booking Confirmed! 🎉",
+                    message: `You've successfully booked ${listingTitle}. We've sent the details to your email.`,
+                    type: "booking",
+                    action_url: "/dashboard/renter?tab=bookings"
+                })
+
                 await sendBookingConfirmationEmail(
                     userEmail,
                     userName.split(" ")[0], // First name
@@ -71,8 +79,8 @@ export async function createBooking(bookingData: BookingData, userEmail: string,
                     bookingData.total_amount,
                     data.id
                 )
-            } catch (emailErr) {
-                console.error("Failed to send booking email:", emailErr)
+            } catch (err) {
+                console.error("Failed to trigger booking notifications:", err)
             }
         }
 

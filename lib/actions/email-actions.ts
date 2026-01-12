@@ -16,6 +16,8 @@ import BookingConfirmationEmail from "@/components/emails/booking-confirmation-e
 import NewMessageEmail from "@/components/emails/new-message-email"
 import SubscriptionConfirmationEmail from "@/components/emails/newsletter-confirmation-email"
 import ContactFormEmail from "@/components/emails/contact-submission-email"
+import VerificationStatusEmail from "@/components/emails/verification-status-email"
+import FavoriteNotificationEmail from "@/components/emails/favorite-notification-email"
 
 export async function sendWelcomeEmail(email: string, firstName: string) {
     try {
@@ -233,7 +235,7 @@ export async function sendNewMessageEmail(
             react: NewMessageEmail({
                 receiverName: receiverName,
                 senderName,
-                messageContent,
+                messageContent: messageSnippet,
             }),
         })
         return { success: true, data }
@@ -282,6 +284,54 @@ export async function sendContactFormEmail(formData: {
         return { success: true, data }
     } catch (error) {
         console.error("Failed to send contact form email:", error)
+        return { success: false, error }
+    }
+}
+
+/** Send verification status update email */
+export async function sendVerificationStatusEmail(
+    email: string,
+    firstName: string,
+    status: 'approved' | 'rejected',
+    reason?: string
+) {
+    try {
+        const data = await resend.emails.send({
+            from: "Leli Rentals <verification@updates.leli.rentals>",
+            to: email,
+            subject: status === 'approved' ? "Verification Approved - Leli Rentals" : "Action Required: Account Verification Update",
+            react: VerificationStatusEmail({ userFirstname: firstName, status, reason }),
+        })
+        return { success: true, data }
+    } catch (error) {
+        console.error("Failed to send verification email:", error)
+        return { success: false, error }
+    }
+}
+
+/** Send notification to owner when a listing is favorited */
+export async function sendFavoriteNotificationEmail(
+    ownerEmail: string,
+    ownerFirstName: string,
+    listingTitle: string,
+    favoriterName: string,
+    listingImage?: string
+) {
+    try {
+        const data = await resend.emails.send({
+            from: "Leli Rentals <notifications@updates.leli.rentals>",
+            to: ownerEmail,
+            subject: "Someone likes your listing!",
+            react: FavoriteNotificationEmail({
+                ownerFirstname: ownerFirstName,
+                listingTitle,
+                userFirstname: favoriterName,
+                listingImage
+            }),
+        })
+        return { success: true, data }
+    } catch (error) {
+        console.error("Failed to send favorite email:", error)
         return { success: false, error }
     }
 }

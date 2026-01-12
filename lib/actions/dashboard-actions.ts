@@ -3,7 +3,7 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase-server'
-import { sendNewListingEmail, sendNewMessageEmail } from './email-actions';
+import { sendNewListingEmail, sendNewMessageEmail, sendVerificationStatusEmail, sendFavoriteNotificationEmail } from './email-actions';
 
 
 /** Fetch data for the Owner dashboard */
@@ -923,4 +923,72 @@ export async function getSelectableUsers() {
     }
 
     return data || [];
+}
+/** Toggle Favorite status for a listing and notify owner */
+export async function toggleFavoriteAction(listingId: string, userId: string) {
+    const supabase = await createClient()
+
+    // 1. Check if already favorited
+    const { data: existing } = await supabase
+        .from('favorites')
+        .select('id')
+        .eq('listing_id', listingId)
+        .eq('user_id', userId)
+        .single()
+
+    if (existing) {
+        // Remove favorite
+        const { error } = await supabase.from('favorites').delete().eq('id', existing.id)
+        if (error) throw error
+        return { favorited: false }
+    } else {
+        // Add favorite
+        const { error: insertError } = await supabase.from('favorites').insert({
+            listing_id: listingId,
+            user_id: userId
+        })
+        if (insertError) throw insertError
+
+        // Trigger Notification & Email to Owner
+        try {
+            const { data: listing } = await supabase
+                .from('listings')
+                .select('owner_id, title, images, owner:user_profiles!listings_owner_id_fkey(full_name, email)')
+                .eq('id', listingId)
+                .single()
+
+            const { data: userProfile } = await supabase
+                .from('user_profiles')
+                .select('full_name')
+                .eq('id', userId)
+                .single()
+
+            if (listing && userProfile) {
+                const owner = listing.owner as any
+                const ownerFirstName = owner?.full_name?.split(' ')[0] || 'there'
+                const favoriterName = userProfile.full_name || 'A user'
+
+                await createNotification(listing.owner_id, {
+                    title: "New Favorite! ❤️",
+                    message: `${favoriterName} added your listing "${listing.title}" to their favorites.`,
+                    type: "favorite",
+                    action_url: `/categories/listing/${listingId}`
+                })
+
+                if (owner?.email) {
+                    await sendFavoriteNotificationEmail(
+                        owner.email,
+                        ownerFirstName,
+                        listing.title,
+                        favoriterName,
+                        listing.images?.[0]
+                    )
+                }
+            }
+        } catch (notifErr) {
+            console.error("Failed to trigger favorite notification:", notifErr)
+        }
+
+        return { favorited: true }
+    }
 }

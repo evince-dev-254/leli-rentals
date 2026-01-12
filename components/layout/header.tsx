@@ -20,6 +20,7 @@ import { useRouter } from "next/navigation"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { BackButton } from "@/components/ui/back-button"
+import { NotificationDropdown } from "./notification-dropdown"
 
 const categories = [
   { name: "Vehicles", href: "/categories/vehicles", count: "1,800+" },
@@ -250,7 +251,12 @@ export function Header() {
               </Button>
             </Link>
 
-            {/* Cart/Notifications Icon */}
+            {/* Notifications Icon */}
+            {user && (
+              <NotificationDropdown userId={user.id} unreadCount={unreadNotifications} />
+            )}
+
+            {/* Favorites Icon */}
             <Link href="/favorites">
               <Button
                 variant="ghost"
@@ -258,9 +264,6 @@ export function Header() {
                 className="hidden sm:flex text-gray-200 hover:text-orange-400 hover:bg-white/10 relative"
               >
                 <ShoppingBag className="h-5 w-5" />
-                {unreadNotifications > 0 && (
-                  <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-orange-500 ring-2 ring-[#1a1a2e]" />
-                )}
               </Button>
             </Link>
 

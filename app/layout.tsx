@@ -2,10 +2,8 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 import Script from "next/script"
-import { Analytics } from "@vercel/analytics/next"
 import { Toaster } from "@/components/ui/sonner"
 import { OfflineBanner } from "@/components/ui/offline-banner"
-import { ConsentManager } from "@/components/consent-manager"
 import { FavoritesProvider } from "@/lib/favorites-context"
 import { MessagesProvider } from "@/lib/messages-context"
 import { ThemeProvider } from "@/components/theme-provider"
@@ -97,64 +95,13 @@ export default function RootLayout({
       </head>
       <body className={`font-sans antialiased hide-scrollbar`} suppressHydrationWarning>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-          <ConsentManager />
           <FavoritesProvider>
             <MessagesProvider>
               {children}
               <Toaster position="top-center" richColors duration={12000} />
               <OfflineBanner />
 
-              {/* Vercel Analytics - First-party, essential */}
-              <Analytics />
 
-              {/* Google Analytics - BLOCKED until consent */}
-              <Script
-                id="google-analytics"
-                type="text/plain"
-                data-cmp-vendor="s906"
-                data-cmp-src={`https://www.googletagmanager.com/gtag/js?id=G-7MHZ00M71E`}
-                strategy="afterInteractive"
-              />
-              <Script
-                id="google-analytics-config"
-                type="text/plain"
-                data-cmp-vendor="s906"
-                strategy="afterInteractive"
-                dangerouslySetInnerHTML={{
-                  __html: `
-                    window.dataLayer = window.dataLayer || [];
-                    function gtag(){dataLayer.push(arguments);}
-                    gtag('js', new Date());
-                    gtag('config', 'G-7MHZ00M71E', {
-                      page_path: window.location.pathname,
-                    });
-                  `
-                }}
-              />
-
-              {/* Tawk.to Live Chat - Unblocked */}
-              <Script
-                id="tawk-script"
-                strategy="afterInteractive"
-                dangerouslySetInnerHTML={{
-                  __html: `
-                    var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-                    (function(){
-                    var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
-                    s1.async=true;
-                    s1.src='https://embed.tawk.to/6954cc957665ef197dae18b7/1jdpjuar6';
-                    s1.charset='UTF-8';
-                    s1.setAttribute('crossorigin','*');
-                    s0.parentNode.insertBefore(s1,s0);
-                    })();
-                  `
-                }}
-              />
-              {/* Consent Manager Trackless Analytics */}
-              <Script
-                src="https://cdn.consentmanager.net/trackless/delivery/35d955c214de.js"
-                strategy="afterInteractive"
-              />
             </MessagesProvider>
           </FavoritesProvider>
         </ThemeProvider>

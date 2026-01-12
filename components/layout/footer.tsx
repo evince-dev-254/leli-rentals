@@ -138,7 +138,7 @@ export function Footer() {
           </div>
           <div className="flex gap-6 text-sm">
             <Link href="/privacy" className="text-muted-foreground hover:text-foreground transition-colors">
-              Privacy
+              Privacy Policy
             </Link>
             <Link href="/terms" className="text-muted-foreground hover:text-foreground transition-colors">
               Terms
@@ -146,9 +146,6 @@ export function Footer() {
             <Link href="/cookies" className="text-muted-foreground hover:text-foreground transition-colors">
               Cookies
             </Link>
-            <a href="?cmpscreen" className="cmpfooterlink cmpfooterlinkcmp text-muted-foreground hover:text-foreground transition-colors">
-              Privacy Settings
-            </a>
           </div>
         </div>
       </div>
