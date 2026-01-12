@@ -51,14 +51,15 @@ function SidebarContent({ role, pathname, onLinkClick }: SidebarContentProps) {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Logo & Brand */}
       <div className="p-6 border-b border-border/50 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-3 group" onClick={onLinkClick}>
-          <div className="flex flex-col animate-in fade-in slide-in-from-left-2 duration-300">
-            <span className="text-sm uppercase font-black tracking-[0.15em] bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent hover:from-primary/80 hover:via-purple-500/80 hover:to-pink-500/80 transition-all duration-300">
-              {role ? `${role} Dashboard` : "Loading..."}
-            </span>
-          </div>
+        <Link href="/dashboard" className="flex items-center gap-3 group" onClick={onLinkClick}>
+          <h2 className="text-xl font-black tracking-tight uppercase">
+            {role ? (
+              <>
+                {role.charAt(0).toUpperCase() + role.slice(1)}<span className="text-primary ml-1">Dashboard</span>
+              </>
+            ) : "Loading..."}
+          </h2>
         </Link>
       </div>
 

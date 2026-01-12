@@ -66,17 +66,9 @@ export function StaffSidebar({ className }: SidebarProps) {
         <div className={cn("pb-12 h-screen flex flex-col bg-card border-r", className)}>
             <div className="space-y-4 py-4 flex flex-col h-full">
                 <div className="px-3 py-2">
-                    <div className="flex items-center pl-2 mb-14">
-                        <div className="relative h-8 w-8 mr-2">
-                            <Image
-                                src="/logo.png"
-                                alt="Leli Rentals"
-                                fill
-                                className="object-contain dark:invert"
-                            />
-                        </div>
-                        <h2 className="text-lg font-bold tracking-tight">
-                            Staff<span className="text-primary">Portal</span>
+                    <div className="flex items-center pl-2 mb-10">
+                        <h2 className="text-xl font-black tracking-tight uppercase">
+                            Staff<span className="text-primary ml-1">Dashboard</span>
                         </h2>
                     </div>
                     <div className="space-y-1">

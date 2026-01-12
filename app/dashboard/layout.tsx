@@ -3,7 +3,7 @@
 import type React from "react"
 import { usePathname } from "next/navigation"
 import { DashboardSidebar, MobileDashboardSidebar } from "@/components/dashboard/dashboard-sidebar"
-import { Header } from "@/components/layout/header"
+import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import { cn } from "@/lib/utils"
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -19,19 +19,28 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <div className="flex pt-20">
+    <div className="flex min-h-screen">
+      {/* Desktop Sidebar */}
+      <div className="hidden md:flex w-64 shadow-xl z-10">
         <DashboardSidebar />
-        <div className="flex-1 flex flex-col h-[calc(100vh-80px)] w-full overflow-hidden">
-          <div className="md:hidden p-4 pb-2 flex items-center gap-3">
-            <MobileDashboardSidebar />
-            <span className="font-semibold text-lg">Menu</span>
-          </div>
-          <main className={cn("flex-1 p-3 md:p-6 overflow-x-hidden overflow-y-auto", gradientClass)}>
+      </div>
+
+      <div className="flex-1 flex flex-col min-w-0 bg-background">
+        {/* Header */}
+        <DashboardHeader
+          mobileSidebar={<MobileDashboardSidebar />}
+          breadcrumbs={[
+            { label: "My Account", href: "/dashboard" },
+            { label: "Dashboard" }
+          ]}
+        />
+
+        {/* Main Content */}
+        <main className={cn("flex-1 p-4 lg:p-8 overflow-y-auto", gradientClass)}>
+          <div className="mx-auto max-w-7xl animate-in fade-in duration-500">
             {children}
-          </main>
-        </div>
+          </div>
+        </main>
       </div>
     </div>
   )

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 import { AdminSidebar, MobileAdminSidebar } from "@/components/admin/admin-sidebar"
-import { Header } from "@/components/layout/header"
+import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import { Loader2 } from "lucide-react"
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -59,17 +59,28 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   if (!isAdmin) return null
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <div className="flex pt-20">
+    <div className="flex min-h-screen">
+      {/* Desktop Sidebar */}
+      <div className="hidden lg:flex w-64 shadow-xl z-10">
         <AdminSidebar />
-        <div className="flex-1 flex flex-col min-h-[calc(100vh-80px)] overflow-hidden">
-          <div className="lg:hidden p-4 pb-2 flex items-center gap-3">
-            <MobileAdminSidebar />
-            <span className="font-semibold text-lg">Admin Menu</span>
+      </div>
+
+      <div className="flex-1 flex flex-col min-w-0 bg-background">
+        {/* Header */}
+        <DashboardHeader
+          mobileSidebar={<MobileAdminSidebar />}
+          breadcrumbs={[
+            { label: "Administration", href: "/admin" },
+            { label: "Dashboard" }
+          ]}
+        />
+
+        {/* Main Content */}
+        <main className="flex-1 p-4 lg:p-8 overflow-y-auto">
+          <div className="mx-auto max-w-7xl animate-in fade-in duration-500">
+            {children}
           </div>
-          <main className="flex-1 p-6 gradient-mesh-admin overflow-x-hidden">{children}</main>
-        </div>
+        </main>
       </div>
     </div>
   )

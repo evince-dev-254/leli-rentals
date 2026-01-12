@@ -48,10 +48,11 @@ interface AdminSidebarContentProps {
 function AdminSidebarContent({ pathname, onLinkClick }: AdminSidebarContentProps) {
   return (
     <div className="flex flex-col h-full">
-      {/* Logo */}
-      <div className="p-4 border-b border-border flex items-center justify-between">
+      <div className="p-6 border-b border-border/50 flex items-center justify-between">
         <Link href="/admin" className="flex items-center gap-3 group" onClick={onLinkClick}>
-          <span className="font-black text-lg tracking-wide uppercase bg-gradient-to-r from-purple-500 via-pink-500 to-primary bg-clip-text text-transparent hover:from-purple-500/80 hover:via-pink-500/80 hover:to-primary/80 transition-all duration-300">Admin Portal</span>
+          <h2 className="text-xl font-black tracking-tight uppercase">
+            Admin<span className="text-primary ml-1">Dashboard</span>
+          </h2>
         </Link>
       </div>
 
