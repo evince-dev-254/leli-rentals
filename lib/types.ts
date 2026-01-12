@@ -1,6 +1,6 @@
 // User types and verification system types
 
-export type UserRole = "renter" | "owner" | "affiliate" | "admin"
+export type UserRole = "renter" | "owner" | "affiliate" | "admin" | "staff"
 
 export type VerificationStatus = "pending" | "submitted" | "verified" | "rejected" | "suspended"
 

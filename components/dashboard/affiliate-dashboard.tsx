@@ -366,7 +366,7 @@ export default function AffiliateDashboard() {
                         description="Available to withdraw"
                     />
                     {(stats?.pending_earnings > 0) && (
-                        <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="absolute bottom-4 right-4">
                             <Button
                                 size="sm"
                                 className="bg-amber-600 hover:bg-amber-700 text-white shadow-lg border-0"
@@ -554,6 +554,12 @@ export default function AffiliateDashboard() {
                                 <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => copyLink(referralLink, 'TikTok')}>
                                     <svg className="mr-2 h-4 w-4 fill-current" viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.65-1.55-1.11-.01 1.6.03 3.2-.01 4.79-.1 2.22-1.25 4.2-3.07 5.48-1.79 1.26-4.06 1.66-6.16.89-2.09-.76-3.8-2.58-4.49-4.71-.69-2.2-.13-4.66 1.49-6.32 1.51-1.54 3.75-2.14 5.87-1.57v4.06c-1.02-.56-2.29-.49-3.23.19-.94.69-1.46 1.83-1.37 2.99.09 1.15.8 2.21 1.86 2.72 1.05.52 2.33.37 3.24-.4.92-.77 1.46-1.92 1.45-3.11.01-4.23-.01-8.46 0-12.69z" /></svg>
                                     TikTok
+                                </Button>
+                                <Button variant="outline" size="sm" className="w-full justify-start text-green-600" asChild>
+                                    <a href={`https://wa.me/?text=${encodeURIComponent(`Check out Leli Rentals! Rent anything, anytime. Sign up using my link: ${referralLink}`)}`} target="_blank" rel="noopener noreferrer">
+                                        <div className="mr-2 h-4 w-4 bg-green-500 rounded-full flex items-center justify-center text-white text-[10px] font-bold">W</div>
+                                        WhatsApp
+                                    </a>
                                 </Button>
                             </div>
                         </CardContent>

@@ -133,11 +133,11 @@ export function EarningsPage() {
             description="Ready for withdrawal"
             className="shadow-xl shadow-amber-500/10"
           />
-          <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="absolute bottom-4 right-4">
             <Button
               size="sm"
               variant="secondary"
-              className="bg-white/20 hover:bg-white/30 text-white border-0 backdrop-blur-md"
+              className="bg-white/20 hover:bg-white/30 text-white border-0 backdrop-blur-md shadow-lg"
               onClick={() => setWithdrawalOpen(true)}
             >
               Withdraw

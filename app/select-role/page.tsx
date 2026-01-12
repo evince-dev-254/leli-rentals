@@ -253,6 +253,8 @@ function getRoleRedirect(role: string): string {
             return '/dashboard/affiliate'
         case 'admin':
             return '/dashboard/admin'
+        case 'staff':
+            return '/staff'
         default:
             return '/categories'
     }

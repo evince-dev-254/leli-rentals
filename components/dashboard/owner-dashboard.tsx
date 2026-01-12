@@ -14,6 +14,8 @@ import { DashboardWelcomeHeader } from "./dashboard-welcome-header";
 import { DashboardStatCard } from "./dashboard-stat-card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
+import { WithdrawalModal } from "./withdrawal-modal";
+
 export default function OwnerDashboard() {
     const [user, setUser] = useState<any>(null);
     const [listings, setListings] = useState<any[]>([]);
@@ -21,6 +23,7 @@ export default function OwnerDashboard() {
     const [stats, setStats] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [isVerified, setIsVerified] = useState(false);
+    const [withdrawalOpen, setWithdrawalOpen] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -113,13 +116,26 @@ export default function OwnerDashboard() {
                     />
                 </motion.div>
                 <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
-                    <DashboardStatCard
-                        title="Total Earnings"
-                        value={`KSh ${(stats?.totalEarnings || 0).toLocaleString()}`}
-                        icon={DollarSign}
-                        color="sunset"
-                        description="Lifetime revenue"
-                    />
+                    <div className="relative group h-full">
+                        <DashboardStatCard
+                            title="Total Earnings"
+                            value={`KSh ${(stats?.totalEarnings || 0).toLocaleString()}`}
+                            icon={DollarSign}
+                            color="sunset"
+                            description="Lifetime revenue"
+                        />
+                        {(stats?.availableBalance > 0) && (
+                            <div className="absolute bottom-4 right-4">
+                                <Button
+                                    size="sm"
+                                    className="bg-amber-600 hover:bg-amber-700 text-white shadow-lg border-0"
+                                    onClick={() => setWithdrawalOpen(true)}
+                                >
+                                    Request Payout
+                                </Button>
+                            </div>
+                        )}
+                    </div>
                 </motion.div>
                 <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
                     <DashboardStatCard
@@ -294,6 +310,15 @@ export default function OwnerDashboard() {
                     </Card>
                 </div>
             </motion.div>
+            <WithdrawalModal
+                open={withdrawalOpen}
+                onOpenChange={setWithdrawalOpen}
+                availableBalance={stats?.availableBalance || 0}
+                userId={user?.id}
+                onSuccess={() => { }} // No refresh needed for now or could refetch stats
+                paymentInfo={user?.payment_info}
+                role="owner"
+            />
         </div>
     );
 }
