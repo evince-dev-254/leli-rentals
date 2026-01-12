@@ -39,6 +39,15 @@ const accountTypes = [
         color: "bg-orange-500/10 text-orange-600 border-orange-500/20",
         ring: "ring-orange-500",
         features: ["High commissions", "Monthly payouts", "Marketing kit"]
+    },
+    {
+        value: "staff",
+        label: "Staff Portal",
+        description: "Access internal tools for sales and partner management.",
+        icon: Users,
+        color: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
+        ring: "ring-emerald-500",
+        features: ["Manage affiliates", "Advertiser leads", "Brand identity assets"]
     }
 ]
 

@@ -97,6 +97,19 @@ export function AccountSwitchingPage() {
                 "Marketing materials",
                 "Monthly payouts"
             ]
+        },
+        staff: {
+            icon: Users,
+            title: "Staff Account",
+            description: "Internal tools for sales and platform management",
+            color: "emerald",
+            features: [
+                "Manage affiliate partners",
+                "Track advertiser leads",
+                "Access brand identity guide",
+                "Sales team dashboard",
+                "Internal communications"
+            ]
         }
     }
 
@@ -149,15 +162,16 @@ export function AccountSwitchingPage() {
                     const colorMap: Record<string, string> = {
                         teal: 'from-teal-500 to-cyan-500',
                         blue: 'from-blue-500 to-indigo-500',
-                        pink: 'from-pink-500 to-purple-500'
+                        pink: 'from-pink-500 to-purple-500',
+                        emerald: 'from-emerald-500 to-green-500'
                     }
 
                     return (
                         <Card
                             key={role}
                             className={`glass-card transition-all duration-300 ${isCurrentRole
-                                    ? 'border-primary/50 shadow-lg shadow-primary/20 scale-105'
-                                    : 'hover:border-primary/30 hover:shadow-md'
+                                ? 'border-primary/50 shadow-lg shadow-primary/20 scale-105'
+                                : 'hover:border-primary/30 hover:shadow-md'
                                 }`}
                         >
                             <CardHeader>

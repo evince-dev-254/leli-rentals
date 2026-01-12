@@ -26,8 +26,8 @@ import { supabase } from "@/lib/supabase"
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet"
 
 export const allLinks = [
-  { href: "/dashboard/switch-account", label: "Switch Account", icon: UserCog, roles: ["owner", "renter", "affiliate"], badge: "" },
-  { href: "/dashboard", label: "Overview", icon: LayoutDashboard, roles: ["owner", "renter", "affiliate"], badge: "" },
+  { href: "/dashboard/switch-account", label: "Switch Account", icon: UserCog, roles: ["owner", "renter", "affiliate", "staff"], badge: "" },
+  { href: "/dashboard", label: "Overview", icon: LayoutDashboard, roles: ["owner", "renter", "affiliate", "staff"], badge: "" },
   { href: "/dashboard/listings", label: "My Listings", icon: Package, roles: ["owner", "renter"], badge: "" },
   { href: "/dashboard/bookings", label: "Bookings", icon: CalendarCheck, roles: ["owner", "renter"], badge: "" },
   { href: "/dashboard/messages", label: "Messages", icon: MessageCircle, roles: ["owner", "renter"], badge: "" },
@@ -37,7 +37,7 @@ export const allLinks = [
   { href: "/dashboard/reviews", label: "My Reviews", icon: Star, roles: ["renter", "owner"], badge: "" },
   { href: "/dashboard/subscription", label: "Subscription", icon: CreditCard, roles: ["owner"], badge: "" },
   { href: "/dashboard/verification", label: "Verification", icon: ShieldCheck, roles: ["owner"], badge: "" },
-  { href: "/dashboard/settings", label: "Settings", icon: Settings, roles: ["owner", "renter", "affiliate"], badge: "" },
+  { href: "/dashboard/settings", label: "Settings", icon: Settings, roles: ["owner", "renter", "affiliate", "staff"], badge: "" },
 ]
 
 interface SidebarContentProps {
