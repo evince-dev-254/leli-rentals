@@ -325,6 +325,30 @@ export function SubscriptionsManagement() {
                                 Refresh
                             </Button>
 
+                            <Button
+                                variant="default"
+                                onClick={async () => {
+                                    setLoading(true)
+                                    try {
+                                        const response = await fetch('/api/sync-payments', { method: 'POST' })
+                                        const result = await response.json()
+                                        if (result.success) {
+                                            alert(`Synced ${result.synced} new payments, skipped ${result.skipped} existing`)
+                                            fetchData()
+                                        } else {
+                                            alert('Sync failed: ' + result.error)
+                                        }
+                                    } catch (error: any) {
+                                        alert('Sync failed: ' + error.message)
+                                    } finally {
+                                        setLoading(false)
+                                    }
+                                }}
+                            >
+                                <RefreshCw className="h-4 w-4 mr-2" />
+                                Sync Payments
+                            </Button>
+
                             <Button variant="outline" onClick={exportToCSV}>
                                 <Download className="h-4 w-4 mr-2" />
                                 Export
