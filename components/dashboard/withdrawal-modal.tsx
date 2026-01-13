@@ -75,10 +75,10 @@ export function WithdrawalModal({
         try {
             const result = await requestWithdrawal(
                 userId,
+                role as 'owner' | 'affiliate',
                 amountVal,
-                paymentInfo.provider || 'mpesa',
-                paymentInfo,
-                role
+                (paymentInfo.provider || 'mpesa') as 'mpesa' | 'bank_transfer',
+                paymentInfo
             )
 
             if (result.success) {
@@ -135,7 +135,7 @@ export function WithdrawalModal({
                                 Balance
                             </Label>
                             <div className="col-span-3 text-sm font-bold text-green-600">
-                                Kes {availableBalance.toLocaleString()}
+                                KSh {availableBalance.toLocaleString()}
                             </div>
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
@@ -169,7 +169,7 @@ export function WithdrawalModal({
                         <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
                             Cancel
                         </Button>
-                        <Button type="submit" onClick={handleWithdraw} disabled={loading}>
+                        <Button type="submit" disabled={loading}>
                             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             Confirm Withdrawal
                         </Button>

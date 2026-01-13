@@ -61,15 +61,39 @@ export async function calculateCommission(bookingId: string) {
  */
 export async function getAvailableBalance(userId: string, userType: 'owner' | 'affiliate') {
     try {
-        const { data, error } = await supabaseAdmin
-            .rpc('get_available_balance', {
-                p_user_id: userId,
-                p_user_type: userType
-            })
+        let totalEarnings = 0;
 
-        if (error) throw error
+        if (userType === 'affiliate') {
+            const { data: commissions, error: commError } = await supabaseAdmin
+                .from('affiliate_commissions')
+                .select('amount')
+                .eq('affiliate_id', userId)
+                .eq('status', 'paid');
 
-        return { success: true, balance: data || 0 }
+            if (commError) throw commError;
+            totalEarnings = (commissions || []).reduce((sum, c) => sum + Number(c.amount), 0);
+        } else {
+            const { data: payments, error: payError } = await supabaseAdmin
+                .from('payments')
+                .select('amount')
+                .eq('payee_id', userId)
+                .eq('status', 'success')
+                .eq('payment_type', 'booking');
+
+            if (payError) throw payError;
+            totalEarnings = (payments || []).reduce((sum, p) => sum + Number(p.amount), 0);
+        }
+
+        const { data: withdrawals, error: withError } = await supabaseAdmin
+            .from('withdrawals')
+            .select('amount')
+            .eq('user_id', userId)
+            .in('status', ['pending', 'processing', 'completed']);
+
+        if (withError) throw withError;
+        const totalWithdrawn = (withdrawals || []).reduce((sum, w) => sum + Number(w.amount), 0);
+
+        return { success: true, balance: Math.max(0, totalEarnings - totalWithdrawn) };
     } catch (error: any) {
         console.error('Get balance error:', error)
         return { success: false, balance: 0, error: error.message }

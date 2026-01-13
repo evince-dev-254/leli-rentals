@@ -29,6 +29,7 @@ import {
     ArrowUpRight,
     Search
 } from "lucide-react"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
 import { approveWithdrawal, rejectWithdrawal } from "@/lib/actions/commission-actions"
@@ -65,9 +66,15 @@ export function WithdrawalsManagement() {
     }, [fetchWithdrawals])
 
     const handleApprove = async (id: string) => {
+        const transRef = window.prompt("Enter Transaction Reference (e.g. MPesa Code):")
+        if (!transRef) return
+
         setProcessingId(id)
         try {
-            const result = await approveWithdrawal(id)
+            const { data: { user } } = await supabase.auth.getUser()
+            if (!user) throw new Error("Not authenticated")
+
+            const result = await approveWithdrawal(id, user.id, transRef)
             if (result.success) {
                 toast.success("Withdrawal request approved and marked as completed")
                 fetchWithdrawals()
@@ -87,7 +94,10 @@ export function WithdrawalsManagement() {
 
         setProcessingId(id)
         try {
-            const result = await rejectWithdrawal(id, reason)
+            const { data: { user } } = await supabase.auth.getUser()
+            if (!user) throw new Error("Not authenticated")
+
+            const result = await rejectWithdrawal(id, user.id, reason)
             if (result.success) {
                 toast.success("Withdrawal request rejected and funds returned")
                 fetchWithdrawals()
@@ -198,13 +208,12 @@ export function WithdrawalsManagement() {
                                 <TableRow key={w.id} className="group hover:bg-muted/50 transition-colors">
                                     <TableCell>
                                         <div className="flex items-center gap-3">
-                                            <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
-                                                {w.user_profiles?.avatar_url ? (
-                                                    <img src={w.user_profiles.avatar_url} alt="" className="h-full w-full object-cover" />
-                                                ) : (
-                                                    <User className="h-5 w-5 text-primary" />
-                                                )}
-                                            </div>
+                                            <Avatar className="h-9 w-9">
+                                                <AvatarImage src={w.user_profiles?.avatar_url} />
+                                                <AvatarFallback>
+                                                    {w.user_profiles?.full_name?.[0] || 'U'}
+                                                </AvatarFallback>
+                                            </Avatar>
                                             <div>
                                                 <div className="font-medium">{w.user_profiles?.full_name || 'Unknown User'}</div>
                                                 <div className="text-xs text-muted-foreground capitalize flex items-center gap-1">
