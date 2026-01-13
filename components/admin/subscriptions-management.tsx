@@ -1,0 +1,452 @@
+"use client"
+
+import { useEffect, useState, useCallback } from "react"
+import { createClient } from "@/lib/supabase"
+import Image from "next/image"
+import { Card } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+    CreditCard,
+    Users,
+    DollarSign,
+    TrendingUp,
+    Search,
+    Download,
+    RefreshCw,
+    XCircle,
+    CheckCircle,
+    Clock,
+    Filter
+} from "lucide-react"
+import { formatDistanceToNow } from "date-fns"
+
+interface Payment {
+    id: string
+    reference: string
+    amount: number
+    currency: string
+    status: string
+    payment_method: string | null
+    customer_email: string
+    customer_name: string
+    paid_at: string | null
+    created_at: string
+    user_profiles: {
+        full_name: string
+        email: string
+    } | null
+    bookings: {
+        id: string
+        listing_title: string
+    } | null
+}
+
+interface Subscription {
+    id: string
+    subscription_code: string
+    plan_name: string
+    amount: number
+    status: string
+    next_payment_date: string | null
+    created_at: string
+    cancelled_at: string | null
+    user_profiles: {
+        full_name: string
+        email: string
+        avatar_url: string | null
+    }
+}
+
+interface Stats {
+    totalRevenue: number
+    totalPayments: number
+    activeSubscriptions: number
+    successRate: number
+}
+
+export function SubscriptionsManagement() {
+    const supabase = createClient()
+    const [payments, setPayments] = useState<Payment[]>([])
+    const [subscriptions, setSubscriptions] = useState<Subscription[]>([])
+    const [stats, setStats] = useState<Stats>({
+        totalRevenue: 0,
+        totalPayments: 0,
+        activeSubscriptions: 0,
+        successRate: 0
+    })
+    const [loading, setLoading] = useState(true)
+    const [searchQuery, setSearchQuery] = useState("")
+    const [statusFilter, setStatusFilter] = useState("all")
+    const [activeTab, setActiveTab] = useState("payments")
+
+    useEffect(() => {
+        fetchData()
+    }, [fetchData])
+
+    const fetchData = useCallback(async () => {
+        setLoading(true)
+        try {
+            // Fetch payments
+            const { data: paymentsData } = await supabase
+                .from("payments")
+                .select(`
+          *,
+          user_profiles(full_name, email),
+          bookings(id, listing_title)
+        `)
+                .order("created_at", { ascending: false })
+                .limit(100)
+
+            // Fetch subscriptions
+            const { data: subscriptionsData } = await supabase
+                .from("subscriptions")
+                .select(`
+          *,
+          user_profiles(full_name, email, avatar_url)
+        `)
+                .order("created_at", { ascending: false })
+
+            setPayments(paymentsData || [])
+            setSubscriptions(subscriptionsData || [])
+
+            // Calculate stats
+            if (paymentsData) {
+                const successful = paymentsData.filter(p => p.status === 'success')
+                const totalRevenue = successful.reduce((sum, p) => sum + Number(p.amount), 0)
+                const successRate = paymentsData.length > 0
+                    ? (successful.length / paymentsData.length) * 100
+                    : 0
+
+                setStats({
+                    totalRevenue,
+                    totalPayments: paymentsData.length,
+                    activeSubscriptions: subscriptionsData?.filter(s => s.status === 'active').length || 0,
+                    successRate
+                })
+            }
+        } catch (error) {
+            console.error("Error fetching data:", error)
+        } finally {
+            setLoading(false)
+        }
+    }, [])
+
+    const filteredPayments = payments.filter(payment => {
+        const matchesSearch =
+            payment.reference.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            payment.customer_email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            payment.customer_name?.toLowerCase().includes(searchQuery.toLowerCase())
+
+        const matchesStatus = statusFilter === "all" || payment.status === statusFilter
+
+        return matchesSearch && matchesStatus
+    })
+
+    const filteredSubscriptions = subscriptions.filter(sub => {
+        const matchesSearch =
+            sub.plan_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            sub.user_profiles.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            sub.user_profiles.full_name.toLowerCase().includes(searchQuery.toLowerCase())
+
+        const matchesStatus = statusFilter === "all" || sub.status === statusFilter
+
+        return matchesSearch && matchesStatus
+    })
+
+    function getStatusBadge(status: string) {
+        const variants: Record<string, { variant: any; icon: any }> = {
+            success: { variant: "default", icon: CheckCircle },
+            active: { variant: "default", icon: CheckCircle },
+            failed: { variant: "destructive", icon: XCircle },
+            cancelled: { variant: "destructive", icon: XCircle },
+            expired: { variant: "secondary", icon: Clock },
+            pending: { variant: "secondary", icon: Clock },
+        }
+
+        const config = variants[status] || { variant: "secondary", icon: Clock }
+        const Icon = config.icon
+
+        return (
+            <Badge variant={config.variant as any} className="gap-1">
+                <Icon className="h-3 w-3" />
+                {status}
+            </Badge>
+        )
+    }
+
+    function exportToCSV() {
+        const data = activeTab === "payments" ? filteredPayments : filteredSubscriptions
+        const headers = activeTab === "payments"
+            ? ["Reference", "Amount", "Status", "Customer", "Date"]
+            : ["Plan", "Amount", "Status", "Customer", "Next Payment", "Created"]
+
+        const rows = data.map((item: any) => {
+            if (activeTab === "payments") {
+                return [
+                    item.reference,
+                    `${item.currency} ${item.amount}`,
+                    item.status,
+                    item.customer_email,
+                    new Date(item.created_at).toLocaleDateString()
+                ]
+            } else {
+                return [
+                    item.plan_name,
+                    `NGN ${item.amount}`,
+                    item.status,
+                    item.user_profiles.email,
+                    item.next_payment_date ? new Date(item.next_payment_date).toLocaleDateString() : 'N/A',
+                    new Date(item.created_at).toLocaleDateString()
+                ]
+            }
+        })
+
+        const csv = [headers, ...rows].map(row => row.join(",")).join("\n")
+        const blob = new Blob([csv], { type: "text/csv" })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement("a")
+        a.href = url
+        a.download = `${activeTab}_${new Date().toISOString().split('T')[0]}.csv`
+        a.click()
+    }
+
+    return (
+        <div className="space-y-6">
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card className="p-6">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-sm text-muted-foreground">Total Revenue</p>
+                            <p className="text-2xl font-bold">
+                                NGN {stats.totalRevenue.toLocaleString()}
+                            </p>
+                        </div>
+                        <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                            <DollarSign className="h-6 w-6 text-primary" />
+                        </div>
+                    </div>
+                </Card>
+
+                <Card className="p-6">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-sm text-muted-foreground">Total Payments</p>
+                            <p className="text-2xl font-bold">{stats.totalPayments}</p>
+                        </div>
+                        <div className="w-12 h-12 bg-blue-500/10 rounded-full flex items-center justify-center">
+                            <CreditCard className="h-6 w-6 text-blue-500" />
+                        </div>
+                    </div>
+                </Card>
+
+                <Card className="p-6">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-sm text-muted-foreground">Active Subscriptions</p>
+                            <p className="text-2xl font-bold">{stats.activeSubscriptions}</p>
+                        </div>
+                        <div className="w-12 h-12 bg-green-500/10 rounded-full flex items-center justify-center">
+                            <Users className="h-6 w-6 text-green-500" />
+                        </div>
+                    </div>
+                </Card>
+
+                <Card className="p-6">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-sm text-muted-foreground">Success Rate</p>
+                            <p className="text-2xl font-bold">{stats.successRate.toFixed(1)}%</p>
+                        </div>
+                        <div className="w-12 h-12 bg-purple-500/10 rounded-full flex items-center justify-center">
+                            <TrendingUp className="h-6 w-6 text-purple-500" />
+                        </div>
+                    </div>
+                </Card>
+            </div>
+
+            {/* Main Content */}
+            <Card className="p-6">
+                <Tabs value={activeTab} onValueChange={setActiveTab}>
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+                        <TabsList>
+                            <TabsTrigger value="payments">Payments</TabsTrigger>
+                            <TabsTrigger value="subscriptions">Subscriptions</TabsTrigger>
+                        </TabsList>
+
+                        <div className="flex flex-col sm:flex-row gap-3">
+                            <div className="relative flex-1 sm:w-64">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                    placeholder="Search..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="pl-10"
+                                />
+                            </div>
+
+                            <Select value={statusFilter} onValueChange={setStatusFilter}>
+                                <SelectTrigger className="w-full sm:w-40">
+                                    <Filter className="h-4 w-4 mr-2" />
+                                    <SelectValue placeholder="Status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Status</SelectItem>
+                                    {activeTab === "payments" ? (
+                                        <>
+                                            <SelectItem value="success">Success</SelectItem>
+                                            <SelectItem value="failed">Failed</SelectItem>
+                                            <SelectItem value="pending">Pending</SelectItem>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <SelectItem value="active">Active</SelectItem>
+                                            <SelectItem value="cancelled">Cancelled</SelectItem>
+                                            <SelectItem value="expired">Expired</SelectItem>
+                                        </>
+                                    )}
+                                </SelectContent>
+                            </Select>
+
+                            <Button variant="outline" onClick={fetchData}>
+                                <RefreshCw className="h-4 w-4 mr-2" />
+                                Refresh
+                            </Button>
+
+                            <Button variant="outline" onClick={exportToCSV}>
+                                <Download className="h-4 w-4 mr-2" />
+                                Export
+                            </Button>
+                        </div>
+                    </div>
+
+                    <TabsContent value="payments" className="mt-0">
+                        {loading ? (
+                            <div className="text-center py-12">
+                                <RefreshCw className="h-8 w-8 animate-spin mx-auto text-muted-foreground" />
+                            </div>
+                        ) : filteredPayments.length === 0 ? (
+                            <div className="text-center py-12 text-muted-foreground">
+                                <CreditCard className="h-12 w-12 mx-auto mb-4 opacity-20" />
+                                <p>No payments found</p>
+                            </div>
+                        ) : (
+                            <div className="overflow-x-auto">
+                                <table className="w-full">
+                                    <thead>
+                                        <tr className="border-b">
+                                            <th className="text-left p-3 font-medium">Reference</th>
+                                            <th className="text-left p-3 font-medium">Customer</th>
+                                            <th className="text-left p-3 font-medium">Amount</th>
+                                            <th className="text-left p-3 font-medium">Status</th>
+                                            <th className="text-left p-3 font-medium">Method</th>
+                                            <th className="text-left p-3 font-medium">Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {filteredPayments.map((payment) => (
+                                            <tr key={payment.id} className="border-b hover:bg-muted/50">
+                                                <td className="p-3">
+                                                    <code className="text-xs bg-muted px-2 py-1 rounded">
+                                                        {payment.reference}
+                                                    </code>
+                                                </td>
+                                                <td className="p-3">
+                                                    <div>
+                                                        <p className="font-medium">{payment.customer_name || payment.user_profiles?.full_name}</p>
+                                                        <p className="text-sm text-muted-foreground">{payment.customer_email}</p>
+                                                    </div>
+                                                </td>
+                                                <td className="p-3 font-semibold">
+                                                    {payment.currency} {Number(payment.amount).toLocaleString()}
+                                                </td>
+                                                <td className="p-3">{getStatusBadge(payment.status)}</td>
+                                                <td className="p-3 text-sm capitalize">{payment.payment_method || 'N/A'}</td>
+                                                <td className="p-3 text-sm text-muted-foreground">
+                                                    {formatDistanceToNow(new Date(payment.created_at), { addSuffix: true })}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </TabsContent>
+
+                    <TabsContent value="subscriptions" className="mt-0">
+                        {loading ? (
+                            <div className="text-center py-12">
+                                <RefreshCw className="h-8 w-8 animate-spin mx-auto text-muted-foreground" />
+                            </div>
+                        ) : filteredSubscriptions.length === 0 ? (
+                            <div className="text-center py-12 text-muted-foreground">
+                                <Users className="h-12 w-12 mx-auto mb-4 opacity-20" />
+                                <p>No subscriptions found</p>
+                            </div>
+                        ) : (
+                            <div className="overflow-x-auto">
+                                <table className="w-full">
+                                    <thead>
+                                        <tr className="border-b">
+                                            <th className="text-left p-3 font-medium">Customer</th>
+                                            <th className="text-left p-3 font-medium">Plan</th>
+                                            <th className="text-left p-3 font-medium">Amount</th>
+                                            <th className="text-left p-3 font-medium">Status</th>
+                                            <th className="text-left p-3 font-medium">Next Payment</th>
+                                            <th className="text-left p-3 font-medium">Started</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {filteredSubscriptions.map((sub) => (
+                                            <tr key={sub.id} className="border-b hover:bg-muted/50">
+                                                <td className="p-3">
+                                                    <div className="flex items-center gap-3">
+                                                        {sub.user_profiles.avatar_url ? (
+                                                            <Image
+                                                                src={sub.user_profiles.avatar_url}
+                                                                alt={sub.user_profiles.full_name}
+                                                                width={32}
+                                                                height={32}
+                                                                className="w-8 h-8 rounded-full object-cover"
+                                                            />
+                                                        ) : (
+                                                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                                                                <Users className="h-4 w-4 text-primary" />
+                                                            </div>
+                                                        )}
+                                                        <div>
+                                                            <p className="font-medium">{sub.user_profiles.full_name}</p>
+                                                            <p className="text-sm text-muted-foreground">{sub.user_profiles.email}</p>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="p-3 font-medium">{sub.plan_name}</td>
+                                                <td className="p-3 font-semibold">
+                                                    NGN {Number(sub.amount).toLocaleString()}
+                                                </td>
+                                                <td className="p-3">{getStatusBadge(sub.status)}</td>
+                                                <td className="p-3 text-sm">
+                                                    {sub.next_payment_date
+                                                        ? new Date(sub.next_payment_date).toLocaleDateString()
+                                                        : 'N/A'
+                                                    }
+                                                </td>
+                                                <td className="p-3 text-sm text-muted-foreground">
+                                                    {formatDistanceToNow(new Date(sub.created_at), { addSuffix: true })}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </TabsContent>
+                </Tabs>
+            </Card>
+        </div>
+    )
+}
