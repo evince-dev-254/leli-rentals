@@ -20,7 +20,8 @@ import {
     XCircle,
     CheckCircle,
     Clock,
-    Filter
+    Filter,
+    AlertCircle
 } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 
@@ -32,17 +33,9 @@ interface Payment {
     status: string
     payment_method: string | null
     customer_email: string
-    customer_name: string
+    customer_name: string | null
     paid_at: string | null
     created_at: string
-    user_profiles: {
-        full_name: string
-        email: string
-    } | null
-    bookings: {
-        id: string
-        listing_title: string
-    } | null
 }
 
 interface Subscription {
@@ -54,11 +47,6 @@ interface Subscription {
     next_payment_date: string | null
     created_at: string
     cancelled_at: string | null
-    user_profiles: {
-        full_name: string
-        email: string
-        avatar_url: string | null
-    }
 }
 
 interface Stats {
@@ -78,32 +66,37 @@ export function SubscriptionsManagement() {
         successRate: 0
     })
     const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
     const [searchQuery, setSearchQuery] = useState("")
     const [statusFilter, setStatusFilter] = useState("all")
     const [activeTab, setActiveTab] = useState("payments")
 
     const fetchData = useCallback(async () => {
         setLoading(true)
+        setError(null)
         try {
-            // Fetch payments
-            const { data: paymentsData } = await supabase
+            // Fetch payments without joins to avoid relationship errors
+            const { data: paymentsData, error: paymentsError } = await supabase
                 .from("payments")
-                .select(`
-          *,
-          user_profiles(full_name, email),
-          bookings(id, listing_title)
-        `)
+                .select("*")
                 .order("created_at", { ascending: false })
                 .limit(100)
 
-            // Fetch subscriptions
-            const { data: subscriptionsData } = await supabase
+            if (paymentsError) {
+                console.error("Error fetching payments:", paymentsError)
+                setError(`Failed to load payments: ${paymentsError.message}`)
+            }
+
+            // Fetch subscriptions without joins
+            const { data: subscriptionsData, error: subscriptionsError } = await supabase
                 .from("subscriptions")
-                .select(`
-          *,
-          user_profiles(full_name, email, avatar_url)
-        `)
+                .select("*")
                 .order("created_at", { ascending: false })
+
+            if (subscriptionsError) {
+                console.error("Error fetching subscriptions:", subscriptionsError)
+                setError(`Failed to load subscriptions: ${subscriptionsError.message}`)
+            }
 
             setPayments(paymentsData || [])
             setSubscriptions(subscriptionsData || [])
@@ -123,8 +116,9 @@ export function SubscriptionsManagement() {
                     successRate
                 })
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error fetching data:", error)
+            setError(error.message)
         } finally {
             setLoading(false)
         }
@@ -148,8 +142,7 @@ export function SubscriptionsManagement() {
     const filteredSubscriptions = subscriptions.filter(sub => {
         const matchesSearch =
             sub.plan_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            sub.user_profiles.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            sub.user_profiles.full_name.toLowerCase().includes(searchQuery.toLowerCase())
+            sub.subscription_code.toLowerCase().includes(searchQuery.toLowerCase())
 
         const matchesStatus = statusFilter === "all" || sub.status === statusFilter
 
@@ -180,14 +173,15 @@ export function SubscriptionsManagement() {
     function exportToCSV() {
         const data = activeTab === "payments" ? filteredPayments : filteredSubscriptions
         const headers = activeTab === "payments"
-            ? ["Reference", "Amount", "Status", "Customer", "Date"]
-            : ["Plan", "Amount", "Status", "Customer", "Next Payment", "Created"]
+            ? ["Reference", "Amount", "Currency", "Status", "Customer", "Date"]
+            : ["Plan", "Amount", "Status", "Code", "Created"]
 
         const rows = data.map((item: any) => {
             if (activeTab === "payments") {
                 return [
                     item.reference,
-                    `${item.currency} ${item.amount}`,
+                    item.amount,
+                    item.currency,
                     item.status,
                     item.customer_email,
                     new Date(item.created_at).toLocaleDateString()
@@ -195,10 +189,9 @@ export function SubscriptionsManagement() {
             } else {
                 return [
                     item.plan_name,
-                    `NGN ${item.amount}`,
+                    item.amount,
                     item.status,
-                    item.user_profiles.email,
-                    item.next_payment_date ? new Date(item.next_payment_date).toLocaleDateString() : 'N/A',
+                    item.subscription_code,
                     new Date(item.created_at).toLocaleDateString()
                 ]
             }
@@ -215,6 +208,22 @@ export function SubscriptionsManagement() {
 
     return (
         <div className="space-y-6">
+            {error && (
+                <Card className="p-4 bg-red-500/10 border-red-500/20">
+                    <div className="flex items-start gap-3">
+                        <AlertCircle className="h-5 w-5 text-red-500 mt-0.5" />
+                        <div>
+                            <p className="font-semibold text-red-600 dark:text-red-400">Error Loading Data</p>
+                            <p className="text-sm text-muted-foreground">{error}</p>
+                            <Button variant="outline" size="sm" onClick={fetchData} className="mt-2">
+                                <RefreshCw className="h-4 w-4 mr-2" />
+                                Retry
+                            </Button>
+                        </div>
+                    </div>
+                </Card>
+            )}
+
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <Card className="p-6">
@@ -273,8 +282,8 @@ export function SubscriptionsManagement() {
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
                         <TabsList>
-                            <TabsTrigger value="payments">Payments</TabsTrigger>
-                            <TabsTrigger value="subscriptions">Subscriptions</TabsTrigger>
+                            <TabsTrigger value="payments">Payments ({payments.length})</TabsTrigger>
+                            <TabsTrigger value="subscriptions">Subscriptions ({subscriptions.length})</TabsTrigger>
                         </TabsList>
 
                         <div className="flex flex-col sm:flex-row gap-3">
@@ -331,7 +340,8 @@ export function SubscriptionsManagement() {
                         ) : filteredPayments.length === 0 ? (
                             <div className="text-center py-12 text-muted-foreground">
                                 <CreditCard className="h-12 w-12 mx-auto mb-4 opacity-20" />
-                                <p>No payments found</p>
+                                <p className="font-medium">No payments found</p>
+                                <p className="text-sm mt-2">Payments will appear here after webhook is configured</p>
                             </div>
                         ) : (
                             <div className="overflow-x-auto">
@@ -356,7 +366,7 @@ export function SubscriptionsManagement() {
                                                 </td>
                                                 <td className="p-3">
                                                     <div>
-                                                        <p className="font-medium">{payment.customer_name || payment.user_profiles?.full_name}</p>
+                                                        <p className="font-medium">{payment.customer_name || 'N/A'}</p>
                                                         <p className="text-sm text-muted-foreground">{payment.customer_email}</p>
                                                     </div>
                                                 </td>
@@ -391,7 +401,7 @@ export function SubscriptionsManagement() {
                                 <table className="w-full">
                                     <thead>
                                         <tr className="border-b">
-                                            <th className="text-left p-3 font-medium">Customer</th>
+                                            <th className="text-left p-3 font-medium">Code</th>
                                             <th className="text-left p-3 font-medium">Plan</th>
                                             <th className="text-left p-3 font-medium">Amount</th>
                                             <th className="text-left p-3 font-medium">Status</th>
@@ -403,25 +413,9 @@ export function SubscriptionsManagement() {
                                         {filteredSubscriptions.map((sub) => (
                                             <tr key={sub.id} className="border-b hover:bg-muted/50">
                                                 <td className="p-3">
-                                                    <div className="flex items-center gap-3">
-                                                        {sub.user_profiles.avatar_url ? (
-                                                            <Image
-                                                                src={sub.user_profiles.avatar_url}
-                                                                alt={sub.user_profiles.full_name}
-                                                                width={32}
-                                                                height={32}
-                                                                className="w-8 h-8 rounded-full object-cover"
-                                                            />
-                                                        ) : (
-                                                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                                                                <Users className="h-4 w-4 text-primary" />
-                                                            </div>
-                                                        )}
-                                                        <div>
-                                                            <p className="font-medium">{sub.user_profiles.full_name}</p>
-                                                            <p className="text-sm text-muted-foreground">{sub.user_profiles.email}</p>
-                                                        </div>
-                                                    </div>
+                                                    <code className="text-xs bg-muted px-2 py-1 rounded">
+                                                        {sub.subscription_code}
+                                                    </code>
                                                 </td>
                                                 <td className="p-3 font-medium">{sub.plan_name}</td>
                                                 <td className="p-3 font-semibold">
