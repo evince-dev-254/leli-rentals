@@ -1,9 +1,0 @@
-commit 47ad0ceb899da62b8eb62dd215324d8be4680ae8
-Author: evince-dev-254 <evince.dev.254@gmail.com>
-Date:   Tue Jan 13 12:38:54 2026 +0300
-
-    feat: finalize payment system and admin oversight
-
-components/admin/admin-dashboard.tsx
-lib/actions/affiliate-actions.ts
-lib/actions/dashboard-actions.ts
