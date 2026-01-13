@@ -5,7 +5,7 @@ import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { useRouter, useSearchParams } from "next/navigation"
-import { Loader2, Mail, Lock, ArrowRight, Eye, EyeOff } from "lucide-react"
+import { Mail, Lock, ArrowRight, Eye, EyeOff } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -16,6 +16,7 @@ import { toast } from "sonner"
 import { checkUserExists } from "@/lib/actions/auth-actions"
 import { TurnstileWidget } from "./turnstile-widget"
 import { type TurnstileInstance } from "@marsidev/react-turnstile"
+import { AppLoader } from "@/components/ui/app-loader"
 
 export function LoginForm() {
   const router = useRouter()
@@ -190,7 +191,7 @@ export function LoginForm() {
 
         {checkingAuth ? (
           <div className="flex flex-col items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <AppLoader size="lg" className="text-primary" />
             <p className="mt-4 text-muted-foreground">Checking authentication...</p>
           </div>
         ) : (
@@ -204,7 +205,7 @@ export function LoginForm() {
                 disabled={isGoogleLoading || isLoading || isCheckingEmail || !captchaToken}
               >
                 {isGoogleLoading ? (
-                  <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                  <AppLoader size="sm" className="mr-2" />
                 ) : (
                   <svg className="h-5 w-5 mr-2" viewBox="0 0 24 24">
                     <path
@@ -308,18 +309,21 @@ export function LoginForm() {
                   // but for the error case we want to just reset. 
                   // The form onSubmit handles the actual login.
                   // However, since this is type="submit", we need to be careful.
-                  // If captchaError is true, we want to reset.
+                  // If captchaError is true, we want to just reset.
                 }}
               >
                 {isCheckingEmail || isLoading ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
+                  <>
+                    <AppLoader size="sm" variant="white" className="mr-2" />
+                    {isEmailChecked ? "Signing In..." : "Checking Email..."}
+                  </>
                 ) : captchaError ? (
                   <span className="flex items-center gap-2">
-                    <Loader2 className="h-4 w-4 text-red-500" /> Retry Verification
+                    <AppLoader size="sm" variant="white" className="mr-2" /> Retry Verification
                   </span>
                 ) : !captchaToken ? (
                   <span className="flex items-center gap-2">
-                    <Loader2 className="h-4 w-4 animate-spin" /> Verifying...
+                    <AppLoader size="sm" variant="white" className="mr-2" /> Verifying...
                   </span>
                 ) : isEmailChecked ? (
                   "Sign In"

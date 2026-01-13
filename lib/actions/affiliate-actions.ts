@@ -3,6 +3,7 @@
 import { supabase } from "@/lib/supabase"
 import { supabaseAdmin } from "@/lib/supabase-admin"
 import { createServerClient } from '@supabase/ssr'
+import { revalidatePath } from "next/cache"
 
 // ... existing joinAffiliateProgram ...
 
@@ -282,4 +283,21 @@ export async function getAffiliateReferralsAdmin(userId: string) {
         commission_status: ref.status,
         listing: { title: ref.listing?.listing_title }
     }));
+}
+
+export async function updateAffiliateStatus(userId: string, status: 'active' | 'pending' | 'suspended') {
+    try {
+        const { error } = await supabaseAdmin
+            .from('affiliates')
+            .update({ status })
+            .eq('user_id', userId);
+
+        if (error) throw error;
+        revalidatePath('/admin/affiliates');
+        revalidatePath('/staff/affiliates');
+        return { success: true };
+    } catch (e: any) {
+        console.error('Error updating affiliate status:', e);
+        return { success: false, error: e.message };
+    }
 }

@@ -3,14 +3,13 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { getAffiliateData } from "@/lib/actions/dashboard-actions";
-import { AffiliateOverview } from "@/components/dashboard/affiliate/affiliate-overview";
+import { AffiliateSettings } from "@/components/dashboard/affiliate/affiliate-settings";
 import { LoadingLogo } from "@/components/ui/loading-logo";
 
-export default function AffiliatePage() {
+export default function SettingsPage() {
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState<any>(null);
     const [user, setUser] = useState<any>(null);
-    const [refreshing, setRefreshing] = useState(false);
 
     const loadData = async () => {
         const { data: { user } } = await supabase.auth.getUser();
@@ -26,25 +25,22 @@ export default function AffiliatePage() {
         loadData();
     }, []);
 
-    const handleRefresh = async () => {
-        setRefreshing(true);
-        await loadData();
-        setRefreshing(false);
+    const handleUpdate = (newStats: any) => {
+        setStats(newStats);
     };
 
     if (loading) return (
         <div className="flex flex-col items-center justify-center p-20 h-[60vh]">
             <LoadingLogo size={60} />
-            <p className="mt-4 text-muted-foreground animate-pulse">Loading overview...</p>
+            <p className="mt-4 text-muted-foreground animate-pulse">Loading settings...</p>
         </div>
     );
 
     return (
-        <AffiliateOverview
+        <AffiliateSettings
             user={user}
             stats={stats}
-            refreshing={refreshing}
-            onRefresh={handleRefresh}
+            onUpdate={handleUpdate}
         />
     );
 }

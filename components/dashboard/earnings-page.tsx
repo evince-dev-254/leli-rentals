@@ -34,27 +34,24 @@ export function EarningsPage() {
         .single()
       setProfile(profile)
 
-      // Use new commission-actions for balance
-      const { getAvailableBalance } = await import("@/lib/actions/commission-actions")
       const role = profile?.role === 'affiliate' ? 'affiliate' : 'owner'
-      const balanceResult = await getAvailableBalance(user.id, role)
 
-      const t = await getEarnings(user.id)
-      setTransactions(t)
+      // Fetch summary and transactions in parallel
+      const { getEarningsSummary, getEarnings } = await import("@/lib/actions/dashboard-actions")
 
-      if (balanceResult.success) {
-        // Calculate total earnings from transactions
-        const earnings = t.filter(tx => tx.type === 'earning').reduce((sum, tx) => sum + tx.amount, 0)
-        const withdrawn = t.filter(tx => tx.type === 'payout').reduce((sum, tx) => sum + Math.abs(tx.amount), 0)
+      const [summaryResult, transactionList] = await Promise.all([
+        getEarningsSummary(user.id, role),
+        getEarnings(user.id, 50)
+      ])
 
-        setStats({
-          totalEarnings: earnings,
-          availableBalance: balanceResult.balance,
-          totalWithdrawn: withdrawn,
-          pendingEarnings: earnings - withdrawn - balanceResult.balance, // Approximation
-          isAffiliate: profile?.role === 'affiliate'
-        })
-      }
+      setTransactions(transactionList)
+      setStats({
+        totalEarnings: summaryResult.totalEarnings,
+        availableBalance: summaryResult.availableBalance,
+        totalWithdrawn: summaryResult.totalWithdrawn,
+        pendingEarnings: 0, // We can refine this later if needed
+        isAffiliate: profile?.role === 'affiliate'
+      })
     }
     setLoading(false)
   }

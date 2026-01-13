@@ -25,13 +25,13 @@ export async function getStaffStats() {
         const { count: ownersCount, error: ownersError } = await supabaseAdmin
             .from('user_profiles')
             .select('*', { count: 'exact', head: true })
-            .eq('role', 'owner')
+            .eq('is_advertiser', true)
 
         // Fetch counts for staff (team)
         const { count: staffCount, error: staffError } = await supabaseAdmin
             .from('user_profiles')
             .select('*', { count: 'exact', head: true })
-            .eq('role', 'staff')
+            .eq('is_staff', true)
 
         if (affError || pendingAffError || activeAffError || ownersError || staffError) {
             console.error('Error fetching staff stats:', { affError, pendingAffError, activeAffError, ownersError, staffError })
@@ -101,7 +101,7 @@ export async function promoteToStaff(email: string) {
 
         const { error: updateError } = await supabaseAdmin
             .from("user_profiles")
-            .update({ role: "staff" })
+            .update({ role: "staff", is_staff: true })
             .eq("id", user.id)
 
         if (updateError) throw updateError

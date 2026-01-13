@@ -27,8 +27,8 @@ export default function StaffLayout({
                     <DashboardHeader
                         mobileSidebar={<MobileStaffSidebar />}
                         breadcrumbs={[
-                            { label: "Sales Team", href: "/staff" },
-                            { label: "Dashboard" }
+                            { label: "Leli Rentals", href: "/staff" },
+                            { label: "Staff Dashboard" }
                         ]}
                     />
 

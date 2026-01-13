@@ -5,7 +5,7 @@ import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { useRouter, useSearchParams } from "next/navigation"
-import { Loader2, User, Store, Users, Mail, ArrowRight, CheckCircle2 } from "lucide-react"
+import { User, Store, Users, Mail, ArrowRight, CheckCircle2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -20,6 +20,8 @@ import { supabase } from "@/lib/supabase"
 import { toast } from "sonner"
 import { TurnstileWidget } from "./turnstile-widget"
 import { type TurnstileInstance } from "@marsidev/react-turnstile"
+import { checkUserExists } from "@/lib/actions/auth-actions"
+import { AppLoader } from "@/components/ui/app-loader"
 
 type AccountType = "renter" | "owner" | "affiliate"
 
@@ -301,7 +303,7 @@ export function SignupForm() {
             onClick={handleVerifyOtp}
             disabled={isLoading || otp.length !== 8}
           >
-            {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Verify Code"}
+            {isLoading ? <AppLoader size="sm" variant="white" className="mr-2" /> : "Verify Code"}
           </Button>
 
           <div className="flex justify-between items-center px-2">
@@ -360,7 +362,7 @@ export function SignupForm() {
                 disabled={isGoogleLoading || isLoading || !captchaToken}
               >
                 {isGoogleLoading ? (
-                  <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                  <AppLoader size="sm" variant="default" className="mr-2" />
                 ) : (
                   <svg className="h-5 w-5 mr-2" viewBox="0 0 24 24">
                     <path
@@ -503,12 +505,15 @@ export function SignupForm() {
               </Button>
               <Button type="submit" className="flex-1 bg-primary text-primary-foreground" disabled={isLoading || !captchaToken}>
                 {isLoading ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
+                  <>
+                    <AppLoader size="sm" variant="white" className="mr-2" />
+                    Creating account...
+                  </>
                 ) : captchaError ? (
                   "Captcha Failed"
                 ) : !captchaToken ? (
                   <span className="flex items-center gap-2">
-                    <Loader2 className="h-4 w-4 animate-spin" /> Verifying...
+                    <AppLoader size="sm" variant="white" className="mr-2" /> Verifying...
                   </span>
                 ) : (
                   "Complete Signup"

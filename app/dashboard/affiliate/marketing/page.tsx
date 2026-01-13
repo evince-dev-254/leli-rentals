@@ -2,20 +2,20 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
-import { getAffiliateReferrals } from "@/lib/actions/dashboard-actions";
-import { AffiliateReferrals } from "@/components/dashboard/affiliate/affiliate-referrals";
+import { getAffiliateData } from "@/lib/actions/dashboard-actions";
+import { AffiliateMarketing } from "@/components/dashboard/affiliate/affiliate-marketing";
 import { LoadingLogo } from "@/components/ui/loading-logo";
 
-export default function ReferralsPage() {
+export default function MarketingPage() {
     const [loading, setLoading] = useState(true);
-    const [referrals, setReferrals] = useState<any[]>([]);
+    const [stats, setStats] = useState<any>(null);
 
     useEffect(() => {
         const loadData = async () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
-                const data = await getAffiliateReferrals(user.id);
-                setReferrals(data);
+                const data = await getAffiliateData(user.id);
+                setStats(data);
             }
             setLoading(false);
         };
@@ -25,9 +25,9 @@ export default function ReferralsPage() {
     if (loading) return (
         <div className="flex flex-col items-center justify-center p-20 h-[60vh]">
             <LoadingLogo size={60} />
-            <p className="mt-4 text-muted-foreground animate-pulse">Loading referrals...</p>
+            <p className="mt-4 text-muted-foreground animate-pulse">Loading marketing tools...</p>
         </div>
     );
 
-    return <AffiliateReferrals referrals={referrals} />;
+    return <AffiliateMarketing stats={stats} />;
 }

@@ -1,9 +1,10 @@
 "use client"
 
 import { useState, useEffect, useMemo, useCallback } from "react"
-import { CreditCard, Check, Loader2 } from "lucide-react"
+import { CreditCard, Check } from "lucide-react"
 import dynamic from "next/dynamic"
 import { usePaystackPayment } from 'react-paystack'
+import { AppLoader } from "@/components/ui/app-loader"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -417,12 +418,12 @@ export function BookingModal({ listing, isOpen, onClose }: BookingModalProps) {
               >
                 {isProcessing ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <AppLoader size="sm" variant="white" className="mr-2" />
                     Processing...
                   </>
                 ) : !isClient ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <AppLoader size="sm" variant="white" className="mr-2" />
                     Loading Payment...
                   </>
                 ) : (

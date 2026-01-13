@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
 import { useState, useEffect } from "react"
+import { AppLoader } from "@/components/ui/app-loader"
 
 const container = {
     hidden: { opacity: 0 },
@@ -200,10 +201,10 @@ export function BrandingGuidelines() {
                                         <div key={idx} className="flex flex-col items-center text-center space-y-4">
                                             <div
                                                 className={`h-16 w-16 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-xl ${isActive
-                                                        ? `bg-gradient-to-br ${step.color} text-white scale-110 ring-4 ring-primary/20`
-                                                        : isPast
-                                                            ? "bg-primary text-white"
-                                                            : "bg-secondary text-muted-foreground"
+                                                    ? `bg-gradient-to-br ${step.color} text-white scale-110 ring-4 ring-primary/20`
+                                                    : isPast
+                                                        ? "bg-primary text-white"
+                                                        : "bg-secondary text-muted-foreground"
                                                     }`}
                                             >
                                                 <step.icon className={`h-8 w-8 ${isActive ? "animate-pulse" : ""}`} />
@@ -232,6 +233,64 @@ export function BrandingGuidelines() {
                                     <p className="text-sm text-muted-foreground">{flowSteps[activeStep].desc}</p>
                                 </motion.div>
                             </AnimatePresence>
+                        </div>
+                    </CardContent>
+                </Card>
+            </motion.div>
+
+            {/* Loading Experience */}
+            <motion.div variants={item}>
+                <Card className="glass-card overflow-hidden bg-slate-950 text-white border-primary/30">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-3">
+                            <Zap className="h-6 w-6 text-primary" />
+                            Loading Experience
+                        </CardTitle>
+                        <CardDescription className="text-slate-400">Branded motion and transitional state language</CardDescription>
+                    </CardHeader>
+                    <CardContent className="py-12">
+                        <div className="grid md:grid-cols-3 gap-12 items-center">
+                            <div className="flex flex-col items-center gap-4 group">
+                                <div className="h-32 flex items-center justify-center">
+                                    <AppLoader size="sm" variant="white" />
+                                </div>
+                                <p className="text-xs font-mono text-slate-500 uppercase tracking-widest">Discrete Loader</p>
+                            </div>
+
+                            <div className="flex flex-col items-center gap-4 group">
+                                <div className="h-32 flex items-center justify-center">
+                                    <AppLoader size="md" variant="white" />
+                                </div>
+                                <p className="text-xs font-mono text-slate-500 uppercase tracking-widest">Standard Branding</p>
+                            </div>
+
+                            <div className="flex flex-col items-center gap-4 group">
+                                <div className="h-32 flex items-center justify-center">
+                                    <AppLoader size="lg" variant="white" />
+                                </div>
+                                <p className="text-xs font-mono text-slate-500 uppercase tracking-widest">Hero Transition</p>
+                            </div>
+                        </div>
+
+                        <div className="mt-12 p-6 rounded-2xl bg-white/5 border border-white/10 max-w-2xl mx-auto">
+                            <h4 className="text-sm font-bold text-primary mb-3 flex items-center gap-2">
+                                <CheckCircle2 className="h-4 w-4" />
+                                Usage Standards
+                            </h4>
+                            <ul className="grid gap-2 text-xs text-slate-300">
+                                <li className="flex items-start gap-2">
+                                    <div className="h-1.5 w-1.5 rounded-full bg-primary mt-1 shrink-0" />
+                                    <span>Use **Discrete** for inline elements and small cards.</span>
+                                </li>
+                                <li className="flex items-start gap-2">
+                                    <div className="h-1.5 w-1.5 rounded-full bg-primary mt-1 shrink-0" />
+                                    <span>Use **Standard** for page content loads and auth forms.</span>
+                                </li>
+                                <li className="flex items-start gap-2">
+                                    <div className="h-1.5 w-1.5 rounded-full bg-primary mt-1 shrink-0" />
+                                    <span>Use **Fullscreen** for major route changes and checkout processing.</span>
+                                </li>
+                            </ul>
                         </div>
                     </CardContent>
                 </Card>

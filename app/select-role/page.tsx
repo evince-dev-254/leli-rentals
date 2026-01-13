@@ -7,8 +7,9 @@ import { supabase } from "@/lib/supabase"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
-import { Users, Building2, TrendingUp, Loader2, Check } from "lucide-react"
+import { Users, Building2, TrendingUp, Check } from "lucide-react"
 import Image from "next/image"
+import { AppLoader } from "@/components/ui/app-loader"
 import { BackButton } from "@/components/ui/back-button"
 import { toast } from "sonner"
 
@@ -152,7 +153,7 @@ export default function SelectRolePage() {
     if (initializing) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-background">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <AppLoader size="lg" />
             </div>
         )
     }
@@ -248,7 +249,7 @@ export default function SelectRolePage() {
                         >
                             {loading ? (
                                 <>
-                                    <Loader2 className="h-5 w-5 mr-3 animate-spin" />
+                                    <AppLoader size="sm" variant="white" className="mr-3" />
                                     Setting up your profile...
                                 </>
                             ) : (

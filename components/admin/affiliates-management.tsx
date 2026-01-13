@@ -7,7 +7,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase"
-import { getAllAffiliates, getAffiliateReferralsAdmin } from "@/lib/actions/affiliate-actions"
+import { getAllAffiliates, getAffiliateReferralsAdmin, updateAffiliateStatus } from "@/lib/actions/affiliate-actions"
+import { toast } from "sonner"
 import {
   Dialog,
   DialogContent,
@@ -57,6 +58,21 @@ export function AffiliatesManagement() {
       console.error("Error loading referrals:", error)
     } finally {
       setLoadingReferrals(false)
+    }
+  }
+
+  const handleUpdateStatus = async (userId: string, status: 'active' | 'suspended') => {
+    try {
+      const result = await updateAffiliateStatus(userId, status)
+      if (result.success) {
+        toast.success(`Affiliate status updated to ${status}`)
+        // Refresh local state
+        setAffiliates(affiliates.map(a => a.user_id === userId ? { ...a, status } : a))
+      } else {
+        toast.error(result.error || "Failed to update status")
+      }
+    } catch (error) {
+      toast.error("An error occurred")
     }
   }
 
@@ -220,6 +236,34 @@ export function AffiliatesManagement() {
                           <ExternalLink className="h-4 w-4 mr-2" />
                           View
                         </Button>
+                        {affiliate.status === 'pending' && (
+                          <Button
+                            variant="default"
+                            size="sm"
+                            className="bg-green-600 hover:bg-green-700"
+                            onClick={() => handleUpdateStatus(affiliate.user_id, 'active')}
+                          >
+                            Approve
+                          </Button>
+                        )}
+                        {affiliate.status === 'active' && (
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleUpdateStatus(affiliate.user_id, 'suspended')}
+                          >
+                            Suspend
+                          </Button>
+                        )}
+                        {affiliate.status === 'suspended' && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleUpdateStatus(affiliate.user_id, 'active')}
+                          >
+                            Reactivate
+                          </Button>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>

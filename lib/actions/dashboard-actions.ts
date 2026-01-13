@@ -815,10 +815,51 @@ export async function createListing(ownerId: string, listingData: any) {
     return data;
 }
 
-/** Get User Earnings (from completed bookings) */
-export async function getEarnings(userId: string) {
+/** Get User Earnings Summary (Lightweight for stats) */
+export async function getEarningsSummary(userId: string, role: 'owner' | 'affiliate') {
     const supabase = await createClient()
-    const { data, error } = await supabase
+    let totalEarnings = 0
+
+    if (role === 'owner') {
+        const { data: bookings } = await supabase
+            .from('bookings')
+            .select('total_amount')
+            .eq('owner_id', userId)
+            .eq('status', 'completed')
+
+        totalEarnings = (bookings || []).reduce((sum, b) => sum + Number(b.total_amount), 0)
+    } else {
+        const { data: commissions } = await supabase
+            .from('affiliate_commissions')
+            .select('amount')
+            .eq('affiliate_id', userId)
+            .eq('status', 'paid')
+
+        totalEarnings = (commissions || []).reduce((sum, c) => sum + Number(c.amount), 0)
+    }
+
+    const { data: withdrawals } = await supabase
+        .from('withdrawals')
+        .select('amount')
+        .eq('user_id', userId)
+        .eq('status', 'completed')
+
+    const totalWithdrawn = (withdrawals || []).reduce((sum, w) => sum + Number(w.amount), 0)
+
+    return {
+        totalEarnings,
+        totalWithdrawn,
+        availableBalance: totalEarnings - totalWithdrawn
+    }
+}
+
+/** Get User Transaction History (Optimized with limit) */
+export async function getEarnings(userId: string, limit: number = 50) {
+    const supabase = await createClient()
+    const transactions: any[] = []
+
+    // 1. Fetch Bookings (for owners)
+    const { data: bookings } = await supabase
         .from('bookings')
         .select(`
             id,
@@ -828,20 +869,21 @@ export async function getEarnings(userId: string) {
         `)
         .eq('owner_id', userId)
         .eq('status', 'completed')
-        .order('end_date', { ascending: false });
+        .order('end_date', { ascending: false })
+        .limit(limit);
 
-    if (error) throw error;
+    if (bookings) {
+        transactions.push(...bookings.map((b: any) => ({
+            id: b.id,
+            type: 'earning',
+            desc: b.listing?.title || 'Rental',
+            date: new Date(b.end_date).toLocaleDateString(),
+            amount: Number(b.total_amount),
+            timestamp: new Date(b.end_date).getTime()
+        })));
+    }
 
-    // Transform to transaction format
-    const transactions = (data || []).map((b: any) => ({
-        id: b.id,
-        type: 'earning',
-        desc: b.listing?.title || 'Rental',
-        date: new Date(b.end_date).toLocaleDateString(),
-        amount: b.total_amount
-    }));
-
-    // Add affiliate commissions from new table
+    // 2. Fetch Commissions (for affiliates)
     const { data: commissions } = await supabase
         .from('affiliate_commissions')
         .select(`
@@ -851,38 +893,43 @@ export async function getEarnings(userId: string) {
             bookings(listing_title)
         `)
         .eq('affiliate_id', userId)
-        .eq('status', 'paid');
+        .eq('status', 'paid')
+        .order('created_at', { ascending: false })
+        .limit(limit);
 
     if (commissions) {
-        const commTrans = commissions.map((c: any) => ({
+        transactions.push(...commissions.map((c: any) => ({
             id: c.id,
             type: 'earning',
             desc: `Commission: ${c.bookings?.listing_title || 'Booking'}`,
             date: new Date(c.created_at).toLocaleDateString(),
-            amount: Number(c.amount)
-        }));
-        transactions.push(...commTrans);
+            amount: Number(c.amount),
+            timestamp: new Date(c.created_at).getTime()
+        })));
     }
 
-    // Add withdrawals from new table
+    // 3. Fetch Withdrawals
     const { data: withdrawals } = await supabase
         .from('withdrawals')
         .select('*')
         .eq('user_id', userId)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(limit);
 
     if (withdrawals) {
-        const withdrawalTrans = withdrawals.map((w: any) => ({
+        transactions.push(...withdrawals.map((w: any) => ({
             id: w.id,
             type: 'payout',
             desc: `Withdrawal (${w.status})`,
             date: new Date(w.created_at).toLocaleDateString(),
-            amount: -Number(w.amount)
-        }));
-        transactions.push(...withdrawalTrans);
+            amount: -Number(w.amount),
+            timestamp: new Date(w.created_at).getTime()
+        })));
     }
 
-    return transactions.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    return transactions
+        .sort((a, b) => b.timestamp - a.timestamp)
+        .slice(0, limit);
 }
 
 /** Update Verification Document Status */

@@ -16,24 +16,15 @@ export function AdvertisersManagement() {
         async function loadAdvertisers() {
             setLoading(true)
             try {
-                // Fetch users with 'owner' role as potential advertisers
-                const { data: owners, error } = await supabase
+                // Fetch users who are owners OR explicitly marked as advertisers
+                const { data, error } = await supabase
                     .from('user_profiles')
                     .select('*')
-                    .eq('role', 'owner')
+                    .or('role.eq.owner,is_advertiser.eq.true')
                     .order('created_at', { ascending: false })
 
                 if (error) throw error
-
-                // Mock data for "Ad Status" just for visualization, as there's no real ad system yet
-                const enrichedOwners = owners.map(owner => ({
-                    ...owner,
-                    ad_status: Math.random() > 0.7 ? 'active' : 'inactive',
-                    campaigns_count: Math.floor(Math.random() * 5),
-                    total_spend: Math.floor(Math.random() * 50000)
-                }))
-
-                setAdvertisers(enrichedOwners)
+                setAdvertisers(data || [])
             } catch (err) {
                 console.error("Error loading advertisers", err)
             } finally {
@@ -42,6 +33,20 @@ export function AdvertisersManagement() {
         }
         loadAdvertisers()
     }, [])
+
+    const toggleAdvertiser = async (userId: string, currentStatus: boolean) => {
+        try {
+            const { error } = await supabase
+                .from('user_profiles')
+                .update({ is_advertiser: !currentStatus })
+                .eq('id', userId)
+
+            if (error) throw error
+            setAdvertisers(advertisers.map(a => a.id === userId ? { ...a, is_advertiser: !currentStatus } : a))
+        } catch (err) {
+            console.error("Error toggling advertiser status", err)
+        }
+    }
 
     return (
         <div className="space-y-6">
@@ -58,12 +63,12 @@ export function AdvertisersManagement() {
                 </Card>
                 <Card className="glass-card">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Active Campaigns</CardTitle>
+                        <CardTitle className="text-sm font-medium">Verified Advertisers</CardTitle>
                         <ShieldCheck className="h-4 w-4 text-green-500" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{advertisers.filter(a => a.ad_status === 'active').length}</div>
-                        <p className="text-xs text-muted-foreground">Running promotions</p>
+                        <div className="text-2xl font-bold">{advertisers.filter(a => a.is_advertiser).length}</div>
+                        <p className="text-xs text-muted-foreground">Paying promoters</p>
                     </CardContent>
                 </Card>
             </div>
@@ -78,9 +83,8 @@ export function AdvertisersManagement() {
                         <TableHeader>
                             <TableRow>
                                 <TableHead>Advertiser</TableHead>
-                                <TableHead>Ad Status</TableHead>
-                                <TableHead>Campaigns</TableHead>
-                                <TableHead>Total Spend (Est)</TableHead>
+                                <TableHead>Type</TableHead>
+                                <TableHead>Promotion Status</TableHead>
                                 <TableHead className="text-right">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -104,19 +108,26 @@ export function AdvertisersManagement() {
                                         </div>
                                     </TableCell>
                                     <TableCell>
-                                        <Badge variant={advertiser.ad_status === 'active' ? 'default' : 'secondary'}>
-                                            {advertiser.ad_status}
+                                        <Badge variant="outline" className="capitalize">
+                                            {advertiser.role}
                                         </Badge>
                                     </TableCell>
-                                    <TableCell>{advertiser.campaigns_count}</TableCell>
-                                    <TableCell>KSh {advertiser.total_spend.toLocaleString()}</TableCell>
+                                    <TableCell>
+                                        <Badge variant={advertiser.is_advertiser ? 'default' : 'secondary'}>
+                                            {advertiser.is_advertiser ? 'Promoting' : 'Standard Owner'}
+                                        </Badge>
+                                    </TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex justify-end gap-2">
                                             <Button size="icon" variant="ghost" title="Contact">
                                                 <Mail className="h-4 w-4" />
                                             </Button>
-                                            <Button size="icon" variant="ghost" title="View Profile">
-                                                <ExternalLink className="h-4 w-4" />
+                                            <Button
+                                                variant={advertiser.is_advertiser ? "destructive" : "default"}
+                                                size="sm"
+                                                onClick={() => toggleAdvertiser(advertiser.id, advertiser.is_advertiser)}
+                                            >
+                                                {advertiser.is_advertiser ? 'Disable Ad' : 'Enable Ad'}
                                             </Button>
                                         </div>
                                     </TableCell>
