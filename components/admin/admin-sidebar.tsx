@@ -36,9 +36,11 @@ const sidebarLinks = [
   { href: "/admin/listings", label: "Listings", icon: Package },
   { href: "/admin/bookings", label: "Bookings", icon: CalendarCheck },
   { href: "/admin/subscriptions", label: "Payments & Subscriptions", icon: CreditCard },
+  { href: "/admin/test-payment", label: "Test Payment", icon: CreditCard },
   { href: "/admin/affiliates", label: "Affiliates", icon: UserPlus },
   { href: "/admin/communications", label: "Communications", icon: Send },
   { href: "/admin/reviews", label: "Reviews", icon: MessageSquare },
+  { href: "/admin/paystack-settings", label: "Paystack Settings", icon: Settings },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ]
 
