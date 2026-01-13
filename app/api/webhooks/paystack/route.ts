@@ -160,6 +160,21 @@ async function handleSuccessfulPayment(data: any) {
                 console.error('Failed to update booking:', error)
             } else {
                 console.log('Booking payment confirmed:', metadata.booking_id)
+
+                // Calculate and create affiliate commission if applicable
+                try {
+                    const { calculateCommission } = await import('@/lib/actions/commission-actions')
+                    const commissionResult = await calculateCommission(metadata.booking_id)
+
+                    if (commissionResult.success) {
+                        console.log('Commission created:', commissionResult.commission)
+                    } else {
+                        console.log('No commission:', commissionResult.message)
+                    }
+                } catch (commissionError) {
+                    console.error('Commission calculation error:', commissionError)
+                    // Don't fail the webhook if commission fails
+                }
             }
         }
 
