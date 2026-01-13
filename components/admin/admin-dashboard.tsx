@@ -125,6 +125,15 @@ export function AdminDashboard() {
           color="purple"
           description="Active support team"
         />
+        <Link href="/admin/test-payment">
+          <DashboardStatCard
+            title="Test Payment"
+            value="→"
+            icon={Key}
+            color="green"
+            description="Test Paystack integration"
+          />
+        </Link>
         <DashboardStatCard
           title="Total Reviews"
           value={stats.totalReviews}
