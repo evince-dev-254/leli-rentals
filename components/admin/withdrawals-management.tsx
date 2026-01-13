@@ -33,6 +33,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
 import { approveWithdrawal, rejectWithdrawal } from "@/lib/actions/commission-actions"
+import { getAdminWithdrawals } from "@/lib/actions/dashboard-actions"
 
 export function WithdrawalsManagement() {
     const [withdrawals, setWithdrawals] = useState<any[]>([])
@@ -43,15 +44,7 @@ export function WithdrawalsManagement() {
     const fetchWithdrawals = useCallback(async () => {
         setLoading(true)
         try {
-            const { data, error } = await supabase
-                .from('withdrawals')
-                .select(`
-                    *,
-                    user_profiles(full_name, email, avatar_url)
-                `)
-                .order('created_at', { ascending: false })
-
-            if (error) throw error
+            const data = await getAdminWithdrawals()
             setWithdrawals(data || [])
         } catch (error) {
             console.error('Error fetching withdrawals:', error)

@@ -633,9 +633,12 @@ export async function getAdminDashboardData() {
         adminSupabase.from("withdrawals").select("id", { count: "exact", head: true }).eq("status", "pending"),
     ])
 
-    // 2. Fetch Revenue
-    const { data: revenueRows } = await adminSupabase.from("bookings").select("total_amount")
-    const totalRevenue = (revenueRows || []).reduce((s: number, r: any) => s + Number(r.total_amount || 0), 0)
+    // 2. Fetch Revenue (Successfully Paid)
+    const { data: revenueRows } = await adminSupabase
+        .from("payments")
+        .select("amount")
+        .eq("status", "success")
+    const totalRevenue = (revenueRows || []).reduce((s: number, r: any) => s + Number(r.amount || 0), 0)
 
     // 3. Fetch Suspended and Pending (using simple heuristic for pending)
     const { data: suspended } = await adminSupabase.from("user_profiles").select("*").eq("account_status", "suspended").limit(10)
@@ -1003,4 +1006,38 @@ export async function toggleFavoriteAction(listingId: string, userId: string) {
 
         return { favorited: true }
     }
+}
+
+/** Admin: Fetch all withdrawals with user profiles bypassing RLS */
+export async function getAdminWithdrawals() {
+    const authSupabase = await createClient()
+    const { data: { user } } = await authSupabase.auth.getUser()
+
+    if (!user) throw new Error("Not authenticated")
+
+    const { data: profile } = await authSupabase
+        .from('user_profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+
+    if (profile?.role !== 'admin' && profile?.role !== 'staff') {
+        throw new Error("Unauthorized: Admin or Staff access required")
+    }
+
+    const adminSupabase = getAdminSupabase()
+    const { data, error } = await adminSupabase
+        .from('withdrawals')
+        .select(`
+            *,
+            user_profiles(full_name, email, avatar_url)
+        `)
+        .order('created_at', { ascending: false })
+
+    if (error) {
+        console.error('Error fetching withdrawals for admin:', error)
+        throw error
+    }
+
+    return data || []
 }
