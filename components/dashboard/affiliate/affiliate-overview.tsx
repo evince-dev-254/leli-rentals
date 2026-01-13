@@ -8,6 +8,9 @@ import { DashboardStatCard } from "@/components/dashboard/dashboard-stat-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useRouter } from "next/navigation";
+import { WithdrawalModal } from "@/components/dashboard/withdrawal-modal";
+import { DashboardFAQ } from "@/components/dashboard/dashboard-faq";
+import { useState } from "react";
 
 interface AffiliateOverviewProps {
     user: any;
@@ -18,6 +21,7 @@ interface AffiliateOverviewProps {
 
 export function AffiliateOverview({ user, stats, refreshing, onRefresh }: AffiliateOverviewProps) {
     const router = useRouter();
+    const [withdrawalOpen, setWithdrawalOpen] = useState(false);
 
     const chartData = [
         { name: 'Mon', value: 0 },
@@ -73,13 +77,27 @@ export function AffiliateOverview({ user, stats, refreshing, onRefresh }: Affili
                     />
                 </motion.div>
 
-                <DashboardStatCard
-                    title="Pending Payout"
-                    value={`Kes ${stats?.pending_earnings || 0}`}
-                    icon={DollarSign}
-                    color="amber-glow"
-                    description="Available to withdraw"
-                />
+                <div className="relative group">
+                    <DashboardStatCard
+                        title="Pending Payout"
+                        value={`Kes ${stats?.pending_earnings || 0}`}
+                        icon={DollarSign}
+                        color="amber-glow"
+                        description="Available to withdraw"
+                    />
+                    {Number(stats?.pending_earnings || 0) > 0 && (
+                        <div className="absolute bottom-4 right-4">
+                            <Button
+                                size="sm"
+                                variant="secondary"
+                                onClick={() => setWithdrawalOpen(true)}
+                                className="bg-white/20 hover:bg-white/30 text-white border-0 backdrop-blur-md"
+                            >
+                                Withdraw
+                            </Button>
+                        </div>
+                    )}
+                </div>
 
                 <DashboardStatCard
                     title="Total Referrals"
@@ -125,6 +143,18 @@ export function AffiliateOverview({ user, stats, refreshing, onRefresh }: Affili
                     </ResponsiveContainer>
                 </CardContent>
             </Card>
+
+            <DashboardFAQ role="affiliate" />
+
+            <WithdrawalModal
+                open={withdrawalOpen}
+                onOpenChange={setWithdrawalOpen}
+                availableBalance={Number(stats?.pending_earnings || 0)}
+                userId={user?.id}
+                onSuccess={onRefresh}
+                paymentInfo={user?.payment_info}
+                role="affiliate"
+            />
         </div>
     );
 }

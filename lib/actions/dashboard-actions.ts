@@ -818,38 +818,46 @@ export async function createListing(ownerId: string, listingData: any) {
 /** Get User Earnings Summary (Lightweight for stats) */
 export async function getEarningsSummary(userId: string, role: 'owner' | 'affiliate') {
     const supabase = await createClient()
-    let totalEarnings = 0
+    try {
+        if (role === 'owner') {
+            const { data: bookings } = await supabase
+                .from('bookings')
+                .select('total_amount')
+                .eq('owner_id', userId)
+                .eq('status', 'completed')
 
-    if (role === 'owner') {
-        const { data: bookings } = await supabase
-            .from('bookings')
-            .select('total_amount')
-            .eq('owner_id', userId)
+            totalEarnings = (bookings || []).reduce((sum, b) => sum + Number(b.total_amount), 0)
+        } else {
+            const { data: commissions } = await supabase
+                .from('affiliate_commissions')
+                .select('amount')
+                .eq('affiliate_id', userId)
+                .eq('status', 'paid')
+
+            totalEarnings = (commissions || []).reduce((sum, c) => sum + Number(c.amount), 0)
+        }
+
+        const { data: withdrawals } = await supabase
+            .from('withdrawals')
+            .select('amount')
+            .eq('user_id', userId)
             .eq('status', 'completed')
 
-        totalEarnings = (bookings || []).reduce((sum, b) => sum + Number(b.total_amount), 0)
-    } else {
-        const { data: commissions } = await supabase
-            .from('affiliate_commissions')
-            .select('amount')
-            .eq('affiliate_id', userId)
-            .eq('status', 'paid')
+        const totalWithdrawn = (withdrawals || []).reduce((sum, w) => sum + Number(w.amount), 0)
 
-        totalEarnings = (commissions || []).reduce((sum, c) => sum + Number(c.amount), 0)
-    }
-
-    const { data: withdrawals } = await supabase
-        .from('withdrawals')
-        .select('amount')
-        .eq('user_id', userId)
-        .eq('status', 'completed')
-
-    const totalWithdrawn = (withdrawals || []).reduce((sum, w) => sum + Number(w.amount), 0)
-
-    return {
-        totalEarnings,
-        totalWithdrawn,
-        availableBalance: totalEarnings - totalWithdrawn
+        return {
+            totalEarnings,
+            totalWithdrawn,
+            availableBalance: totalEarnings - totalWithdrawn
+        }
+    } catch (error) {
+        console.error("Error in getEarningsSummary:", error)
+        return {
+            totalEarnings: 0,
+            totalWithdrawn: 0,
+            availableBalance: 0,
+            error: "Failed to fetch summary"
+        }
     }
 }
 
@@ -858,78 +866,86 @@ export async function getEarnings(userId: string, limit: number = 50) {
     const supabase = await createClient()
     const transactions: any[] = []
 
-    // 1. Fetch Bookings (for owners)
-    const { data: bookings } = await supabase
-        .from('bookings')
-        .select(`
-            id,
-            total_amount,
-            end_date,
-            listing:listings(title)
-        `)
-        .eq('owner_id', userId)
-        .eq('status', 'completed')
-        .order('end_date', { ascending: false })
-        .limit(limit);
+    try {
+        // 1. Fetch Bookings (for owners)
+        const { data: bookings } = await supabase
+            .from('bookings')
+            .select(`
+                id,
+                total_amount,
+                end_date,
+                listing:listings(title)
+            `)
+            .eq('owner_id', userId)
+            .eq('status', 'completed')
+            .order('end_date', { ascending: false })
+            .limit(limit);
 
-    if (bookings) {
-        transactions.push(...bookings.map((b: any) => ({
-            id: b.id,
-            type: 'earning',
-            desc: b.listing?.title || 'Rental',
-            date: new Date(b.end_date).toLocaleDateString(),
-            amount: Number(b.total_amount),
-            timestamp: new Date(b.end_date).getTime()
-        })));
+        if (bookings) {
+            transactions.push(...bookings.map((b: any) => ({
+                id: b.id,
+                type: 'earning',
+                desc: (Array.isArray(b.listing) ? b.listing[0]?.title : b.listing?.title) || 'Rental',
+                date: b.end_date ? new Date(b.end_date).toLocaleDateString() : 'N/A',
+                amount: Number(b.total_amount),
+                timestamp: b.end_date ? new Date(b.end_date).getTime() : 0
+            })));
+        }
+
+        // 2. Fetch Commissions (for affiliates)
+        const { data: commissions } = await supabase
+            .from('affiliate_commissions')
+            .select(`
+                id,
+                amount,
+                created_at,
+                bookings(listing_title)
+            `)
+            .eq('affiliate_id', userId)
+            .eq('status', 'paid')
+            .order('created_at', { ascending: false })
+            .limit(limit);
+
+        if (commissions) {
+            transactions.push(...commissions.map((c: any) => {
+                const booking = Array.isArray(c.bookings) ? c.bookings[0] : c.bookings;
+                return {
+                    id: c.id,
+                    type: 'earning',
+                    desc: `Commission: ${booking?.listing_title || 'Booking'}`,
+                    date: c.created_at ? new Date(c.created_at).toLocaleDateString() : 'N/A',
+                    amount: Number(c.amount),
+                    timestamp: c.created_at ? new Date(c.created_at).getTime() : 0
+                };
+            }));
+        }
+
+        // 3. Fetch Withdrawals
+        const { data: withdrawals } = await supabase
+            .from('withdrawals')
+            .select('*')
+            .eq('user_id', userId)
+            .order('created_at', { ascending: false })
+            .limit(limit);
+
+        if (withdrawals) {
+            transactions.push(...withdrawals.map((w: any) => ({
+                id: w.id,
+                type: 'payout',
+                desc: `Withdrawal (${w.status})`,
+                date: w.created_at ? new Date(w.created_at).toLocaleDateString() : 'N/A',
+                amount: -Number(w.amount),
+                timestamp: w.created_at ? new Date(w.created_at).getTime() : 0
+            })));
+        }
+
+        return transactions
+            .sort((a, b) => b.timestamp - a.timestamp)
+            .slice(0, limit);
+    } catch (error) {
+        console.error("Error in getEarnings history:", error);
+        return [];
     }
-
-    // 2. Fetch Commissions (for affiliates)
-    const { data: commissions } = await supabase
-        .from('affiliate_commissions')
-        .select(`
-            id,
-            amount,
-            created_at,
-            bookings(listing_title)
-        `)
-        .eq('affiliate_id', userId)
-        .eq('status', 'paid')
-        .order('created_at', { ascending: false })
-        .limit(limit);
-
-    if (commissions) {
-        transactions.push(...commissions.map((c: any) => ({
-            id: c.id,
-            type: 'earning',
-            desc: `Commission: ${c.bookings?.listing_title || 'Booking'}`,
-            date: new Date(c.created_at).toLocaleDateString(),
-            amount: Number(c.amount),
-            timestamp: new Date(c.created_at).getTime()
-        })));
-    }
-
-    // 3. Fetch Withdrawals
-    const { data: withdrawals } = await supabase
-        .from('withdrawals')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(limit);
-
-    if (withdrawals) {
-        transactions.push(...withdrawals.map((w: any) => ({
-            id: w.id,
-            type: 'payout',
-            desc: `Withdrawal (${w.status})`,
-            date: new Date(w.created_at).toLocaleDateString(),
-            amount: -Number(w.amount),
-            timestamp: new Date(w.created_at).getTime()
-        })));
-    }
-
-    return transactions
-        .sort((a, b) => b.timestamp - a.timestamp)
-        .slice(0, limit);
 }
 
 /** Update Verification Document Status */

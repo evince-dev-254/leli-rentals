@@ -5,12 +5,13 @@ import { DollarSign, TrendingUp, ArrowUpRight, ArrowDownRight, Download, CreditC
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { getOwnerStats, getEarnings, getAffiliateData } from "@/lib/actions/dashboard-actions"
+import { getOwnerStats, getEarnings, getAffiliateData, getEarningsSummary } from "@/lib/actions/dashboard-actions"
 import { supabase } from "@/lib/supabase"
 import { useState, useEffect, useMemo } from "react"
 import { WithdrawalModal } from "./withdrawal-modal"
 import { LoadingLogo } from "@/components/ui/loading-logo"
 import { DashboardStatCard } from "@/components/dashboard/dashboard-stat-card"
+import { DashboardFAQ } from "./dashboard-faq"
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { Badge } from "@/components/ui/badge"
 
@@ -37,8 +38,6 @@ export function EarningsPage() {
       const role = profile?.role === 'affiliate' ? 'affiliate' : 'owner'
 
       // Fetch summary and transactions in parallel
-      const { getEarningsSummary, getEarnings } = await import("@/lib/actions/dashboard-actions")
-
       const [summaryResult, transactionList] = await Promise.all([
         getEarningsSummary(user.id, role),
         getEarnings(user.id, 50)
@@ -136,15 +135,16 @@ export function EarningsPage() {
             description="Ready for withdrawal"
             className="shadow-xl shadow-amber-500/10"
           />
-          <div className="absolute bottom-4 right-4">
+          <div className="absolute bottom-4 right-4 flex flex-col items-end gap-1">
             <Button
               size="sm"
               variant="secondary"
-              className="bg-white/20 hover:bg-white/30 text-white border-0 backdrop-blur-md shadow-lg"
+              className="bg-primary hover:bg-primary/90 text-white border-0 shadow-lg shadow-primary/20"
               onClick={() => setWithdrawalOpen(true)}
             >
-              Withdraw
+              Withdraw Funds
             </Button>
+            <p className="text-[10px] text-muted-foreground bg-white/50 px-1.5 py-0.5 rounded backdrop-blur-sm">Min: KSh 1,000</p>
           </div>
         </div>
 
@@ -280,6 +280,8 @@ export function EarningsPage() {
           </Button>
         </CardContent>
       </Card>
+
+      <DashboardFAQ role={profile?.role === 'affiliate' ? 'affiliate' : 'owner'} className="mt-8" />
 
       <WithdrawalModal
         open={withdrawalOpen}

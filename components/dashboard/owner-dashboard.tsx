@@ -13,6 +13,7 @@ import { LoadingLogo } from "@/components/ui/loading-logo";
 import { DashboardWelcomeHeader } from "./dashboard-welcome-header";
 import { DashboardStatCard } from "./dashboard-stat-card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { DashboardFAQ } from "./dashboard-faq";
 
 import { WithdrawalModal } from "./withdrawal-modal";
 
@@ -310,6 +311,8 @@ export default function OwnerDashboard() {
                     </Card>
                 </div>
             </motion.div>
+            <DashboardFAQ role="owner" />
+
             <WithdrawalModal
                 open={withdrawalOpen}
                 onOpenChange={setWithdrawalOpen}

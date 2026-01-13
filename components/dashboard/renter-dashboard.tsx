@@ -15,6 +15,9 @@ import { motion } from "framer-motion"
 import { LeaveReviewDialog } from "./leave-review-dialog"
 import { LoadingLogo } from "@/components/ui/loading-logo"
 import { DashboardWelcomeHeader } from "@/components/dashboard/dashboard-welcome-header"
+import { getAvailableBalance } from "@/lib/actions/commission-actions"
+import { WithdrawalModal } from "./withdrawal-modal"
+import { DashboardFAQ } from "./dashboard-faq"
 
 export function RenterDashboard() {
     const [loading, setLoading] = useState(true)
@@ -22,6 +25,9 @@ export function RenterDashboard() {
     const [favorites, setFavorites] = useState<any[]>([])
     const [reviews, setReviews] = useState<any[]>([])
     const [user, setUser] = useState<any>(null)
+    const [profile, setProfile] = useState<any>(null)
+    const [balance, setBalance] = useState(0)
+    const [withdrawalOpen, setWithdrawalOpen] = useState(false)
 
     useEffect(() => {
         async function init() {
@@ -54,6 +60,15 @@ export function RenterDashboard() {
                 `)
                     .eq('reviewer_id', user.id)
                 setReviews(revs || [])
+
+                // 4. Fetch Profile & Balance
+                const { data: prof } = await supabase.from('user_profiles').select('*').eq('id', user.id).single()
+                setProfile(prof)
+
+                const balRes = await getAvailableBalance(user.id, prof?.role === 'affiliate' ? 'affiliate' : 'owner')
+                if (balRes.success) {
+                    setBalance(balRes.balance)
+                }
             }
             setLoading(false)
         }
@@ -220,9 +235,20 @@ export function RenterDashboard() {
                 {/* PAYMENTS TAB */}
                 <TabsContent value="payments">
                     <Card className="glass-card border-none shadow-md">
-                        <CardHeader>
-                            <CardTitle>Payment History</CardTitle>
-                            <CardDescription>Record of your completed transactions</CardDescription>
+                        <CardHeader className="flex flex-row items-center justify-between">
+                            <div>
+                                <CardTitle>Payment History</CardTitle>
+                                <CardDescription>Record of your completed transactions</CardDescription>
+                            </div>
+                            {balance > 0 && (
+                                <Button
+                                    onClick={() => setWithdrawalOpen(true)}
+                                    className="bg-green-600 hover:bg-green-700 text-white gap-2 shadow-lg shadow-green-500/20"
+                                >
+                                    <DollarSign className="h-4 w-4" />
+                                    Withdraw KSh {balance.toLocaleString()}
+                                </Button>
+                            )}
                         </CardHeader>
                         <CardContent>
                             {paymentHistory.length === 0 ? (
@@ -376,6 +402,18 @@ export function RenterDashboard() {
                 </TabsContent>
 
             </Tabs>
+
+            <DashboardFAQ role="renter" />
+
+            <WithdrawalModal
+                open={withdrawalOpen}
+                onOpenChange={setWithdrawalOpen}
+                availableBalance={balance}
+                userId={user?.id}
+                onSuccess={() => window.location.reload()}
+                paymentInfo={profile?.payment_info}
+                role={profile?.role === 'affiliate' ? 'affiliate' : 'owner'}
+            />
         </div>
     )
 }
