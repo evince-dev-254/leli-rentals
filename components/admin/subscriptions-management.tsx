@@ -222,7 +222,7 @@ export function SubscriptionsManagement() {
                         <div>
                             <p className="text-sm text-muted-foreground">Total Revenue</p>
                             <p className="text-2xl font-bold">
-                                NGN {stats.totalRevenue.toLocaleString()}
+                                KSh {stats.totalRevenue.toLocaleString()}
                             </p>
                         </div>
                         <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
@@ -425,7 +425,7 @@ export function SubscriptionsManagement() {
                                                 </td>
                                                 <td className="p-3 font-medium">{sub.plan_name}</td>
                                                 <td className="p-3 font-semibold">
-                                                    NGN {Number(sub.amount).toLocaleString()}
+                                                    KSh {Number(sub.amount).toLocaleString()}
                                                 </td>
                                                 <td className="p-3">{getStatusBadge(sub.status)}</td>
                                                 <td className="p-3 text-sm">
