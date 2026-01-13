@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
 import { Loader2 } from "lucide-react"
-import { requestWithdrawal } from "@/lib/actions/affiliate-actions"
+import { requestWithdrawal, MINIMUM_WITHDRAWAL } from "@/lib/actions/commission-actions"
 
 interface WithdrawalModalProps {
     open: boolean
@@ -50,13 +50,13 @@ export function WithdrawalModal({
             return
         }
 
-        if (amountVal < 100) {
-            toast.error("Minimum withdrawal is KES 100")
+        if (amountVal < MINIMUM_WITHDRAWAL) {
+            toast.error(`Minimum withdrawal is KSh ${MINIMUM_WITHDRAWAL.toLocaleString()}`)
             return
         }
 
-        if (amountVal > 5000) {
-            toast.error("Maximum withdrawal is KES 5,000")
+        if (amountVal > 50000) {
+            toast.error("Maximum withdrawal is KSh 50,000")
             return
         }
 
@@ -159,7 +159,7 @@ export function WithdrawalModal({
                             </div>
                         </div>
                         <p className="text-xs text-muted-foreground pl-[25%]">
-                            Min: KES 100 | Max: KES 5,000
+                            Min: KSh {MINIMUM_WITHDRAWAL.toLocaleString()} | Max: KSh 50,000
                         </p>
                     </form>
                 )}

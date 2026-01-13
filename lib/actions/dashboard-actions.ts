@@ -47,14 +47,14 @@ export async function getOwnerStats(userId: string) {
 
     const totalEarnings = earningsData?.reduce((sum, booking) => sum + (Number(booking.total_amount) || 0), 0) || 0;
 
-    // Get total withdrawn for balance calculation
-    const { data: payouts } = await supabase
-        .from('payout_requests')
+    // Get total withdrawn from new withdrawals table
+    const { data: withdrawals } = await supabase
+        .from('withdrawals')
         .select('amount')
         .eq('user_id', userId)
-        .in('status', ['pending', 'approved', 'paid']);
+        .in('status', ['pending', 'processing', 'completed']);
 
-    const totalWithdrawn = payouts?.reduce((sum, p) => sum + (Number(p.amount) || 0), 0) || 0;
+    const totalWithdrawn = withdrawals?.reduce((sum, w) => sum + (Number(w.amount) || 0), 0) || 0;
 
     // Get total views from listings
     const { data: listingsData, error: viewsError } = await supabase
@@ -826,45 +826,45 @@ export async function getEarnings(userId: string) {
         amount: b.total_amount
     }));
 
-    // Add affiliate referrals if user is an affiliate
-    const { data: referrals } = await supabase
-        .from('affiliate_referrals')
+    // Add affiliate commissions from new table
+    const { data: commissions } = await supabase
+        .from('affiliate_commissions')
         .select(`
             id,
-            commission_amount,
+            amount,
             created_at,
-            listing:listings(title)
+            bookings(listing_title)
         `)
-        .eq('affiliate_id', (await supabase.from('affiliates').select('id').eq('user_id', userId).single()).data?.id)
+        .eq('affiliate_id', userId)
         .eq('status', 'paid');
 
-    if (referrals) {
-        const refTrans = referrals.map((r: any) => ({
-            id: r.id,
+    if (commissions) {
+        const commTrans = commissions.map((c: any) => ({
+            id: c.id,
             type: 'earning',
-            desc: `Referral: ${r.listing?.title || 'Booking'}`,
-            date: new Date(r.created_at).toLocaleDateString(),
-            amount: r.commission_amount
+            desc: `Commission: ${c.bookings?.listing_title || 'Booking'}`,
+            date: new Date(c.created_at).toLocaleDateString(),
+            amount: Number(c.amount)
         }));
-        transactions.push(...refTrans);
+        transactions.push(...commTrans);
     }
 
-    // Add payouts to transaction history
-    const { data: payouts } = await supabase
-        .from('payout_requests')
+    // Add withdrawals from new table
+    const { data: withdrawals } = await supabase
+        .from('withdrawals')
         .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
-    if (payouts) {
-        const payoutTrans = payouts.map((p: any) => ({
-            id: p.id,
+    if (withdrawals) {
+        const withdrawalTrans = withdrawals.map((w: any) => ({
+            id: w.id,
             type: 'payout',
-            desc: `Withdrawal (${p.status})`,
-            date: new Date(p.created_at).toLocaleDateString(),
-            amount: -p.amount
+            desc: `Withdrawal (${w.status})`,
+            date: new Date(w.created_at).toLocaleDateString(),
+            amount: -Number(w.amount)
         }));
-        transactions.push(...payoutTrans);
+        transactions.push(...withdrawalTrans);
     }
 
     return transactions.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());

@@ -34,21 +34,27 @@ export function EarningsPage() {
         .single()
       setProfile(profile)
 
-      if (profile?.role === 'affiliate') {
-        const affData = await getAffiliateData(user.id)
-        setStats({
-          totalEarnings: (affData?.pending_earnings || 0) + (affData?.paid_earnings || 0),
-          availableBalance: affData?.pending_earnings || 0,
-          totalWithdrawn: affData?.paid_earnings || 0,
-          isAffiliate: true
-        })
-      } else {
-        const s = await getOwnerStats(user.id)
-        setStats(s)
-      }
+      // Use new commission-actions for balance
+      const { getAvailableBalance } = await import("@/lib/actions/commission-actions")
+      const role = profile?.role === 'affiliate' ? 'affiliate' : 'owner'
+      const balanceResult = await getAvailableBalance(user.id, role)
 
       const t = await getEarnings(user.id)
       setTransactions(t)
+
+      if (balanceResult.success) {
+        // Calculate total earnings from transactions
+        const earnings = t.filter(tx => tx.type === 'earning').reduce((sum, tx) => sum + tx.amount, 0)
+        const withdrawn = t.filter(tx => tx.type === 'payout').reduce((sum, tx) => sum + Math.abs(tx.amount), 0)
+
+        setStats({
+          totalEarnings: earnings,
+          availableBalance: balanceResult.balance,
+          totalWithdrawn: withdrawn,
+          pendingEarnings: earnings - withdrawn - balanceResult.balance, // Approximation
+          isAffiliate: profile?.role === 'affiliate'
+        })
+      }
     }
     setLoading(false)
   }

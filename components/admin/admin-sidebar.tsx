@@ -20,6 +20,7 @@ import {
   UserCog,
   Menu,
   CreditCard,
+  Wallet,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -36,6 +37,7 @@ const sidebarLinks = [
   { href: "/admin/listings", label: "Listings", icon: Package },
   { href: "/admin/bookings", label: "Bookings", icon: CalendarCheck },
   { href: "/admin/subscriptions", label: "Payments & Subscriptions", icon: CreditCard },
+  { href: "/admin/withdrawals", label: "Withdrawals", icon: Wallet },
   { href: "/admin/test-payment", label: "Test Payment", icon: CreditCard },
   { href: "/admin/affiliates", label: "Affiliates", icon: UserPlus },
   { href: "/admin/communications", label: "Communications", icon: Send },
