@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState, useCallback } from "react"
-import { createClient } from "@/lib/supabase"
+import { supabase } from "@/lib/supabase"
 import Image from "next/image"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -69,7 +69,6 @@ interface Stats {
 }
 
 export function SubscriptionsManagement() {
-    const supabase = createClient()
     const [payments, setPayments] = useState<Payment[]>([])
     const [subscriptions, setSubscriptions] = useState<Subscription[]>([])
     const [stats, setStats] = useState<Stats>({
@@ -82,10 +81,6 @@ export function SubscriptionsManagement() {
     const [searchQuery, setSearchQuery] = useState("")
     const [statusFilter, setStatusFilter] = useState("all")
     const [activeTab, setActiveTab] = useState("payments")
-
-    useEffect(() => {
-        fetchData()
-    }, [fetchData])
 
     const fetchData = useCallback(async () => {
         setLoading(true)
@@ -134,6 +129,10 @@ export function SubscriptionsManagement() {
             setLoading(false)
         }
     }, [])
+
+    useEffect(() => {
+        fetchData()
+    }, [fetchData])
 
     const filteredPayments = payments.filter(payment => {
         const matchesSearch =
