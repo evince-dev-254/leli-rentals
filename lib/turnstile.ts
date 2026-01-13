@@ -108,8 +108,12 @@ export class TurnstileValidator {
 }
 
 // Export a default instance
-// Use production secret key if provided and in production, otherwise fallback to the "Always Pass" test key
-const SECRET_KEY = process.env.NODE_ENV === 'production' && process.env.TURNSTILE_SECRET_KEY
+// Use production secret key ONLY if provided and environment is truly production
+// Note: We can't easily detect Vercel Preview vs Production here on the server side without checking VERCEL_ENV
+// So we rely on VERCEL_ENV if available, or NODE_ENV.
+const isProduction = process.env.NODE_ENV === 'production' && process.env.VERCEL_ENV === 'production';
+
+const SECRET_KEY = isProduction && process.env.TURNSTILE_SECRET_KEY
     ? process.env.TURNSTILE_SECRET_KEY
     : '1x0000000000000000000000000000000AA';
 

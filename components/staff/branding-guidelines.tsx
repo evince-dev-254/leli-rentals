@@ -1,10 +1,11 @@
 "use client"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Palette, Type, Download, Target, Eye, MessageSquare, Shield, Zap, Crown, Clock } from "lucide-react"
+import { Palette, Type, Download, Target, Eye, MessageSquare, Shield, Zap, Crown, Clock, Map, Activity, ExternalLink, ArrowRight, Home, Search, BookOpen, CreditCard, CheckCircle2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
+import { useState, useEffect } from "react"
 
 const container = {
     hidden: { opacity: 0 },
@@ -21,7 +22,59 @@ const item = {
     show: { opacity: 1, y: 0 }
 }
 
+const siteMap = [
+    {
+        category: "Public Pages",
+        pages: [
+            { title: "Home", route: "/", desc: "Main entry point with hero, categories, and featured listings." },
+            { title: "About Us", route: "/about", desc: "Our story, mission, and vision." },
+            { title: "Categories", route: "/categories", desc: "Browse listings by equipment category." },
+            { title: "Search", route: "/search", desc: "Advanced search results for specific equipment." },
+            { title: "Pricing", route: "/pricing", desc: "Subscription plans and fee structures." },
+            { title: "FAQ/Help", route: "/faq", desc: "Self-service support and common questions." },
+        ]
+    },
+    {
+        category: "Dashboards",
+        pages: [
+            { title: "Renter/Owner", route: "/dashboard", desc: "Unified dashboard for managing bookings and listings." },
+            { title: "Affiliate", route: "/dashboard?role=affiliate", desc: "Tracking referrals and commissions." },
+            { title: "Messages", route: "/messages", desc: "Real-time communication between users." },
+            { title: "Favorites", route: "/favorites", desc: "Quick access to saved listings." },
+            { title: "Profile", route: "/users/[id]", desc: "Public user profile and reputation." },
+        ]
+    },
+    {
+        category: "Administration",
+        pages: [
+            { title: "Admin Portal", route: "/admin", desc: "High-level platform metrics and management." },
+            { title: "Users", route: "/admin/users", desc: "User acquisition and account management." },
+            { title: "Listings", route: "/admin/listings", desc: "Internal equipment inventory control." },
+            { title: "Verifications", route: "/admin/verifications", desc: "Identity document review and approval." },
+            { title: "Bookings", route: "/admin/bookings", desc: "Transaction monitoring and support." },
+        ]
+    }
+]
+
+const flowSteps = [
+    { icon: Home, label: "Discovery", desc: "Landing on Leli Rentals", color: "from-blue-500 to-cyan-500" },
+    { icon: Search, label: "Exploration", desc: "Searching for specific gear", color: "from-cyan-500 to-teal-500" },
+    { icon: BookOpen, label: "Evaluation", desc: "Reviewing listing details", color: "from-teal-500 to-emerald-500" },
+    { icon: Clock, label: "Scheduling", desc: "Picking rental dates", color: "from-emerald-500 to-green-500" },
+    { icon: CreditCard, label: "Transaction", desc: "Secure payment processing", color: "from-green-500 to-yellow-500" },
+    { icon: CheckCircle2, label: "Fulfillment", desc: "Booking confirmed", color: "from-yellow-500 to-primary" },
+]
+
 export function BrandingGuidelines() {
+    const [activeStep, setActiveStep] = useState(0);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setActiveStep((prev) => (prev + 1) % flowSteps.length);
+        }, 3000);
+        return () => clearInterval(interval);
+    }, []);
+
     const handleDownload = (path: string, fileName: string) => {
         const link = document.createElement('a');
         link.href = path;
@@ -85,6 +138,103 @@ export function BrandingGuidelines() {
                         </div>
                     ))}
                 </div>
+            </motion.div>
+
+            {/* Site Registry */}
+            <motion.div variants={item}>
+                <Card className="glass-card border-primary/20 bg-primary/5">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-3">
+                            <Map className="h-6 w-6 text-primary" />
+                            Site Registry
+                        </CardTitle>
+                        <CardDescription>Landscape documentation of all platform routes and functions</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-8">
+                        {siteMap.map((category, idx) => (
+                            <div key={idx} className="space-y-4">
+                                <h4 className="text-sm font-bold uppercase tracking-[0.2em] text-primary/70 px-1">{category.category}</h4>
+                                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {category.pages.map((page, pIdx) => (
+                                        <div key={pIdx} className="group p-4 rounded-xl bg-white/50 dark:bg-slate-900/50 border border-primary/10 hover:border-primary/30 transition-all hover:shadow-lg hover:-translate-y-1">
+                                            <div className="flex items-start justify-between mb-2">
+                                                <span className="font-bold text-sm">{page.title}</span>
+                                                <ExternalLink className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                                            </div>
+                                            <p className="text-[11px] text-muted-foreground leading-relaxed mb-3">{page.desc}</p>
+                                            <code className="text-[9px] font-mono text-primary/60 bg-primary/5 px-2 py-1 rounded select-all">{page.route}</code>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                    </CardContent>
+                </Card>
+            </motion.div>
+
+            {/* Application Flow */}
+            <motion.div variants={item}>
+                <Card className="glass-card overflow-hidden">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-3">
+                            <Activity className="h-6 w-6 text-primary" />
+                            Core Ecosystem Flow
+                        </CardTitle>
+                        <CardDescription>Sequential logic of the Leli Rentals user journey</CardDescription>
+                    </CardHeader>
+                    <CardContent className="pb-16 pt-8">
+                        <div className="relative">
+                            {/* Connection Line */}
+                            <div className="absolute top-1/2 left-0 w-full h-0.5 bg-border -translate-y-1/2 hidden md:block" />
+                            <div
+                                className="absolute top-1/2 left-0 h-0.5 bg-gradient-to-r from-primary to-pink-500 -translate-y-1/2 transition-all duration-1000 hidden md:block"
+                                style={{ width: `${(activeStep / (flowSteps.length - 1)) * 100}%` }}
+                            />
+
+                            <div className="grid grid-cols-2 md:grid-cols-6 gap-8 relative z-10">
+                                {flowSteps.map((step, idx) => {
+                                    const isActive = activeStep === idx;
+                                    const isPast = activeStep > idx;
+
+                                    return (
+                                        <div key={idx} className="flex flex-col items-center text-center space-y-4">
+                                            <div
+                                                className={`h-16 w-16 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-xl ${isActive
+                                                        ? `bg-gradient-to-br ${step.color} text-white scale-110 ring-4 ring-primary/20`
+                                                        : isPast
+                                                            ? "bg-primary text-white"
+                                                            : "bg-secondary text-muted-foreground"
+                                                    }`}
+                                            >
+                                                <step.icon className={`h-8 w-8 ${isActive ? "animate-pulse" : ""}`} />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <p className={`font-bold text-xs ${isActive ? "text-primary" : "text-foreground"}`}>{step.label}</p>
+                                                <p className="text-[10px] text-muted-foreground leading-tight px-2">{step.desc}</p>
+                                            </div>
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Active Step Highlight Mobile */}
+                        <div className="mt-12 md:hidden">
+                            <AnimatePresence mode="wait">
+                                <motion.div
+                                    key={activeStep}
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -20 }}
+                                    className="p-6 rounded-2xl bg-primary/5 border border-primary/20 text-center"
+                                >
+                                    <h4 className="font-bold text-primary mb-1">{flowSteps[activeStep].label}</h4>
+                                    <p className="text-sm text-muted-foreground">{flowSteps[activeStep].desc}</p>
+                                </motion.div>
+                            </AnimatePresence>
+                        </div>
+                    </CardContent>
+                </Card>
             </motion.div>
 
             {/* Logo Section */}

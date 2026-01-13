@@ -53,10 +53,11 @@ function SidebarContent({ role, pathname, onLinkClick }: SidebarContentProps) {
     <div className="flex flex-col h-full">
       <div className="p-6 border-b border-border/50 flex items-center justify-between">
         <Link href="/dashboard" className="flex items-center gap-3 group" onClick={onLinkClick}>
-          <h2 className="text-xl font-black tracking-tight uppercase">
+          <h2 className="text-xl font-black tracking-tight flex items-center gap-1">
             {role ? (
               <>
-                {role.charAt(0).toUpperCase() + role.slice(1)}<span className="text-primary ml-1">Dashboard</span>
+                <span className="text-slate-900 uppercase">{role}</span>
+                <span className="text-orange-600 uppercase">Dashboard</span>
               </>
             ) : "Loading..."}
           </h2>

@@ -57,7 +57,7 @@ export function AccountTypeSwitcher() {
 
     // Determine available dashboards
     const dashboards = [
-        { label: 'Renter Dashboard', path: '/categories', icon: User, color: 'text-teal-600', bg: 'bg-teal-50' },
+        { label: 'Renter Dashboard', path: '/dashboard/renter', icon: User, color: 'text-teal-600', bg: 'bg-teal-50' },
         { label: 'Owner Dashboard', path: '/dashboard/owner', icon: Building2, color: 'text-blue-600', bg: 'bg-blue-50' },
     ]
 
@@ -79,13 +79,13 @@ export function AccountTypeSwitcher() {
                 <Button
                     variant="outline"
                     size="sm"
-                    className="gap-2 rounded-full px-4 h-9 shadow-sm transition-all duration-300 border-primary/20 hover:bg-primary/5"
+                    className="gap-2 rounded-full px-4 h-10 shadow-md transition-all duration-300 border-orange-500/30 hover:bg-orange-50 text-slate-800 bg-white"
                 >
-                    <LayoutDashboard className="h-4 w-4 text-primary" />
-                    <span className="font-medium whitespace-nowrap hidden sm:inline">
+                    <LayoutDashboard className="h-4 w-4 text-orange-600" />
+                    <span className="font-semibold whitespace-nowrap hidden sm:inline">
                         Switch Dashboard
                     </span>
-                    <RefreshCcw className="h-3 w-3 opacity-50" />
+                    <RefreshCcw className="h-4 w-4 text-orange-500" />
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">

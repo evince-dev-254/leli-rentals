@@ -8,6 +8,7 @@ import { supabase } from "@/lib/supabase";
 import { getAffiliateData, getAffiliateReferrals } from "@/lib/actions/dashboard-actions";
 import { joinAffiliateProgram } from "@/lib/actions/affiliate-actions";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
     Users,
@@ -235,66 +236,76 @@ export default function AffiliateDashboard() {
 
     if (!stats && !loading) {
         return (
-            <div className="min-h-[80vh] flex flex-col items-center justify-center p-4">
-                <div className="w-full max-w-4xl grid md:grid-cols-2 gap-8 items-center">
-                    <div className="space-y-6">
-                        <div className="space-y-2">
-                            <h1 className="text-4xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600">
-                                Become a Partner
+            <div className="min-h-[85vh] flex flex-col items-center justify-center p-4 relative overflow-hidden">
+                {/* Decorative background blobs */}
+                <div className="absolute top-1/4 -left-20 w-80 h-80 bg-primary/10 rounded-full blur-[100px] pointer-events-none" />
+                <div className="absolute bottom-1/4 -right-20 w-80 h-80 bg-purple-500/10 rounded-full blur-[100px] pointer-events-none" />
+
+                <div className="w-full max-w-5xl grid md:grid-cols-2 gap-12 items-center relative z-10">
+                    <div className="space-y-8">
+                        <div className="space-y-4">
+                            <Badge className="bg-primary/20 text-primary hover:bg-primary/30 border-none px-4 py-1 text-sm rounded-full">
+                                Partnership Program
+                            </Badge>
+                            <h1 className="text-5xl md:text-6xl font-black tracking-tight leading-tight">
+                                Earn with every <br />
+                                <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600">
+                                    successful referral
+                                </span>
                             </h1>
-                            <p className="text-xl text-muted-foreground">
-                                Join the Leli Rentals Affiliate Program and start earning today.
+                            <p className="text-xl text-muted-foreground leading-relaxed">
+                                Join our network of partners and get rewarded for bringing new users to Leli Rentals.
                             </p>
                         </div>
 
-                        <div className="space-y-4">
-                            <div className="flex items-start gap-3">
-                                <div className="p-2 rounded-lg bg-green-500/10 text-green-600 dark:text-green-400">
-                                    <DollarSign className="h-6 w-6" />
+                        <div className="grid gap-6">
+                            {[
+                                { title: "10% Commission", desc: "Get paid for every booking made through your link.", icon: DollarSign, color: "text-green-500", bg: "bg-green-500/10" },
+                                { title: "Weekly Payouts", desc: "Fast and reliable payments to your preferred method.", icon: Wallet, color: "text-blue-500", bg: "bg-blue-500/10" },
+                                { title: "Marketing Kit", desc: "Access premium assets and tracking tools.", icon: Share2, color: "text-purple-500", bg: "bg-purple-500/10" }
+                            ].map((item, i) => (
+                                <div key={i} className="flex items-start gap-4 p-4 rounded-2xl bg-white/40 dark:bg-black/20 border border-white/20 backdrop-blur-sm hover:scale-[1.02] transition-transform duration-300">
+                                    <div className={cn("p-2.5 rounded-xl shrink-0", item.bg, item.color)}>
+                                        <item.icon className="h-6 w-6" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold text-lg">{item.title}</h3>
+                                        <p className="text-muted-foreground text-sm">{item.desc}</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h3 className="font-semibold text-lg">Earn 10% Commission</h3>
-                                    <p className="text-muted-foreground">Get paid for every successful booking made through your referral link.</p>
-                                </div>
-                            </div>
-
-                            <div className="flex items-start gap-3">
-                                <div className="p-2 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400">
-                                    <RefreshCw className="h-6 w-6" />
-                                </div>
-                                <div>
-                                    <h3 className="font-semibold text-lg">Monthly Payouts</h3>
-                                    <p className="text-muted-foreground">Reliable payments via Bank Transfer or Mobile Money.</p>
-                                </div>
-                            </div>
-
-                            <div className="flex items-start gap-3">
-                                <div className="p-2 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400">
-                                    <Users className="h-6 w-6" />
-                                </div>
-                                <div>
-                                    <h3 className="font-semibold text-lg">Unlimited Referrals</h3>
-                                    <p className="text-muted-foreground">There&apos;s no cap on how many users you can refer or how much you can earn.</p>
-                                </div>
-                            </div>
+                            ))}
                         </div>
 
-                        <div className="pt-4">
+                        <div className="pt-4 flex flex-col sm:flex-row items-center gap-4">
                             <Button
                                 onClick={handleJoinProgram}
                                 disabled={joining}
                                 size="lg"
-                                className="w-full md:w-auto text-lg h-12 px-8 shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all"
+                                className="w-full sm:w-auto text-lg h-14 px-10 rounded-2xl shadow-xl shadow-primary/25 hover:shadow-primary/40 hover:scale-[1.05] active:scale-95 transition-all bg-gradient-to-r from-primary to-purple-600 border-none"
                             >
-                                {joining ? <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Setting up your dashboard...</> : "Join Affiliate Program"}
+                                {joining ? <><Loader2 className="mr-3 h-5 w-5 animate-spin" /> Setting up...</> : "Join Program Now"}
                             </Button>
-                            <p className="text-sm text-muted-foreground mt-4">
-                                By joining, you agree to our affiliate terms and conditions.
-                            </p>
+                            <span className="text-sm text-muted-foreground font-medium">Free to join. No hidden fees.</span>
                         </div>
                     </div>
 
-
+                    <div className="hidden md:flex relative justify-center">
+                        <div className="relative w-full aspect-square max-w-md">
+                            <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-purple-500/20 rounded-full animate-pulse blur-2xl" />
+                            <div className="relative bg-white/20 dark:bg-black/20 backdrop-blur-xl border border-white/20 rounded-3xl p-8 shadow-2xl overflow-hidden group">
+                                <div className="space-y-6">
+                                    <div className="h-8 w-1/2 bg-white/20 rounded-full" />
+                                    <div className="h-32 w-full bg-white/10 rounded-2xl" />
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="h-20 bg-white/10 rounded-2xl" />
+                                        <div className="h-20 bg-white/10 rounded-2xl" />
+                                    </div>
+                                    <div className="h-12 w-full bg-primary/40 rounded-xl" />
+                                </div>
+                                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         )
@@ -315,22 +326,11 @@ export default function AffiliateDashboard() {
                 role="affiliate"
             />
 
-            {/* Unified Welcome Header */}
-            <DashboardWelcomeHeader
-                user={user}
-                subtitle="Manage your referrals and track your earnings in real-time."
-                role="Affiliate"
-            >
-                <div className="flex flex-wrap items-center gap-2 mt-4 md:mt-0">
-                    <Button variant="secondary" size="sm" onClick={handleRefresh} disabled={refreshing} className="bg-white/10 hover:bg-white/20 text-white border-0 flex-1 sm:flex-none">
-                        <RefreshCw className={`mr-2 h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
-                        Refresh
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => router.push('/select-role?force=true')} className="bg-transparent text-white border-white/20 hover:bg-white/10 hover:text-white flex-1 sm:flex-none">
-                        Switch Account
-                    </Button>
-                </div>
-            </DashboardWelcomeHeader>
+            {/* Dashboard Title & Subtitle */}
+            <div>
+                <h1 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600">Affiliate Dashboard</h1>
+                <p className="text-muted-foreground text-base md:text-lg">Manage your referrals and track your earnings in real-time.</p>
+            </div>
 
             {/* Stats Overview */}
             <motion.div
@@ -350,48 +350,50 @@ export default function AffiliateDashboard() {
                 <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
                     <DashboardStatCard
                         title="Total Earnings"
-                        value={`Kes ${stats?.total_earnings || 0}`}
+                        value={`KSh ${stats?.total_earnings?.toLocaleString() || 0}`}
                         icon={DollarSign}
-                        color="sunset"
+                        color="blue"
                         description="Lifetime revenue"
+                    />
+                </motion.div>
+
+                <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="relative group">
+                    <DashboardStatCard
+                        title="Total Referrals"
+                        value={stats?.total_referrals || 0}
+                        icon={Users}
+                        color="purple"
+                        description="Registered users"
                     />
                 </motion.div>
 
                 <div className="relative group">
                     <DashboardStatCard
                         title="Pending Payout"
-                        value={`Kes ${stats?.pending_earnings || 0}`}
-                        icon={DollarSign}
-                        color="amber-glow"
+                        value={`KSh ${stats?.pending_earnings?.toLocaleString() || 0}`}
+                        icon={TrendingUp}
+                        color="orange"
                         description="Available to withdraw"
                     />
                     {(stats?.pending_earnings > 0) && (
-                        <div className="absolute bottom-4 right-4">
+                        <div className="absolute bottom-4 right-4 animate-in fade-in zoom-in duration-500">
                             <Button
                                 size="sm"
-                                className="bg-amber-600 hover:bg-amber-700 text-white shadow-lg border-0"
+                                className="bg-orange-600 hover:bg-orange-700 text-white shadow-lg border-0 rounded-full px-4 h-8 text-xs font-semibold"
                                 onClick={() => setWithdrawalOpen(true)}
                             >
-                                Request Payout
+                                Withdraw
                             </Button>
                         </div>
                     )}
                 </div>
-
-                <DashboardStatCard
-                    title="Total Referrals"
-                    value={stats?.total_referrals || 0}
-                    icon={Users}
-                    color="warm-blend"
-                    description="Registered users"
-                />
 
                 <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
                     <DashboardStatCard
                         title="Commission Rate"
                         value={`${stats?.commission_rate || 10}%`}
                         icon={MousePointerClick}
-                        color="teal"
+                        color="green"
                         description="Per booking"
                     />
                 </motion.div>
@@ -401,9 +403,15 @@ export default function AffiliateDashboard() {
                 {/* Left Column: Charts & Activity */}
                 <div className="lg:col-span-2 space-y-8">
                     {/* Performance Chart */}
-                    <Card className="glass-card border-none shadow-xl bg-gradient-to-br from-white/80 to-white/40 dark:from-black/40 dark:to-black/20">
-                        <CardHeader className="p-4 md:p-6">
-                            <CardTitle className="text-xl md:text-2xl">Performance Overview</CardTitle>
+                    <Card className="glass-card border-none shadow-md overflow-hidden">
+                        <CardHeader className="p-4 md:p-6 bg-white/50 dark:bg-black/20 border-b border-border/50">
+                            <div className="flex items-center justify-between">
+                                <CardTitle className="text-xl">Performance Overview</CardTitle>
+                                <Button variant="outline" size="sm" onClick={handleRefresh} disabled={refreshing} className="gap-2">
+                                    <RefreshCw className={cn("h-4 w-4", refreshing && "animate-spin")} />
+                                    {refreshing ? "Updating..." : "Refresh"}
+                                </Button>
+                            </div>
                         </CardHeader>
                         <CardContent className="h-[250px] md:h-[350px] p-2 md:p-4 pt-4 min-w-0">
                             <ResponsiveContainer width="100%" height="100%">
@@ -416,11 +424,11 @@ export default function AffiliateDashboard() {
                                     </defs>
                                     <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.1} />
                                     <XAxis dataKey="name" tick={{ fontSize: 12 }} strokeOpacity={0.2} />
-                                    <YAxis tick={{ fontSize: 12 }} strokeOpacity={0.2} tickFormatter={(value) => `Kes ${value}`} />
+                                    <YAxis tick={{ fontSize: 10 }} strokeOpacity={0.2} tickFormatter={(value) => `KSh ${value}`} />
                                     <Tooltip
-                                        contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                                        contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.8)', backdropFilter: 'blur(8px)', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.1)', boxShadow: '0 8px 32px rgba(0,0,0,0.1)' }}
                                     />
-                                    <Area type="monotone" dataKey="value" stroke="#8884d8" fillOpacity={1} fill="url(#colorValue)" />
+                                    <Area type="monotone" dataKey="value" stroke="hsl(var(--primary))" fillOpacity={1} fill="url(#colorValue)" />
                                 </AreaChart>
                             </ResponsiveContainer>
                         </CardContent>
@@ -468,7 +476,7 @@ export default function AffiliateDashboard() {
                                                         </TableCell>
                                                         <TableCell>{new Date(ref.created_at).toLocaleDateString()}</TableCell>
                                                         <TableCell>{ref.total_bookings || 0}</TableCell>
-                                                        <TableCell>Kes {ref.total_earnings || 0}</TableCell>
+                                                        <TableCell>KSh {ref.total_earnings?.toLocaleString() || 0}</TableCell>
                                                     </TableRow>
                                                 ))
                                             )}
@@ -499,7 +507,7 @@ export default function AffiliateDashboard() {
                                                 withdrawals.map((w) => (
                                                     <TableRow key={w.id}>
                                                         <TableCell>{new Date(w.created_at).toLocaleDateString()}</TableCell>
-                                                        <TableCell>Kes {w.amount}</TableCell>
+                                                        <TableCell>KSh {w.amount?.toLocaleString()}</TableCell>
                                                         <TableCell>
                                                             <Badge variant={w.status === 'completed' ? 'default' : 'secondary'}>{w.status}</Badge>
                                                         </TableCell>
@@ -521,14 +529,14 @@ export default function AffiliateDashboard() {
                         <div className="absolute top-0 right-0 p-3 opacity-10">
                             <Share2 size={120} />
                         </div>
-                        <CardHeader>
+                        <CardHeader className="bg-white/50 dark:bg-black/20 border-b border-border/50">
                             <CardTitle className="flex items-center gap-2">
                                 <Share2 className="h-5 w-5 text-primary" />
                                 Marketing Kit
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-6 relative z-10">
-                            <div className="space-y-2">
+                        <CardContent className="space-y-6 pt-6 relative z-10">
+                            <div className="space-y-3">
                                 <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Your Unique Link</Label>
                                 <div className="flex gap-2">
                                     <Input value={referralLink} readOnly className="bg-background/50" />
@@ -565,67 +573,78 @@ export default function AffiliateDashboard() {
                         </CardContent>
                     </Card>
 
-                    {/* Payment Settings Mini-Card */}
-                    <Card className="glass-card">
-                        <CardHeader>
-                            <CardTitle className="text-base">Payment Settings</CardTitle>
+                    {/* Payment Settings */}
+                    <Card className="glass-card border-none shadow-md overflow-hidden">
+                        <CardHeader className="bg-white/50 dark:bg-black/20 border-b border-border/50">
+                            <CardTitle className="text-lg flex items-center gap-2">
+                                <Wallet className="h-4 w-4 text-primary" />
+                                Payout Method
+                            </CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="p-3 bg-muted/50 rounded-lg text-sm">
-                                <div className="flex justify-between mb-1">
-                                    <span className="text-muted-foreground">Provider:</span>
-                                    <span className="font-medium capitalize">{paymentProvider}</span>
+                        <CardContent className="space-y-6 pt-6">
+                            {!stats?.payment_info ? (
+                                <div className="p-4 rounded-xl bg-orange-500/5 border border-orange-500/20 text-orange-600 dark:text-orange-400 text-sm">
+                                    <p className="flex items-center gap-2 font-medium">
+                                        <Wallet className="h-4 w-4" />
+                                        Payout method missing
+                                    </p>
+                                    <p className="mt-1 opacity-80">Add your mobile money or bank details to receive payouts.</p>
                                 </div>
-                                <div className="flex justify-between">
-                                    <span className="text-muted-foreground">Account:</span>
-                                    <span className="font-medium">{accountNumber || "Not Set"}</span>
+                            ) : (
+                                <div className="p-4 rounded-xl bg-primary/5 border border-primary/10 space-y-2">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Method</span>
+                                        <Badge variant="outline" className="capitalize bg-background">{paymentProvider}</Badge>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Account</span>
+                                        <span className="font-mono font-medium">{accountNumber}</span>
+                                    </div>
+                                    <div className="pt-2 border-t border-primary/10 mt-2">
+                                        <p className="text-[10px] text-muted-foreground uppercase font-bold">Account Name</p>
+                                        <p className="font-semibold text-sm">{accountName || "Not Provided"}</p>
+                                    </div>
                                 </div>
-                            </div>
+                            )}
 
-                            <Tabs defaultValue="edit" className="w-full">
-                                <TabsList className="w-full grid grid-cols-1">
-                                    <TabsTrigger value="edit">Update Details</TabsTrigger>
-                                </TabsList>
-                                <TabsContent value="edit" className="pt-2">
-                                    <form onSubmit={handleSaveSettings} className="space-y-3">
-                                        <div className="space-y-1">
-                                            <Label className="text-xs">Provider</Label>
-                                            <Select value={paymentProvider} onValueChange={setPaymentProvider}>
-                                                <SelectTrigger className="h-8">
-                                                    <SelectValue placeholder="Select" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="mpesa">M-Pesa</SelectItem>
-                                                    <SelectItem value="airtel">Airtel Money</SelectItem>
-                                                    <SelectItem value="bank">Bank Transfer</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                        <div className="space-y-1">
-                                            <Label className="text-xs">Account No.</Label>
-                                            <Input
-                                                value={accountNumber}
-                                                onChange={(e) => handleAccountChange(e.target.value)}
-                                                className="h-8"
-                                                placeholder="e.g. 07..."
-                                            />
-                                        </div>
-                                        <div className="space-y-1">
-                                            <Label className="text-xs">Account Name</Label>
-                                            <Input
-                                                value={accountName}
-                                                onChange={(e) => setAccountName(e.target.value)}
-                                                className="h-8"
-                                                placeholder="Full Name"
-                                            />
-                                        </div>
-                                        <Button type="submit" size="sm" className="w-full" disabled={savingSettings}>
-                                            {savingSettings && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}
-                                            Save Changes
-                                        </Button>
-                                    </form>
-                                </TabsContent>
-                            </Tabs>
+                            <form onSubmit={handleSaveSettings} className="space-y-4">
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div className="space-y-1.5 col-span-2">
+                                        <Label className="text-xs font-bold uppercase tracking-tight">Provider</Label>
+                                        <Select value={paymentProvider} onValueChange={setPaymentProvider}>
+                                            <SelectTrigger className="rounded-xl border-border/50">
+                                                <SelectValue placeholder="Select Provider" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="mpesa">M-Pesa</SelectItem>
+                                                <SelectItem value="airtel">Airtel Money</SelectItem>
+                                                <SelectItem value="bank">Bank Transfer</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="space-y-1.5 col-span-2">
+                                        <Label className="text-xs font-bold uppercase tracking-tight">Account Number / Phone</Label>
+                                        <Input
+                                            value={accountNumber}
+                                            onChange={(e) => handleAccountChange(e.target.value)}
+                                            className="rounded-xl border-border/50"
+                                            placeholder="e.g. 0712345678"
+                                        />
+                                    </div>
+                                    <div className="space-y-1.5 col-span-2">
+                                        <Label className="text-xs font-bold uppercase tracking-tight">Full Account Name</Label>
+                                        <Input
+                                            value={accountName}
+                                            onChange={(e) => setAccountName(e.target.value)}
+                                            className="rounded-xl border-border/50"
+                                            placeholder="As it appears on ID"
+                                        />
+                                    </div>
+                                </div>
+                                <Button type="submit" className="w-full rounded-xl" disabled={savingSettings}>
+                                    {savingSettings ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Save Changes"}
+                                </Button>
+                            </form>
                         </CardContent>
                     </Card>
                 </div>

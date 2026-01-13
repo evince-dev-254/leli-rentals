@@ -268,7 +268,7 @@ export default function SelectRolePage() {
 function getRoleRedirect(role: string): string {
     switch (role) {
         case 'renter':
-            return '/categories'
+            return '/dashboard/renter'
         case 'owner':
             return '/dashboard/owner'
         case 'affiliate':
