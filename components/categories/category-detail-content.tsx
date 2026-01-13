@@ -3,7 +3,9 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
+import { motion } from "framer-motion"
 import { Search, Filter, MapPin, Star, Heart, Grid3X3, List, SlidersHorizontal, Loader2, Map as MapIcon } from "lucide-react"
+import { staggerContainer, fadeInUp, hoverScale } from "@/lib/animations"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -34,12 +36,10 @@ export function CategoryDetailContent({ categoryId }: CategoryDetailContentProps
 
       setLoading(true)
       try {
-        // 1. First fetch the category by slug to get its correct UUID from the DB
-        // This avoids issues if the DB UUIDs don't match the hardcoded map
         const { data: dbCategory, error: catError } = await supabase
           .from('categories')
           .select('id')
-          .eq('slug', category.id) // category.id from categories-data acts as the slug
+          .eq('slug', category.id)
           .single()
 
         if (catError || !dbCategory) {
@@ -50,7 +50,6 @@ export function CategoryDetailContent({ categoryId }: CategoryDetailContentProps
 
         const categoryUUID = dbCategory.id
 
-        // 2. Fetch listings using the actual DB UUID
         const { data, error } = await supabase
           .from("listings")
           .select(`
@@ -160,10 +159,18 @@ export function CategoryDetailContent({ categoryId }: CategoryDetailContentProps
 
           <div className="mt-8">
             <h3 className="text-lg font-semibold mb-4">Browse Subcategories</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+            <motion.div
+              variants={staggerContainer}
+              initial="initial"
+              animate="animate"
+              className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3"
+            >
               {category.subcategories.map((sub) => (
-                <button
+                <motion.button
                   key={sub.name}
+                  variants={fadeInUp}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => {
                     if (selectedSubcategories.includes(sub.name)) {
                       setSelectedSubcategories(selectedSubcategories.filter((s) => s !== sub.name))
@@ -176,17 +183,13 @@ export function CategoryDetailContent({ categoryId }: CategoryDetailContentProps
                     : "hover:ring-2 hover:ring-primary/50"
                     }`}
                 >
-                  <img
+                  <Image
                     src={sub.image || "/placeholder.svg"}
                     alt={sub.name}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300 cmp-ignore"
-                    loading="eager"
-                    fetchPriority="high"
-                    data-cmp-ignore
-                    onError={(e) => {
-                      console.warn('Subcategory image failed to load:', sub.image);
-                      e.currentTarget.src = '/placeholder.svg';
-                    }}
+                    fill
+                    className="object-cover group-hover:scale-110 transition-transform duration-300"
+                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 15vw"
+                    priority
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                   <span className="absolute bottom-2 left-2 right-2 text-white text-xs sm:text-sm font-medium truncate">
@@ -199,9 +202,9 @@ export function CategoryDetailContent({ categoryId }: CategoryDetailContentProps
                       </svg>
                     </div>
                   )}
-                </button>
+                </motion.button>
               ))}
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>
@@ -306,7 +309,7 @@ export function CategoryDetailContent({ categoryId }: CategoryDetailContentProps
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 </div>
               ) : sortedListings.length === 0 ? (
-                <div className="text-center py-16 glass-card rounded-2xl">
+                <div className="text-center py-16 glass-card rounded-2xl border border-white/10">
                   <p className="text-xl font-semibold mb-2">No listings found</p>
                   <p className="text-muted-foreground">
                     {searchQuery || selectedSubcategories.length > 0
@@ -316,8 +319,6 @@ export function CategoryDetailContent({ categoryId }: CategoryDetailContentProps
                 </div>
               ) : viewMode === "map" ? (
                 <div className="h-[600px] rounded-2xl overflow-hidden relative border bg-muted">
-                  {/* Placeholder for Map - In a real implementation this would be <Map ... /> */}
-                  {/* Since we don't have the full Mapbox setup in this file context yet, providing a placeholder or basic iframe/component */}
                   <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground p-6 text-center">
                     <MapIcon className="h-16 w-16 mb-4 opacity-20" />
                     <p className="text-lg font-medium">Map View</p>
@@ -328,141 +329,163 @@ export function CategoryDetailContent({ categoryId }: CategoryDetailContentProps
                   </div>
                 </div>
               ) : viewMode === "grid" ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+                <motion.div
+                  variants={staggerContainer}
+                  initial="initial"
+                  animate="animate"
+                  className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6"
+                >
                   {sortedListings.map((listing) => (
-                    <Link key={listing.id} href={`/listings/${listing.id}`} className="group">
-                      <div className="glass-card rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300">
-                        <div className="aspect-[4/3] relative overflow-hidden">
-                          {listing.images && listing.images[0] ? (
-
-                            <img
-                              src={listing.images[0]}
-                              alt={listing.title}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cmp-ignore"
-                              data-cmp-ignore
-                              onError={(e) => {
-                                e.currentTarget.src = '/placeholder.svg'
-                              }}
-                              suppressHydrationWarning
-                            />
-                          ) : (
-                            <div className="w-full h-full bg-muted flex items-center justify-center">
-                              <span className="text-muted-foreground">No image</span>
-                            </div>
-                          )}
-                          <div className="absolute top-3 right-3 z-10" onClick={(e) => e.preventDefault()}>
-                            <FavoriteButton listingId={listing.id} />
-                          </div>
-                          {listing.is_featured && <Badge className="absolute top-3 left-3 bg-primary">Featured</Badge>}
-                        </div>
-
-                        <div className="p-5">
-                          <div className="flex items-start justify-between mb-2">
-                            <h3 className="font-semibold line-clamp-1 group-hover:text-primary transition-colors">
-                              {listing.title}
-                            </h3>
-                            {listing.is_verified && (
-                              <Badge variant="secondary" className="text-xs shrink-0 ml-2">
-                                Verified
-                              </Badge>
-                            )}
-                          </div>
-
-                          <div className="flex items-center text-sm text-muted-foreground mb-3">
-                            <MapPin className="h-3 w-3 mr-1" />
-                            {listing.location}
-                          </div>
-
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <span className="text-lg font-bold text-primary">
-                                {listing.currency} {Number(listing.price_per_day).toLocaleString()}
-                              </span>
-                              <span className="text-sm text-muted-foreground">/day</span>
-                            </div>
-                            <div className="flex items-center">
-                              <Star className="h-4 w-4 fill-yellow-500 text-yellow-500 mr-1" />
-                              <span className="font-medium">{listing.rating_average || "New"}</span>
-                              {listing.rating_count > 0 && (
-                                <span className="text-muted-foreground text-sm ml-1">({listing.rating_count})</span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {sortedListings.map((listing) => (
-                    <Link key={listing.id} href={`/listings/${listing.id}`} className="group block">
-                      <div className="glass-card rounded-2xl p-4 hover:shadow-lg transition-all duration-300">
-                        <div className="flex gap-6">
-                          <div className="w-48 h-36 rounded-xl overflow-hidden shrink-0 relative">
+                    <motion.div
+                      key={listing.id}
+                      variants={fadeInUp}
+                      whileHover="hover"
+                      whileTap="tap"
+                    >
+                      <Link href={`/listings/${listing.id}`} className="group block h-full">
+                        <motion.div
+                          variants={hoverScale}
+                          className="glass-card rounded-2xl overflow-hidden hover:shadow-2xl hover:shadow-primary/10 transition-shadow duration-500 h-full border border-white/10"
+                        >
+                          <div className="aspect-[4/3] relative overflow-hidden">
                             {listing.images && listing.images[0] ? (
-
-                              <img
+                              <Image
                                 src={listing.images[0]}
                                 alt={listing.title}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cmp-ignore"
-                                data-cmp-ignore
-                                suppressHydrationWarning
-                                onError={(e) => {
-                                  e.currentTarget.src = '/placeholder.svg';
-                                }}
+                                fill
+                                className="object-cover group-hover:scale-105 transition-transform duration-500"
+                                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                               />
                             ) : (
                               <div className="w-full h-full bg-muted flex items-center justify-center">
-                                <span className="text-muted-foreground text-sm">No image</span>
+                                <span className="text-muted-foreground">No image</span>
                               </div>
                             )}
+                            <div className="absolute top-3 right-3 z-10" onClick={(e) => e.preventDefault()}>
+                              <FavoriteButton listingId={listing.id} />
+                            </div>
+                            {listing.is_featured && <Badge className="absolute top-3 left-3 bg-primary shadow-lg ring-1 ring-white/20">Featured</Badge>}
                           </div>
 
-                          <div className="flex-1 min-w-0">
+                          <div className="p-5">
                             <div className="flex items-start justify-between mb-2">
-                              <div>
-                                <h3 className="text-lg font-semibold group-hover:text-primary transition-colors">
-                                  {listing.title}
-                                </h3>
-                                <div className="flex items-center text-sm text-muted-foreground">
-                                  <MapPin className="h-3 w-3 mr-1" />
-                                  {listing.location}
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                {listing.is_featured && <Badge className="bg-primary">Featured</Badge>}
-                                {listing.is_verified && <Badge variant="secondary">Verified</Badge>}
-                              </div>
+                              <h3 className="font-semibold line-clamp-1 group-hover:text-primary transition-colors">
+                                {listing.title}
+                              </h3>
+                              {listing.is_verified && (
+                                <Badge variant="secondary" className="text-xs shrink-0 ml-2">
+                                  Verified
+                                </Badge>
+                              )}
                             </div>
 
-                            <p className="text-muted-foreground text-sm line-clamp-2 mb-3">{listing.description}</p>
+                            <div className="flex items-center text-sm text-muted-foreground mb-3">
+                              <MapPin className="h-3 w-3 mr-1" />
+                              {listing.location}
+                            </div>
 
                             <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-4">
-                                <div className="flex items-center">
-                                  <Star className="h-4 w-4 fill-yellow-500 text-yellow-500 mr-1" />
-                                  <span className="font-medium">{listing.rating_average || "New"}</span>
-                                  {listing.rating_count > 0 && (
-                                    <span className="text-muted-foreground text-sm ml-1">
-                                      ({listing.rating_count} reviews)
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-                              <div className="text-right">
-                                <span className="text-xl font-bold text-primary">
+                              <div>
+                                <span className="text-lg font-bold text-primary">
                                   {listing.currency} {Number(listing.price_per_day).toLocaleString()}
                                 </span>
-                                <span className="text-muted-foreground">/day</span>
+                                <span className="text-sm text-muted-foreground ml-1">/day</span>
+                              </div>
+                              <div className="flex items-center">
+                                <Star className="h-4 w-4 fill-yellow-500 text-yellow-500 mr-1" />
+                                <span className="font-medium">{listing.rating_average || "New"}</span>
+                                {listing.rating_count > 0 && (
+                                  <span className="text-muted-foreground text-sm ml-1">({listing.rating_count})</span>
+                                )}
                               </div>
                             </div>
                           </div>
-                        </div>
-                      </div>
-                    </Link>
+                        </motion.div>
+                      </Link>
+                    </motion.div>
                   ))}
-                </div>
+                </motion.div>
+              ) : (
+                <motion.div
+                  variants={staggerContainer}
+                  initial="initial"
+                  animate="animate"
+                  className="space-y-4"
+                >
+                  {sortedListings.map((listing) => (
+                    <motion.div
+                      key={listing.id}
+                      variants={fadeInUp}
+                      whileHover="hover"
+                      whileTap="tap"
+                    >
+                      <Link href={`/listings/${listing.id}`} className="group block">
+                        <motion.div
+                          variants={hoverScale}
+                          className="glass-card rounded-2xl p-4 hover:shadow-lg transition-all duration-300 border border-white/10"
+                        >
+                          <div className="flex flex-col sm:flex-row gap-6">
+                            <div className="w-full sm:w-64 h-36 rounded-xl overflow-hidden shrink-0 relative">
+                              {listing.images && listing.images[0] ? (
+                                <Image
+                                  src={listing.images[0]}
+                                  alt={listing.title}
+                                  fill
+                                  className="object-cover group-hover:scale-105 transition-transform duration-500"
+                                  sizes="200px"
+                                />
+                              ) : (
+                                <div className="w-full h-full bg-muted flex items-center justify-center">
+                                  <span className="text-muted-foreground text-sm">No image</span>
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-start justify-between mb-2">
+                                <div>
+                                  <h3 className="text-lg font-semibold group-hover:text-primary transition-colors">
+                                    {listing.title}
+                                  </h3>
+                                  <div className="flex items-center text-sm text-muted-foreground">
+                                    <MapPin className="h-3 w-3 mr-1" />
+                                    {listing.location}
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  {listing.is_featured && <Badge className="bg-primary shadow-lg ring-1 ring-white/20">Featured</Badge>}
+                                  {listing.is_verified && <Badge variant="secondary">Verified</Badge>}
+                                </div>
+                              </div>
+
+                              <p className="text-muted-foreground text-sm line-clamp-2 mb-3">{listing.description}</p>
+
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                  <div className="flex items-center">
+                                    <Star className="h-4 w-4 fill-yellow-500 text-yellow-500 mr-1" />
+                                    <span className="font-medium">{listing.rating_average || "New"}</span>
+                                    {listing.rating_count > 0 && (
+                                      <span className="text-muted-foreground text-sm ml-1">
+                                        ({listing.rating_count} reviews)
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="text-right">
+                                  <span className="text-xl font-bold text-primary">
+                                    {listing.currency} {Number(listing.price_per_day).toLocaleString()}
+                                  </span>
+                                  <span className="text-muted-foreground ml-1">/day</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </motion.div>
+                      </Link>
+                    </motion.div>
+                  ))}
+                </motion.div>
               )}
             </div>
           </div>

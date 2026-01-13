@@ -1,9 +1,11 @@
 "use client"
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { motion } from "framer-motion"
 import { Car, Home, Wrench, Smartphone, Shirt, Music, PartyPopper, ArrowRight } from "lucide-react"
+import { staggerContainer, fadeInUp } from "@/lib/animations"
 
 const categories = [
   {
@@ -89,31 +91,27 @@ export function CategoriesSection() {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-7xl mx-auto">
+        <motion.div
+          variants={staggerContainer}
+          initial="initial"
+          whileInView="animate"
+          viewport={{ once: true }}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-7xl mx-auto"
+        >
           {/* Featured Category - Vehicles (Large) */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.0 }}
+            variants={fadeInUp}
             className="md:col-span-2 md:row-span-2 group"
           >
             <Link href={categories[0].href} className="block h-full">
               <div className="relative h-full min-h-[400px] rounded-2xl overflow-hidden">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <Image
                   src={categories[0].image || "/placeholder.svg"}
                   alt={categories[0].name}
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 cmp-ignore"
-                  loading="eager"
-                  width={800}
-                  height={600}
-                  fetchPriority="high"
-                  data-cmp-ignore
-                  onError={(e) => {
-                    console.warn('Category image failed to load:', categories[0].image);
-                    e.currentTarget.src = '/placeholder.svg';
-                  }}
+                  fill
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  priority
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
@@ -139,27 +137,18 @@ export function CategoriesSection() {
 
           {/* Homes (Medium) */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.1 }}
+            variants={fadeInUp}
             className="md:row-span-2 group"
           >
             <Link href={categories[1].href} className="block h-full">
               <div className="relative h-full min-h-[400px] rounded-2xl overflow-hidden">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <Image
                   src={categories[1].image || "/placeholder.svg"}
                   alt={categories[1].name}
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 cmp-ignore"
-                  loading="eager"
-                  width={800}
-                  height={600}
-                  fetchPriority="high"
-                  data-cmp-ignore
-                  onError={(e) => {
-                    e.currentTarget.src = '/placeholder.svg';
-                  }}
+                  fill
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  sizes="(max-width: 768px) 100vw, 25vw"
+                  priority
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
@@ -181,25 +170,17 @@ export function CategoriesSection() {
 
           {/* Equipment (Small) */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.2 }}
+            variants={fadeInUp}
             className="group"
           >
             <Link href={categories[2].href} className="block h-full">
               <div className="relative h-[190px] rounded-2xl overflow-hidden">
-                <img
+                <Image
                   src={categories[2].image || "/placeholder.svg"}
                   alt={categories[2].name}
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  loading="eager"
-                  width={800}
-                  height={600}
-                  fetchPriority="high"
-                  onError={(e) => {
-                    e.currentTarget.src = '/placeholder.svg';
-                  }}
+                  fill
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  sizes="(max-width: 768px) 100vw, 25vw"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
@@ -221,23 +202,17 @@ export function CategoriesSection() {
 
           {/* Electronics (Small) */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.3 }}
+            variants={fadeInUp}
             className="group"
           >
             <Link href={categories[3].href} className="block h-full">
               <div className="relative h-[190px] rounded-2xl overflow-hidden">
-                <img
+                <Image
                   src={categories[3].image || "/placeholder.svg"}
                   alt={categories[3].name}
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  loading="eager"
-                  width={800}
-                  height={600}
-                  fetchPriority="high"
-                  onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
+                  fill
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  sizes="(max-width: 768px) 100vw, 25vw"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
@@ -259,23 +234,17 @@ export function CategoriesSection() {
 
           {/* Fashion (Small) */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.4 }}
+            variants={fadeInUp}
             className="group"
           >
             <Link href={categories[4].href} className="block h-full">
               <div className="relative h-[190px] rounded-2xl overflow-hidden">
-                <img
+                <Image
                   src={categories[4].image || "/placeholder.svg"}
                   alt={categories[4].name}
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  loading="eager"
-                  width={800}
-                  height={600}
-                  fetchPriority="high"
-                  onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
+                  fill
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  sizes="(max-width: 768px) 100vw, 25vw"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
@@ -297,23 +266,17 @@ export function CategoriesSection() {
 
           {/* Entertainment (Medium spanning 2 cols) */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.5 }}
+            variants={fadeInUp}
             className="md:col-span-2 group"
           >
             <Link href={categories[5].href} className="block h-full">
               <div className="relative h-[190px] rounded-2xl overflow-hidden">
-                <img
+                <Image
                   src={categories[5].image || "/placeholder.svg"}
                   alt={categories[5].name}
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  loading="eager"
-                  width={800}
-                  height={600}
-                  fetchPriority="high"
-                  onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
+                  fill
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  sizes="(max-width: 768px) 100vw, 50vw"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
@@ -336,25 +299,17 @@ export function CategoriesSection() {
 
           {/* Event Spaces */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.6 }}
+            variants={fadeInUp}
             className="md:col-span-2 group"
           >
             <Link href={categories[6].href} className="block h-full">
               <div className="relative h-[190px] rounded-2xl overflow-hidden">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <Image
                   src={categories[6].image || "/placeholder.svg"}
                   alt={categories[6].name}
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 cmp-ignore"
-                  loading="eager"
-                  width={800}
-                  height={600}
-                  fetchPriority="high"
-                  data-cmp-ignore
-                  onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
+                  fill
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  sizes="(max-width: 768px) 100vw, 50vw"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
@@ -374,7 +329,7 @@ export function CategoriesSection() {
               </div>
             </Link>
           </motion.div>
-        </div>
+        </motion.div>
 
         {/* View All Button */}
         <motion.div

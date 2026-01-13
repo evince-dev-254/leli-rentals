@@ -1,12 +1,12 @@
 "use client"
 
-import type React from "react"
-
+import { motion } from "framer-motion"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Mail, Check, Loader2 } from "lucide-react"
 import { sendNewsletterConfirmationEmail } from "@/lib/actions/email-actions"
+import { fadeInUp } from "@/lib/animations"
 
 export function NewsletterSection() {
   const [email, setEmail] = useState("")
@@ -33,7 +33,13 @@ export function NewsletterSection() {
   return (
     <section className="py-20 px-4">
       <div className="container mx-auto">
-        <div className="glass-card rounded-3xl p-8 md:p-12 max-w-3xl mx-auto text-center">
+        <motion.div
+          initial="initial"
+          whileInView="animate"
+          viewport={{ once: true }}
+          variants={fadeInUp}
+          className="glass-card rounded-3xl p-8 md:p-12 max-w-3xl mx-auto text-center border border-white/10"
+        >
           <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-6">
             <Mail className="h-8 w-8 text-primary" />
           </div>
@@ -49,7 +55,7 @@ export function NewsletterSection() {
               placeholder="Enter your email address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="h-12 bg-background/50"
+              className="h-12 bg-background/50 border-white/10"
               required
             />
             <Button
@@ -72,7 +78,7 @@ export function NewsletterSection() {
           </form>
 
           <p className="text-xs text-muted-foreground mt-4">We respect your privacy. Unsubscribe at any time.</p>
-        </div>
+        </motion.div>
       </div>
     </section>
   )

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import dynamic from "next/dynamic"
 import { toast } from "sonner"
 import { supabase } from "@/lib/supabase"
@@ -242,20 +243,13 @@ export function ListingDetailContent({ listing }: ListingDetailContentProps) {
             <div className="relative aspect-[16/10] sm:aspect-[16/9] rounded-2xl overflow-hidden glass-card shadow-lg group bg-gradient-to-br from-gray-100 to-gray-200">
               {listing.images && listing.images.length > 0 ? (
                 <>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
+                  <Image
                     src={listing.images[currentImageIndex] || "/placeholder.svg"}
                     alt={listing.title}
-                    className="h-full w-full object-cover cmp-ignore"
-                    loading="eager"
-                    width={1200}
-                    height={675}
-                    fetchPriority="high"
-                    data-cmp-ignore
-                    onError={(e) => {
-                      e.currentTarget.src = "/placeholder.svg"
-                    }}
-                    suppressHydrationWarning
+                    fill
+                    className="object-cover"
+                    priority
+                    sizes="(max-width: 1024px) 100vw, 800px"
                   />
                   {/* Loading state indicator - subtle pulse instead of blocking overlay */}
                   <div className="absolute inset-0 bg-secondary/20 animate-pulse pointer-events-none" />
@@ -480,7 +474,15 @@ export function ListingDetailContent({ listing }: ListingDetailContentProps) {
                 <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 text-center sm:text-left">
                   <div className="relative">
                     <Avatar className="h-20 w-20 ring-4 ring-background shadow-md">
-                      <AvatarImage src={listing.ownerAvatar || "/placeholder.svg"} loading="eager" fetchPriority="high" />
+                      <div className="relative w-full h-full">
+                        <Image
+                          src={listing.ownerAvatar || "/placeholder.svg"}
+                          alt={listing.ownerName}
+                          fill
+                          className="object-cover rounded-full"
+                          priority
+                        />
+                      </div>
                       <AvatarFallback className="text-xl font-bold">
                         {listing.ownerName
                           .split(" ")
@@ -657,15 +659,12 @@ export function ListingDetailContent({ listing }: ListingDetailContentProps) {
           <div className="space-y-6 pt-4">
             <div className="flex gap-4 p-4 bg-secondary/20 rounded-2xl border border-secondary/30">
               <div className="w-20 h-16 shrink-0 rounded-xl overflow-hidden shadow-sm relative">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <Image
                   src={listing.images[0] || "/placeholder.svg"}
                   alt={listing.title}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    e.currentTarget.src = '/placeholder.svg';
-                  }}
-                  suppressHydrationWarning
+                  fill
+                  className="object-cover"
+                  sizes="80px"
                 />
               </div>
               <div className="flex flex-col justify-center">
