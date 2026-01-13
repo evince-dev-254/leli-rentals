@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { motion } from "framer-motion"
-import { CheckCircle, Home, Receipt } from "lucide-react"
+import { CheckCircle, ArrowRight, Home, Receipt } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { fadeInUp } from "@/lib/animations"
@@ -17,20 +17,20 @@ export default function PaymentSuccessPage() {
     const bookingId = searchParams.get("booking_id")
 
     useEffect(() => {
-        // Separate countdown and navigation logic
+        // Countdown redirect to dashboard
         const timer = setInterval(() => {
-            setCountdown((prev) => prev - 1)
+            setCountdown((prev) => {
+                if (prev <= 1) {
+                    clearInterval(timer)
+                    router.push("/dashboard")
+                    return 0
+                }
+                return prev - 1
+            })
         }, 1000)
 
         return () => clearInterval(timer)
-    }, [])
-
-    useEffect(() => {
-        // Handle navigation separately when countdown reaches 0
-        if (countdown <= 0) {
-            router.push("/dashboard")
-        }
-    }, [countdown, router])
+    }, [router])
 
     return (
         <div className="min-h-screen gradient-mesh flex items-center justify-center p-4">
@@ -86,11 +86,9 @@ export default function PaymentSuccessPage() {
                 </div>
 
                 {/* Auto Redirect Notice */}
-                {countdown > 0 && (
-                    <p className="text-xs text-muted-foreground">
-                        Redirecting to dashboard in {countdown} seconds...
-                    </p>
-                )}
+                <p className="text-xs text-muted-foreground">
+                    Redirecting to dashboard in {countdown} seconds...
+                </p>
             </motion.div>
         </div>
     )

@@ -24,7 +24,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <Header />
       <div className="flex flex-1 pt-20 lg:pt-24">
         {/* Desktop Sidebar */}
-        <div className="hidden md:flex w-64 shadow-xl z-10">
+        <div className="hidden lg:flex w-64 shadow-xl z-10">
           <DashboardSidebar />
         </div>
 

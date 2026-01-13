@@ -9,12 +9,9 @@ const supabaseAdmin = createClient(
 )
 
 export async function POST(req: NextRequest) {
-    console.log('[PAYSTACK WEBHOOK] Incoming request:', req.url)
     try {
         const body = await req.text()
         const signature = req.headers.get('x-paystack-signature')
-
-        console.log('[PAYSTACK WEBHOOK] Signature present:', !!signature)
 
         // Verify webhook signature
         const hash = crypto
@@ -105,46 +102,6 @@ async function handleSuccessfulPayment(data: any) {
             console.error('Failed to create payment record:', paymentError)
         } else {
             console.log('Payment record created:', reference)
-
-            // Send payment confirmation email
-            try {
-                const { Resend } = await import('resend')
-                const resend = new Resend(process.env.RESEND_API_KEY)
-
-                await resend.emails.send({
-                    from: 'Leli Rentals <noreply@leli.rentals>',
-                    to: customer.email,
-                    subject: 'Payment Confirmation - Leli Rentals',
-                    html: `
-                        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                            <h2 style="color: #10b981;">Payment Successful!</h2>
-                            <p>Dear ${customer.first_name || 'Customer'},</p>
-                            <p>Your payment has been successfully processed.</p>
-                            
-                            <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                                <h3 style="margin-top: 0;">Payment Details</h3>
-                                <p><strong>Amount:</strong> ${data.currency} ${(amount / 100).toLocaleString()}</p>
-                                <p><strong>Reference:</strong> ${reference}</p>
-                                <p><strong>Payment Method:</strong> ${channel}</p>
-                                <p><strong>Date:</strong> ${new Date(paid_at || new Date()).toLocaleString()}</p>
-                            </div>
-                            
-                            <p>Thank you for your payment!</p>
-                            <p>If you have any questions, please contact our support team.</p>
-                            
-                            <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
-                            <p style="color: #6b7280; font-size: 12px;">
-                                This is an automated email from Leli Rentals. Please do not reply to this email.
-                            </p>
-                        </div>
-                    `
-                })
-
-                console.log('Payment confirmation email sent to:', customer.email)
-            } catch (emailError) {
-                console.error('Failed to send payment confirmation email:', emailError)
-                // Don't fail the webhook if email fails
-            }
         }
 
         // Check if this is a booking payment
@@ -163,21 +120,6 @@ async function handleSuccessfulPayment(data: any) {
                 console.error('Failed to update booking:', error)
             } else {
                 console.log('Booking payment confirmed:', metadata.booking_id)
-
-                // Calculate and create affiliate commission if applicable
-                try {
-                    const { calculateCommission } = await import('@/lib/actions/commission-actions')
-                    const commissionResult = await calculateCommission(metadata.booking_id)
-
-                    if (commissionResult.success) {
-                        console.log('Commission created:', commissionResult.commission)
-                    } else {
-                        console.log('No commission:', commissionResult.message)
-                    }
-                } catch (commissionError) {
-                    console.error('Commission calculation error:', commissionError)
-                    // Don't fail the webhook if commission fails
-                }
             }
         }
 

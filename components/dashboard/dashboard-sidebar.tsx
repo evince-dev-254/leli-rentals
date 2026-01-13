@@ -75,52 +75,46 @@ function SidebarContent({ role, pathname, onLinkClick }: SidebarContentProps) {
       )}
 
       {/* Navigation */}
-      <nav className="flex-1 px-4 space-y-1 mt-4 overflow-y-auto thin-scrollbar">
+      <nav className="flex-1 px-3 space-y-1 mt-4 overflow-y-auto thin-scrollbar">
         {filteredLinks.map((link) => {
           const isActive = pathname === link.href
           return (
-            <Link
+            <Button
               key={link.href}
-              href={link.href}
-              onClick={onLinkClick}
+              variant={isActive ? "secondary" : "ghost"}
               className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all relative group",
-                isActive
-                  ? "bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-md shadow-primary/20"
-                  : "text-muted-foreground hover:bg-black/5 dark:hover:bg-white/5 hover:text-foreground",
+                "w-full justify-start",
+                isActive && "bg-secondary"
               )}
+              asChild
             >
-              <div className="flex-1 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <link.icon className="h-5 w-5" />
-                  <span className="font-medium">{link.label}</span>
-                </div>
+              <Link href={link.href} onClick={onLinkClick}>
+                <link.icon className="mr-2 h-4 w-4" />
+                {link.label}
                 {link.badge && (
-                  <Badge variant="secondary" className="text-[10px] h-4 px-1.5 bg-primary/20 text-primary border-primary/20">
+                  <Badge variant="secondary" className="ml-auto text-[10px] h-4 px-1.5 bg-primary/20 text-primary border-primary/20">
                     {link.badge}
                   </Badge>
                 )}
-              </div>
-              {isActive && (
-                <div className="absolute right-0 w-1 h-5 bg-white/40 rounded-full mr-1 animate-in fade-in zoom-in duration-300" />
-              )}
-            </Link>
+              </Link>
+            </Button>
           )
         })}
       </nav>
 
       {/* Bottom actions */}
       <div className="p-4 border-t border-border/50">
-        <button
+        <Button
+          variant="ghost"
+          className="w-full justify-start text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10"
           onClick={async () => {
             await supabase.auth.signOut()
             window.location.href = "/"
           }}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-all group w-full"
         >
-          <LogOut className="h-5 w-5" />
+          <LogOut className="mr-2 h-4 w-4" />
           <span className="font-medium">Logout</span>
-        </button>
+        </Button>
       </div>
     </div>
   )
@@ -149,11 +143,11 @@ export function DashboardSidebar() {
   const pathname = usePathname()
   const { role, loading } = useDashboardRole()
 
-  if (loading) return <div className="hidden md:block w-64 h-screen bg-card/50 border-r border-border" />
+  if (loading) return <div className="hidden md:block w-64 h-screen bg-card border-r border-border" />
 
   return (
     <aside
-      className="hidden md:sticky md:flex top-0 h-screen bg-card/50 backdrop-blur-xl border-r border-border flex-col transition-all duration-300 w-64"
+      className="hidden md:sticky md:flex top-0 h-screen bg-card border-r border-border flex-col transition-all duration-300 w-64"
     >
       <SidebarContent role={role} pathname={pathname} />
     </aside>
@@ -173,7 +167,7 @@ export function MobileDashboardSidebar() {
           <span className="sr-only">Toggle navigation menu</span>
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="p-0 bg-background/95 backdrop-blur-xl border-r border-border w-72">
+      <SheetContent side="left" className="p-0 bg-background w-72">
         <SheetTitle className="sr-only">Dashboard Navigation</SheetTitle>
         <SidebarContent role={role} pathname={pathname} onLinkClick={() => setOpen(false)} />
       </SheetContent>

@@ -1,8 +1,8 @@
 "use client"
 
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import Image from "next/image"
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import {
   LayoutDashboard,
   Users,
@@ -12,119 +12,168 @@ import {
   UserPlus,
   Settings,
   LogOut,
-  ChevronLeft,
-  ChevronRight,
   MessageSquare,
   Send,
   Key,
   UserCog,
   Menu,
-  CreditCard,
+  CreditCard
 } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { useState } from "react"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import { useState, useEffect } from "react"
 
-import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet"
+export function AdminSidebar({ className }: { className?: string }) {
+  const pathname = usePathname()
 
-const sidebarLinks = [
-  { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/users", label: "Platform Users", icon: Users },
-  { href: "/admin/staff", label: "Staff Management", icon: UserCog },
-  { href: "/admin/admins", label: "Manage Admins", icon: Key },
-  { href: "/admin/verifications", label: "Verifications", icon: ShieldCheck },
-  { href: "/admin/listings", label: "Listings", icon: Package },
-  { href: "/admin/bookings", label: "Bookings", icon: CalendarCheck },
-  { href: "/admin/subscriptions", label: "Payments & Subscriptions", icon: CreditCard },
-  { href: "/admin/test-payment", label: "Test Payment", icon: CreditCard },
-  { href: "/admin/affiliates", label: "Affiliates", icon: UserPlus },
-  { href: "/admin/communications", label: "Communications", icon: Send },
-  { href: "/admin/reviews", label: "Reviews", icon: MessageSquare },
-  { href: "/admin/paystack-settings", label: "Paystack Settings", icon: Settings },
-  { href: "/admin/settings", label: "Settings", icon: Settings },
-]
+  // Function to handle sign out - simplified for now, can be expanded
+  const handleSignOut = () => {
+    window.location.href = "/"
+  }
 
-interface AdminSidebarContentProps {
-  pathname: string
-  onLinkClick?: () => void
-}
+  const routes = [
+    {
+      label: "Dashboard",
+      icon: LayoutDashboard,
+      href: "/admin",
+      active: pathname === "/admin",
+    },
+    {
+      label: "Platform Users",
+      icon: Users,
+      href: "/admin/users",
+      active: pathname === "/admin/users",
+    },
+    {
+      label: "Staff Management",
+      icon: UserCog,
+      href: "/admin/staff",
+      active: pathname === "/admin/staff",
+    },
+    {
+      label: "Manage Admins",
+      icon: Key,
+      href: "/admin/admins",
+      active: pathname.startsWith("/admin/admins"),
+    },
+    {
+      label: "Verifications",
+      icon: ShieldCheck,
+      href: "/admin/verifications",
+      active: pathname === "/admin/verifications",
+    },
+    {
+      label: "Listings",
+      icon: Package,
+      href: "/admin/listings",
+      active: pathname === "/admin/listings",
+    },
+    {
+      label: "Bookings",
+      icon: CalendarCheck,
+      href: "/admin/bookings",
+      active: pathname === "/admin/bookings",
+    },
+    {
+      label: "Payments & Subscriptions",
+      icon: CreditCard,
+      href: "/admin/subscriptions",
+      active: pathname.startsWith("/admin/subscriptions") || pathname.startsWith("/admin/payments"),
+    },
+    {
+      label: "Affiliates",
+      icon: UserPlus,
+      href: "/admin/affiliates",
+      active: pathname === "/admin/affiliates",
+    },
+    {
+      label: "Communications",
+      icon: Send,
+      href: "/admin/communications",
+      active: pathname === "/admin/communications",
+    },
+    {
+      label: "Reviews",
+      icon: MessageSquare,
+      href: "/admin/reviews",
+      active: pathname === "/admin/reviews",
+    },
+    {
+      label: "Paystack Settings",
+      icon: Settings,
+      href: "/admin/paystack-settings",
+      active: pathname === "/admin/paystack-settings",
+    },
+    {
+      label: "Settings",
+      icon: Settings,
+      href: "/admin/settings",
+      active: pathname === "/admin/settings",
+    },
+  ]
 
-function AdminSidebarContent({ pathname, onLinkClick }: AdminSidebarContentProps) {
   return (
-    <div className="flex flex-col h-full">
-      <div className="p-6 border-b border-border/50 flex items-center justify-between">
-        <Link href="/admin" className="flex items-center gap-3 group" onClick={onLinkClick}>
-          <h2 className="text-xl font-black tracking-tight uppercase">
-            Admin<span className="text-primary ml-1">Dashboard</span>
-          </h2>
-        </Link>
-      </div>
-
-      {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-        {sidebarLinks.map((link) => {
-          const isActive = pathname === link.href
-          return (
-            <Link
-              key={link.href}
-              href={link.href}
-              onClick={onLinkClick}
-              className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
-                isActive
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-secondary hover:text-foreground",
-              )}
-            >
-              <link.icon className="h-5 w-5" />
-              <span>{link.label}</span>
+    <div className={cn("pb-12 h-screen flex flex-col bg-card border-r", className)}>
+      <div className="space-y-4 py-4 flex flex-col h-full">
+        <div className="px-3 py-2">
+          <div className="flex items-center pl-2 mb-10">
+            <Link href="/admin">
+              <h2 className="text-xl font-black tracking-tight uppercase">
+                Admin<span className="text-primary ml-1">Dashboard</span>
+              </h2>
             </Link>
-          )
-        })}
-      </nav>
-
-      {/* Bottom actions */}
-      <div className="p-4 border-t border-border">
-        <Link
-          href="/"
-          onClick={onLinkClick}
-          className={cn(
-            "flex items-center gap-3 px-3 py-2.5 rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-all",
-          )}
-        >
-          <LogOut className="h-5 w-5" />
-          <span>Exit Admin</span>
-        </Link>
+          </div>
+          <div className="space-y-1">
+            {routes.map((route) => (
+              <Button
+                key={route.href}
+                variant={route.active ? "secondary" : "ghost"}
+                className={cn(
+                  "w-full justify-start",
+                  route.active && "bg-secondary"
+                )}
+                asChild
+              >
+                <Link href={route.href}>
+                  <route.icon className="mr-2 h-4 w-4" />
+                  {route.label}
+                </Link>
+              </Button>
+            ))}
+          </div>
+        </div>
+        <div className="mt-auto px-3 py-2">
+          <Button
+            variant="ghost"
+            className="w-full justify-start text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10"
+            onClick={handleSignOut}
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            Exit Admin
+          </Button>
+        </div>
       </div>
     </div>
   )
 }
 
-export function AdminSidebar() {
-  const pathname = usePathname()
-
-  return (
-    <aside className="hidden lg:flex sticky top-0 h-screen bg-card/50 backdrop-blur-xl border-r border-border flex-col transition-all duration-300 w-64">
-      <AdminSidebarContent pathname={pathname} />
-    </aside>
-  )
-}
-
 export function MobileAdminSidebar() {
-  const pathname = usePathname()
   const [open, setOpen] = useState(false)
+  const pathname = usePathname()
+
+  useEffect(() => {
+    setOpen(false)
+  }, [pathname])
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button variant="outline" size="icon" className="lg:hidden shrink-0">
-          <Menu className="h-5 w-5" />
-          <span className="sr-only">Toggle navigation menu</span>
+        <Button variant="ghost" size="icon" className="lg:hidden shrink-0">
+          <Menu className="h-6 w-6" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="p-0 bg-background/95 backdrop-blur-xl border-r border-border w-72">
-        <SheetTitle className="sr-only">Admin Navigation</SheetTitle>
-        <AdminSidebarContent pathname={pathname} onLinkClick={() => setOpen(false)} />
+      <SheetContent side="left" className="p-0 w-72">
+        <AdminSidebar />
       </SheetContent>
     </Sheet>
   )
