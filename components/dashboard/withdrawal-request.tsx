@@ -28,7 +28,7 @@ export function WithdrawalRequest({ userType }: WithdrawalRequestProps) {
 
     useEffect(() => {
         loadBalance()
-    }, [])
+    }, [loadBalance])
 
     async function loadBalance() {
         setLoadingBalance(true)
@@ -129,8 +129,8 @@ export function WithdrawalRequest({ userType }: WithdrawalRequestProps) {
 
                 {/* Minimum Withdrawal Notice */}
                 <div className={`flex items-start gap-3 p-4 rounded-lg ${canWithdraw
-                        ? 'bg-blue-500/10 border border-blue-500/20'
-                        : 'bg-orange-500/10 border border-orange-500/20'
+                    ? 'bg-blue-500/10 border border-blue-500/20'
+                    : 'bg-orange-500/10 border border-orange-500/20'
                     }`}>
                     {canWithdraw ? (
                         <CheckCircle2 className="h-5 w-5 text-blue-500 mt-0.5" />
