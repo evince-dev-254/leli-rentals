@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { usePaystackPayment } from "react-paystack"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -8,23 +8,27 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
-import { CreditCard, Loader2, AlertTriangle, Phone } from "lucide-react"
+import { CreditCard, Loader2, AlertTriangle } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 export function TestPayment() {
     const router = useRouter()
     const [email, setEmail] = useState("")
-    const [phone, setPhone] = useState("")
     const [amount, setAmount] = useState("100")
     const [loading, setLoading] = useState(false)
     const [isLiveMode, setIsLiveMode] = useState(false)
+    const [isClient, setIsClient] = useState(false)
 
-    const config = {
-        reference: `${isLiveMode ? 'LIVE' : 'TEST'}-${new Date().getTime()}`,
+    useEffect(() => {
+        setIsClient(true)
+    }, [])
+
+    const paystackConfig = {
+        reference: (new Date()).getTime().toString(),
         email: email,
-        amount: Number(amount) * 100, // Amount in smallest currency unit
-        phone: phone, // Phone number for currency detection
-        publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY!,
+        amount: Number(amount) * 100, // Paystack expects kobo/cents
+        publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "",
+        currency: 'KES',
         metadata: {
             custom_fields: [
                 {
@@ -33,32 +37,38 @@ export function TestPayment() {
                     value: isLiveMode ? "live" : "test"
                 },
                 {
-                    display_name: "Phone Number",
-                    variable_name: "phone_number",
-                    value: phone
+                    display_name: "Test Payment",
+                    variable_name: "test_payment",
+                    value: "true"
                 }
             ]
         }
     }
 
-    const initializePayment = usePaystackPayment(config)
-
-    const onSuccess = (reference: any) => {
-        setLoading(false)
-        router.push(`/payment/success?reference=${reference.reference}`)
-    }
-
-    const onClose = () => {
-        setLoading(false)
-    }
+    const initializePayment = usePaystackPayment(paystackConfig)
 
     const handlePayment = () => {
-        if (!email || !phone || !amount || Number(amount) < 1) {
-            alert("Please fill in all fields (email, phone, amount)")
+        if (!isClient) {
+            alert("Payment system loading, please wait...")
             return
         }
+
+        if (!email || !amount || Number(amount) < 1) {
+            alert("Please enter valid email and amount (min 1 KES)")
+            return
+        }
+
         setLoading(true)
-        initializePayment({ onSuccess, onClose })
+
+        initializePayment({
+            onSuccess: (reference: any) => {
+                setLoading(false)
+                router.push(`/payment/success?reference=${reference.reference}`)
+            },
+            onClose: () => {
+                setLoading(false)
+            }
+        })
     }
 
     return (
@@ -111,25 +121,7 @@ export function TestPayment() {
                 </div>
 
                 <div>
-                    <Label htmlFor="phone">Phone Number</Label>
-                    <div className="relative mt-1.5">
-                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input
-                            id="phone"
-                            type="tel"
-                            placeholder="+254712345678 (Kenya)"
-                            value={phone}
-                            onChange={(e) => setPhone(e.target.value)}
-                            className="pl-10"
-                        />
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                        Include country code (e.g., +254 for Kenya, +234 for Nigeria)
-                    </p>
-                </div>
-
-                <div>
-                    <Label htmlFor="amount">Amount</Label>
+                    <Label htmlFor="amount">Amount (KES)</Label>
                     <Input
                         id="amount"
                         type="number"
@@ -139,13 +131,13 @@ export function TestPayment() {
                         className="mt-1.5"
                     />
                     <p className="text-xs text-muted-foreground mt-1">
-                        Currency auto-detected from phone number
+                        Minimum: 1 KES • Currency: Kenyan Shillings
                     </p>
                 </div>
 
                 <Button
                     onClick={handlePayment}
-                    disabled={loading || !email || !phone || !amount}
+                    disabled={loading || !email || !amount || !isClient}
                     className="w-full"
                     size="lg"
                 >
@@ -154,10 +146,15 @@ export function TestPayment() {
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                             Processing...
                         </>
+                    ) : !isClient ? (
+                        <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Loading Payment...
+                        </>
                     ) : (
                         <>
                             <CreditCard className="mr-2 h-4 w-4" />
-                            {isLiveMode ? `Charge ${amount}` : `Test ${amount}`}
+                            {isLiveMode ? `Pay KSh ${Number(amount).toLocaleString()}` : `Test KSh ${Number(amount).toLocaleString()}`}
                         </>
                     )}
                 </Button>
@@ -170,12 +167,6 @@ export function TestPayment() {
                         <p>PIN: <code>3310</code> | OTP: <code>123456</code></p>
                     </div>
                 )}
-
-                <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 text-xs">
-                    <p className="text-blue-600 dark:text-blue-400">
-                        <strong>💡 Tip:</strong> Paystack automatically detects your currency based on your phone number country code.
-                    </p>
-                </div>
             </div>
         </Card>
     )
