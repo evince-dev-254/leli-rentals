@@ -79,6 +79,8 @@ export function UsersManagement() {
         referredBy: u.referrer?.full_name ?? u.referred_by ?? null,
         totalReferrals: u.total_referrals ?? 0,
         totalEarnings: u.total_earnings ?? 0,
+        isStaff: !!u.is_staff,
+        isAdmin: !!u.is_admin,
       }))
 
       setUsers(mapped)
@@ -178,18 +180,35 @@ export function UsersManagement() {
     }
   }
 
-  const handleUpdateRole = async (userId: string, newRole: string) => {
-    if (!confirm(`Are you sure you want to change this user's role to ${newRole}?`)) return
+  const handleToggleAdmin = async (user: User) => {
+    const nextValue = !user.isAdmin
+    if (!confirm(`Are you sure you want to ${nextValue ? 'promote' : 'revoke'} admin access for ${user.fullName}?`)) return
 
     setActionLoading(true)
-    const result = await updateProfile(userId, { role: newRole })
+    const result = await updateProfile(user.id, { is_admin: nextValue })
     setActionLoading(false)
 
     if (result.success) {
-      toast({ title: "Success", description: `User role updated to ${newRole}` })
+      toast({ title: "Success", description: `User admin status updated` })
       loadUsers()
     } else {
-      toast({ title: "Error", description: result.error || "Failed to update role", variant: "destructive" })
+      toast({ title: "Error", description: result.error || "Failed to update admin status", variant: "destructive" })
+    }
+  }
+
+  const handleToggleStaff = async (user: User) => {
+    const nextValue = !user.isStaff
+    if (!confirm(`Are you sure you want to ${nextValue ? 'promote' : 'revoke'} staff access for ${user.fullName}?`)) return
+
+    setActionLoading(true)
+    const result = await updateProfile(user.id, { is_staff: nextValue })
+    setActionLoading(false)
+
+    if (result.success) {
+      toast({ title: "Success", description: `User staff status updated` })
+      loadUsers()
+    } else {
+      toast({ title: "Error", description: result.error || "Failed to update staff status", variant: "destructive" })
     }
   }
 
@@ -407,7 +426,7 @@ export function UsersManagement() {
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => setSelectedUser(user)}>
+                        <DropdownMenuItem onClick={() => window.location.href = `/admin/users/${user.id}`}>
                           <Eye className="h-4 w-4 mr-2" />
                           View Details
                         </DropdownMenuItem>
@@ -437,17 +456,20 @@ export function UsersManagement() {
                           </DropdownMenuItem>
                         )}
                         <DropdownMenuSeparator />
-                        {user.role === "admin" ? (
-                          <DropdownMenuItem className="text-orange-600" onClick={() => handleUpdateRole(user.id, "renter")}>
-                            <ShieldOff className="h-4 w-4 mr-2" />
-                            Revoke Admin
-                          </DropdownMenuItem>
-                        ) : (
-                          <DropdownMenuItem className="text-purple-600" onClick={() => handleUpdateRole(user.id, "admin")}>
-                            <Shield className="h-4 w-4 mr-2" />
-                            Promote to Admin
-                          </DropdownMenuItem>
-                        )}
+                        <DropdownMenuItem className={user.isAdmin ? "text-orange-600" : "text-purple-600"} onClick={() => handleToggleAdmin(user)}>
+                          {user.isAdmin ? (
+                            <><ShieldOff className="h-4 w-4 mr-2" /> Revoke Admin</>
+                          ) : (
+                            <><Shield className="h-4 w-4 mr-2" /> Promote to Admin</>
+                          )}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className={user.isStaff ? "text-orange-600" : "text-blue-600"} onClick={() => handleToggleStaff(user)}>
+                          {user.isStaff ? (
+                            <><ShieldOff className="h-4 w-4 mr-2" /> Revoke Staff</>
+                          ) : (
+                            <><Shield className="h-4 w-4 mr-2" /> Promote to Staff</>
+                          )}
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>

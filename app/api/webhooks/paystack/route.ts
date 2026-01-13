@@ -9,9 +9,12 @@ const supabaseAdmin = createClient(
 )
 
 export async function POST(req: NextRequest) {
+    console.log('[PAYSTACK WEBHOOK] Incoming request:', req.url)
     try {
         const body = await req.text()
         const signature = req.headers.get('x-paystack-signature')
+
+        console.log('[PAYSTACK WEBHOOK] Signature present:', !!signature)
 
         // Verify webhook signature
         const hash = crypto

@@ -30,6 +30,8 @@ export interface User {
   referredBy: string | null
   totalReferrals: number
   totalEarnings: number
+  isStaff: boolean
+  isAdmin: boolean
 }
 
 export interface VerificationDocument {

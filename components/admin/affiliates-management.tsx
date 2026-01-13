@@ -212,7 +212,10 @@ export function AffiliatesManagement() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => window.location.href = `/admin/users?search=${email}`}
+                          onClick={() => {
+                            const prefix = window.location.pathname.startsWith('/staff') ? '/staff' : '/admin'
+                            window.location.href = `${prefix}/affiliates/${affiliate.user_id}`
+                          }}
                         >
                           <ExternalLink className="h-4 w-4 mr-2" />
                           View

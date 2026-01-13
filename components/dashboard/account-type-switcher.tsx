@@ -8,88 +8,102 @@ import {
     Users,
     Building2,
     RefreshCcw,
-    Loader2
+    Loader2,
+    LayoutDashboard,
+    Shield,
+    UserPlus,
+    User
 } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 export function AccountTypeSwitcher() {
-    const [role, setRole] = useState<string | null>(null)
-    const [loading, setLoading] = useState(false)
+    const [profile, setProfile] = useState<any>(null)
+    const [loading, setLoading] = useState(true)
     const router = useRouter()
 
     useEffect(() => {
-        const getRole = async () => {
+        const getProfile = async () => {
+            setLoading(true)
             const { data: { user } } = await supabase.auth.getUser()
             if (user) {
                 const { data } = await supabase
                     .from('user_profiles')
-                    .select('role')
+                    .select('*')
                     .eq('id', user.id)
                     .single()
-                setRole(data?.role || 'renter')
+                setProfile(data)
             }
-        }
-        getRole()
-    }, [])
-
-    const handleSwitch = async () => {
-        setLoading(true)
-        try {
-            const { data: { user } } = await supabase.auth.getUser()
-            if (!user) return
-
-            const nextRole = role === 'owner' ? 'renter' : 'owner'
-
-            const { error } = await supabase
-                .from('user_profiles')
-                .update({ role: nextRole })
-                .eq('id', user.id)
-
-            if (error) throw error
-
-            setRole(nextRole)
-            toast.success(`Switched to ${nextRole} account`)
-
-            // Redirect based on new role
-            if (nextRole === 'owner') {
-                router.push('/dashboard/owner')
-            } else {
-                router.push('/categories')
-            }
-        } catch (error: any) {
-            toast.error(error.message || "Failed to switch account type")
-        } finally {
             setLoading(false)
         }
+        getProfile()
+    }, [])
+
+    const handleSwitch = (path: string, label: string) => {
+        router.push(path)
+        toast.info(`Switched to ${label}`)
     }
 
-    if (!role || (role !== 'owner' && role !== 'renter')) return null
+    if (loading) return <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+    if (!profile) return null
+
+    // Determine available dashboards
+    const dashboards = [
+        { label: 'Renter Dashboard', path: '/categories', icon: User, color: 'text-teal-600', bg: 'bg-teal-50' },
+        { label: 'Owner Dashboard', path: '/dashboard/owner', icon: Building2, color: 'text-blue-600', bg: 'bg-blue-50' },
+    ]
+
+    if (profile.role === 'affiliate') {
+        dashboards.push({ label: 'Affiliate Dashboard', path: '/dashboard/affiliate', icon: UserPlus, color: 'text-pink-600', bg: 'bg-pink-50' })
+    }
+
+    if (profile.is_staff || profile.role === 'staff') {
+        dashboards.push({ label: 'Staff Portal', path: '/staff', icon: LayoutDashboard, color: 'text-orange-600', bg: 'bg-orange-50' })
+    }
+
+    if (profile.is_admin || profile.role === 'admin') {
+        dashboards.push({ label: 'Admin Panel', path: '/admin', icon: Shield, color: 'text-purple-600', bg: 'bg-purple-50' })
+    }
 
     return (
-        <Button
-            variant="outline"
-            size="sm"
-            onClick={handleSwitch}
-            disabled={loading}
-            className={cn(
-                "gap-2 rounded-full px-4 h-9 shadow-sm transition-all duration-300",
-                role === 'owner'
-                    ? "border-blue-500/30 bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/10 dark:text-blue-400"
-                    : "border-purple-500/30 bg-purple-50 text-purple-600 hover:bg-purple-100 dark:bg-purple-900/10 dark:text-purple-400"
-            )}
-        >
-            {loading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-            ) : role === 'owner' ? (
-                <Users className="h-4 w-4" />
-            ) : (
-                <Building2 className="h-4 w-4" />
-            )}
-            <span className="font-medium whitespace-nowrap">
-                Switch to {role === 'owner' ? 'Renter' : 'Owner'}
-            </span>
-            <RefreshCcw className="h-3 w-3 opacity-50" />
-        </Button>
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-2 rounded-full px-4 h-9 shadow-sm transition-all duration-300 border-primary/20 hover:bg-primary/5"
+                >
+                    <LayoutDashboard className="h-4 w-4 text-primary" />
+                    <span className="font-medium whitespace-nowrap hidden sm:inline">
+                        Switch Dashboard
+                    </span>
+                    <RefreshCcw className="h-3 w-3 opacity-50" />
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>My Dashboards</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {dashboards.map((dash) => (
+                    <DropdownMenuItem
+                        key={dash.path}
+                        onClick={() => handleSwitch(dash.path, dash.label)}
+                        className="cursor-pointer gap-3 py-2"
+                    >
+                        <div className={cn("p-1.5 rounded-md", dash.bg)}>
+                            <dash.icon className={cn("h-4 w-4", dash.color)} />
+                        </div>
+                        <span className="font-medium">{dash.label}</span>
+                    </DropdownMenuItem>
+                ))}
+            </DropdownMenuContent>
+        </DropdownMenu>
     )
 }

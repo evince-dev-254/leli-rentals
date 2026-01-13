@@ -2,7 +2,12 @@ import { type NextRequest, NextResponse } from "next/server";
 import { updateSession } from "@/utils/supabase/middleware";
 import { createServerClient } from "@supabase/ssr";
 
-export default async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
+    // Check if the request is for a webhook
+    if (request.nextUrl.pathname.startsWith('/api/webhooks')) {
+        return NextResponse.next();
+    }
+
     let response = await updateSession(request);
 
     // Create a Supabase client to check user status
@@ -86,8 +91,8 @@ export const config = {
          * - _next/image (image optimization files)
          * - favicon.ico (favicon file)
          * - images - .svg, .png, .jpg, .jpeg, .gif, .webp
-         * Feel free to modify this pattern to include more paths.
+         * - api/webhooks (handle separately or exempt)
          */
-        "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+        "/((?!_next/static|_next/image|favicon.ico|api/webhooks|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
     ],
 };
