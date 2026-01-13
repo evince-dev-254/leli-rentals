@@ -280,14 +280,17 @@ export function SubscriptionsManagement() {
             {/* Main Content */}
             <Card className="p-6">
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-                        <TabsList>
-                            <TabsTrigger value="payments">Payments ({payments.length})</TabsTrigger>
-                            <TabsTrigger value="subscriptions">Subscriptions ({subscriptions.length})</TabsTrigger>
-                        </TabsList>
+                    <div className="flex flex-col gap-4 mb-6">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                            <TabsList>
+                                <TabsTrigger value="payments">Payments ({payments.length})</TabsTrigger>
+                                <TabsTrigger value="subscriptions">Subscriptions ({subscriptions.length})</TabsTrigger>
+                            </TabsList>
+                        </div>
 
-                        <div className="flex flex-col sm:flex-row gap-3">
-                            <div className="relative flex-1 sm:w-64">
+                        <div className="flex flex-col gap-3">
+                            {/* Search bar - full width on mobile */}
+                            <div className="relative w-full">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                 <Input
                                     placeholder="Search..."
@@ -297,62 +300,66 @@ export function SubscriptionsManagement() {
                                 />
                             </div>
 
-                            <Select value={statusFilter} onValueChange={setStatusFilter}>
-                                <SelectTrigger className="w-full sm:w-40">
-                                    <Filter className="h-4 w-4 mr-2" />
-                                    <SelectValue placeholder="Status" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">All Status</SelectItem>
-                                    {activeTab === "payments" ? (
-                                        <>
-                                            <SelectItem value="success">Success</SelectItem>
-                                            <SelectItem value="failed">Failed</SelectItem>
-                                            <SelectItem value="pending">Pending</SelectItem>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <SelectItem value="active">Active</SelectItem>
-                                            <SelectItem value="cancelled">Cancelled</SelectItem>
-                                            <SelectItem value="expired">Expired</SelectItem>
-                                        </>
-                                    )}
-                                </SelectContent>
-                            </Select>
+                            {/* Buttons row - wrap on mobile */}
+                            <div className="flex flex-wrap gap-2">
+                                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                                    <SelectTrigger className="w-full sm:w-40">
+                                        <Filter className="h-4 w-4 mr-2" />
+                                        <SelectValue placeholder="Status" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All Status</SelectItem>
+                                        {activeTab === "payments" ? (
+                                            <>
+                                                <SelectItem value="success">Success</SelectItem>
+                                                <SelectItem value="failed">Failed</SelectItem>
+                                                <SelectItem value="pending">Pending</SelectItem>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <SelectItem value="active">Active</SelectItem>
+                                                <SelectItem value="cancelled">Cancelled</SelectItem>
+                                                <SelectItem value="expired">Expired</SelectItem>
+                                            </>
+                                        )}
+                                    </SelectContent>
+                                </Select>
 
-                            <Button variant="outline" onClick={fetchData}>
-                                <RefreshCw className="h-4 w-4 mr-2" />
-                                Refresh
-                            </Button>
+                                <Button variant="outline" onClick={fetchData} className="flex-1 sm:flex-none">
+                                    <RefreshCw className="h-4 w-4 mr-2" />
+                                    Refresh
+                                </Button>
 
-                            <Button
-                                variant="default"
-                                onClick={async () => {
-                                    setLoading(true)
-                                    try {
-                                        const response = await fetch('/api/sync-payments', { method: 'POST' })
-                                        const result = await response.json()
-                                        if (result.success) {
-                                            alert(`Synced ${result.synced} new payments, skipped ${result.skipped} existing`)
-                                            fetchData()
-                                        } else {
-                                            alert('Sync failed: ' + result.error)
+                                <Button
+                                    variant="default"
+                                    onClick={async () => {
+                                        setLoading(true)
+                                        try {
+                                            const response = await fetch('/api/sync-payments', { method: 'POST' })
+                                            const result = await response.json()
+                                            if (result.success) {
+                                                alert(`Synced ${result.synced} new payments, skipped ${result.skipped} existing`)
+                                                fetchData()
+                                            } else {
+                                                alert('Sync failed: ' + result.error)
+                                            }
+                                        } catch (error: any) {
+                                            alert('Sync failed: ' + error.message)
+                                        } finally {
+                                            setLoading(false)
                                         }
-                                    } catch (error: any) {
-                                        alert('Sync failed: ' + error.message)
-                                    } finally {
-                                        setLoading(false)
-                                    }
-                                }}
-                            >
-                                <RefreshCw className="h-4 w-4 mr-2" />
-                                Sync Payments
-                            </Button>
+                                    }}
+                                    className="flex-1 sm:flex-none"
+                                >
+                                    <RefreshCw className="h-4 w-4 mr-2" />
+                                    Sync Payments
+                                </Button>
 
-                            <Button variant="outline" onClick={exportToCSV}>
-                                <Download className="h-4 w-4 mr-2" />
-                                Export
-                            </Button>
+                                <Button variant="outline" onClick={exportToCSV} className="flex-1 sm:flex-none">
+                                    <Download className="h-4 w-4 mr-2" />
+                                    Export
+                                </Button>
+                            </div>
                         </div>
                     </div>
 
