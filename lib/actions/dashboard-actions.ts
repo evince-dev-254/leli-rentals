@@ -620,7 +620,8 @@ export async function getAdminDashboardData() {
         { count: totalStaff },
         { count: activeListings },
         { count: totalBookings },
-        { count: totalReviews }
+        { count: totalReviews },
+        { count: pendingWithdrawals }
     ] = await Promise.all([
         adminSupabase.from("user_profiles").select("id", { count: "exact", head: true }),
         adminSupabase.from("user_profiles").select("id", { count: "exact", head: true }).eq("role", "owner"),
@@ -629,6 +630,7 @@ export async function getAdminDashboardData() {
         adminSupabase.from("listings").select("id", { count: "exact", head: true }).eq("status", "approved"),
         adminSupabase.from("bookings").select("id", { count: "exact", head: true }),
         adminSupabase.from("reviews").select("id", { count: "exact", head: true }),
+        adminSupabase.from("withdrawals").select("id", { count: "exact", head: true }).eq("status", "pending"),
     ])
 
     // 2. Fetch Revenue
@@ -718,6 +720,13 @@ export async function getAdminDashboardData() {
         }))
     ].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()).slice(0, 10)
 
+    // 5. Fetch Additional Financial Stats
+    const { data: withdrawalRows } = await adminSupabase.from("withdrawals").select("amount").eq("status", "completed")
+    const totalPayouts = (withdrawalRows || []).reduce((s: number, w: any) => s + Number(w.amount || 0), 0)
+
+    const { data: commissionRows } = await adminSupabase.from("affiliate_commissions").select("amount").eq("status", "paid")
+    const totalCommissions = (commissionRows || []).reduce((s: number, c: any) => s + Number(c.amount || 0), 0)
+
     return {
         stats: {
             totalUsers: totalUsers || 0,
@@ -728,6 +737,9 @@ export async function getAdminDashboardData() {
             activeListings: activeListings || 0,
             totalBookings: totalBookings || 0,
             totalRevenue,
+            totalPayouts,
+            totalCommissions,
+            pendingWithdrawals: pendingWithdrawals || 0,
             suspendedAccounts: mappedSuspended.length,
             totalReviews: totalReviews || 0
         },

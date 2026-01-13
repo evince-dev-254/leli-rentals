@@ -25,7 +25,25 @@ export async function getAllAffiliates() {
         return []
     }
 
-    return data
+    // Enhance with real-time stats from affiliate_commissions
+    const enhancedAffiliates = await Promise.all((data || []).map(async (aff) => {
+        const { data: commissions } = await supabaseAdmin
+            .from('affiliate_commissions')
+            .select('amount', { count: 'exact' })
+            .eq('affiliate_id', aff.user_id)
+            .eq('status', 'paid');
+
+        const total_earnings = commissions?.reduce((sum, c) => sum + Number(c.amount), 0) || 0;
+        const total_referrals = commissions?.length || 0;
+
+        return {
+            ...aff,
+            total_earnings,
+            total_referrals
+        };
+    }));
+
+    return enhancedAffiliates
 }
 
 
@@ -235,9 +253,9 @@ export async function getWithdrawalHistory(userId: string) {
     return data
 }
 
-export async function getAffiliateReferralsAdmin(affiliateId: string) {
+export async function getAffiliateReferralsAdmin(userId: string) {
     const { data, error } = await supabaseAdmin
-        .from('affiliate_referrals')
+        .from('affiliate_commissions')
         .select(`
             *,
             referred_user:user_profiles!referred_user_id(
@@ -245,11 +263,11 @@ export async function getAffiliateReferralsAdmin(affiliateId: string) {
                 email,
                 avatar_url
             ),
-            listing:listings(
-                title
+            listing:bookings(
+                listing_title
             )
         `)
-        .eq('affiliate_id', affiliateId)
+        .eq('affiliate_id', userId)
         .order('created_at', { ascending: false });
 
     if (error) {
@@ -257,5 +275,11 @@ export async function getAffiliateReferralsAdmin(affiliateId: string) {
         return [];
     }
 
-    return data;
+    // Map to expected format
+    return (data || []).map(ref => ({
+        ...ref,
+        commission_amount: ref.amount,
+        commission_status: ref.status,
+        listing: { title: ref.listing?.listing_title }
+    }));
 }

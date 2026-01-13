@@ -39,6 +39,9 @@ export function AdminDashboard() {
     activeListings: 0,
     totalBookings: 0,
     totalRevenue: 0,
+    totalPayouts: 0,
+    totalCommissions: 0,
+    pendingWithdrawals: 0,
     suspendedAccounts: 0,
     totalReviews: 0,
   })
@@ -125,15 +128,29 @@ export function AdminDashboard() {
           color="purple"
           description="Active support team"
         />
-        <Link href="/admin/test-payment">
+        <DashboardStatCard
+          title="Total Revenue"
+          value={`KSh ${stats.totalRevenue.toLocaleString()}`}
+          icon={TrendingUp}
+          color="green"
+          description="Gross platform revenue"
+        />
+        <Link href="/admin/withdrawals">
           <DashboardStatCard
-            title="Test Payment"
-            value="→"
+            title="Pending Payouts"
+            value={stats.pendingWithdrawals}
             icon={Key}
-            color="green"
-            description="Test Paystack integration"
+            color="orange"
+            description="Withdrawal requests"
           />
         </Link>
+        <DashboardStatCard
+          title="Total Payouts"
+          value={`KSh ${stats.totalPayouts.toLocaleString()}`}
+          icon={TrendingUp}
+          color="blue"
+          description="Paid out to users"
+        />
         <DashboardStatCard
           title="Total Reviews"
           value={stats.totalReviews}
