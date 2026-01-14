@@ -9,8 +9,16 @@ import { MessagesProvider } from "@/lib/messages-context"
 import { ThemeProvider } from "@/components/theme-provider"
 import "./globals.css"
 
-const _geist = Geist({ subsets: ["latin"] })
-const _geistMono = Geist_Mono({ subsets: ["latin"] })
+const geist = Geist({
+  subsets: ["latin"],
+  display: 'swap',
+  variable: '--font-geist'
+})
+const geistMono = Geist_Mono({
+  subsets: ["latin"],
+  display: 'swap',
+  variable: '--font-geist-mono'
+})
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://www.leli.rentals'),
@@ -91,28 +99,43 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        {/* Start cookieyes banner */}
-        <script
-          id="cookieyes"
-          type="text/javascript"
-          src="https://cdn-cookieyes.com/client_data/be8a3339e81a28dfeba5c085b6d4786b/script.js"
-          async
-        ></script>
-        {/* End cookieyes banner */}
-      </head>
-      <body className={`font-sans antialiased hide-scrollbar`} suppressHydrationWarning>
+      <head />
+      <body className={`${geist.variable} ${geistMono.variable} font-sans antialiased hide-scrollbar`} suppressHydrationWarning>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
           <FavoritesProvider>
             <MessagesProvider>
               {children}
               <Toaster position="top-center" richColors duration={12000} />
               <OfflineBanner />
-
-
             </MessagesProvider>
           </FavoritesProvider>
         </ThemeProvider>
+
+        {/* CookieYes - Load after page is interactive */}
+        <Script
+          id="cookieyes"
+          src="https://cdn-cookieyes.com/client_data/be8a3339e81a28dfeba5c085b6d4786b/script.js"
+          strategy="afterInteractive"
+        />
+
+        {/* Tawk.to - Load lazily after everything else */}
+        <Script
+          id="tawk-to"
+          strategy="lazyOnload"
+          dangerouslySetInnerHTML={{
+            __html: `
+              var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+              (function(){
+                var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+                s1.async=true;
+                s1.src='https://embed.tawk.to/YOUR_TAWK_PROPERTY_ID/YOUR_WIDGET_ID';
+                s1.charset='UTF-8';
+                s1.setAttribute('crossorigin','*');
+                s0.parentNode.insertBefore(s1,s0);
+              })();
+            `
+          }}
+        />
       </body>
     </html>
   )
