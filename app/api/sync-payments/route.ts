@@ -23,7 +23,13 @@ export async function POST() {
         })
 
         if (!response.ok) {
-            throw new Error('Failed to fetch transactions from Paystack')
+            const errorText = await response.text()
+            console.error('Paystack API Error:', {
+                status: response.status,
+                statusText: response.statusText,
+                body: errorText
+            })
+            throw new Error(`Paystack API failed: ${response.status} ${response.statusText}`)
         }
 
         const { data: transactions } = await response.json()

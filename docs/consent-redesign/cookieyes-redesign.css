@@ -1,0 +1,130 @@
+/* CookieYes Consent UI Redesign - Leli Rentals */
+/* Targets .cky- elements injected by CookieYes */
+
+:root {
+    --cky-bg-purple: #4c1d95;
+    --cky-bg-pink: #9d174d;
+    --cky-accent: #10b981;
+    --cky-text-light: #f9fafb;
+    --cky-text-muted: #9ca3af;
+    --cky-glass-bg: rgba(15, 23, 42, 0.85);
+    --cky-glass-border: rgba(255, 255, 255, 0.1);
+}
+
+/* Modal Overlay / Backdrop */
+.cky-overlay {
+    background: radial-gradient(circle at top left, var(--cky-bg-purple), transparent),
+        radial-gradient(circle at bottom right, var(--cky-bg-pink), transparent),
+        rgba(0, 0, 0, 0.7) !important;
+    backdrop-filter: blur(8px) !important;
+}
+
+/* Banner / Container */
+.cky-consent-container,
+.cky-modal,
+.cky-preference-wrapper {
+    background: var(--cky-glass-bg) !important;
+    backdrop-filter: blur(16px) saturate(180%) !important;
+    border: 1px solid var(--cky-glass-border) !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+    border-radius: 24px !important;
+    color: var(--cky-text-light) !important;
+    padding: 24px !important;
+}
+
+/* Title and Description */
+.cky-title,
+.cky-preference-title {
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+    margin-bottom: 8px !important;
+    background: linear-gradient(to right, #fff, var(--cky-text-muted)) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    color: #fff !important;
+}
+
+.cky-desc,
+.cky-preference-content {
+    font-size: 0.9375rem !important;
+    color: var(--cky-text-muted) !important;
+    line-height: 1.5 !important;
+}
+
+/* Buttons */
+.cky-btn-accept {
+    background-color: var(--cky-accent) !important;
+    color: #fff !important;
+    border-radius: 12px !important;
+    font-weight: 600 !important;
+    padding: 12px 24px !important;
+    border: none !important;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3) !important;
+    transition: all 0.2s ease !important;
+}
+
+.cky-btn-accept:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4) !important;
+    filter: brightness(1.1) !important;
+}
+
+.cky-btn-customize,
+.cky-btn-reject {
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: #fff !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 12px !important;
+    font-weight: 600 !important;
+    padding: 12px 24px !important;
+    transition: all 0.2s ease !important;
+}
+
+.cky-btn-customize:hover,
+.cky-btn-reject:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Preference Center Switches */
+.cky-switch input:checked+.cky-slider {
+    background-color: var(--cky-accent) !important;
+}
+
+.cky-preference-header {
+    border-bottom: 1px solid var(--cky-glass-border) !important;
+    padding-bottom: 16px !important;
+    margin-bottom: 16px !important;
+}
+
+/* Custom categories styling */
+.cky-preference-item {
+    background: rgba(255, 255, 255, 0.03) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    border-radius: 16px !important;
+    margin-bottom: 12px !important;
+    padding: 16px !important;
+    transition: all 0.2s ease !important;
+}
+
+.cky-preference-item:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Animations */
+@keyframes cky-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.cky-consent-container {
+    animation: cky-fade-in 0.4s ease-out !important;
+}

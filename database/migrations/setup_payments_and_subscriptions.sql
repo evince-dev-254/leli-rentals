@@ -42,7 +42,7 @@ CREATE TABLE payments (
   -- Paystack transaction details
   reference TEXT UNIQUE NOT NULL,
   amount DECIMAL(10, 2) NOT NULL,
-  currency TEXT DEFAULT 'NGN',
+  currency TEXT DEFAULT 'KES',
   status TEXT NOT NULL CHECK (status IN ('pending', 'success', 'failed', 'abandoned')),
   payment_method TEXT,
   

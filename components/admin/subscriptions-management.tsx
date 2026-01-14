@@ -10,17 +10,19 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
-    CreditCard,
-    Users,
-    DollarSign,
-    TrendingUp,
-    Search,
-    Download,
     RefreshCw,
-    XCircle,
+    Search,
+    Filter,
+    Download,
+    CreditCard,
+    TrendingUp,
+    DollarSign,
+    Users,
     CheckCircle,
+    XCircle,
     Clock,
-    Filter
+    Zap,
+    Loader2
 } from "lucide-react"
 import { getAdminPayments } from "@/lib/actions/admin-actions"
 import { toast } from "sonner"
@@ -205,7 +207,7 @@ export function SubscriptionsManagement() {
             } else {
                 return [
                     item.plan_name,
-                    `NGN ${item.amount}`,
+                    `KSh ${item.amount}`,
                     item.status,
                     item.user_profiles.email,
                     item.next_payment_date ? new Date(item.next_payment_date).toLocaleDateString() : 'N/A',
@@ -232,7 +234,7 @@ export function SubscriptionsManagement() {
                         <div>
                             <p className="text-sm text-muted-foreground">Total Revenue</p>
                             <p className="text-2xl font-bold">
-                                NGN {stats.totalRevenue.toLocaleString()}
+                                KSh {stats.totalRevenue.toLocaleString()}
                             </p>
                         </div>
                         <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
@@ -287,8 +289,8 @@ export function SubscriptionsManagement() {
                             <TabsTrigger value="subscriptions">Subscriptions</TabsTrigger>
                         </TabsList>
 
-                        <div className="flex flex-col sm:flex-row gap-3">
-                            <div className="relative flex-1 sm:w-64">
+                        <div className="flex flex-wrap items-center gap-2">
+                            <div className="relative w-full sm:w-64">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                 <Input
                                     placeholder="Search..."
@@ -321,20 +323,45 @@ export function SubscriptionsManagement() {
                                 </SelectContent>
                             </Select>
 
-                            <Button variant="outline" onClick={fetchData} disabled={loading}>
-                                <RefreshCw className={cn("h-4 w-4 mr-2", loading && activeTab === "payments" && "animate-spin")} />
-                                Refresh
-                            </Button>
+                            <div className="flex items-center gap-2 w-full sm:w-auto">
+                                <Button
+                                    variant="outline"
+                                    onClick={fetchData}
+                                    disabled={loading}
+                                    className="flex-1 sm:flex-none"
+                                    title="Refresh data"
+                                >
+                                    {loading && activeTab === "payments" ? (
+                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                    ) : (
+                                        <RefreshCw className="h-4 w-4 mr-2" />
+                                    )}
+                                    <span className="sm:hidden lg:inline">Refresh</span>
+                                </Button>
 
-                            <Button variant="default" onClick={syncPayments} disabled={loading} className="bg-blue-600 hover:bg-blue-700 text-white">
-                                <RefreshCw className={cn("h-4 w-4 mr-2", loading && "animate-spin")} />
-                                Sync with Paystack
-                            </Button>
+                                <Button
+                                    variant="default"
+                                    onClick={syncPayments}
+                                    disabled={loading}
+                                    className="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700 text-white"
+                                >
+                                    {loading ? (
+                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                    ) : (
+                                        <Zap className="h-4 w-4 mr-2" />
+                                    )}
+                                    Sync<span className="hidden lg:inline ml-1">with Paystack</span>
+                                </Button>
 
-                            <Button variant="outline" onClick={exportToCSV}>
-                                <Download className="h-4 w-4 mr-2" />
-                                Export
-                            </Button>
+                                <Button
+                                    variant="outline"
+                                    onClick={exportToCSV}
+                                    className="flex-1 sm:flex-none"
+                                >
+                                    <Download className="h-4 w-4 mr-2" />
+                                    <span className="sm:hidden lg:inline">Export</span>
+                                </Button>
+                            </div>
                         </div>
                     </div>
 
@@ -376,7 +403,7 @@ export function SubscriptionsManagement() {
                                                     </div>
                                                 </td>
                                                 <td className="p-3 font-semibold">
-                                                    {payment.currency} {Number(payment.amount).toLocaleString()}
+                                                    {payment.currency === 'KES' || payment.currency === 'NGN' ? 'KSh' : payment.currency} {Number(payment.amount).toLocaleString()}
                                                 </td>
                                                 <td className="p-3">{getStatusBadge(payment.status)}</td>
                                                 <td className="p-3 text-sm capitalize">{payment.payment_method || 'N/A'}</td>
@@ -440,7 +467,7 @@ export function SubscriptionsManagement() {
                                                 </td>
                                                 <td className="p-3 font-medium">{sub.plan_name}</td>
                                                 <td className="p-3 font-semibold">
-                                                    NGN {Number(sub.amount).toLocaleString()}
+                                                    KSh {Number(sub.amount).toLocaleString()}
                                                 </td>
                                                 <td className="p-3">{getStatusBadge(sub.status)}</td>
                                                 <td className="p-3 text-sm">

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* CSS will be provided in a separate file or included here if preferred */
+    </style>
+</head>
+
+<body>
+    <div id="zaraz-consent-modal" class="cf-consent-modal">
+        <div class="cf-consent-backdrop"></div>
+        <div class="cf-consent-container">
+            <div class="cf-consent-card glass-effect">
+                <div class="cf-consent-header">
+                    <img src="https://www.leli.rentals/logo.png" alt="Leli Rentals" class="cf-logo">
+                    <h2>Cookie Preferences</h2>
+                    <p>We use cookies to improve your experience and analyze our traffic.</p>
+                </div>
+
+                <div class="cf-consent-body">
+                    <!-- Category: Necessary -->
+                    <div class="cf-category-item">
+                        <div class="cf-category-info">
+                            <div class="cf-category-label">
+                                <span class="cf-icon cf-icon-lock"></span>
+                                <h3>Necessary</h3>
+                                <span class="cf-badge cf-badge-required">Required</span>
+                            </div>
+                            <p class="cf-category-desc">Essential for the website to function, such as security and
+                                account sessions.</p>
+                        </div>
+                        <div class="cf-toggle-container">
+                            <input type="checkbox" id="cat-necessary" checked disabled>
+                            <label for="cat-necessary" class="cf-toggle"></label>
+                        </div>
+                    </div>
+
+                    <!-- Category: Analytics -->
+                    <div class="cf-category-item">
+                        <div class="cf-category-info">
+                            <div class="cf-category-label">
+                                <span class="cf-icon cf-icon-chart"></span>
+                                <h3>Analytics</h3>
+                            </div>
+                            <p class="cf-category-desc">Helps us understand how visitors interact with our site to
+                                improve the experience.</p>
+                        </div>
+                        <div class="cf-toggle-container">
+                            <input type="checkbox" id="cat-analytics" data-category="analytics">
+                            <label for="cat-analytics" class="cf-toggle"></label>
+                        </div>
+                    </div>
+
+                    <!-- Category: Functionality & Support -->
+                    <div class="cf-category-item">
+                        <div class="cf-category-info">
+                            <div class="cf-category-label">
+                                <span class="cf-icon cf-icon-settings"></span>
+                                <h3>Functionality & Support</h3>
+                            </div>
+                            <p class="cf-category-desc">Used for preferences like language and providing live chat
+                                support (Tawk.to).</p>
+                        </div>
+                        <div class="cf-toggle-container">
+                            <input type="checkbox" id="cat-functional" data-category="functionality">
+                            <label for="cat-functional" class="cf-toggle"></label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cf-consent-footer">
+                    <button id="cf-accept-all" class="cf-btn cf-btn-primary">Accept All</button>
+                    <button id="cf-save-preferences" class="cf-btn cf-btn-outline">Save Settings</button>
+                </div>
+
+                <div class="cf-consent-links">
+                    <a href="/privacy" target="_blank">Privacy Policy</a>
+                    <span class="cf-separator">•</span>
+                    <a href="/cookies" target="_blank">Cookie Policy</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script to handle interactions with Zaraz API -->
+    <script>
+        (function () {
+            const modal = document.getElementById('zaraz-consent-modal');
+            const acceptAllBtn = document.getElementById('cf-accept-all');
+            const saveBtn = document.getElementById('cf-save-preferences');
+
+            acceptAllBtn.onclick = function () {
+                // If using Zaraz Consent API
+                if (typeof zaraz !== 'undefined' && zaraz.consent) {
+                    zaraz.consent.setAll(true);
+                }
+                modal.style.display = 'none';
+            };
+
+            saveBtn.onclick = function () {
+                const preferences = {
+                    analytics: document.getElementById('cat-analytics').checked,
+                    functionality: document.getElementById('cat-functional').checked
+                };
+
+                if (typeof zaraz !== 'undefined' && zaraz.consent) {
+                    zaraz.consent.set(preferences);
+                }
+                modal.style.display = 'none';
+            };
+        })();
+    </script>
+</body>
+
+</html>

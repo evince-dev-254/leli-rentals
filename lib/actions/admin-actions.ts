@@ -212,7 +212,10 @@ export async function getAdminPayments() {
             .order("created_at", { ascending: false })
             .limit(100)
 
-        if (paymentsError) throw paymentsError
+        if (paymentsError) {
+            console.error("Supabase error fetching payments:", paymentsError)
+            throw paymentsError
+        }
 
         // Fetch subscriptions
         const { data: subscriptions, error: subscriptionsError } = await supabaseAdmin
@@ -224,15 +227,23 @@ export async function getAdminPayments() {
             .order("created_at", { ascending: false })
             .limit(100)
 
-        if (subscriptionsError) throw subscriptionsError
+        if (subscriptionsError) {
+            console.error("Supabase error fetching subscriptions:", subscriptionsError)
+            throw subscriptionsError
+        }
 
         return {
             success: true,
             payments: payments || [],
             subscriptions: subscriptions || []
         }
-    } catch (error) {
-        console.error("Error fetching admin payments:", error)
-        return { success: false, error: "Failed to fetch payments" }
+    } catch (error: any) {
+        console.error("Error fetching admin payments details:", {
+            message: error.message,
+            code: error.code,
+            details: error.details,
+            hint: error.hint
+        })
+        return { success: false, error: error.message || "Failed to fetch payments" }
     }
 }
