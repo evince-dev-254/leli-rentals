@@ -84,6 +84,7 @@ export async function POST() {
 
             if (!error) {
                 syncedCount++
+                console.log(`Successfully synced payment: ${transaction.reference}`)
 
                 // Send email notification
                 try {
@@ -120,6 +121,8 @@ export async function POST() {
                 } catch (emailError) {
                     console.error('Failed to send email:', emailError)
                 }
+            } else {
+                console.error(`Failed to sync payment ${transaction.reference}:`, error)
             }
         }
 

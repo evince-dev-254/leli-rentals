@@ -207,7 +207,10 @@ export async function getAdminPayments() {
             .select(`
                 *,
                 user_profiles(full_name, email),
-                bookings(id, listing_title)
+                bookings(
+                    id,
+                    listings(title)
+                )
             `)
             .order("created_at", { ascending: false })
             .limit(100)
