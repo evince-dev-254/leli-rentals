@@ -92,6 +92,14 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Start cookieyes banner */}
+        <script
+          id="cookieyes"
+          type="text/javascript"
+          src="https://cdn-cookieyes.com/client_data/be8a3339e81a28dfeba5c085b6d4786b/script.js"
+          async
+        ></script>
+        {/* End cookieyes banner */}
       </head>
       <body className={`font-sans antialiased hide-scrollbar`} suppressHydrationWarning>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
