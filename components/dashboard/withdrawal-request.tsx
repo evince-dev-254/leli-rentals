@@ -1,13 +1,14 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Wallet, Loader2, AlertCircle, CheckCircle2 } from "lucide-react"
-import { getAvailableBalance, requestWithdrawal, MINIMUM_WITHDRAWAL } from "@/lib/actions/commission-actions"
+import { getAvailableBalance, requestWithdrawal } from "@/lib/actions/commission-actions"
+import { MINIMUM_WITHDRAWAL } from "@/lib/constants"
 import { supabase } from "@/lib/supabase"
 import { toast } from "sonner"
 
@@ -30,7 +31,7 @@ export function WithdrawalRequest({ userType }: WithdrawalRequestProps) {
         loadBalance()
     }, [loadBalance])
 
-    async function loadBalance() {
+    const loadBalance = useCallback(async () => {
         setLoadingBalance(true)
         try {
             const { data: { user } } = await supabase.auth.getUser()
@@ -45,7 +46,7 @@ export function WithdrawalRequest({ userType }: WithdrawalRequestProps) {
         } finally {
             setLoadingBalance(false)
         }
-    }
+    }, [userType])
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault()

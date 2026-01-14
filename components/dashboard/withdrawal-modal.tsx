@@ -15,7 +15,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
 import { Loader2 } from "lucide-react"
-import { requestWithdrawal, MINIMUM_WITHDRAWAL } from "@/lib/actions/commission-actions"
+import { requestWithdrawal } from "@/lib/actions/commission-actions"
+import { MINIMUM_WITHDRAWAL } from "@/lib/constants"
 
 interface WithdrawalModalProps {
     open: boolean

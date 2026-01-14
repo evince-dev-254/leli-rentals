@@ -27,8 +27,8 @@ export function HeroSection() {
       {/* Dark Overlay for readability - slightly lightened */}
       <div className="absolute inset-0 bg-black/30" />
 
-      {/* Additional Gradient for depth */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/40" />
+      {/* Additional Gradient for depth - hidden on small mobile to save GPU */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/40 hidden sm:block" />
 
       <motion.div
         variants={staggerContainer}

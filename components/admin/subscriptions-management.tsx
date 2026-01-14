@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState, useCallback } from "react"
-import { supabase } from "@/lib/supabase"
+import { formatDistanceToNow } from "date-fns"
 import Image from "next/image"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -22,7 +22,9 @@ import {
     Clock,
     Filter
 } from "lucide-react"
-import { formatDistanceToNow } from "date-fns"
+import { getAdminPayments } from "@/lib/actions/admin-actions"
+import { toast } from "sonner"
+import { cn } from "@/lib/utils"
 
 interface Payment {
     id: string
@@ -85,50 +87,58 @@ export function SubscriptionsManagement() {
     const fetchData = useCallback(async () => {
         setLoading(true)
         try {
-            // Fetch payments
-            const { data: paymentsData } = await supabase
-                .from("payments")
-                .select(`
-          *,
-          user_profiles(full_name, email),
-          bookings(id, listing_title)
-        `)
-                .order("created_at", { ascending: false })
-                .limit(100)
+            const result = await getAdminPayments()
 
-            // Fetch subscriptions
-            const { data: subscriptionsData } = await supabase
-                .from("subscriptions")
-                .select(`
-          *,
-          user_profiles(full_name, email, avatar_url)
-        `)
-                .order("created_at", { ascending: false })
+            if (result.success) {
+                setPayments(result.payments as Payment[])
+                setSubscriptions(result.subscriptions as Subscription[])
 
-            setPayments(paymentsData || [])
-            setSubscriptions(subscriptionsData || [])
-
-            // Calculate stats
-            if (paymentsData) {
-                const successful = paymentsData.filter(p => p.status === 'success')
-                const totalRevenue = successful.reduce((sum, p) => sum + Number(p.amount), 0)
-                const successRate = paymentsData.length > 0
-                    ? (successful.length / paymentsData.length) * 100
+                // Calculate stats
+                const successful = result.payments!.filter((p: any) => p.status === 'success')
+                const totalRevenue = successful.reduce((sum: number, p: any) => sum + Number(p.amount), 0)
+                const successRate = result.payments!.length > 0
+                    ? (successful.length / result.payments!.length) * 100
                     : 0
 
                 setStats({
                     totalRevenue,
-                    totalPayments: paymentsData.length,
-                    activeSubscriptions: subscriptionsData?.filter(s => s.status === 'active').length || 0,
+                    totalPayments: result.payments!.length,
+                    activeSubscriptions: (result.subscriptions as any[]).filter(s => s.status === 'active').length || 0,
                     successRate
                 })
+            } else {
+                toast.error(result.error || "Failed to fetch data")
             }
         } catch (error) {
             console.error("Error fetching data:", error)
+            toast.error("An unexpected error occurred")
         } finally {
             setLoading(false)
         }
     }, [])
+
+    const syncPayments = async () => {
+        setLoading(true)
+        try {
+            toast.loading("Syncing with Paystack...", { id: "sync" })
+            const response = await fetch("/api/sync-payments", {
+                method: "POST"
+            })
+            const data = await response.json()
+
+            if (data.success) {
+                toast.success(`Sync complete! ${data.synced} new payments found.`, { id: "sync" })
+                fetchData()
+            } else {
+                toast.error(data.error || "Failed to sync payments", { id: "sync" })
+            }
+        } catch (error) {
+            console.error("Error syncing:", error)
+            toast.error("Failed to connect to sync server", { id: "sync" })
+        } finally {
+            setLoading(false)
+        }
+    }
 
     useEffect(() => {
         fetchData()
@@ -311,9 +321,14 @@ export function SubscriptionsManagement() {
                                 </SelectContent>
                             </Select>
 
-                            <Button variant="outline" onClick={fetchData}>
-                                <RefreshCw className="h-4 w-4 mr-2" />
+                            <Button variant="outline" onClick={fetchData} disabled={loading}>
+                                <RefreshCw className={cn("h-4 w-4 mr-2", loading && activeTab === "payments" && "animate-spin")} />
                                 Refresh
+                            </Button>
+
+                            <Button variant="default" onClick={syncPayments} disabled={loading} className="bg-blue-600 hover:bg-blue-700 text-white">
+                                <RefreshCw className={cn("h-4 w-4 mr-2", loading && "animate-spin")} />
+                                Sync with Paystack
                             </Button>
 
                             <Button variant="outline" onClick={exportToCSV}>

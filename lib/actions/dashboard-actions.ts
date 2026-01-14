@@ -818,6 +818,7 @@ export async function createListing(ownerId: string, listingData: any) {
 /** Get User Earnings Summary (Lightweight for stats) */
 export async function getEarningsSummary(userId: string, role: 'owner' | 'affiliate') {
     const supabase = await createClient()
+    let totalEarnings = 0
     try {
         if (role === 'owner') {
             const { data: bookings } = await supabase

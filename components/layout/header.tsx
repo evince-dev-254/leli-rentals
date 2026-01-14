@@ -53,10 +53,17 @@ export function Header() {
   const router = useRouter()
 
   useEffect(() => {
+    let ticking = false
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50)
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          setIsScrolled(window.scrollY > 20)
+          ticking = false
+        })
+        ticking = true
+      }
     }
-    window.addEventListener("scroll", handleScroll)
+    window.addEventListener("scroll", handleScroll, { passive: true })
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
@@ -142,10 +149,10 @@ export function Header() {
   }
 
   return (
-    <header className={`fixed top-0 left-0 right-0 z-50 w-full px-2 sm:px-4 py-2 sm:py-4 transition-all duration-300 ${isScrolled ? "bg-background/80 backdrop-blur-md" : ""}`}>
+    <header className={`fixed top-0 left-0 right-0 z-50 w-full px-2 sm:px-4 py-2 sm:py-4 transition-[padding,background-color] duration-300 ease-in-out ${isScrolled ? "bg-background/80 backdrop-blur-md" : ""}`}>
       <div className="container mx-auto">
         <div
-          className={`flex h-12 sm:h-14 items-center justify-between px-3 sm:px-6 rounded-full shadow-lg transition-all duration-300 ${isScrolled
+          className={`flex h-12 sm:h-14 items-center justify-between px-3 sm:px-6 rounded-full shadow-lg transition-[background-color,border-color] duration-300 ease-in-out ${isScrolled
             ? "bg-[#1a1a2e]/95 backdrop-blur-md border border-[#2a2a4e]"
             : "bg-black/80 backdrop-blur-md border border-white/10"
             }`}

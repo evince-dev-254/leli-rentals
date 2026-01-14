@@ -110,6 +110,12 @@ export function AdminSidebar({ className }: { className?: string }) {
       href: "/admin/settings",
       active: pathname === "/admin/settings",
     },
+    {
+      label: "Test Payment",
+      icon: CreditCard,
+      href: "/admin/test-payment",
+      active: pathname === "/admin/test-payment",
+    },
   ]
 
   return (

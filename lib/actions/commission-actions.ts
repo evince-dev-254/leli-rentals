@@ -7,8 +7,7 @@ const supabaseAdmin = createClient(
     process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-const COMMISSION_RATE = 5 // 5% commission
-const MINIMUM_WITHDRAWAL = 1000 // 1000 KES
+import { COMMISSION_RATE, MINIMUM_WITHDRAWAL } from '../constants'
 
 /**
  * Calculate commission for a booking
@@ -247,4 +246,3 @@ export async function rejectWithdrawal(withdrawalId: string, adminId: string, re
     }
 }
 
-export { COMMISSION_RATE, MINIMUM_WITHDRAWAL }

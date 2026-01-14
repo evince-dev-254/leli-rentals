@@ -198,3 +198,41 @@ export async function getUserDetails(userId: string) {
         return { success: false, error: "Failed to fetch user details" }
     }
 }
+
+export async function getAdminPayments() {
+    try {
+        // Fetch payments
+        const { data: payments, error: paymentsError } = await supabaseAdmin
+            .from("payments")
+            .select(`
+                *,
+                user_profiles(full_name, email),
+                bookings(id, listing_title)
+            `)
+            .order("created_at", { ascending: false })
+            .limit(100)
+
+        if (paymentsError) throw paymentsError
+
+        // Fetch subscriptions
+        const { data: subscriptions, error: subscriptionsError } = await supabaseAdmin
+            .from("subscriptions")
+            .select(`
+                *,
+                user_profiles(full_name, email, avatar_url)
+            `)
+            .order("created_at", { ascending: false })
+            .limit(100)
+
+        if (subscriptionsError) throw subscriptionsError
+
+        return {
+            success: true,
+            payments: payments || [],
+            subscriptions: subscriptions || []
+        }
+    } catch (error) {
+        console.error("Error fetching admin payments:", error)
+        return { success: false, error: "Failed to fetch payments" }
+    }
+}
