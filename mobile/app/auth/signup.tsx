@@ -1,17 +1,14 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, SafeAreaView, KeyboardAvoidingView, Platform, ScrollView, Dimensions, useColorScheme, Image } from 'react-native';
+import { View, Text, SafeAreaView, KeyboardAvoidingView, Platform, ScrollView, Dimensions, useColorScheme, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
-import { supabase } from '../../lib/supabase';
-import { Mail, Lock, User } from 'lucide-react-native';
+import { supabase } from '@/lib/supabase';
+import { Mail, Lock, User, Phone } from 'lucide-react-native';
 import { MotiView } from 'moti';
-import { BrandedAlert } from '../../components/ui/branded-alert';
-import { BackgroundGradient } from '../../components/ui/background-gradient';
-import * as WebBrowser from 'expo-web-browser';
-
-WebBrowser.maybeCompleteAuthSession();
-
-const LOGO_BLACK = require('../../assets/images/logo_black.png');
-const LOGO_WHITE = require('../../assets/images/logo_white.png');
+import { BrandedAlert } from '@/components/ui/branded-alert';
+import { BackgroundGradient } from '@/components/ui/background-gradient';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { BackButton } from '@/components/ui/back-button';
 
 const { width } = Dimensions.get('window');
 
@@ -19,6 +16,7 @@ export default function SignupScreen() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [fullName, setFullName] = useState('');
+    const [phone, setPhone] = useState('');
     const [loading, setLoading] = useState(false);
     const [alertConfig, setAlertConfig] = useState<{ visible: boolean; title: string; message: string; type: 'success' | 'error' | 'info' }>({
         visible: false,
@@ -35,59 +33,33 @@ export default function SignupScreen() {
     };
 
     const handleSignup = async () => {
-        if (!email || !password || !fullName) {
-            showAlert('Missing Info', 'Please fill in all fields to create your account.', 'info');
+        if (!email || !password || !fullName || !phone) {
+            showAlert('Wait!', 'Please fill in all fields.', 'info');
             return;
         }
 
         setLoading(true);
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
             email,
             password,
             options: {
                 data: {
                     full_name: fullName,
+                    phone: phone,
                 }
             }
         });
 
         if (error) {
-            showAlert('Signup Error', error.message, 'error');
+            showAlert('Signup Failed', error.message, 'error');
         } else {
-            showAlert('Success!', 'Account created! Please check your email to verify your account.', 'success');
-        }
-        setLoading(false);
-    };
-
-    const handleGoogleSignup = async () => {
-        setLoading(true);
-        // NOTE: Actual Google Sign In requires configuring Google Cloud Console
-        // and adding client IDs to app.json. 
-        // For now, we'll try the Supabase OAuth flow which handles the redirect.
-        const { data, error } = await supabase.auth.signInWithOAuth({
-            provider: 'google',
-            options: {
-                redirectTo: 'leli-rentals://google-auth', // Deep link to app
-            }
-        });
-
-        if (error) {
-            showAlert('Google Error', error.message, 'error');
-        } else if (data.url) {
-            // Open browser for OAuth
-            const result = await WebBrowser.openAuthSessionAsync(data.url, 'leli-rentals://google-auth');
-            if (result.type === 'success' && result.url) {
-                // Supabase handles session via the URL params usually, 
-                // but we might need to parse the hash manually if it doesn't auto-set.
-                // For Supabase + Expo, simpler to let supabase-js handle the URL in a global listener or separate route.
-                // For this "skeleton", we allow the browser flow to happen.
-            }
+            showAlert('Success!', 'Account created. Please check your email for verification.', 'success');
         }
         setLoading(false);
     };
 
     return (
-        <View className="flex-1 bg-slate-50 dark:bg-slate-950">
+        <View className="flex-1 bg-[#fffdf0] dark:bg-slate-950">
             <BrandedAlert
                 visible={alertConfig.visible}
                 title={alertConfig.title}
@@ -103,105 +75,79 @@ export default function SignupScreen() {
                     behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                     className="flex-1"
                 >
+                    <View className="px-8 py-4">
+                        <BackButton />
+                    </View>
+
                     <ScrollView
                         contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 32, paddingBottom: 40 }}
                         showsVerticalScrollIndicator={false}
                     >
-                        <View className="mt-20 mb-10">
+                        <View className="mt-8 mb-10 items-center">
                             <MotiView
-                                from={{ opacity: 0, translateY: 20 }}
-                                animate={{ opacity: 1, translateY: 0 }}
+                                from={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
                                 transition={{ type: 'timing', duration: 800 }}
                             >
-                                <Image
-                                    source={isDark ? LOGO_WHITE : LOGO_BLACK}
-                                    style={{ width: 140, height: 45, marginBottom: 12 }}
-                                    resizeMode="contain"
-                                    accessibilityLabel="Leli Rentals Logo"
-                                    alt="Leli Rentals Logo"
-                                />
-                                <Text className="text-5xl font-black text-slate-900 dark:text-white leading-tight">Create{"\n"}Account</Text>
-                                <Text className="text-slate-500 dark:text-slate-400 mt-4 text-lg font-medium">Start renting and earning today.</Text>
+                                <Text className="text-5xl font-black text-slate-900 dark:text-white text-center">Sign Up</Text>
+                                <Text className="text-slate-500 dark:text-slate-400 mt-4 text-center font-bold">
+                                    Join Kenya&apos;s gear ecosystem today
+                                </Text>
                             </MotiView>
                         </View>
 
-                        <View className="space-y-4">
-                            <View
-                                style={{ borderRadius: 12 }}
-                                className="flex-row items-center border border-slate-200 dark:border-white/10 px-4 bg-white dark:bg-white/5 h-16 shadow-sm dark:shadow-none"
-                            >
-                                <User color="#fb923c" size={20} />
-                                <TextInput
-                                    value={fullName}
-                                    onChangeText={setFullName}
-                                    placeholder="Full Name"
-                                    placeholderTextColor={isDark ? "rgba(255, 255, 255, 0.3)" : "#94a3b8"}
-                                    className="flex-1 ml-3 text-slate-900 dark:text-white font-semibold text-base"
-                                />
-                            </View>
+                        <View>
+                            <Input
+                                label="Full Name"
+                                placeholder="Enter your full name"
+                                value={fullName}
+                                onChangeText={setFullName}
+                                icon={<User size={20} color="#f97316" />}
+                            />
 
-                            <View
-                                style={{ borderRadius: 12, marginTop: 16 }}
-                                className="flex-row items-center border border-slate-200 dark:border-white/10 px-4 bg-white dark:bg-white/5 h-16 shadow-sm dark:shadow-none"
-                            >
-                                <Mail color="#fb923c" size={20} />
-                                <TextInput
-                                    value={email}
-                                    onChangeText={setEmail}
-                                    placeholder="Email Address"
-                                    placeholderTextColor={isDark ? "rgba(255, 255, 255, 0.3)" : "#94a3b8"}
-                                    className="flex-1 ml-3 text-slate-900 dark:text-white font-semibold text-base"
-                                    autoCapitalize="none"
-                                />
-                            </View>
+                            <Input
+                                label="Email address"
+                                placeholder="Enter your email address"
+                                value={email}
+                                onChangeText={setEmail}
+                                keyboardType="email-address"
+                                autoCapitalize="none"
+                                icon={<Mail size={20} color="#f97316" />}
+                            />
 
-                            <View
-                                style={{ borderRadius: 12, marginTop: 16 }}
-                                className="flex-row items-center border border-slate-200 dark:border-white/10 px-4 bg-white dark:bg-white/5 h-16 shadow-sm dark:shadow-none"
-                            >
-                                <Lock color="#fb923c" size={20} />
-                                <TextInput
-                                    value={password}
-                                    onChangeText={setPassword}
-                                    placeholder="Password"
-                                    placeholderTextColor={isDark ? "rgba(255, 255, 255, 0.3)" : "#94a3b8"}
-                                    className="flex-1 ml-3 text-slate-900 dark:text-white font-semibold text-base"
-                                    secureTextEntry
-                                />
-                            </View>
+                            <Input
+                                label="Phone Number"
+                                placeholder="Enter your phone number"
+                                value={phone}
+                                onChangeText={setPhone}
+                                keyboardType="phone-pad"
+                                icon={<Phone size={20} color="#f97316" />}
+                            />
+
+                            <Input
+                                label="Password"
+                                placeholder="Create a password"
+                                value={password}
+                                onChangeText={setPassword}
+                                isPassword
+                                icon={<Lock size={20} color="#f97316" />}
+                            />
                         </View>
 
-                        <TouchableOpacity
+                        <Button
                             onPress={handleSignup}
-                            disabled={loading}
-                            style={{ backgroundColor: '#a855f7', borderRadius: 12 }}
-                            className="h-16 items-center justify-center mt-8 shadow-2xl shadow-purple-500/40"
-                        >
-                            <Text className="text-white font-black text-lg uppercase tracking-widest">{loading ? 'Processing...' : 'Sign Up'}</Text>
-                        </TouchableOpacity>
-
-                        <View className="flex-row items-center my-10">
-                            <View className="flex-1 h-[1px] bg-slate-200 dark:bg-white/10" />
-                            <Text className="mx-6 text-slate-400 dark:text-white/30 font-bold text-xs uppercase tracking-[4px]">OR</Text>
-                            <View className="flex-1 h-[1px] bg-slate-200 dark:bg-white/10" />
-                        </View>
+                            title="Create Account"
+                            loading={loading}
+                            className="mt-6"
+                        />
 
                         <TouchableOpacity
-                            onPress={handleGoogleSignup}
-                            style={{ borderRadius: 12 }}
-                            className="flex-row items-center justify-center h-16 border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 shadow-sm dark:shadow-none"
+                            onPress={() => router.push('/auth/login')}
+                            className="mt-12 items-center"
                         >
-                            <View className="w-6 h-6 rounded-full bg-red-500 items-center justify-center mr-4">
-                                <Text className="text-white text-[11px] font-black">G</Text>
-                            </View>
-                            <Text className="text-slate-900 dark:text-white font-bold text-base">Continue with Google</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                            onPress={() => router.back()}
-                            className="mt-10 items-center"
-                        >
-                            <Text className="text-slate-500 text-base">Already have an account? <Text style={{ color: '#a855f7' }} className="font-black underline">Sign In</Text></Text>
+                            <Text className="text-slate-500 font-bold text-lg">
+                                Already have an account? <Text className="text-[#f97316]">Log in.</Text>
+                            </Text>
                         </TouchableOpacity>
                     </ScrollView>
                 </KeyboardAvoidingView>

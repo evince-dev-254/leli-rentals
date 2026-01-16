@@ -1,3 +1,19 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+    --primary: #f97316;
+    /* Website Orange */
+    --primary-foreground: #ffffff;
+    --background: #fffdf0;
+    /* Mobile Cream */
+}
+
+.dark {
+    --primary: #f97316;
+    --primary-foreground: #ffffff;
+    --background: #0f2a20;
+    /* Website Deep Forest Green (oklch(0.15 0.05 150)) */
+    --foreground: #f8fafc;
+}

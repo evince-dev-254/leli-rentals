@@ -40,7 +40,14 @@
       "policy": "appVersion"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow Leli Rentals to access your photos to upload gear images."
+        }
+      ],
+      "expo-updates"
     ],
     "experiments": {
       "typedRoutes": true

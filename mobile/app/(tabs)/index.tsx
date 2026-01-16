@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, ScrollView, TextInput, TouchableOpacity, SafeAreaView, Dimensions, ActivityIndicator, Image, ImageSourcePropType } from 'react-native';
-import { Search, MapPin, Bell, SlidersHorizontal, ArrowRight, X } from 'lucide-react-native';
+import { Search, MapPin, Bell, SlidersHorizontal, ArrowRight, X, Star } from 'lucide-react-native';
 import { cn } from '@/lib/utils';
 import { BlurView } from 'expo-blur';
 import { MotiView } from 'moti';
@@ -39,7 +39,7 @@ export default function ExploreScreen() {
   const { data: listings, isLoading: listingsLoading } = useListings(selectedCategory, debouncedSearch);
 
   return (
-    <View className="flex-1 bg-slate-50 dark:bg-slate-950">
+    <View className="flex-1 bg-[#fffdf0] dark:bg-slate-950">
       <BackgroundGradient />
       <View className="flex-1">
         <ScrollView
@@ -125,10 +125,19 @@ export default function ExploreScreen() {
                       className="mr-4 items-center"
                     >
                       <View className={cn(
-                        "h-16 w-16 rounded-3xl items-center justify-center shadow-sm border",
+                        "h-16 w-16 rounded-3xl items-center justify-center shadow-sm border overflow-hidden",
                         selectedCategory === cat.id ? "bg-blue-600 border-blue-600" : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800"
                       )}>
-                        <Text className="text-2xl">{cat.icon || '🛠️'}</Text>
+                        {cat.image_url ? (
+                          <Image
+                            source={{ uri: cat.image_url }}
+                            style={{ width: '100%', height: '100%' }}
+                            resizeMode="cover"
+                            alt={cat.name}
+                          />
+                        ) : (
+                          <Text className="text-2xl">{cat.icon || '🛠️'}</Text>
+                        )}
                       </View>
                       <Text className={cn(
                         "text-xs font-medium mt-2",
@@ -149,9 +158,12 @@ export default function ExploreScreen() {
               <View className="p-8">
                 <Text className="text-white text-3xl font-black leading-tight">Rent Anything,{"\n"}Anywhere.</Text>
                 <Text className="text-white/70 text-sm mt-2 max-w-[200px]">Unlock the power of Kenya&apos;s largest peer-to-peer equipment marketplace.</Text>
-                <TouchableOpacity className="mt-6 flex-row items-center bg-white self-start px-6 py-3 rounded-full">
-                  <Text className="text-blue-600 font-bold mr-2">List Your Gear</Text>
-                  <ArrowRight size={16} color="#2563eb" />
+                <TouchableOpacity
+                  onPress={() => router.push('/listings/create')}
+                  className="mt-6 flex-row items-center bg-white self-start px-6 py-3 rounded-full shadow-lg"
+                >
+                  <Text className="text-blue-600 font-black mr-2">List Your Gear</Text>
+                  <ArrowRight size={16} color="#2563eb" strokeWidth={3} />
                 </TouchableOpacity>
               </View>
               <MotiView
@@ -165,45 +177,64 @@ export default function ExploreScreen() {
 
           {/* Featured Listings */}
           <View className="px-6 mt-8 pb-32">
-            <Text className="text-lg font-bold text-slate-900 dark:text-white mb-4">Featured Listings</Text>
+            <Text className="text-2xl font-black text-slate-900 dark:text-white mb-6">Featured Listings</Text>
             {listingsLoading ? (
-              <ActivityIndicator color="#3b82f6" />
+              <ActivityIndicator color="#f97316" />
             ) : (
               listings?.map((listing: any) => (
                 <TouchableOpacity
                   key={listing.id}
                   onPress={() => router.push(`/listings/${listing.id}`)}
-                  className="mb-6 rounded-[32px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm"
+                  className="mb-8 rounded-[32px] bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 overflow-hidden"
                 >
-                  <View className="h-48 bg-slate-200 dark:bg-slate-800 relative">
+                  <View className="aspect-[4/3] bg-slate-200 dark:bg-slate-800 relative">
                     {listing.images?.[0] ? (
-                      <Text className="m-auto text-slate-500">Image available</Text>
+                      <Image
+                        source={{ uri: listing.images[0].startsWith('http') ? listing.images[0] : `https://ixivvshatmsisntomvpx.supabase.co/storage/v1/object/public/listing-images/${listing.images[0]}` }}
+                        style={{ width: '100%', height: '100%' }}
+                        resizeMode="cover"
+                        alt={listing.title}
+                      />
                     ) : (
-                      <View className="items-center justify-center h-full">
-                        <Text className="text-slate-500 font-mono tracking-widest uppercase">No Image</Text>
+                      <View className="items-center justify-center h-full bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900">
+                        <Text className="text-slate-400 font-black tracking-widest uppercase text-lg">Leli Premium</Text>
                       </View>
                     )}
-                    <View className="absolute top-4 right-4 bg-white/50 backdrop-blur-md px-3 py-1 rounded-full">
-                      <Text className="text-xs font-bold text-slate-900">KES {listing.price_per_day?.toLocaleString()}/day</Text>
+
+                    {/* Overlay Badges */}
+                    <View className="absolute top-4 left-4 flex-row gap-2">
+                      <View className="bg-white/90 dark:bg-slate-900/90 px-3 py-1.5 rounded-xl border border-white/20">
+                        <Text className="text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-widest">{listing.categories?.name || 'Gear'}</Text>
+                      </View>
+                      {listing.is_verified && (
+                        <View className="bg-emerald-500 px-3 py-1.5 rounded-xl">
+                          <Text className="text-[10px] font-black text-white uppercase tracking-widest">Verified</Text>
+                        </View>
+                      )}
                     </View>
                   </View>
-                  <View className="p-5">
-                    <Text className="text-base font-bold text-slate-900 dark:text-white">{listing.title}</Text>
-                    <View className="flex-row items-center mt-1">
-                      <MapPin size={12} color="#94a3b8" />
-                      <Text className="text-xs text-slate-500 ml-1">{listing.location_name || 'Nairobi, Kenya'}</Text>
+
+                  {/* Content Detail */}
+                  <View className="p-6">
+                    {/* Price & Rating */}
+                    <View className="flex-row items-baseline justify-between mb-3">
+                      <View className="flex-row items-baseline">
+                        <Text className="text-2xl font-black text-[#f97316]">KES {listing.price_per_day?.toLocaleString()}</Text>
+                        <Text className="text-xs text-slate-400 font-bold uppercase tracking-widest ml-1">/ day</Text>
+                      </View>
+                      <View className="flex-row items-center bg-slate-50 dark:bg-slate-800 px-2 py-1 rounded-lg">
+                        <Star size={12} color="#f59e0b" fill="#f59e0b" />
+                        <Text className="text-xs font-black text-slate-900 dark:text-white ml-1">{listing.rating_average || '5.0'}</Text>
+                      </View>
                     </View>
-                    <View className="flex-row items-center justify-between mt-4">
-                      <View className="flex-row items-center">
-                        <Text className="text-yellow-500 mr-1">⭐</Text>
-                        <Text className="text-xs font-bold text-slate-900 dark:text-white">
-                          {listing.average_rating || '5.0'}
-                        </Text>
-                        <Text className="text-xs text-slate-500 ml-1">({listing.review_count || '0'} reviews)</Text>
-                      </View>
-                      <View className="bg-slate-900 dark:bg-blue-600 px-4 py-2 rounded-xl">
-                        <Text className="text-white text-xs font-bold">Book Now</Text>
-                      </View>
+
+                    {/* Title */}
+                    <Text className="text-lg font-black text-slate-900 dark:text-white mb-2" numberOfLines={1}>{listing.title}</Text>
+
+                    {/* Location */}
+                    <View className="flex-row items-center">
+                      <MapPin size={14} color="#64748b" />
+                      <Text className="text-sm text-slate-500 font-bold ml-1">{listing.location_name || 'Nairobi'}</Text>
                     </View>
                   </View>
                 </TouchableOpacity>

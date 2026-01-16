@@ -1,15 +1,20 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, SafeAreaView, Dimensions, ActivityIndicator, useColorScheme, TextInput } from 'react-native';
-import { useRouter } from 'expo-router';
-import { ArrowLeft, Search } from 'lucide-react-native';
+import { View, Text, ScrollView, TouchableOpacity, SafeAreaView, Dimensions, ActivityIndicator, useColorScheme, TextInput, Image } from 'react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { Search } from 'lucide-react-native';
 import { useCategories } from '@/lib/hooks/useData';
 import { BlurView } from 'expo-blur';
 import { BackgroundGradient } from '@/components/ui/background-gradient';
+import { cn } from '@/lib/utils';
+
+import { BackButton } from '@/components/ui/back-button';
 
 const { width } = Dimensions.get('window');
 
 export default function ServicesScreen() {
     const router = useRouter();
+    const params = useLocalSearchParams();
+    const selectedCategory = params.category;
     const colorScheme = useColorScheme();
     const isDark = colorScheme === 'dark';
     const [searchQuery, setSearchQuery] = React.useState('');
@@ -21,18 +26,13 @@ export default function ServicesScreen() {
     );
 
     return (
-        <View className="flex-1 bg-slate-50 dark:bg-slate-950">
+        <View className="flex-1 bg-[#fffdf0] dark:bg-slate-950">
             <BackgroundGradient />
-            <View className="flex-1" style={{ paddingTop: 40 }}>
+            <SafeAreaView className="flex-1">
                 {/* Header */}
                 <View className="px-6 py-4 flex-row items-center justify-between">
-                    <TouchableOpacity
-                        onPress={() => router.back()}
-                        className="h-10 w-10 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 items-center justify-center"
-                    >
-                        <ArrowLeft size={24} color={isDark ? '#fff' : '#0f172a'} />
-                    </TouchableOpacity>
-                    <Text className="text-xl font-bold text-slate-900 dark:text-white">All Services</Text>
+                    <BackButton />
+                    <Text className="text-xl font-black text-slate-900 dark:text-white">All Services</Text>
                     <View className="w-10" />
                 </View>
 
@@ -59,7 +59,7 @@ export default function ServicesScreen() {
 
                     {isLoading ? (
                         <View className="mt-20">
-                            <ActivityIndicator size="large" color="#3b82f6" />
+                            <ActivityIndicator size="large" color="#f97316" />
                         </View>
                     ) : (
                         <View className="flex-row flex-wrap justify-between pb-10">
@@ -71,13 +71,25 @@ export default function ServicesScreen() {
                                 filteredCategories?.map((cat: any) => (
                                     <TouchableOpacity
                                         key={cat.id}
-                                        className="w-[48%] mb-4 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 items-center shadow-sm"
+                                        className="w-[48%] mb-4 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 items-center shadow-sm overflow-hidden"
                                         onPress={() => {
                                             router.push(`/(tabs)?category=${cat.id}`);
                                         }}
                                     >
-                                        <View className="h-14 w-14 rounded-full bg-slate-50 dark:bg-slate-800 items-center justify-center mb-3">
-                                            <Text className="text-2xl">{cat.icon || '🛠️'}</Text>
+                                        <View className={cn(
+                                            "h-20 w-full rounded-xl items-center justify-center mb-3 overflow-hidden",
+                                            selectedCategory === cat.id ? "bg-[#f97316]" : "bg-slate-50 dark:bg-slate-800"
+                                        )}>
+                                            {cat.image_url ? (
+                                                <Image
+                                                    source={{ uri: cat.image_url }}
+                                                    style={{ width: '100%', height: '100%' }}
+                                                    resizeMode="cover"
+                                                    alt={cat.name}
+                                                />
+                                            ) : (
+                                                <Text className="text-3xl">{cat.icon || '🛠️'}</Text>
+                                            )}
                                         </View>
                                         <Text className="font-bold text-slate-900 dark:text-white text-center mb-1">{cat.name}</Text>
                                         <Text className="text-xs text-slate-500 text-center" numberOfLines={2}>
@@ -89,7 +101,7 @@ export default function ServicesScreen() {
                         </View>
                     )}
                 </ScrollView>
-            </View>
+            </SafeAreaView>
         </View>
     );
 }
