@@ -13,7 +13,7 @@ export async function suspendUsers(userIds: string[]) {
             .in("id", userIds)
 
         if (error) throw error
-        revalidatePath("/dashboard/admin/users")
+        revalidatePath("/admin/users")
         return { success: true }
     } catch (error) {
         console.error("Error suspending users:", error)
@@ -29,7 +29,7 @@ export async function reactivateUsers(userIds: string[]) {
             .in("id", userIds)
 
         if (error) throw error
-        revalidatePath("/dashboard/admin/users")
+        revalidatePath("/admin/users")
         return { success: true }
     } catch (error) {
         console.error("Error reactivating users:", error)
@@ -45,7 +45,7 @@ export async function deleteUsers(userIds: string[]) {
             if (error) throw error
         }
 
-        revalidatePath("/dashboard/admin/users")
+        revalidatePath("/admin/users")
         return { success: true }
     } catch (error) {
         console.error("Error deleting users:", error)

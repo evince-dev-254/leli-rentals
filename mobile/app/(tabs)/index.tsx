@@ -28,7 +28,7 @@ export default function ExploreScreen() {
               <Text className="text-xs font-bold text-blue-600 ml-1 uppercase tracking-widest">Nairobi, Kenya</Text>
             </View>
             <Image
-              source={require('../../assets/images/logo-black.png')}
+              source={require('../../assets/images/logo_black.jpg')}
               style={{ width: 120, height: 40 }}
               resizeMode="contain"
               className="mt-1"

@@ -9,7 +9,7 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/images/splash-icon.png",
+      "image": "./assets/images/splash-icon.jpg",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -34,7 +34,6 @@
     "updates": {
       "url": "https://u.expo.dev/602e1195-0208-441a-b187-fd67e2468b1c",
       "enabled": true,
-      "checkOnLaunch": "ALWAYS",
       "fallbackToCacheTimeout": 0
     },
     "runtimeVersion": {
