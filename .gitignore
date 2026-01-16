@@ -23,5 +23,5 @@ yarn-error.log*
 pnpm-debug.log*
 
 # Google Key Files
-*-*.json
+*-key.json
 google-key.json
