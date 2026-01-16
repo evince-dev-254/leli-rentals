@@ -203,7 +203,7 @@ export function NotificationDropdown({ userId, unreadCount: initialCount }: { us
                 <DropdownMenuSeparator className="bg-white/10 m-0" />
                 <div className="p-2">
                     <Button asChild variant="ghost" className="w-full text-center text-xs text-gray-400 hover:text-white hover:bg-white/5 h-9 rounded-lg">
-                        <Link href="/dashboard?tab=notifications">View all notifications</Link>
+                        <Link href="/dashboard/notifications">View all notifications</Link>
                     </Button>
                 </div>
             </DropdownMenuContent>

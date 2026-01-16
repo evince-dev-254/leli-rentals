@@ -45,9 +45,10 @@ export async function middleware(request: NextRequest) {
         if (profile && profile.role === 'owner' && profile.account_status !== 'suspended') {
             const fiveDaysAgo = new Date()
             fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5)
-            const createdAt = new Date(profile.created_at)
+            // Use owner_at if available, fallback to created_at for legacy owners
+            const verificationBaseDate = new Date(profile.owner_at || profile.created_at)
 
-            if (createdAt < fiveDaysAgo) {
+            if (verificationBaseDate < fiveDaysAgo) {
                 const { data: docs } = await supabase
                     .from('verification_documents')
                     .select('id')

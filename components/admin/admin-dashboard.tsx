@@ -100,41 +100,51 @@ export function AdminDashboard() {
 
       {/* Stats Grid */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <DashboardStatCard
-          title="Total Users"
-          value={stats.totalUsers}
-          icon={Users}
-          color="indigo"
-          description="+12% from last month"
-        />
-        <DashboardStatCard
-          title="Active Owners"
-          value={stats.totalOwners}
-          icon={UserCheck}
-          color="warm-blend"
-          description="Verified hosts"
-        />
-        <DashboardStatCard
-          title="Affiliates"
-          value={stats.totalAffiliates}
-          icon={UserPlus}
-          color="rose-highlight"
-          description="Marketing partners"
-        />
-        <DashboardStatCard
-          title="Staff Team"
-          value={stats.totalStaff}
-          icon={UserCog}
-          color="purple"
-          description="Active support team"
-        />
-        <DashboardStatCard
-          title="Total Revenue"
-          value={`KSh ${stats.totalRevenue.toLocaleString()}`}
-          icon={TrendingUp}
-          color="green"
-          description="Gross platform revenue"
-        />
+        <Link href="/admin/users">
+          <DashboardStatCard
+            title="Total Users"
+            value={stats.totalUsers}
+            icon={Users}
+            color="indigo"
+            description="+12% from last month"
+          />
+        </Link>
+        <Link href="/admin/users?role=owner">
+          <DashboardStatCard
+            title="Active Owners"
+            value={stats.totalOwners}
+            icon={UserCheck}
+            color="warm-blend"
+            description="Verified hosts"
+          />
+        </Link>
+        <Link href="/admin/affiliates">
+          <DashboardStatCard
+            title="Affiliates"
+            value={stats.totalAffiliates}
+            icon={UserPlus}
+            color="rose-highlight"
+            description="Marketing partners"
+          />
+        </Link>
+        <Link href="/admin/staff">
+          <DashboardStatCard
+            title="Staff Team"
+            value={stats.totalStaff}
+            icon={UserCog}
+            color="purple"
+            description="Active support team"
+          />
+        </Link>
+        <Link href="/admin/subscriptions">
+          <DashboardStatCard
+            title="Total Revenue"
+            value={`KSh ${stats.totalRevenue.toLocaleString()}`}
+            icon={TrendingUp}
+            color="green"
+            description="Gross platform revenue"
+          />
+        </Link>
         <Link href="/admin/withdrawals">
           <DashboardStatCard
             title="Pending Payouts"
@@ -144,20 +154,24 @@ export function AdminDashboard() {
             description="Withdrawal requests"
           />
         </Link>
-        <DashboardStatCard
-          title="Total Payouts"
-          value={`KSh ${stats.totalPayouts.toLocaleString()}`}
-          icon={TrendingUp}
-          color="blue"
-          description="Paid out to users"
-        />
-        <DashboardStatCard
-          title="Total Reviews"
-          value={stats.totalReviews}
-          icon={Star}
-          color="amber-glow"
-          description={`Avg. Rating: 4.8`}
-        />
+        <Link href="/admin/withdrawals">
+          <DashboardStatCard
+            title="Total Payouts"
+            value={`KSh ${stats.totalPayouts.toLocaleString()}`}
+            icon={TrendingUp}
+            color="blue"
+            description="Paid out to users"
+          />
+        </Link>
+        <Link href="/admin/reviews">
+          <DashboardStatCard
+            title="Total Reviews"
+            value={stats.totalReviews}
+            icon={Star}
+            color="amber-glow"
+            description={`Avg. Rating: 4.8`}
+          />
+        </Link>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">

@@ -14,7 +14,8 @@ module.exports = {
                 }
             },
             fontFamily: {
-                inter: ["Inter"],
+                outfit: ["Outfit"],
+                sans: ["Outfit"],
             }
         },
     },

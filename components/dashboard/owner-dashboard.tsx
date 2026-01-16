@@ -8,7 +8,7 @@ import { supabase } from "@/lib/supabase";
 import { getOwnerData, getOwnerStats, getBookings, getVerifications } from "@/lib/actions/dashboard-actions";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Package, CalendarCheck, DollarSign, BarChart3, PlusCircle, MessageCircle, Settings, ChevronRight } from "lucide-react";
+import { Package, CalendarCheck, DollarSign, BarChart3, PlusCircle, MessageCircle, Settings, ChevronRight, ShieldCheck } from "lucide-react";
 import { LoadingLogo } from "@/components/ui/loading-logo";
 import { DashboardWelcomeHeader } from "./dashboard-welcome-header";
 import { DashboardStatCard } from "./dashboard-stat-card";
@@ -65,6 +65,23 @@ export default function OwnerDashboard() {
         fetchData();
     }, []);
 
+    const [daysRemaining, setDaysRemaining] = useState<number | null>(null);
+
+    useEffect(() => {
+        const calculateGracePeriod = () => {
+            if (user && !isVerified) {
+                const ownerAt = new Date(user.owner_at || user.created_at);
+                const deadline = new Date(ownerAt);
+                deadline.setDate(deadline.getDate() + 5);
+                const now = new Date();
+                const diffTime = deadline.getTime() - now.getTime();
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                setDaysRemaining(diffDays > 0 ? diffDays : 0);
+            }
+        };
+        calculateGracePeriod();
+    }, [user, isVerified]);
+
     if (!user && !loading) return <p className="text-center mt-10">Please sign in to view your dashboard.</p>;
 
     if (loading) return (
@@ -75,6 +92,30 @@ export default function OwnerDashboard() {
 
     return (
         <div className="space-y-8 pb-10">
+            {/* Verification Reminder Banner */}
+            {user && !isVerified && daysRemaining !== null && daysRemaining > 0 && (
+                <motion.div
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-purple-600/10 border border-purple-200 dark:border-purple-500/20 rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4"
+                >
+                    <div className="flex items-center gap-4 text-center md:text-left">
+                        <div className="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-500/20 flex items-center justify-center shrink-0">
+                            <ShieldCheck className="h-6 w-6 text-purple-600" />
+                        </div>
+                        <div>
+                            <h4 className="font-bold text-purple-900 dark:text-purple-100">Action Required: Verify Your Identity</h4>
+                            <p className="text-sm text-purple-700/80 dark:text-purple-300/80">
+                                Please submit your verification documents within the next <span className="font-bold">{daysRemaining} day{daysRemaining !== 1 ? 's' : ''}</span> to keep your owner account active.
+                            </p>
+                        </div>
+                    </div>
+                    <Button asChild className="bg-purple-600 hover:bg-purple-700 text-white rounded-full px-6 whitespace-nowrap">
+                        <Link href="/dashboard/verification">Verify Now</Link>
+                    </Button>
+                </motion.div>
+            )}
+
             {/* Unified Welcome Header */}
             <DashboardWelcomeHeader
                 user={user}

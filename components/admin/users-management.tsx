@@ -1,6 +1,7 @@
 "use client"
 import { Search, Filter, MoreHorizontal, Eye, Ban, CheckCircle, Mail, Download, UserPlus, Trash2, Send, X, Users, Shield, ShieldOff } from "lucide-react"
 import { useState, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -28,8 +29,9 @@ import { getAdminUsersData, updateProfile } from "@/lib/actions/dashboard-action
 
 export function UsersManagement() {
   const { toast } = useToast()
+  const searchParams = useSearchParams()
   const [searchQuery, setSearchQuery] = useState("")
-  const [roleFilter, setRoleFilter] = useState<string>("all")
+  const [roleFilter, setRoleFilter] = useState<string>(searchParams.get('role') || "all")
   const [statusFilter, setStatusFilter] = useState<string>("all")
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [users, setUsers] = useState<User[]>([])
@@ -209,6 +211,21 @@ export function UsersManagement() {
       loadUsers()
     } else {
       toast({ title: "Error", description: result.error || "Failed to update staff status", variant: "destructive" })
+    }
+  }
+
+  const handleUpdateRole = async (userId: string, newRole: string) => {
+    if (!confirm(`Are you sure you want to change this user's role to ${newRole}?`)) return
+
+    setActionLoading(true)
+    const result = await updateProfile(userId, { role: newRole })
+    setActionLoading(false)
+
+    if (result.success) {
+      toast({ title: "Success", description: `User role updated to ${newRole}` })
+      loadUsers()
+    } else {
+      toast({ title: "Error", description: result.error || "Failed to update role", variant: "destructive" })
     }
   }
 
@@ -584,9 +601,9 @@ export function UsersManagement() {
                     handleBulkSuspend()
                   }}>Suspend Account</Button>
                 )}
-                {selectedUser.role === "admin" ? (
+                {selectedUser.isAdmin ? (
                   <Button variant="outline" className="text-orange-600 border-orange-200 hover:bg-orange-50" onClick={() => {
-                    handleUpdateRole(selectedUser.id, "renter")
+                    handleToggleAdmin(selectedUser)
                     setSelectedUser(null)
                   }}>
                     <ShieldOff className="h-4 w-4 mr-2" />
@@ -594,7 +611,7 @@ export function UsersManagement() {
                   </Button>
                 ) : (
                   <Button variant="outline" className="text-purple-600 border-purple-200 hover:bg-purple-50" onClick={() => {
-                    handleUpdateRole(selectedUser.id, "admin")
+                    handleToggleAdmin(selectedUser)
                     setSelectedUser(null)
                   }}>
                     <Shield className="h-4 w-4 mr-2" />

@@ -141,9 +141,24 @@ export default function SelectRolePage() {
                 error = insertError
             } else {
                 // Update existing
+                const updates: any = { role: selectedRole }
+
+                // If becomes owner for the first time or switching back to owner, 
+                // we should check if owner_at needs to be set.
+                // For simplicity, if role is owner, we set owner_at if it's missing.
+                if (selectedRole === 'owner' && !existingProfile.owner_at) {
+                    updates.owner_at = new Date().toISOString()
+                }
+
+                // If switching away from owner and was suspended, potentially un-suspend
+                // assuming the suspension was just for verification.
+                if (selectedRole !== 'owner' && existingProfile.account_status === 'suspended') {
+                    updates.account_status = 'active'
+                }
+
                 const { error: updateError } = await supabase
                     .from('user_profiles')
-                    .update({ role: selectedRole })
+                    .update(updates)
                     .eq('id', user.id)
                 error = updateError
             }

@@ -7,20 +7,21 @@ export const metadata = {
     description: "View affiliate performance and referrals",
 }
 
-export default async function AffiliateDetailPage({ params }: { params: { id: string } }) {
+export default async function AffiliateDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params
     const supabase = await createClient()
 
     // Fetch user and affiliate data
     const { data: user } = await supabase
         .from('user_profiles')
         .select('*')
-        .eq('id', params.id)
+        .eq('id', id)
         .single()
 
     const { data: affiliate } = await supabase
         .from('affiliates')
         .select('*')
-        .eq('user_id', params.id)
+        .eq('user_id', id)
         .maybeSingle()
 
     if (!user) {

@@ -16,9 +16,9 @@ export function useCategories() {
     });
 }
 
-export function useListings(categoryId?: string) {
+export function useListings(categoryId?: string, searchTerm?: string) {
     return useQuery({
-        queryKey: ['listings', categoryId],
+        queryKey: ['listings', categoryId, searchTerm],
         queryFn: async () => {
             let query = supabase
                 .from('listings')
@@ -28,6 +28,10 @@ export function useListings(categoryId?: string) {
 
             if (categoryId) {
                 query = query.eq('category_id', categoryId);
+            }
+
+            if (searchTerm) {
+                query = query.ilike('title', `%${searchTerm}%`);
             }
 
             const { data, error } = await query.limit(20);

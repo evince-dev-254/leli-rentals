@@ -235,3 +235,97 @@ export async function sendAdminBulkCommunication(
         return handleServerError(error, "An unexpected error occurred during bulk communication");
     }
 }
+
+/**
+ * Fetches platform-wide notifications for admin view
+ */
+export async function getPlatformNotifications(limit = 50): Promise<ActionResponse> {
+    const supabase = getAdminSupabase();
+
+    try {
+        const { data, error } = await supabase
+            .from('notifications')
+            .select(`
+                *,
+                user_profiles:user_id (full_name, email, avatar_url)
+            `)
+            .order('created_at', { ascending: false })
+            .limit(limit);
+
+        if (error) throw error;
+
+        return { success: true, data };
+    } catch (error) {
+        return handleServerError(error, "Failed to fetch platform notifications");
+    }
+}
+
+/**
+ * Fetches recent platform-wide messages for admin view
+ */
+export async function getPlatformMessages(limit = 50): Promise<ActionResponse> {
+    const supabase = getAdminSupabase();
+
+    try {
+        const { data, error } = await supabase
+            .from('messages')
+            .select(`
+                *,
+                sender:sender_id (full_name, email, avatar_url),
+                receiver:receiver_id (full_name, email, avatar_url),
+                conversation:conversation_id (listing_id)
+            `)
+            .order('created_at', { ascending: false })
+            .limit(limit);
+
+        if (error) throw error;
+
+        return { success: true, data };
+    } catch (error) {
+        return handleServerError(error, "Failed to fetch platform messages");
+    }
+}
+
+/**
+ * Deletes a platform notification (Admin only)
+ */
+export async function deletePlatformNotification(id: string): Promise<ActionResponse> {
+    const supabase = getAdminSupabase();
+
+    try {
+        const { error } = await supabase
+            .from('notifications')
+            .delete()
+            .eq('id', id);
+
+        if (error) throw error;
+
+        revalidatePath('/admin/communications');
+        return { success: true };
+    } catch (error) {
+        return handleServerError(error, "Failed to delete notification");
+    }
+}
+
+/**
+ * Deletes a platform message (Admin only)
+ */
+export async function deletePlatformMessage(id: string): Promise<ActionResponse> {
+    const supabase = getAdminSupabase();
+
+    try {
+        const { error } = await supabase
+            .from('messages')
+            .delete()
+            .eq('id', id);
+
+        if (error) throw error;
+
+        revalidatePath('/admin/communications');
+        return { success: true };
+    } catch (error) {
+        return handleServerError(error, "Failed to delete message");
+    }
+}
+
+

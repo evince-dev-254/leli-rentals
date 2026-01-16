@@ -11,6 +11,14 @@ import { AuthProvider, useAuth } from './context/auth-context';
 import { AppLoader } from '@/components/ui/app-loader';
 import "../global.css";
 
+import {
+  Outfit_400Regular,
+  Outfit_500Medium,
+  Outfit_600SemiBold,
+  Outfit_700Bold,
+  Outfit_900Black
+} from '@expo-google-fonts/outfit';
+
 export {
   // Catch any errors thrown by the Layout component.
   ErrorBoundary,
@@ -27,6 +35,11 @@ SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
   const [loaded, error] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+    Outfit: Outfit_400Regular,
+    OutfitMedium: Outfit_500Medium,
+    OutfitSemiBold: Outfit_600SemiBold,
+    OutfitBold: Outfit_700Bold,
+    OutfitBlack: Outfit_900Black,
     ...FontAwesome.font,
   });
 

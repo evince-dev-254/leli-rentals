@@ -7,7 +7,8 @@ export const metadata = {
     description: "View and manage user profile and activity",
 }
 
-export default async function UserDetailPage({ params }: { params: { id: string } }) {
+export default async function UserDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params
     const supabase = await createClient()
     const { data: user } = await supabase
         .from('user_profiles')
@@ -15,7 +16,7 @@ export default async function UserDetailPage({ params }: { params: { id: string 
             *,
             referrer:referred_by(full_name)
         `)
-        .eq('id', params.id)
+        .eq('id', id)
         .single()
 
     if (!user) {

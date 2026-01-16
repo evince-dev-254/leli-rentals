@@ -1,6 +1,6 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Geist, Geist_Mono } from "next/font/google"
+import { Outfit, Geist_Mono } from "next/font/google"
 import Script from "next/script"
 import { Toaster } from "@/components/ui/sonner"
 import { OfflineBanner } from "@/components/ui/offline-banner"
@@ -9,10 +9,10 @@ import { MessagesProvider } from "@/lib/messages-context"
 import { ThemeProvider } from "@/components/theme-provider"
 import "./globals.css"
 
-const geist = Geist({
+const outfit = Outfit({
   subsets: ["latin"],
   display: 'swap',
-  variable: '--font-geist'
+  variable: '--font-outfit'
 })
 const geistMono = Geist_Mono({
   subsets: ["latin"],
@@ -100,7 +100,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head />
-      <body className={`${geist.variable} ${geistMono.variable} font-sans antialiased hide-scrollbar`} suppressHydrationWarning>
+      <body className={`${outfit.variable} ${geistMono.variable} font-sans antialiased hide-scrollbar`} suppressHydrationWarning>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
           <FavoritesProvider>
             <MessagesProvider>

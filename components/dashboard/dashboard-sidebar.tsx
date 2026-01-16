@@ -19,6 +19,7 @@ import {
   Menu,
   Share2,
   Wallet,
+  Bell,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -34,6 +35,7 @@ export const allLinks = [
   { href: "/dashboard/listings", label: "My Listings", icon: Package, roles: ["owner", "renter"], badge: "" },
   { href: "/dashboard/bookings", label: "Bookings", icon: CalendarCheck, roles: ["owner", "renter"], badge: "" },
   { href: "/dashboard/messages", label: "Messages", icon: MessageCircle, roles: ["owner", "renter"], badge: "" },
+  { href: "/dashboard/notifications", label: "Notifications", icon: Bell, roles: ["owner", "renter", "affiliate", "staff"], badge: "" },
   { href: "/dashboard/earnings", label: "Earnings", icon: DollarSign, roles: ["owner", "affiliate"], badge: "" },
   { href: "/dashboard/affiliate/referrals", label: "My Referees", icon: Users, roles: ["affiliate"], badge: "" },
   { href: "/dashboard/affiliate/marketing", label: "Marketing Kit", icon: Share2, roles: ["affiliate"], badge: "" },

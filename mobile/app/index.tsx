@@ -91,8 +91,9 @@ export default function StartupScreen() {
             <View className="items-center">
                 <Animated.View style={[animatedLogoStyle, { width: 140, height: 140 }]}>
                     <Image
-                        source={require('../assets/images/logo.png')}
+                        source={require('../assets/images/logo_white.png')}
                         accessibilityLabel="Leli Rentals Logo"
+                        alt="Leli Rentals Logo"
                         className="w-full h-full"
                         resizeMode="contain"
                     />
