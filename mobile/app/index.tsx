@@ -1,0 +1,122 @@
+import React, { useEffect } from 'react';
+import { View, Image, StyleSheet, Dimensions, Text } from 'react-native';
+import Animated, {
+    useSharedValue,
+    useAnimatedStyle,
+    withTiming,
+    withDelay,
+    withSequence,
+    runOnJS,
+    interpolate,
+    Easing
+} from 'react-native-reanimated';
+import { useRouter } from 'expo-router';
+import { MotiView } from 'moti';
+import { useAuth } from './context/auth-context';
+
+const { width, height } = Dimensions.get('window');
+
+export default function StartupScreen() {
+    const router = useRouter();
+    const { user, loading } = useAuth();
+
+    const logoScale = useSharedValue(0.5);
+    const logoOpacity = useSharedValue(0);
+    const backgroundScale = useSharedValue(1);
+    const textOpacity = useSharedValue(0);
+
+    const finishStartup = () => {
+        if (!loading) {
+            if (user) {
+                router.replace('/(tabs)');
+            } else {
+                router.replace('/auth/login');
+            }
+        }
+    };
+
+    useEffect(() => {
+        // Animation Sequence
+        logoScale.value = withTiming(1, {
+            duration: 1000,
+            easing: Easing.out(Easing.back(1.5))
+        });
+        logoOpacity.value = withTiming(1, { duration: 800 });
+
+        textOpacity.value = withDelay(500, withTiming(1, { duration: 800 }));
+
+        // Transition to next screen after delay
+        const timeout = setTimeout(() => {
+            logoScale.value = withTiming(1.2, { duration: 800 });
+            logoOpacity.value = withTiming(0, { duration: 600 });
+            backgroundScale.value = withTiming(1.5, { duration: 1000 }, () => {
+                runOnJS(finishStartup)();
+            });
+        }, 2500);
+
+        return () => clearTimeout(timeout);
+    }, [loading, user]);
+
+    const animatedLogoStyle = useAnimatedStyle(() => ({
+        opacity: logoOpacity.value,
+        transform: [{ scale: logoScale.value }]
+    }));
+
+    const animatedBgStyle = useAnimatedStyle(() => ({
+        transform: [{ scale: backgroundScale.value }]
+    }));
+
+    const animatedTextStyle = useAnimatedStyle(() => ({
+        opacity: textOpacity.value,
+        transform: [{ translateY: interpolate(textOpacity.value, [0, 1], [10, 0]) }]
+    }));
+
+    return (
+        <View className="flex-1 bg-slate-950 items-center justify-center overflow-hidden">
+            {/* Ambient Background Glow */}
+            <Animated.View
+                style={[
+                    animatedBgStyle,
+                    {
+                        position: 'absolute',
+                        width: width * 1.5,
+                        height: width * 1.5,
+                        borderRadius: width,
+                        backgroundColor: '#3b82f6',
+                        opacity: 0.1,
+                    }
+                ]}
+            />
+
+            <View className="items-center">
+                <Animated.View style={[animatedLogoStyle, { width: 140, height: 140 }]}>
+                    <Image
+                        source={require('../assets/images/logo.png')}
+                        accessibilityLabel="Leli Rentals Logo"
+                        className="w-full h-full"
+                        resizeMode="contain"
+                    />
+                </Animated.View>
+
+                <Animated.View style={[animatedTextStyle, { marginTop: 24 }]}>
+                    <Text className="text-white text-3xl font-black tracking-tighter">Leli Rentals</Text>
+                    <Text className="text-blue-500 text-xs font-bold uppercase tracking-[0.4em] text-center mt-2">
+                        Premium Gear Ecosystem
+                    </Text>
+                </Animated.View>
+            </View>
+
+            {/* Loading Indicator at Bottom */}
+            <MotiView
+                from={{ opacity: 0 }}
+                animate={{ opacity: 0.4 }}
+                transition={{ delay: 1000 }}
+                className="absolute bottom-16"
+            >
+                <Text className="text-slate-500 font-mono text-[10px] uppercase tracking-widest">
+                    Verifying Secure Session...
+                </Text>
+            </MotiView>
+        </View>
+    );
+}

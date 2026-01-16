@@ -12,6 +12,7 @@ import Image from "next/image"
 import { AppLoader } from "@/components/ui/app-loader"
 import { BackButton } from "@/components/ui/back-button"
 import { toast } from "sonner"
+import { requestStaffAccess } from "@/lib/actions/staff-actions"
 
 const accountTypes = [
     {
@@ -82,9 +83,9 @@ export default function SelectRolePage() {
 
             if (profile && profile.role) {
                 setCurrentRole(profile.role)
-                setSelectedRole(profile.role)
+                setSelectedRole(profile.role === 'staff_pending' ? 'staff' : profile.role)
 
-                if (!force) {
+                if (!force && profile.role !== 'staff_pending') {
                     // Already has a role and not forced, redirect
                     console.log('User already has role:', profile.role)
                     router.replace(getRoleRedirect(profile.role))
@@ -103,6 +104,19 @@ export default function SelectRolePage() {
         setLoading(true)
 
         try {
+            // Check if user is requesting staff role
+            if (selectedRole === 'staff' && currentRole !== 'staff') {
+                const result = await requestStaffAccess(user.id)
+                if (result.success) {
+                    toast.success("Staff access request sent! An admin will review it soon.")
+                    setCurrentRole('staff_pending')
+                    setLoading(false)
+                    return
+                } else {
+                    throw new Error(result.error)
+                }
+            }
+
             // Check if profile exists
             const { data: existingProfile } = await supabase
                 .from('user_profiles')
@@ -208,6 +222,15 @@ export default function SelectRolePage() {
                                         </div>
                                     )}
 
+                                    {type.value === 'staff' && currentRole === 'staff_pending' && (
+                                        <div className="absolute top-0 right-0 z-20">
+                                            <div className="bg-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-bl-lg flex items-center gap-1 shadow-sm">
+                                                <div className="h-1 w-1 rounded-full bg-white animate-pulse" />
+                                                Pending Review
+                                            </div>
+                                        </div>
+                                    )}
+
                                     <div className="h-full p-5 flex flex-col items-center text-center relative">
                                         <div className={`w-14 h-14 rounded-xl flex items-center justify-center mb-4 transition-all duration-500 ${type.color} ${isSelected ? 'scale-110 rotate-3' : 'group-hover:scale-105'}`}>
                                             <Icon className="h-7 w-7" />
@@ -253,7 +276,11 @@ export default function SelectRolePage() {
                                     Setting up your profile...
                                 </>
                             ) : (
-                                'Continue to Dashboard'
+                                selectedRole === 'staff' && currentRole !== 'staff' && currentRole !== 'staff_pending'
+                                    ? 'Request Staff Access'
+                                    : selectedRole === 'staff' && currentRole === 'staff_pending'
+                                        ? 'Request Pending Review'
+                                        : 'Continue to Dashboard'
                             )}
                         </Button>
                         <p className="text-center text-sm text-muted-foreground mt-4">

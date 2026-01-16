@@ -101,7 +101,10 @@ export async function promoteToStaff(email: string) {
 
         const { error: updateError } = await supabaseAdmin
             .from("user_profiles")
-            .update({ role: "staff", is_staff: true })
+            .update({
+                role: "staff",
+                is_staff: true
+            })
             .eq("id", user.id)
 
         if (updateError) throw updateError
@@ -111,6 +114,56 @@ export async function promoteToStaff(email: string) {
     } catch (error: any) {
         console.error("Error promoting to staff:", error)
         return { success: false, error: error.message || "Failed to promote user" }
+    }
+}
+
+export async function requestStaffAccess(userId: string) {
+    try {
+        const { error } = await supabaseAdmin
+            .from("user_profiles")
+            .update({ role: "staff_pending" })
+            .eq("id", userId)
+
+        if (error) throw error
+
+        revalidatePath("/select-role")
+        return { success: true, message: "Staff access requested successfully" }
+    } catch (error: any) {
+        console.error("Error requesting staff access:", error)
+        return { success: false, error: error.message || "Failed to request access" }
+    }
+}
+
+export async function getPendingStaffRequests() {
+    try {
+        const { data, error } = await supabaseAdmin
+            .from("user_profiles")
+            .select("*")
+            .eq('role', 'staff_pending')
+            .order('created_at', { ascending: false });
+
+        if (error) throw error
+        return { success: true, data: data || [] }
+    } catch (error) {
+        console.error("Error fetching pending staff requests:", error)
+        return { success: false, error: "Failed to fetch requests" }
+    }
+}
+
+export async function rejectStaffRequest(userId: string) {
+    try {
+        const { error } = await supabaseAdmin
+            .from("user_profiles")
+            .update({ role: "renter" })
+            .eq("id", userId)
+
+        if (error) throw error
+
+        revalidatePath("/admin/staff")
+        return { success: true, message: "Staff request rejected" }
+    } catch (error) {
+        console.error("Error rejecting staff request:", error)
+        return { success: false, error: "Failed to reject request" }
     }
 }
 

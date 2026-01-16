@@ -17,7 +17,8 @@ import {
   Key,
   UserCog,
   Menu,
-  CreditCard
+  CreditCard,
+  Smartphone
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -103,6 +104,12 @@ export function AdminSidebar({ className }: { className?: string }) {
       icon: Settings,
       href: "/admin/paystack-settings",
       active: pathname === "/admin/paystack-settings",
+    },
+    {
+      label: "Mobile Operations",
+      icon: Smartphone,
+      href: "/admin/mobile",
+      active: pathname === "/admin/mobile",
     },
     {
       label: "Settings",

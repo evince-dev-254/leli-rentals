@@ -6,6 +6,7 @@ import { Header } from "@/components/layout/header"
 import { useState, useEffect } from "react"
 import { supabase } from "@/lib/supabase"
 import { useRouter } from "next/navigation"
+import { AppLoader } from "@/components/ui/app-loader"
 
 export default function StaffLayout({
     children,
@@ -13,6 +14,33 @@ export default function StaffLayout({
     children: React.ReactNode
 }) {
     const router = useRouter()
+    const [verifying, setVerifying] = useState(true)
+
+    useEffect(() => {
+        const checkRole = async () => {
+            const { data: { user } } = await supabase.auth.getUser()
+            if (!user) {
+                router.replace('/login')
+                return
+            }
+
+            const { data: profile } = await supabase
+                .from('user_profiles')
+                .select('role')
+                .eq('id', user.id)
+                .single()
+
+            if (!profile || profile.role !== 'staff') {
+                router.replace('/dashboard')
+                return
+            }
+            setVerifying(false)
+        }
+        checkRole()
+    }, [router])
+
+    if (verifying) return <div className="min-h-screen flex items-center justify-center bg-background"><AppLoader size="lg" /></div>
+
     return (
         <div className="flex flex-col min-h-screen">
             <Header />

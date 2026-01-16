@@ -19,7 +19,8 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
-import { getAdminStaffData, promoteToStaff, demoteFromStaff } from "@/lib/actions/staff-actions"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { getAdminStaffData, promoteToStaff, demoteFromStaff, getPendingStaffRequests, rejectStaffRequest } from "@/lib/actions/staff-actions"
 import { suspendUsers, reactivateUsers } from "@/lib/actions/admin-actions"
 import { UserSelector } from "./user-selector"
 
@@ -27,6 +28,7 @@ export function StaffManagement() {
     const { toast } = useToast()
     const [searchQuery, setSearchQuery] = useState("")
     const [staff, setStaff] = useState<any[]>([])
+    const [pendingRequests, setPendingRequests] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
     const [selectedUser, setSelectedUser] = useState<any>(null)
@@ -34,12 +36,21 @@ export function StaffManagement() {
 
     const loadStaff = useCallback(async () => {
         setLoading(true)
-        const result = await getAdminStaffData()
-        if (result.success) {
-            setStaff(result.data || [])
+        const [staffResult, pendingResult] = await Promise.all([
+            getAdminStaffData(),
+            getPendingStaffRequests()
+        ])
+
+        if (staffResult.success) {
+            setStaff(staffResult.data || [])
         } else {
-            toast({ title: "Error", description: result.error, variant: "destructive" })
+            toast({ title: "Error", description: staffResult.error, variant: "destructive" })
         }
+
+        if (pendingResult.success) {
+            setPendingRequests(pendingResult.data || [])
+        }
+
         setLoading(false)
     }, [toast])
 
@@ -56,6 +67,31 @@ export function StaffManagement() {
             toast({ title: "Success", description: result.message })
             setIsAddDialogOpen(false)
             setSelectedUser(null)
+            loadStaff()
+        } else {
+            toast({ title: "Error", description: result.error, variant: "destructive" })
+        }
+    }
+
+    const handleApprove = async (email: string) => {
+        setActionLoading(true)
+        const result = await promoteToStaff(email)
+        setActionLoading(false)
+        if (result.success) {
+            toast({ title: "Approved", description: result.message })
+            loadStaff()
+        } else {
+            toast({ title: "Error", description: result.error, variant: "destructive" })
+        }
+    }
+
+    const handleReject = async (userId: string) => {
+        if (!confirm("Are you sure you want to reject this staff request?")) return
+        setActionLoading(true)
+        const result = await rejectStaffRequest(userId)
+        setActionLoading(false)
+        if (result.success) {
+            toast({ title: "Rejected", description: result.message })
             loadStaff()
         } else {
             toast({ title: "Error", description: result.error, variant: "destructive" })
@@ -114,102 +150,179 @@ export function StaffManagement() {
                 </Button>
             </div>
 
-            <Card className="glass-card">
-                <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <CardTitle>Staff Team ({filteredStaff.length})</CardTitle>
-                            <CardDescription>Users with access to the staff dashboard</CardDescription>
-                        </div>
-                        <div className="relative w-64">
-                            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                placeholder="Search staff..."
-                                className="pl-8"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                            />
-                        </div>
-                    </div>
-                </CardHeader>
-                <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Member</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead>Joined</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {loading ? (
-                                <TableRow><TableCell colSpan={4} className="text-center py-10">Loading staff...</TableCell></TableRow>
-                            ) : filteredStaff.length === 0 ? (
-                                <TableRow><TableCell colSpan={4} className="text-center py-10">No staff members found.</TableCell></TableRow>
-                            ) : (
-                                filteredStaff.map((member) => (
-                                    <TableRow key={member.id}>
-                                        <TableCell>
-                                            <div className="flex items-center gap-3">
-                                                <Avatar>
-                                                    <AvatarImage src={member.avatar_url} />
-                                                    <AvatarFallback>{member.full_name?.charAt(0)}</AvatarFallback>
-                                                </Avatar>
-                                                <div>
-                                                    <p className="font-semibold text-sm">{member.full_name}</p>
-                                                    <p className="text-xs text-muted-foreground">{member.email}</p>
-                                                </div>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Badge variant={member.account_status === "active" ? "default" : "destructive"}>
-                                                {member.account_status}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell className="text-sm text-muted-foreground">
-                                            {new Date(member.created_at).toLocaleDateString()}
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="icon">
-                                                        <MoreHorizontal className="h-4 w-4" />
-                                                    </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end">
-                                                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                    <DropdownMenuSeparator />
-                                                    <DropdownMenuItem onClick={() => { }}>
-                                                        <Eye className="h-4 w-4 mr-2" />
-                                                        View Profile
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem onClick={() => handleDemote(member.id)} className="text-orange-600">
-                                                        <UserMinus className="h-4 w-4 mr-2" />
-                                                        Demote to User
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuSeparator />
-                                                    {member.account_status === "active" ? (
-                                                        <DropdownMenuItem onClick={() => handleSuspend(member.id)} className="text-destructive">
-                                                            <Ban className="h-4 w-4 mr-2" />
-                                                            Suspend Account
-                                                        </DropdownMenuItem>
-                                                    ) : (
-                                                        <DropdownMenuItem onClick={() => handleReactivate(member.id)} className="text-green-600">
-                                                            <CheckCircle className="h-4 w-4 mr-2" />
-                                                            Reactivate Account
-                                                        </DropdownMenuItem>
-                                                    )}
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </TableCell>
+            <Tabs defaultValue="staff" className="w-full">
+                <TabsList className="grid w-full grid-cols-2 mb-8">
+                    <TabsTrigger value="staff">Staff Team ({filteredStaff.length})</TabsTrigger>
+                    <TabsTrigger value="requests">Pending Requests ({pendingRequests.length})</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="staff">
+                    <Card className="glass-card">
+                        <CardHeader className="pb-3">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <CardTitle>Staff Team ({filteredStaff.length})</CardTitle>
+                                    <CardDescription>Users with access to the staff dashboard</CardDescription>
+                                </div>
+                                <div className="relative w-64">
+                                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                                    <Input
+                                        placeholder="Search staff..."
+                                        className="pl-8"
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Member</TableHead>
+                                        <TableHead>Status</TableHead>
+                                        <TableHead>Joined</TableHead>
+                                        <TableHead className="text-right">Actions</TableHead>
                                     </TableRow>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
-                </CardContent>
-            </Card>
+                                </TableHeader>
+                                <TableBody>
+                                    {loading ? (
+                                        <TableRow><TableCell colSpan={4} className="text-center py-10">Loading staff...</TableCell></TableRow>
+                                    ) : filteredStaff.length === 0 ? (
+                                        <TableRow><TableCell colSpan={4} className="text-center py-10">No staff members found.</TableCell></TableRow>
+                                    ) : (
+                                        filteredStaff.map((member) => (
+                                            <TableRow key={member.id}>
+                                                <TableCell>
+                                                    <div className="flex items-center gap-3">
+                                                        <Avatar>
+                                                            <AvatarImage src={member.avatar_url} />
+                                                            <AvatarFallback>{member.full_name?.charAt(0)}</AvatarFallback>
+                                                        </Avatar>
+                                                        <div>
+                                                            <p className="font-semibold text-sm">{member.full_name}</p>
+                                                            <p className="text-xs text-muted-foreground">{member.email}</p>
+                                                        </div>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Badge variant={member.account_status === "active" ? "default" : "destructive"}>
+                                                        {member.account_status}
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell className="text-sm text-muted-foreground">
+                                                    {new Date(member.created_at).toLocaleDateString()}
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button variant="ghost" size="icon">
+                                                                <MoreHorizontal className="h-4 w-4" />
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end">
+                                                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                            <DropdownMenuSeparator />
+                                                            <DropdownMenuItem onClick={() => { }}>
+                                                                <Eye className="h-4 w-4 mr-2" />
+                                                                View Profile
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem onClick={() => handleDemote(member.id)} className="text-orange-600">
+                                                                <UserMinus className="h-4 w-4 mr-2" />
+                                                                Demote to User
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuSeparator />
+                                                            {member.account_status === "active" ? (
+                                                                <DropdownMenuItem onClick={() => handleSuspend(member.id)} className="text-destructive">
+                                                                    <Ban className="h-4 w-4 mr-2" />
+                                                                    Suspend Account
+                                                                </DropdownMenuItem>
+                                                            ) : (
+                                                                <DropdownMenuItem onClick={() => handleReactivate(member.id)} className="text-green-600">
+                                                                    <CheckCircle className="h-4 w-4 mr-2" />
+                                                                    Reactivate Account
+                                                                </DropdownMenuItem>
+                                                            )}
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+
+                <TabsContent value="requests">
+                    <Card className="glass-card">
+                        <CardHeader>
+                            <CardTitle>Staff Access Requests ({pendingRequests.length})</CardTitle>
+                            <CardDescription>Users waiting for approval to access staff tools</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>User</TableHead>
+                                        <TableHead>Requested At</TableHead>
+                                        <TableHead className="text-right">Actions</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {loading ? (
+                                        <TableRow><TableCell colSpan={3} className="text-center py-10">Loading requests...</TableCell></TableRow>
+                                    ) : pendingRequests.length === 0 ? (
+                                        <TableRow><TableCell colSpan={3} className="text-center py-10">No pending staff requests.</TableCell></TableRow>
+                                    ) : (
+                                        pendingRequests.map((request) => (
+                                            <TableRow key={request.id}>
+                                                <TableCell>
+                                                    <div className="flex items-center gap-3">
+                                                        <Avatar>
+                                                            <AvatarImage src={request.avatar_url} />
+                                                            <AvatarFallback>{request.full_name?.charAt(0)}</AvatarFallback>
+                                                        </Avatar>
+                                                        <div>
+                                                            <p className="font-semibold text-sm">{request.full_name}</p>
+                                                            <p className="text-xs text-muted-foreground">{request.email}</p>
+                                                        </div>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="text-sm text-muted-foreground">
+                                                    {new Date(request.last_login_at || request.created_at).toLocaleDateString()}
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                    <div className="flex justify-end gap-2">
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            className="text-destructive hover:bg-destructive/10"
+                                                            onClick={() => handleReject(request.id)}
+                                                            disabled={actionLoading}
+                                                        >
+                                                            Reject
+                                                        </Button>
+                                                        <Button
+                                                            size="sm"
+                                                            className="bg-green-600 hover:bg-green-700 text-white"
+                                                            onClick={() => handleApprove(request.email)}
+                                                            disabled={actionLoading}
+                                                        >
+                                                            Approve
+                                                        </Button>
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+            </Tabs>
 
             <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
                 <DialogContent>
