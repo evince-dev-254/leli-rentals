@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Modal, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, Modal, TouchableOpacity, StyleSheet, Dimensions, ScrollView } from 'react-native';
 import { MotiView, AnimatePresence } from 'moti';
 import { X, AlertCircle, CheckCircle, Info } from 'lucide-react-native';
 
@@ -54,7 +54,12 @@ export const BrandedAlert = ({ visible, title, message, type = 'info', onClose }
                             </View>
 
                             <Text className="text-xl font-black text-white text-center mb-2">{title}</Text>
-                            <Text className="text-slate-400 text-center mb-8 leading-5">{message}</Text>
+
+                            <View style={{ maxHeight: height * 0.4 }}>
+                                <ScrollView showsVerticalScrollIndicator={false}>
+                                    <Text className="text-slate-400 text-center mb-6 leading-6 text-base">{message}</Text>
+                                </ScrollView>
+                            </View>
 
                             <TouchableOpacity
                                 onPress={onClose}

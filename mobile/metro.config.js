@@ -4,4 +4,8 @@ const { withNativeWind } = require("nativewind/metro");
 // Use __dirname to ensure absolute paths are handled correctly on Windows
 const config = getDefaultConfig(__dirname);
 
+// Add support for .cjs files used by many modern packages like date-fns v4
+config.resolver.sourceExts.push('cjs');
+config.resolver.unstable_enablePackageExports = true;
+
 module.exports = withNativeWind(config, { input: "./global.css" });

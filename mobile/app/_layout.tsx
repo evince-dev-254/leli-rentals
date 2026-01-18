@@ -9,6 +9,7 @@ import 'react-native-reanimated';
 import { useColorScheme } from '@/components/useColorScheme';
 import { AuthProvider, useAuth } from './context/auth-context';
 import { AppLoader } from '@/components/ui/app-loader';
+import { UpdateBanner } from '@/components/ui/update-banner';
 import "../global.css";
 
 import {
@@ -72,14 +73,22 @@ function RootLayoutNav() {
 
   useEffect(() => {
     if (!loading) {
-      // Auth redirection logic can be enabled here
+      if (user) {
+        if (!user.user_metadata?.role) {
+          router.replace('/auth/select-role');
+        }
+      } else {
+        // Not logged in? Handled by individual screens usually, 
+        // but can enforce login here if needed
+      }
     }
-  }, [user, loading]);
+  }, [user, loading, router]);
 
   if (loading) return <AppLoader fullscreen />;
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <UpdateBanner />
       <Stack>
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />

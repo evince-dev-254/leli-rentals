@@ -53,7 +53,14 @@ export default function SignupScreen() {
         if (error) {
             showAlert('Signup Failed', error.message, 'error');
         } else {
-            showAlert('Success!', 'Account created. Please check your email for verification.', 'success');
+            showAlert('Success!', 'Account created. Redirecting to verification...', 'success');
+            setTimeout(() => {
+                setAlertConfig(prev => ({ ...prev, visible: false }));
+                router.push({
+                    pathname: '/auth/verify',
+                    params: { email }
+                });
+            }, 1500);
         }
         setLoading(false);
     };

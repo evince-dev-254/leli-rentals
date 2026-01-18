@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
-import { View, Button, Image, Text, Alert, ScrollView, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Image, Text, Alert, ScrollView, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
+import { Button } from '@/components/ui/button';
 import * as ImagePicker from 'expo-image-picker';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Upload, CheckCircle, AlertCircle } from 'lucide-react-native';
+import { Upload, CheckCircle } from 'lucide-react-native';
+import { MotiView } from 'moti';
+import { BackgroundGradient } from '@/components/ui/background-gradient';
+import { BackButton } from '@/components/ui/back-button';
 
 interface OCRResult {
     raw_text: string;
@@ -82,57 +86,70 @@ export default function VerifyIdScreen() {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
-            <ScrollView contentContainerStyle={styles.scrollContent}>
-                <Text style={styles.title}>ID Verification</Text>
-                <Text style={styles.subtitle}>Upload a clear photo of your ID card for verification.</Text>
-
-                <TouchableOpacity onPress={pickImage} style={styles.uploadArea}>
-                    {image ? (
-                        <Image source={{ uri: image }} style={styles.previewImage} resizeMode="contain" />
-                    ) : (
-                        <View style={styles.placeholder}>
-                            <Upload size={40} color="#9BA1A6" />
-                            <Text style={styles.placeholderText}>Tap to select image</Text>
-                        </View>
-                    )}
-                </TouchableOpacity>
-
-                <View style={styles.buttonContainer}>
-                    <Button
-                        title={loading ? "Processing..." : "Verify ID"}
-                        onPress={handleVerify}
-                        disabled={!image || loading}
-                    />
+        <View className="flex-1 bg-[#fffdf0] dark:bg-slate-950">
+            <BackgroundGradient />
+            <SafeAreaView className="flex-1">
+                <View className="px-8 py-4">
+                    <BackButton />
                 </View>
 
-                {loading && <ActivityIndicator size="large" color="#0000ff" style={{ marginTop: 20 }} />}
+                <ScrollView contentContainerStyle={{ paddingHorizontal: 32, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+                    <Text className="text-4xl font-black text-slate-900 dark:text-white mb-2">ID Verification</Text>
+                    <Text className="text-slate-500 dark:text-slate-400 font-bold mb-8">Upload a clear photo of your ID card for verification.</Text>
 
-                {result && (
-                    <View style={styles.resultContainer}>
-                        <View style={styles.resultHeader}>
-                            <CheckCircle size={24} color="green" />
-                            <Text style={styles.resultTitle}>Analysis Complete</Text>
-                        </View>
-
-                        <View style={styles.resultDetails}>
-                            <Text style={styles.label}>ID Number Found:</Text>
-                            <Text style={styles.value}>{result.extracted_id || "Not detected"}</Text>
-                        </View>
-
-                        {result.extracted_dates.length > 0 && (
-                            <View style={styles.resultDetails}>
-                                <Text style={styles.label}>Dates Found:</Text>
-                                <Text style={styles.value}>{result.extracted_dates.join(", ")}</Text>
+                    <TouchableOpacity onPress={pickImage} className="w-full h-56 bg-white dark:bg-slate-900 rounded-[32px] overflow-hidden border-2 border-slate-100 dark:border-slate-800 border-dashed items-center justify-center mb-8">
+                        {image ? (
+                            <Image source={{ uri: image }} className="w-full h-full" resizeMode="cover" alt="ID Card Preview" />
+                        ) : (
+                            <View className="items-center">
+                                <View className="h-16 w-16 bg-slate-50 dark:bg-slate-800 rounded-2xl items-center justify-center mb-4">
+                                    <Upload size={32} color="#f97316" />
+                                </View>
+                                <Text className="text-slate-400 font-bold">Tap to select image</Text>
                             </View>
                         )}
+                    </TouchableOpacity>
 
-                        <Text style={styles.rawTextHeader}>Raw Text Dump:</Text>
-                        <Text style={styles.rawText}>{result.raw_text}</Text>
-                    </View>
-                )}
-            </ScrollView>
-        </SafeAreaView>
+                    <Button
+                        title="Verify ID"
+                        onPress={handleVerify}
+                        disabled={!image}
+                        loading={loading}
+                        className="h-16 rounded-[28px]"
+                    />
+
+                    {result && (
+                        <MotiView
+                            from={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="mt-8 bg-white/80 dark:bg-slate-900/80 p-8 rounded-[32px] border-2 border-emerald-100 dark:border-emerald-900/20 shadow-sm"
+                        >
+                            <View className="flex-row items-center mb-6">
+                                <CheckCircle size={24} color="#10b981" />
+                                <Text className="text-xl font-black text-slate-900 dark:text-white ml-2">Verified</Text>
+                            </View>
+
+                            <View className="mb-4">
+                                <Text className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">ID Number</Text>
+                                <Text className="text-lg font-black text-slate-900 dark:text-white">{result.extracted_id || "Not detected"}</Text>
+                            </View>
+
+                            {result.extracted_dates.length > 0 && (
+                                <View className="mb-6">
+                                    <Text className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Dates Detected</Text>
+                                    <Text className="text-base font-bold text-slate-900 dark:text-white">{result.extracted_dates.join(", ")}</Text>
+                                </View>
+                            )}
+
+                            <Text className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Technical Summary</Text>
+                            <View className="bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl">
+                                <Text className="text-[8px] font-mono text-slate-500 leading-3">{result.raw_text}</Text>
+                            </View>
+                        </MotiView>
+                    )}
+                </ScrollView>
+            </SafeAreaView>
+        </View>
     );
 }
 

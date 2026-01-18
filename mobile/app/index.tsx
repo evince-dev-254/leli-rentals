@@ -1,11 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { View, Image, StyleSheet, Dimensions, Text } from 'react-native';
 import Animated, {
     useSharedValue,
     useAnimatedStyle,
     withTiming,
     withDelay,
-    withSequence,
     runOnJS,
     interpolate,
     Easing
@@ -13,6 +12,7 @@ import Animated, {
 import { useRouter } from 'expo-router';
 import { MotiView } from 'moti';
 import { useAuth } from './context/auth-context';
+import { BackgroundGradient } from '@/components/ui/background-gradient';
 
 const { width, height } = Dimensions.get('window');
 
@@ -25,7 +25,7 @@ export default function StartupScreen() {
     const backgroundScale = useSharedValue(1);
     const textOpacity = useSharedValue(0);
 
-    const finishStartup = () => {
+    const finishStartup = useCallback(() => {
         if (!loading) {
             if (user) {
                 router.replace('/(tabs)');
@@ -33,7 +33,7 @@ export default function StartupScreen() {
                 router.replace('/auth/login');
             }
         }
-    };
+    }, [loading, user, router]);
 
     useEffect(() => {
         // Animation Sequence
@@ -55,7 +55,7 @@ export default function StartupScreen() {
         }, 2500);
 
         return () => clearTimeout(timeout);
-    }, [loading, user]);
+    }, [loading, user, backgroundScale, finishStartup, logoOpacity, logoScale, textOpacity]);
 
     const animatedLogoStyle = useAnimatedStyle(() => ({
         opacity: logoOpacity.value,
@@ -72,21 +72,10 @@ export default function StartupScreen() {
     }));
 
     return (
-        <View className="flex-1 bg-slate-950 items-center justify-center overflow-hidden">
-            {/* Ambient Background Glow */}
-            <Animated.View
-                style={[
-                    animatedBgStyle,
-                    {
-                        position: 'absolute',
-                        width: width * 1.5,
-                        height: width * 1.5,
-                        borderRadius: width,
-                        backgroundColor: '#3b82f6',
-                        opacity: 0.1,
-                    }
-                ]}
-            />
+        <View className="flex-1 bg-[#fffdf0] dark:bg-slate-950 items-center justify-center overflow-hidden">
+            <Animated.View style={[StyleSheet.absoluteFill, animatedBgStyle]}>
+                <BackgroundGradient />
+            </Animated.View>
 
             <View className="items-center">
                 <Animated.View style={[animatedLogoStyle, { width: 140, height: 140 }]}>

@@ -10,8 +10,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { BackButton } from '@/components/ui/back-button';
 import * as WebBrowser from 'expo-web-browser';
+import * as Linking from 'expo-linking';
 
-WebBrowser.maybeCompleteAuthSession();
 
 const { width } = Dimensions.get('window');
 
@@ -40,28 +40,77 @@ export default function LoginScreen() {
         }
 
         setLoading(true);
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
         if (error) {
             showAlert('Login Failed', error.message, 'error');
+            setLoading(false);
+        } else if (data?.user) {
+            const role = data.user.user_metadata?.role;
+            const emailVerified = data.user.email_confirmed_at;
+
+            if (!emailVerified) {
+                showAlert('Verify Email', 'Please verify your email to continue.', 'info');
+                setTimeout(() => {
+                    setAlertConfig(prev => ({ ...prev, visible: false }));
+                    router.push({
+                        pathname: '/auth/verify',
+                        params: { email }
+                    });
+                }, 1500);
+            } else if (!role) {
+                router.replace('/auth/select-role');
+            } else {
+                // Global redirection to tabs which handles internal dashboard state
+                router.replace('/(tabs)');
+            }
+            setLoading(false);
         }
-        setLoading(false);
     };
+
 
     const handleGoogleLogin = async () => {
         setLoading(true);
-        const { data, error } = await supabase.auth.signInWithOAuth({
-            provider: 'google',
-            options: {
-                redirectTo: 'leli-rentals://google-auth',
-            }
-        });
+        try {
+            const redirectTo = Linking.createURL('auth/callback');
 
-        if (error) {
+            const { data, error } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo,
+                    skipBrowserRedirect: true,
+                }
+            });
+
+            if (error) throw error;
+
+            if (data?.url) {
+                const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+
+                if (result.type === 'success' && result.url) {
+                    const { queryParams } = Linking.parse(result.url);
+                    if (queryParams?.access_token) {
+                        const { data: { user }, error: sessionError } = await supabase.auth.setSession({
+                            access_token: queryParams.access_token as string,
+                            refresh_token: queryParams.refresh_token as string,
+                        });
+
+                        if (!sessionError && user) {
+                            const role = user.user_metadata?.role;
+                            if (!role) {
+                                router.replace('/auth/select-role');
+                            } else {
+                                router.replace('/(tabs)');
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (error: any) {
             showAlert('Google Error', error.message, 'error');
-        } else if (data.url) {
-            const result = await WebBrowser.openAuthSessionAsync(data.url, 'leli-rentals://google-auth');
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     };
 
     return (

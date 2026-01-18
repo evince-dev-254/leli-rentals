@@ -9,6 +9,7 @@ import { BackgroundGradient } from '@/components/ui/background-gradient';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { BackButton } from '@/components/ui/back-button';
+import * as Linking from 'expo-linking';
 
 export default function ForgotPasswordScreen() {
     const [email, setEmail] = useState('');
@@ -33,13 +34,13 @@ export default function ForgotPasswordScreen() {
 
         setLoading(true);
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
-            redirectTo: 'leli-rentals://auth/reset-password',
+            redirectTo: Linking.createURL('auth/reset-password'),
         });
 
         if (error) {
             showAlert('Error', error.message, 'error');
         } else {
-            showAlert('Email Sent', 'Please check your inbox for the password reset link.', 'success');
+            showAlert('Email Sent', 'We have sent a password reset link to your email. \n\nPlease check your spam folder too. You can request again in 60 seconds if it doesn\'t arrive.', 'success');
         }
         setLoading(false);
     };

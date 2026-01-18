@@ -91,9 +91,7 @@ export function BecomeOwnerContent() {
     <div className="relative">
       {/* Hero Section */}
       <section className="relative py-24 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-secondary/10" />
-        <div className="absolute top-20 left-10 w-72 h-72 bg-primary/20 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-accent/20 rounded-full blur-3xl" />
+        {/* Background elements are now handled by parent gradient-mesh */}
 
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-3xl mx-auto text-center">
@@ -236,12 +234,12 @@ export function BecomeOwnerContent() {
                     <div className="flex items-center gap-2">
                       <BadgeCheck
                         className={`h-5 w-5 ${index === 0
-                            ? "text-gray-400"
-                            : index === 1
-                              ? "text-amber-600"
-                              : index === 2
-                                ? "text-gray-300"
-                                : "text-yellow-500"
+                          ? "text-gray-400"
+                          : index === 1
+                            ? "text-amber-600"
+                            : index === 2
+                              ? "text-gray-300"
+                              : "text-yellow-500"
                           }`}
                       />
                       <span className="font-medium">{tier.tier}</span>

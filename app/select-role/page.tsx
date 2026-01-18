@@ -188,11 +188,8 @@ export default function SelectRolePage() {
     }
 
     return (
-        <div className="min-h-screen flex flex-col bg-background relative overflow-hidden">
-            {/* Background Elements */}
-            <div className="absolute top-0 left-0 w-full h-96 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
-            <div className="absolute -top-20 -right-20 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute top-40 -left-20 w-60 h-60 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="min-h-screen flex flex-col gradient-mesh relative overflow-hidden">
+            {/* Background elements are now handled by gradient-mesh or can be removed if redundant */}
 
             <main className="flex-1 flex flex-col items-center justify-center py-12 px-4 relative z-10">
                 <div className="w-full max-w-5xl">
