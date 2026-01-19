@@ -35,7 +35,7 @@ export const uploadImage = async (uri: string, fileName: string, folder: string 
                     signature,
                     token,
                     expire,
-                }, (err, result) => {
+                }, (err: any, result: any) => {
                     if (err) reject(err);
                     else resolve(result);
                 });

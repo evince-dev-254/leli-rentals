@@ -45,7 +45,7 @@ export function useListings(categoryId?: string, searchTerm?: string, subcategor
             let query = supabase
                 .from('listings')
                 .select('*, owner:user_profiles(full_name, avatar_url), categories(name)')
-                .eq('status', 'active')
+                .in('status', ['active', 'Active', 'published', 'Published', 'approved', 'Approved'])
                 .order('created_at', { ascending: false });
 
             if (categoryId) {
@@ -112,6 +112,23 @@ export function useUserStats(userId: string) {
                 listingCount: listingCount || 0,
                 bookingCount: bookingCount || 0,
             };
+        },
+        enabled: !!userId,
+    });
+}
+
+export function useOwnerListings(userId: string) {
+    return useQuery({
+        queryKey: ['owner-listings', userId],
+        queryFn: async () => {
+            const { data, error } = await supabase
+                .from('listings')
+                .select('*, owner:user_profiles(*), categories(*)')
+                .eq('owner_id', userId)
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            return data;
         },
         enabled: !!userId,
     });

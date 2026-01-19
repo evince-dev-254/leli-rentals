@@ -6,6 +6,11 @@ const config = getDefaultConfig(__dirname);
 
 // Add support for .cjs files used by many modern packages like date-fns v4
 config.resolver.sourceExts.push('cjs');
-config.resolver.unstable_enablePackageExports = true;
+// config.resolver.unstable_enablePackageExports = true;
+
+config.resolver.extraNodeModules = {
+    ...config.resolver.extraNodeModules,
+    tslib: require.resolve("tslib"),
+};
 
 module.exports = withNativeWind(config, { input: "./global.css" });

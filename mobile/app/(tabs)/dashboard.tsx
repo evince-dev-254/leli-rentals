@@ -233,7 +233,7 @@ export default function UnifiedDashboardScreen() {
 
                 {/* Role Switcher */}
                 <View className="px-6 mt-6 mb-6">
-                    <View className="bg-white/80 dark:bg-slate-900 p-1.5 rounded-3xl border-2 border-slate-100 dark:border-slate-800 flex-row">
+                    <View className="bg-white/80 dark:bg-slate-900 p-1.5 rounded-3xl border-2 border-slate-100 dark:border-slate-800 flex-row gap-2">
                         {roles.map((role) => {
                             const isActive = activeRole === role.id;
                             return (
