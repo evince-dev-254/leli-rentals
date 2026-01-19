@@ -115,8 +115,8 @@ export default function ExploreScreen() {
               style={StyleSheet.absoluteFillObject}
             >
               <Image
-                source={require('../../assets/images/leli-home-hero-corrected.png')}
-                style={StyleSheet.absoluteFillObject}
+                source={require('../../assets/images/leli-home-hero-corrected.jpg')}
+                className="w-full h-full"
                 resizeMode="cover"
                 alt="Leli Rentals Hero"
               />
