@@ -26,7 +26,7 @@ const accountTypes = [
     },
     {
         value: "owner",
-        label: "I want to Host",
+        label: "I want to Rent Out",
         description: "Earn money by renting out your idle equipment and items.",
         icon: Building2,
         color: "bg-purple-500/10 text-purple-600 border-purple-500/20",
@@ -173,8 +173,12 @@ export default function SelectRolePage() {
             }, 800)
 
         } catch (err: any) {
+            // Log full error securely to console for debugging
             console.error('Error updating role:', err)
-            toast.error(err.message || 'Failed to update account type')
+
+            // Show generic user-friendly error message
+            toast.error("An unexpected error occurred. Please try again or contact support.")
+
             setLoading(false)
         }
     }

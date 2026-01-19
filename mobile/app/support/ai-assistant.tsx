@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, SafeAreaView, ScrollView, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Sparkles, Send, User, Bot, ChevronLeft } from 'lucide-react-native';
 import { MotiView, AnimatePresence } from 'moti';
 import { BackgroundGradient } from '@/components/ui/background-gradient';
@@ -27,7 +28,7 @@ export default function AIAssistantScreen() {
     const scrollViewRef = useRef<ScrollView>(null);
     const router = useRouter();
 
-    const handleSend = () => {
+    const handleSend = async () => {
         if (!input.trim()) return;
 
         const userMsg: Message = {
@@ -41,17 +42,42 @@ export default function AIAssistantScreen() {
         setInput('');
         setIsTyping(true);
 
-        // Simulate AI response
-        setTimeout(() => {
+        try {
+            const { GoogleGenerativeAI } = require("@google/generative-ai");
+            const genAI = new GoogleGenerativeAI(process.env.EXPO_PUBLIC_GEMINI_API_KEY || '');
+            const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+
+            const prompt = `You are Leli, an intelligent and helpful AI assistant for Leli Rentals, a premium rental platform for equipment, cars, and homes in Mauritius. 
+            
+            Your personality is professional, friendly, and knowledgeable. You help users find gear, understand rental terms, and navigate the platform.
+            
+            User's message: ${input}
+            
+            Provide a helpful, concise response as Leli.`;
+
+            const result = await model.generateContent(prompt);
+            const response = await result.response;
+            const text = response.text();
+
             const aiMsg: Message = {
                 id: (Date.now() + 1).toString(),
-                text: "That's a great question! Based on what you've told me, I recommend checking out our premium camera gear or the latest camping equipment for your upcoming adventure. Is there something specific you're looking for?",
+                text: text,
                 sender: 'ai',
                 timestamp: new Date()
             };
             setMessages(prev => [...prev, aiMsg]);
+        } catch (error) {
+            console.error("Gemini Error:", error);
+            const errorMsg: Message = {
+                id: (Date.now() + 1).toString(),
+                text: "I apologize, but I'm having trouble connecting to my knowledge base right now. Please try again later.",
+                sender: 'ai',
+                timestamp: new Date()
+            };
+            setMessages(prev => [...prev, errorMsg]);
+        } finally {
             setIsTyping(false);
-        }, 1500);
+        }
     };
 
     useEffect(() => {
@@ -61,7 +87,7 @@ export default function AIAssistantScreen() {
     }, [messages, isTyping]);
 
     return (
-        <View className="flex-1 bg-[#fffdf0] dark:bg-slate-950">
+        <View className="flex-1 bg-white dark:bg-slate-950">
             <BackgroundGradient />
             <SafeAreaView className="flex-1">
                 {/* Header */}
@@ -103,8 +129,8 @@ export default function AIAssistantScreen() {
                                 )}
                                 <View
                                     className={`max-w-[80%] p-5 rounded-[28px] shadow-sm ${msg.sender === 'user'
-                                            ? 'bg-blue-600 rounded-tr-none'
-                                            : 'bg-white dark:bg-slate-900 rounded-tl-none border-2 border-slate-50 dark:border-slate-800'
+                                        ? 'bg-blue-600 rounded-tr-none'
+                                        : 'bg-white dark:bg-slate-900 rounded-tl-none border-2 border-slate-50 dark:border-slate-800'
                                         }`}
                                 >
                                     <Text className={`text-base font-bold ${msg.sender === 'user' ? 'text-white' : 'text-slate-900 dark:text-white'}`}>

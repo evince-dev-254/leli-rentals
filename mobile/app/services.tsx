@@ -1,11 +1,13 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, SafeAreaView, Dimensions, ActivityIndicator, useColorScheme, TextInput, Image } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator, useColorScheme, TextInput, Image } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Search } from 'lucide-react-native';
 import { useCategories } from '@/lib/hooks/useData';
 import { BlurView } from 'expo-blur';
 import { BackgroundGradient } from '@/components/ui/background-gradient';
 import { cn } from '@/lib/utils';
+import { getIcon } from '@/lib/icon-mapping';
 
 import { BackButton } from '@/components/ui/back-button';
 
@@ -26,7 +28,7 @@ export default function ServicesScreen() {
     );
 
     return (
-        <View className="flex-1 bg-[#fffdf0] dark:bg-slate-950">
+        <View className="flex-1 bg-white dark:bg-slate-950">
             <BackgroundGradient />
             <SafeAreaView className="flex-1">
                 {/* Header */}
@@ -88,7 +90,10 @@ export default function ServicesScreen() {
                                                     alt={cat.name}
                                                 />
                                             ) : (
-                                                <Text className="text-3xl">{cat.icon || '🛠️'}</Text>
+                                                (() => {
+                                                    const CategoryIcon = getIcon(cat.icon);
+                                                    return <CategoryIcon size={32} color={selectedCategory === cat.id ? "#ffffff" : "#f97316"} />;
+                                                })()
                                             )}
                                         </View>
                                         <Text className="font-bold text-slate-900 dark:text-white text-center mb-1">{cat.name}</Text>

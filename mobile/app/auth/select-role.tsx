@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, SafeAreaView, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { ShoppingBag, Key, Users, ArrowRight, CheckCircle2 } from 'lucide-react-native';
 import { MotiView } from 'moti';
 import { BackgroundGradient } from '@/components/ui/background-gradient';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '../context/auth-context';
+import { useAuth } from '../../context/auth-context';
 
 type UserRole = 'renter' | 'owner' | 'affiliate';
 
@@ -77,9 +78,9 @@ export default function SelectRoleScreen() {
     };
 
     return (
-        <View className="flex-1 bg-[#fffdf0] dark:bg-slate-950">
+        <View className="flex-1 bg-white dark:bg-slate-950">
             <BackgroundGradient />
-            <SafeAreaView className="flex-1">
+            <SafeAreaView className="flex-1" edges={['top']}>
                 <ScrollView contentContainerStyle={{ paddingHorizontal: 32, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
                     <View className="mt-12 mb-10">
                         <MotiView

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, SafeAreaView, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Camera, MapPin, Tag, CircleDollarSign, ShieldCheck, ChevronRight, ChevronLeft, Plus, X, Sparkles, Check } from 'lucide-react-native';
 import { MotiView, AnimatePresence } from 'moti';
@@ -7,10 +8,11 @@ import { BackgroundGradient } from '@/components/ui/background-gradient';
 import { BackButton } from '@/components/ui/back-button';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useCategories } from '@/lib/hooks/useData';
+import { useCategories, useSubcategories } from '@/lib/hooks/useData';
 import { supabase } from '@/lib/supabase';
 import * as ImagePicker from 'expo-image-picker';
 import { cn } from '@/lib/utils';
+import { uploadImage } from '@/lib/imagekit';
 
 const STEPS = [
     { title: "Basics", icon: Tag },
@@ -30,6 +32,7 @@ export default function CreateListingScreen() {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [categoryId, setCategoryId] = useState('');
+    const [subcategoryId, setSubcategoryId] = useState('');
     const [priceDay, setPriceDay] = useState('');
     const [priceWeek, setPriceWeek] = useState('');
     const [priceMonth, setPriceMonth] = useState('');
@@ -39,7 +42,13 @@ export default function CreateListingScreen() {
     const [newAmenity, setNewAmenity] = useState('');
     const [images, setImages] = useState<string[]>([]);
 
+    const { data: subcategories, isLoading: subsLoading } = useSubcategories(categoryId);
+
     const nextStep = () => {
+        if (currentStep === 0 && (!categoryId || !subcategoryId)) {
+            Alert.alert("Required", "Please select both a category and a subcategory.");
+            return;
+        }
         if (currentStep < STEPS.length - 1) {
             setCurrentStep(currentStep + 1);
         } else {
@@ -82,17 +91,46 @@ export default function CreateListingScreen() {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) throw new Error("Not authenticated");
 
-            // Mock success for now, in a real app we'd upload images and then create the listing
-            setTimeout(() => {
-                setLoading(false);
-                Alert.alert("Success", "Your listing has been created and is pending review!", [
-                    { text: "Awesome", onPress: () => router.replace('/(tabs)/dashboard') }
-                ]);
-            }, 2000);
+            // 1. Upload Images to ImageKit
+            const uploadedUrls: string[] = [];
+            for (let i = 0; i < images.length; i++) {
+                const uri = images[i];
+                const fileName = `listing_${user.id}_${Date.now()}_${i}.jpg`;
+                const result: any = await uploadImage(uri, fileName, '/listings');
+                uploadedUrls.push(result.url);
+            }
+
+            // 2. Create Listing in Supabase
+            const { error: listingError } = await supabase
+                .from('listings')
+                .insert([{
+                    owner_id: user.id,
+                    title,
+                    description,
+                    category_id: categoryId,
+                    subcategory_id: subcategoryId,
+                    price_per_day: parseFloat(priceDay),
+                    price_per_week: priceWeek ? parseFloat(priceWeek) : null,
+                    price_per_month: priceMonth ? parseFloat(priceMonth) : null,
+                    city,
+                    area,
+                    location_name: `${area}, ${city}`,
+                    images: uploadedUrls,
+                    status: 'pending', // All new listings start as pending
+                    amenities: amenities,
+                }]);
+
+            if (listingError) throw listingError;
+
+            setLoading(false);
+            Alert.alert("Success", "Your gear is now listed and pending review!", [
+                { text: "Awesome", onPress: () => router.replace('/(tabs)/dashboard') }
+            ]);
 
         } catch (error: any) {
             setLoading(false);
-            Alert.alert("Error", error.message);
+            console.error('Create Listing Error:', error);
+            Alert.alert("Error", error.message || "Failed to create listing. Please try again.");
         }
     };
 
@@ -109,7 +147,10 @@ export default function CreateListingScreen() {
                                 {catsLoading ? <ActivityIndicator /> : categories?.map((cat: any) => (
                                     <TouchableOpacity
                                         key={cat.id}
-                                        onPress={() => setCategoryId(cat.id)}
+                                        onPress={() => {
+                                            setCategoryId(cat.id);
+                                            setSubcategoryId('');
+                                        }}
                                         className={cn(
                                             "px-6 py-3 rounded-2xl border-2",
                                             categoryId === cat.id ? "bg-blue-600 border-blue-600 shadow-lg shadow-blue-500/20" : "bg-white dark:bg-slate-900 border-slate-50 dark:border-slate-800"
@@ -120,6 +161,33 @@ export default function CreateListingScreen() {
                                 ))}
                             </View>
                         </View>
+
+                        <AnimatePresence>
+                            {categoryId && (
+                                <MotiView
+                                    from={{ opacity: 0, translateY: 10 }}
+                                    animate={{ opacity: 1, translateY: 0 }}
+                                    exit={{ opacity: 0, translateY: 10 }}
+                                    className="mb-4"
+                                >
+                                    <Text className="text-slate-900 dark:text-white font-black mb-3">Subcategory</Text>
+                                    <View className="flex-row flex-wrap gap-2">
+                                        {subsLoading ? <ActivityIndicator /> : subcategories?.map((sub: any) => (
+                                            <TouchableOpacity
+                                                key={sub.id}
+                                                onPress={() => setSubcategoryId(sub.id)}
+                                                className={cn(
+                                                    "px-5 py-2.5 rounded-xl border-2",
+                                                    subcategoryId === sub.id ? "bg-slate-900 border-slate-900 dark:bg-white dark:border-white" : "bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800"
+                                                )}
+                                            >
+                                                <Text className={cn("font-bold text-[11px]", subcategoryId === sub.id ? "text-white dark:text-slate-900" : "text-slate-500")}>{sub.name}</Text>
+                                            </TouchableOpacity>
+                                        ))}
+                                    </View>
+                                </MotiView>
+                            )}
+                        </AnimatePresence>
                     </MotiView>
                 );
             case 1:
@@ -192,7 +260,7 @@ export default function CreateListingScreen() {
     };
 
     return (
-        <View className="flex-1 bg-[#fffdf0] dark:bg-slate-950">
+        <View className="flex-1 bg-white dark:bg-slate-950">
             <BackgroundGradient />
             <SafeAreaView className="flex-1">
                 <View className="px-8 py-4 flex-row items-center justify-between">
@@ -221,7 +289,7 @@ export default function CreateListingScreen() {
                 </ScrollView>
 
                 {/* Fixed Bottom Navigation */}
-                <View className="absolute bottom-0 left-0 right-0 p-8 pt-4 bg-[#fffdf0]/90 dark:bg-slate-950/90 border-t border-slate-100 dark:border-slate-800 flex-row gap-4">
+                <View className="absolute bottom-0 left-0 right-0 p-8 pt-4 bg-white/90 dark:bg-slate-950/90 border-t border-slate-100 dark:border-slate-800 flex-row gap-4">
                     {currentStep > 0 && (
                         <TouchableOpacity onPress={prevStep} className="h-16 w-16 bg-white dark:bg-slate-900 rounded-3xl border-2 border-slate-50 dark:border-slate-800 items-center justify-center">
                             <ChevronLeft size={24} color="#64748b" />

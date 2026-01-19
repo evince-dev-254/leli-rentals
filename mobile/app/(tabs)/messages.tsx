@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, SafeAreaView } from 'react-native';
+import { View, Text } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { MessageCircle } from 'lucide-react-native';
 import { MotiView } from 'moti';
 import { BackgroundGradient } from '@/components/ui/background-gradient';
@@ -10,7 +11,7 @@ export default function MessagesScreen() {
     const router = useRouter();
 
     return (
-        <View className="flex-1 bg-[#fffdf0] dark:bg-slate-950">
+        <View className="flex-1 bg-white dark:bg-slate-950">
             <BackgroundGradient />
             <SafeAreaView className="flex-1 items-center justify-center px-8">
                 <MotiView

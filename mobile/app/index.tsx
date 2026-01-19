@@ -11,7 +11,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
 import { MotiView } from 'moti';
-import { useAuth } from './context/auth-context';
+import { useAuth } from '../context/auth-context';
 import { BackgroundGradient } from '@/components/ui/background-gradient';
 
 const { width, height } = Dimensions.get('window');
@@ -72,7 +72,7 @@ export default function StartupScreen() {
     }));
 
     return (
-        <View className="flex-1 bg-[#fffdf0] dark:bg-slate-950 items-center justify-center overflow-hidden">
+        <View className="flex-1 bg-white dark:bg-slate-950 items-center justify-center overflow-hidden">
             <Animated.View style={[StyleSheet.absoluteFill, animatedBgStyle]}>
                 <BackgroundGradient />
             </Animated.View>

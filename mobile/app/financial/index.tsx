@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, SafeAreaView, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Wallet, TrendingUp, History, ArrowUpRight, ArrowDownLeft, Clock, CheckCircle2, ChevronRight } from 'lucide-react-native';
 import { MotiView } from 'moti';
 import { BackgroundGradient } from '@/components/ui/background-gradient';
 import { BackButton } from '@/components/ui/back-button';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '../context/auth-context';
+import { useAuth } from '../../context/auth-context';
 import { supabase } from '@/lib/supabase';
 import { useQuery } from '@tanstack/react-query';
 import { cn } from '@/lib/utils';
@@ -13,8 +14,9 @@ import { cn } from '@/lib/utils';
 export default function FinancialCenterScreen() {
     const { user } = useAuth();
     const [requestLoading, setRequestLoading] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
 
-    const { data: wallet, isLoading: walletLoading } = useQuery({
+    const { data: wallet, isLoading: walletLoading, refetch: refetchWallet } = useQuery({
         queryKey: ['wallet', user?.id],
         queryFn: async () => {
             const { data, error } = await supabase
@@ -29,7 +31,7 @@ export default function FinancialCenterScreen() {
         enabled: !!user?.id
     });
 
-    const { data: payouts, isLoading: payoutsLoading } = useQuery({
+    const { data: payouts, isLoading: payoutsLoading, refetch: refetchPayouts } = useQuery({
         queryKey: ['payouts', user?.id],
         queryFn: async () => {
             const { data, error } = await supabase
@@ -57,10 +59,16 @@ export default function FinancialCenterScreen() {
         }, 1500);
     };
 
+    const onRefresh = React.useCallback(async () => {
+        setRefreshing(true);
+        await Promise.all([refetchWallet(), refetchPayouts()]);
+        setRefreshing(false);
+    }, [refetchWallet, refetchPayouts]);
+
     return (
-        <View className="flex-1 bg-[#fffdf0] dark:bg-slate-950">
+        <View className="flex-1 bg-white dark:bg-slate-950">
             <BackgroundGradient />
-            <SafeAreaView className="flex-1">
+            <SafeAreaView className="flex-1" edges={['top']}>
                 <View className="px-8 py-4 flex-row items-center justify-between">
                     <View className="flex-row items-center">
                         <BackButton />
@@ -68,7 +76,13 @@ export default function FinancialCenterScreen() {
                     </View>
                 </View>
 
-                <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+                <ScrollView
+                    className="flex-1"
+                    showsVerticalScrollIndicator={false}
+                    refreshControl={
+                        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                    }
+                >
                     {/* Balanced Card */}
                     <View className="px-8 py-6">
                         <MotiView

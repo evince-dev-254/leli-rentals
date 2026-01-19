@@ -6,7 +6,7 @@ const { width, height } = Dimensions.get('window');
 export const BackgroundGradient = () => {
     const isDark = useColorScheme() === 'dark';
     return (
-        <View style={[StyleSheet.absoluteFill, { backgroundColor: isDark ? '#0f2a20' : '#fffdf0' }]} pointerEvents="none">
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: isDark ? '#020617' : '#ffffff' }]} pointerEvents="none">
             {/* Purple Orb */}
             <View
                 style={{
@@ -16,8 +16,8 @@ export const BackgroundGradient = () => {
                     width: 500,
                     height: 500,
                     borderRadius: 250,
-                    backgroundColor: '#8b5cf6', // Violet 500
-                    opacity: isDark ? 0.08 : 0.12,
+                    backgroundColor: '#a78bfa', // Violet 400
+                    opacity: isDark ? 0.12 : 0.2,
                 }}
             />
             {/* Pink Orb */}
@@ -30,7 +30,7 @@ export const BackgroundGradient = () => {
                     height: 400,
                     borderRadius: 200,
                     backgroundColor: '#f472b6', // Pink 400
-                    opacity: isDark ? 0.06 : 0.1,
+                    opacity: isDark ? 0.1 : 0.18,
                 }}
             />
             {/* Orange/Yellow Glow */}
@@ -42,8 +42,8 @@ export const BackgroundGradient = () => {
                     width: 350,
                     height: 350,
                     borderRadius: 175,
-                    backgroundColor: '#fb923c', // Orange 400 (Parity)
-                    opacity: isDark ? 0.05 : 0.08,
+                    backgroundColor: '#fbbf24', // Amber 400
+                    opacity: isDark ? 0.08 : 0.15,
                 }}
             />
             {/* Deep Violet Bottom Glow */}
@@ -55,8 +55,8 @@ export const BackgroundGradient = () => {
                     width: 450,
                     height: 450,
                     borderRadius: 225,
-                    backgroundColor: '#7c3aed', // Violet 600
-                    opacity: isDark ? 0.05 : 0.08,
+                    backgroundColor: '#8b5cf6', // Violet 500
+                    opacity: isDark ? 0.08 : 0.15,
                 }}
             />
         </View>

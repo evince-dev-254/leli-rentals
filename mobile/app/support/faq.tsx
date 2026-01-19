@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, SafeAreaView, ScrollView, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, TextInput } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Search, ChevronDown, ChevronUp, Package, CreditCard, Shield, Users, FileText, MessageCircle } from 'lucide-react-native';
 import { MotiView, AnimatePresence } from 'moti';
 import { BackgroundGradient } from '@/components/ui/background-gradient';
@@ -105,7 +106,7 @@ export default function FAQScreen() {
         .filter(cat => cat.questions.length > 0);
 
     return (
-        <View className="flex-1 bg-[#fffdf0] dark:bg-slate-950">
+        <View className="flex-1 bg-white dark:bg-slate-950">
             <BackgroundGradient />
             <SafeAreaView className="flex-1">
                 <View className="px-8 py-4 flex-row items-center justify-between">

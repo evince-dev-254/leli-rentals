@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, SafeAreaView, Dimensions, ActivityIndicator, Image } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator, Image } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { Share, Heart, MapPin, ShieldCheck, Clock, Star, MessageCircle } from 'lucide-react-native';
 import { BlurView } from 'expo-blur';
@@ -20,7 +21,7 @@ export default function ListingDetailScreen() {
 
     if (isLoading) {
         return (
-            <View className="flex-1 items-center justify-center bg-[#fffdf0] dark:bg-slate-950">
+            <View className="flex-1 items-center justify-center bg-white dark:bg-slate-950">
                 <ActivityIndicator color="#3b82f6" />
             </View>
         );
@@ -29,7 +30,7 @@ export default function ListingDetailScreen() {
     if (!listing) return null;
 
     return (
-        <View className="flex-1 bg-[#fffdf0] dark:bg-slate-950">
+        <View className="flex-1 bg-white dark:bg-slate-950">
             <BackgroundGradient />
             <Stack.Screen options={{ headerShown: false }} />
 

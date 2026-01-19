@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, SafeAreaView, ScrollView, TouchableOpacity, ActivityIndicator, Image } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Image, RefreshControl } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Clock, Calendar, ChevronRight, Package, MapPin, CheckCircle2, XCircle } from 'lucide-react-native';
 import { MotiView } from 'moti';
 import { BackgroundGradient } from '@/components/ui/background-gradient';
 import { BackButton } from '@/components/ui/back-button';
-import { useAuth } from '../context/auth-context';
+import { useAuth } from '../../context/auth-context';
 import { supabase } from '@/lib/supabase';
 import { useQuery } from '@tanstack/react-query';
 import { cn } from '@/lib/utils';
@@ -13,8 +14,9 @@ import { format } from 'date-fns';
 export default function MyBookingsScreen() {
     const { user } = useAuth();
     const [activeTab, setActiveTab] = useState<'renter' | 'owner'>('renter');
+    const [refreshing, setRefreshing] = useState(false);
 
-    const { data: bookings, isLoading } = useQuery({
+    const { data: bookings, isLoading, refetch } = useQuery({
         queryKey: ['my-bookings', user?.id, activeTab],
         queryFn: async () => {
             const field = activeTab === 'renter' ? 'renter_id' : 'owner_id';
@@ -30,6 +32,12 @@ export default function MyBookingsScreen() {
         enabled: !!user?.id
     });
 
+    const onRefresh = React.useCallback(async () => {
+        setRefreshing(true);
+        await refetch();
+        setRefreshing(false);
+    }, [refetch]);
+
     const getStatusStyle = (status: string) => {
         switch (status) {
             case 'confirmed': return { bg: 'bg-emerald-50 dark:bg-emerald-900/20', text: 'text-emerald-600', icon: CheckCircle2 };
@@ -40,9 +48,9 @@ export default function MyBookingsScreen() {
     };
 
     return (
-        <View className="flex-1 bg-[#fffdf0] dark:bg-slate-950">
+        <View className="flex-1 bg-white dark:bg-slate-950">
             <BackgroundGradient />
-            <SafeAreaView className="flex-1">
+            <SafeAreaView className="flex-1" edges={['top']}>
                 <View className="px-8 py-4 flex-row items-center justify-between">
                     <View className="flex-row items-center">
                         <BackButton />
@@ -68,7 +76,14 @@ export default function MyBookingsScreen() {
                     </View>
                 </View>
 
-                <ScrollView className="flex-1" contentContainerStyle={{ padding: 32 }} showsVerticalScrollIndicator={false}>
+                <ScrollView
+                    className="flex-1"
+                    contentContainerStyle={{ padding: 32 }}
+                    showsVerticalScrollIndicator={false}
+                    refreshControl={
+                        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                    }
+                >
                     {isLoading ? (
                         <ActivityIndicator color="#3b82f6" className="mt-20" />
                     ) : bookings?.length === 0 ? (

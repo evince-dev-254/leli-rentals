@@ -11,7 +11,7 @@ export default function FavoritesScreen() {
     const router = useRouter();
 
     return (
-        <View className="flex-1 bg-[#fffdf0] dark:bg-slate-950">
+        <View className="flex-1 bg-white dark:bg-slate-950">
             <BackgroundGradient />
             <SafeAreaView className="flex-1" edges={['bottom']}>
                 <View className="flex-1 items-center justify-center px-8">

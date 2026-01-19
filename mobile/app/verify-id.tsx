@@ -86,7 +86,7 @@ export default function VerifyIdScreen() {
     };
 
     return (
-        <View className="flex-1 bg-[#fffdf0] dark:bg-slate-950">
+        <View className="flex-1 bg-white dark:bg-slate-950">
             <BackgroundGradient />
             <SafeAreaView className="flex-1">
                 <View className="px-8 py-4">

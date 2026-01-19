@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, SafeAreaView, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Bell, Info, CheckCircle2, AlertTriangle, ChevronRight, X, Trash2 } from 'lucide-react-native';
 import { MotiView, AnimatePresence } from 'moti';
 import { BackgroundGradient } from '@/components/ui/background-gradient';
 import { BackButton } from '@/components/ui/back-button';
-import { useAuth } from '../context/auth-context';
+import { useAuth } from '../../context/auth-context';
 import { supabase } from '@/lib/supabase';
 import { useQuery } from '@tanstack/react-query';
 import { cn } from '@/lib/utils';
@@ -12,6 +13,7 @@ import { cn } from '@/lib/utils';
 export default function NotificationsScreen() {
     const { user } = useAuth();
     const [filter, setFilter] = useState<'all' | 'unread'>('all');
+    const [refreshing, setRefreshing] = useState(false);
 
     const { data: notifications, isLoading, refetch } = useQuery({
         queryKey: ['notifications', user?.id, filter],
@@ -32,6 +34,12 @@ export default function NotificationsScreen() {
         },
         enabled: !!user?.id
     });
+
+    const onRefresh = React.useCallback(async () => {
+        setRefreshing(true);
+        await refetch();
+        setRefreshing(false);
+    }, [refetch]);
 
     const getIcon = (type: string) => {
         switch (type) {
@@ -60,9 +68,9 @@ export default function NotificationsScreen() {
     };
 
     return (
-        <View className="flex-1 bg-[#fffdf0] dark:bg-slate-950">
+        <View className="flex-1 bg-white dark:bg-slate-950">
             <BackgroundGradient />
-            <SafeAreaView className="flex-1">
+            <SafeAreaView className="flex-1" edges={['top']}>
                 <View className="px-8 py-4 flex-row items-center justify-between">
                     <View className="flex-row items-center">
                         <BackButton />
@@ -91,7 +99,14 @@ export default function NotificationsScreen() {
                     ))}
                 </View>
 
-                <ScrollView className="flex-1" contentContainerStyle={{ padding: 32 }} showsVerticalScrollIndicator={false}>
+                <ScrollView
+                    className="flex-1"
+                    contentContainerStyle={{ padding: 32 }}
+                    showsVerticalScrollIndicator={false}
+                    refreshControl={
+                        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                    }
+                >
                     {isLoading ? (
                         <ActivityIndicator color="#3b82f6" className="mt-20" />
                     ) : notifications?.length === 0 ? (

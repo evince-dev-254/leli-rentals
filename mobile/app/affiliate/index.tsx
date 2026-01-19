@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, ScrollView, SafeAreaView, TouchableOpacity, Share } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Share } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
 import { ChevronLeft, Copy, Users, TrendingUp, Gift, Wallet } from 'lucide-react-native';
 
@@ -19,7 +20,7 @@ export default function AffiliateTrackingScreen() {
     };
 
     return (
-        <SafeAreaView className="flex-1 bg-slate-50 dark:bg-slate-950">
+        <SafeAreaView className="flex-1 bg-slate-50 dark:bg-slate-950" edges={['top']}>
             <Stack.Screen
                 options={{
                     title: 'Affiliate Hub',

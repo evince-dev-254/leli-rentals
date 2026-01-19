@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, Platform } from 'react-native';
 import * as Updates from 'expo-updates';
+import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { MotiView, AnimatePresence } from 'moti';
 import { RefreshCw, X } from 'lucide-react-native';
+
+const isExpoGo = Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
 
 export const UpdateBanner = () => {
     const [updateAvailable, setUpdateAvailable] = useState(false);
@@ -10,7 +13,7 @@ export const UpdateBanner = () => {
     const [isVisible, setIsVisible] = useState(true);
 
     useEffect(() => {
-        if (__DEV__) return; // Don't check in development
+        if (__DEV__ || isExpoGo) return; // Don't check in development or Expo Go
 
         async function checkUpdates() {
             try {

@@ -8,7 +8,9 @@ export function useCategories() {
             const { data, error } = await supabase
                 .from('categories')
                 .select('*')
-                .order('name');
+                .eq('is_active', true)
+                .order('display_order', { ascending: true })
+                .order('name', { ascending: true });
 
             if (error) throw error;
             return data;
@@ -16,18 +18,42 @@ export function useCategories() {
     });
 }
 
-export function useListings(categoryId?: string, searchTerm?: string) {
+export function useSubcategories(categoryId?: string) {
     return useQuery({
-        queryKey: ['listings', categoryId, searchTerm],
+        queryKey: ['subcategories', categoryId],
+        queryFn: async () => {
+            if (!categoryId) return [];
+            const { data, error } = await supabase
+                .from('subcategories')
+                .select('*')
+                .eq('category_id', categoryId)
+                .eq('is_active', true)
+                .order('display_order', { ascending: true })
+                .order('name', { ascending: true });
+
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!categoryId,
+    });
+}
+
+export function useListings(categoryId?: string, searchTerm?: string, subcategoryId?: string) {
+    return useQuery({
+        queryKey: ['listings', categoryId, searchTerm, subcategoryId],
         queryFn: async () => {
             let query = supabase
                 .from('listings')
-                .select('*, owner:user_profiles(full_name, avatar_url)')
+                .select('*, owner:user_profiles(full_name, avatar_url), categories(name)')
                 .eq('status', 'active')
                 .order('created_at', { ascending: false });
 
             if (categoryId) {
                 query = query.eq('category_id', categoryId);
+            }
+
+            if (subcategoryId) {
+                query = query.eq('subcategory_id', subcategoryId);
             }
 
             if (searchTerm) {

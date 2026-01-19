@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, SafeAreaView, ScrollView, Image, Dimensions } from 'react-native';
+import { View, Text, ScrollView, Image, Dimensions } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Target, Heart, Shield, Zap } from 'lucide-react-native';
 import { MotiView } from 'moti';
 import { BackgroundGradient } from '@/components/ui/background-gradient';
@@ -36,7 +37,7 @@ const values = [
 
 export default function AboutScreen() {
     return (
-        <View className="flex-1 bg-[#fffdf0] dark:bg-slate-950">
+        <View className="flex-1 bg-white dark:bg-slate-950">
             <BackgroundGradient />
             <SafeAreaView className="flex-1">
                 <View className="px-8 py-4 flex-row items-center">

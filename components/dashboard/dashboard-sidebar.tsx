@@ -45,7 +45,6 @@ export const allLinks = [
   { href: "/dashboard/subscription", label: "Subscription", icon: CreditCard, roles: ["owner"], badge: "" },
   { href: "/dashboard/verification", label: "Verification", icon: ShieldCheck, roles: ["owner"], badge: "" },
   { href: "/dashboard/settings", label: "Settings", icon: Settings, roles: ["owner", "renter", "affiliate", "staff"], badge: "" },
-  { href: "/staff", label: "Staff Portal", icon: LayoutDashboard, roles: ["staff_only"], badge: "" },
 ]
 
 interface SidebarContentProps {

@@ -1,10 +1,10 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useAuth } from '../context/auth-context';
+import { useAuth } from '../../context/auth-context';
 import { BackgroundGradient } from '@/components/ui/background-gradient';
 import { Button } from '@/components/ui/button';
-import { LogOut, User, Settings, Shield, Bell, HelpCircle, MessageCircle, ShoppingBag, Plus, Star, RefreshCw } from 'lucide-react-native';
+import { LogOut, User, Settings, Shield, Bell, HelpCircle, MessageCircle, ShoppingBag, Plus, Star, RefreshCw, Wallet, ChevronRight } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { MotiView } from 'moti';
 
@@ -12,13 +12,18 @@ export default function ProfileScreen() {
     const { user, signOut } = useAuth();
     const router = useRouter();
 
-    const menuItems = [
+    const accountItems = [
         { icon: User, label: 'Edit Profile', color: '#3b82f6', href: '/profile/edit' },
-        { icon: Shield, label: 'Security', color: '#10b981', href: '/profile/security' },
+        { icon: ShoppingBag, label: 'My Bookings', color: '#f97316', href: '/bookings' },
+        { icon: Plus, label: 'My Listings', color: '#10b981', href: '/listings' },
+        { icon: Wallet, label: 'Wallet', color: '#8b5cf6', href: '/financial' },
+    ];
+
+    const otherItems = [
         { icon: Bell, label: 'Notifications', color: '#f59e0b', href: '/notifications' },
-        { icon: RefreshCw, label: 'Software Updates', color: '#f97316', href: '/settings/updates' },
-        { icon: HelpCircle, label: 'Help Hub', color: '#6366f1', href: '/support/faq' },
-        { icon: MessageCircle, label: 'Contact Support', color: '#ec4899', href: '/support/contact' },
+        { icon: Shield, label: 'Security', color: '#6366f1', href: '/profile/security' },
+        { icon: RefreshCw, label: 'Software Updates', color: '#f43f5e', href: '/settings/updates' },
+        { icon: HelpCircle, label: 'Help Hub', color: '#64748b', href: '/support/faq' },
     ];
 
     const legalItems = [
@@ -27,11 +32,11 @@ export default function ProfileScreen() {
     ];
 
     return (
-        <View className="flex-1 bg-[#fffdf0] dark:bg-slate-950">
+        <View className="flex-1 bg-white dark:bg-slate-950">
             <BackgroundGradient />
             <SafeAreaView className="flex-1" edges={['bottom']}>
                 <ScrollView className="flex-1 px-8" showsVerticalScrollIndicator={false}>
-                    <View className="h-12" /> {/* Custom top spacing */}
+                    <View className="h-20" /> {/* Custom top spacing */}
                     {/* Profile Header */}
                     <MotiView
                         from={{ opacity: 0, scale: 0.9 }}
@@ -71,9 +76,10 @@ export default function ProfileScreen() {
                             </View>
                         ))}
                     </View>
-                    {/* Menu Items */}
-                    <View className="bg-white/80 dark:bg-slate-900/80 rounded-[32px] border-2 border-slate-50 dark:border-slate-800 overflow-hidden mb-6 shadow-sm">
-                        {menuItems.map((item, idx) => (
+                    {/* Account Section */}
+                    <Text className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-2 mb-3">Account</Text>
+                    <View className="bg-white/80 dark:bg-slate-900/80 rounded-[32px] border-2 border-slate-50 dark:border-slate-800 overflow-hidden mb-8 shadow-sm">
+                        {accountItems.map((item, idx) => (
                             <TouchableOpacity
                                 key={idx}
                                 onPress={() => item.href && router.push(item.href as any)}
@@ -83,9 +89,25 @@ export default function ProfileScreen() {
                                     <item.icon size={20} color={item.color} />
                                 </View>
                                 <Text className="flex-1 text-base font-black text-slate-900 dark:text-white">{item.label}</Text>
-                                <View className="h-8 w-8 rounded-full bg-slate-50 dark:bg-slate-800 items-center justify-center">
-                                    <Text className="text-slate-400 font-black">→</Text>
+                                <ChevronRight size={18} color="#94a3b8" />
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+
+                    {/* Others Section */}
+                    <Text className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-2 mb-3">Others</Text>
+                    <View className="bg-white/80 dark:bg-slate-900/80 rounded-[32px] border-2 border-slate-50 dark:border-slate-800 overflow-hidden mb-6 shadow-sm">
+                        {otherItems.map((item, idx) => (
+                            <TouchableOpacity
+                                key={idx}
+                                onPress={() => item.href && router.push(item.href as any)}
+                                className="flex-row items-center p-5 border-b-2 border-slate-50/50 dark:border-slate-800/50 last:border-b-0"
+                            >
+                                <View className="h-10 w-10 rounded-2xl bg-white dark:bg-slate-800 items-center justify-center mr-4 shadow-sm">
+                                    <item.icon size={20} color={item.color} />
                                 </View>
+                                <Text className="flex-1 text-base font-black text-slate-900 dark:text-white">{item.label}</Text>
+                                <ChevronRight size={18} color="#94a3b8" />
                             </TouchableOpacity>
                         ))}
                     </View>

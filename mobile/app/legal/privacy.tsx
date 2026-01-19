@@ -1,11 +1,12 @@
 import React from 'react';
-import { View, Text, SafeAreaView, ScrollView } from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { BackgroundGradient } from '@/components/ui/background-gradient';
 import { BackButton } from '@/components/ui/back-button';
 
 export default function PrivacyScreen() {
     return (
-        <View className="flex-1 bg-[#fffdf0] dark:bg-slate-950">
+        <View className="flex-1 bg-white dark:bg-slate-950">
             <BackgroundGradient />
             <SafeAreaView className="flex-1">
                 <View className="px-8 py-4 flex-row items-center border-b border-slate-100 dark:border-slate-800 bg-white/50 backdrop-blur-md">

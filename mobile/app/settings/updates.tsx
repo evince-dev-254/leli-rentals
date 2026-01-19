@@ -6,25 +6,48 @@ import { BackButton } from '@/components/ui/back-button';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, CheckCircle2, AlertCircle, Info, Clock } from 'lucide-react-native';
 import * as Updates from 'expo-updates';
+import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { MotiView } from 'moti';
+import { BrandedAlert } from '@/components/ui/branded-alert';
+
+const isExpoGo = Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
 
 export default function UpdatesScreen() {
     const [checking, setChecking] = useState(false);
     const [updateAvailable, setUpdateAvailable] = useState(false);
     const [status, setStatus] = useState<string>('Up to date');
     const [manifest, setManifest] = useState<any>(null);
+    const [alertConfig, setAlertConfig] = useState<{ visible: boolean; title: string; message: string; type: 'success' | 'error' | 'info' }>({
+        visible: false,
+        title: '',
+        message: '',
+        type: 'info'
+    });
+
+    const showAlert = (title: string, message: string, type: 'success' | 'error' | 'info' = 'info') => {
+        setAlertConfig({ visible: true, title, message, type });
+    };
 
     useEffect(() => {
         // Log current update info
-        if (Updates.isEnabled) {
+        if (Updates.isEnabled && !isExpoGo) {
             console.log('Update Runtime Version:', Updates.runtimeVersion);
             console.log('Update Channel:', Updates.channel);
         }
     }, []);
 
     const onCheckForUpdates = async () => {
+        if (isExpoGo) {
+            showAlert(
+                "Expo Go",
+                "Over-the-air updates are not supported in Expo Go. Please use a development build or production build.",
+                "info"
+            );
+            return;
+        }
+
         if (!Updates.isEnabled) {
-            Alert.alert("Updates Disabled", "Over-the-air updates are not enabled in this build.");
+            showAlert("Updates Disabled", "Over-the-air updates are not enabled in this build.", "error");
             return;
         }
 
@@ -40,12 +63,12 @@ export default function UpdatesScreen() {
             } else {
                 setUpdateAvailable(false);
                 setStatus('App is up to date');
-                Alert.alert("No Updates", "You are already using the latest version of Leli Rentals.");
+                showAlert("System Up to Date", "You are already using the latest version of Leli Rentals.", "success");
             }
         } catch (error: any) {
             console.error(error);
             setStatus('Error checking for updates');
-            Alert.alert("Error", "Could not check for updates. Please try again later.");
+            showAlert("Error", "Could not check for updates. Please try again later.", "error");
         } finally {
             setChecking(false);
         }
@@ -57,25 +80,36 @@ export default function UpdatesScreen() {
         try {
             await Updates.fetchUpdateAsync();
             setStatus('Update downloaded');
-            Alert.alert(
+            showAlert(
                 "Update Ready",
                 "The update has been downloaded. The app will now restart to apply changes.",
-                [{ text: "Restart Now", onPress: () => Updates.reloadAsync() }]
+                "success"
             );
+            // After success alert is closed, reload
+            setTimeout(() => {
+                Updates.reloadAsync();
+            }, 2000);
         } catch (error: any) {
             console.error(error);
             setStatus('Error downloading update');
-            Alert.alert("Error", "Could not download the update.");
+            showAlert("Error", "Could not download the update.", "error");
         } finally {
             setChecking(false);
         }
     };
 
     return (
-        <View className="flex-1 bg-[#fffdf0] dark:bg-slate-950">
+        <View className="flex-1 bg-white dark:bg-slate-950">
+            <BrandedAlert
+                visible={alertConfig.visible}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                type={alertConfig.type}
+                onClose={() => setAlertConfig(prev => ({ ...prev, visible: false }))}
+            />
             <BackgroundGradient />
             <SafeAreaView className="flex-1">
-                <View className="px-8 py-4 flex-row items-center justify-between">
+                <View className="px-8 pt-10 pb-4 flex-row items-center justify-between">
                     <BackButton />
                     <Text className="text-xl font-black text-slate-900 dark:text-white">Software Updates</Text>
                     <View className="w-10" />
