@@ -161,6 +161,37 @@ export default function SelectRolePage() {
                     .update(updates)
                     .eq('id', user.id)
                 error = updateError
+
+                // If switching to affiliate, ensure affiliate record exists
+                if (!error && selectedRole === 'affiliate') {
+                    const { data: existingAffiliate } = await supabase
+                        .from('affiliates')
+                        .select('id')
+                        .eq('user_id', user.id)
+                        .single()
+
+                    if (!existingAffiliate) {
+                        // Generate a simple unique invite code logic (timestamp + random)
+                        const uniqueSuffix = Math.random().toString(36).substring(2, 7);
+                        const inviteCode = `REF-${Date.now().toString().slice(-4)}${uniqueSuffix}`.toUpperCase();
+
+                        const { error: affiliateError } = await supabase
+                            .from('affiliates')
+                            .insert({
+                                user_id: user.id,
+                                email: user.email,
+                                invite_code: inviteCode,
+                                status: 'active', // Auto-activate for now, or use 'pending' if manual approval needed
+                                commission_rate: 10.00
+                            })
+
+                        if (affiliateError) {
+                            console.error('Error creating affiliate record:', affiliateError)
+                            // We don't block the profile update, but we warn
+                            toast.warning("Profile updated but affiliate account creation failed. Please contact support.")
+                        }
+                    }
+                }
             }
 
             if (error) throw error
