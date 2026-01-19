@@ -65,9 +65,8 @@ export function AccountTypeSwitcher() {
         dashboards.push({ label: 'Affiliate Dashboard', path: '/dashboard/affiliate', icon: UserPlus, color: 'text-pink-600', bg: 'bg-pink-50' })
     }
 
-    if (profile.is_staff || profile.role === 'staff') {
-        dashboards.push({ label: 'Staff Portal', path: '/staff', icon: LayoutDashboard, color: 'text-orange-600', bg: 'bg-orange-50' })
-    }
+    // Staff Portal hidden from switcher - accessed via direct URL only
+
 
     if (profile.is_admin || profile.role === 'admin') {
         dashboards.push({ label: 'Admin Panel', path: '/admin', icon: Shield, color: 'text-purple-600', bg: 'bg-purple-50' })
