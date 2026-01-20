@@ -11,10 +11,10 @@ const platformLinks = [
 ]
 
 const categoryLinks = [
-  { name: "Homes", href: "/categories/homes" },
+  { name: "Homes", href: "/categories/living" },
   { name: "Vehicles", href: "/categories/vehicles" },
   { name: "Equipment", href: "/categories/equipment" },
-  { name: "Event Spaces", href: "/categories/events" },
+  { name: "Event Spaces", href: "/categories/utility" },
   { name: "Electronics", href: "/categories/electronics" },
 ]
 

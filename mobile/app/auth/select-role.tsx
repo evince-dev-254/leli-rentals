@@ -123,7 +123,7 @@ export default function SelectRoleScreen() {
                         </MotiView>
                     </View>
 
-                    <View className="gap-4">
+                    <View className="gap-6">
                         {roles.map((role, idx) => {
                             const isSelected = selectedRole === role.id;
                             return (
