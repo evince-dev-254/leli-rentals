@@ -20,8 +20,9 @@ import { supabase } from "@/lib/supabase"
 import { toast } from "sonner"
 import { TurnstileWidget } from "./turnstile-widget"
 import { type TurnstileInstance } from "@marsidev/react-turnstile"
-import { checkUserExists } from "@/lib/actions/auth-actions"
 import { AppLoader } from "@/components/ui/app-loader"
+import { LeliLoader } from "@/components/ui/leli-loader"
+import { checkUserExists } from "@/lib/actions/auth-actions"
 
 type AccountType = "renter" | "owner" | "affiliate"
 
@@ -303,7 +304,7 @@ export function SignupForm() {
             onClick={handleVerifyOtp}
             disabled={isLoading || otp.length !== 8}
           >
-            {isLoading ? <AppLoader size="sm" variant="white" className="mr-2" /> : "Verify Code"}
+            {isLoading ? <LeliLoader size="sm" variant="white" /> : "Verify Code"}
           </Button>
 
           <div className="flex justify-between items-center px-2">
@@ -362,7 +363,7 @@ export function SignupForm() {
                 disabled={isGoogleLoading || isLoading || !captchaToken}
               >
                 {isGoogleLoading ? (
-                  <AppLoader size="sm" variant="default" className="mr-2" />
+                  <LeliLoader size="sm" />
                 ) : (
                   <svg className="h-5 w-5 mr-2" viewBox="0 0 24 24">
                     <path
@@ -505,15 +506,12 @@ export function SignupForm() {
               </Button>
               <Button type="submit" className="flex-1 bg-primary text-primary-foreground" disabled={isLoading || !captchaToken}>
                 {isLoading ? (
-                  <>
-                    <AppLoader size="sm" variant="white" className="mr-2" />
-                    Creating account...
-                  </>
+                  <LeliLoader size="sm" variant="white" />
                 ) : captchaError ? (
                   "Captcha Failed"
                 ) : !captchaToken ? (
                   <span className="flex items-center gap-2">
-                    <AppLoader size="sm" variant="white" className="mr-2" /> Verifying...
+                    <LeliLoader size="sm" variant="white" /> Verifying...
                   </span>
                 ) : (
                   "Complete Signup"

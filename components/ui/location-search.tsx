@@ -2,7 +2,8 @@
 
 import { useState } from "react"
 import { Input } from "@/components/ui/input"
-import { MapPin, Loader2, Search as SearchIcon } from "lucide-react"
+import { MapPin, Search as SearchIcon } from "lucide-react"
+import { LeliLoader } from "@/components/ui/leli-loader"
 import { kenyaCounties } from "@/lib/kenya-counties"
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN
@@ -115,7 +116,7 @@ export function LocationSearch({
                     className={`!pl-10 !pr-10 ${className}`}
                 />
                 <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                    {isSearching ? <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" /> : <SearchIcon className="h-4 w-4 text-muted-foreground" />}
+                    {isSearching ? <LeliLoader size="sm" /> : <SearchIcon className="h-4 w-4 text-muted-foreground" />}
                 </div>
             </div>
 

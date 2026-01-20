@@ -1,14 +1,18 @@
-import { Loader2Icon } from 'lucide-react'
-
 import { cn } from '@/lib/utils'
+import { LeliLoader } from './leli-loader'
 
-function Spinner({ className, ...props }: React.ComponentProps<'svg'>) {
+interface SpinnerProps {
+  className?: string
+  size?: "sm" | "md" | "lg"
+  variant?: "default" | "white"
+}
+
+function Spinner({ className, size = "sm", variant = "default" }: SpinnerProps) {
   return (
-    <Loader2Icon
-      role="status"
-      aria-label="Loading"
-      className={cn('size-4 animate-spin', className)}
-      {...props}
+    <LeliLoader
+      size={size}
+      variant={variant}
+      className={cn(className)}
     />
   )
 }

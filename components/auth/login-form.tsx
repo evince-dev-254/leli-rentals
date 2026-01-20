@@ -17,6 +17,7 @@ import { checkUserExists } from "@/lib/actions/auth-actions"
 import { TurnstileWidget } from "./turnstile-widget"
 import { type TurnstileInstance } from "@marsidev/react-turnstile"
 import { AppLoader } from "@/components/ui/app-loader"
+import { LeliLoader } from "@/components/ui/leli-loader"
 
 export function LoginForm() {
   const router = useRouter()
@@ -205,7 +206,7 @@ export function LoginForm() {
                 disabled={isGoogleLoading || isLoading || isCheckingEmail || !captchaToken}
               >
                 {isGoogleLoading ? (
-                  <AppLoader size="sm" className="mr-2" />
+                  <LeliLoader size="sm" variant="default" />
                 ) : (
                   <svg className="h-5 w-5 mr-2" viewBox="0 0 24 24">
                     <path
@@ -313,22 +314,17 @@ export function LoginForm() {
                 }}
               >
                 {isCheckingEmail || isLoading ? (
-                  <>
-                    <AppLoader size="sm" variant="white" className="mr-2" />
-                    {isEmailChecked ? "Signing In..." : "Checking Email..."}
-                  </>
+                  <LeliLoader size="sm" variant="white" />
                 ) : captchaError ? (
                   <span className="flex items-center gap-2">
-                    <AppLoader size="sm" variant="white" className="mr-2" /> Retry Verification
+                    <LeliLoader size="sm" variant="white" /> Retry
                   </span>
                 ) : !captchaToken ? (
                   <span className="flex items-center gap-2">
-                    <AppLoader size="sm" variant="white" className="mr-2" /> Verifying...
+                    <LeliLoader size="sm" variant="white" /> Verifying...
                   </span>
-                ) : isEmailChecked ? (
-                  "Sign In"
                 ) : (
-                  "Continue"
+                  isEmailChecked ? "Sign In" : "Continue"
                 )}
               </Button>
 

@@ -1,7 +1,6 @@
-"use client"
-
 import { motion } from "framer-motion"
 import { cn } from "@/lib/utils"
+import { LeliLoader } from "./leli-loader"
 
 interface AppLoaderProps {
     className?: string
@@ -18,9 +17,9 @@ export function AppLoader({
 }: AppLoaderProps) {
     const sizeMap = {
         sm: "px-4 py-2 gap-2 h-10",
-        md: "px-8 py-4 gap-3 h-16",
-        lg: "px-12 py-6 gap-4 h-24",
-        xl: "px-16 py-8 gap-6 h-32"
+        md: "px-6 py-3 gap-3 h-14",
+        lg: "px-10 py-5 gap-4 h-20",
+        xl: "px-14 py-7 gap-6 h-28"
     }
 
     const loaderContent = (
@@ -28,66 +27,35 @@ export function AppLoader({
             {/* Soft Ambient Glow */}
             <motion.div
                 animate={{
-                    opacity: [0.3, 0.6, 0.3],
-                    scale: [1, 1.2, 1],
+                    opacity: [0.2, 0.4, 0.2],
+                    scale: [1, 1.1, 1],
                 }}
                 transition={{
-                    duration: 3,
+                    duration: 4,
                     repeat: Infinity,
                     ease: "easeInOut"
                 }}
                 className={cn(
                     "absolute inset-0 blur-3xl rounded-full",
-                    variant === "white" ? "bg-white/20" : "bg-primary/20"
+                    variant === "white" ? "bg-white/10" : "bg-primary/10"
                 )}
             />
 
             {/* Pill-shaped Container */}
             <motion.div
-                initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                initial={{ opacity: 0, scale: 0.95, y: 5 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 className={cn(
-                    "relative z-10 rounded-full shadow-[0_20px_50px_rgba(0,0,0,0.1)] border flex items-center justify-center overflow-hidden transition-all duration-500",
+                    "relative z-10 rounded-full flex items-center justify-center overflow-hidden transition-all duration-500",
                     sizeMap[size],
                     variant === "white"
-                        ? "bg-white/10 border-white/20 backdrop-blur-md"
-                        : "bg-white dark:bg-slate-900 border-border"
+                        ? "bg-white/10 border border-white/20 backdrop-blur-md"
+                        : "bg-white/80 dark:bg-slate-900/80 border border-border backdrop-blur-sm shadow-sm"
                 )}
             >
-                {/* Logo with specific Hand & Key Animation */}
-                <motion.div
-                    animate={{
-                        y: [0, -4, 0],
-                    }}
-                    transition={{
-                        duration: 2,
-                        repeat: Infinity,
-                        ease: "easeInOut"
-                    }}
-                    className="relative flex items-center justify-center h-full w-full"
-                >
-                    <img
-                        src="/logo.png"
-                        alt="Leli Rentals"
-                        className={cn(
-                            "h-full w-auto object-contain",
-                            variant === "white" ? "brightness-0 invert" : "dark:invert"
-                        )}
-                    />
-                </motion.div>
-
-                {/* Subtle scanning light effect */}
-                <motion.div
-                    animate={{
-                        x: ['-100%', '200%'],
-                    }}
-                    transition={{
-                        duration: 3,
-                        repeat: Infinity,
-                        ease: "easeInOut",
-                        delay: 0.5
-                    }}
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent w-full skew-x-12"
+                <LeliLoader
+                    size={size === "xl" ? "lg" : size === "lg" ? "md" : "sm"}
+                    variant={variant === "white" ? "white" : "default"}
                 />
             </motion.div>
         </div>
@@ -95,7 +63,7 @@ export function AppLoader({
 
     if (fullscreen) {
         return (
-            <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#fef2f2] dark:bg-slate-950/90 backdrop-blur-sm animate-in fade-in duration-500">
+            <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-background/60 backdrop-blur-md animate-in fade-in duration-500">
                 {loaderContent}
             </div>
         )

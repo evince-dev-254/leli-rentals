@@ -292,13 +292,13 @@ export default function UnifiedDashboardScreen() {
     return (
         <View className="flex-1 bg-white dark:bg-slate-950">
             <BackgroundGradient />
-            <HamburgerMenu visible={menuVisible} onClose={() => setMenuVisible(false)} />
+            <HamburgerMenu visible={menuVisible} onClose={() => setMenuVisible(false)} activeRole={activeRole} />
             <SafeAreaView className="flex-1" edges={['top']}>
                 <View className="px-6 pt-10 pb-4 flex-row items-center justify-between">
                     <View className="flex-1 mr-4">
                         <Text className="text-3xl font-black text-slate-900 dark:text-white leading-tight">Hub</Text>
                         <Text className="text-slate-400 dark:text-slate-500 font-bold text-xs mt-1">
-                            {activeRole === 'renter' ? 'Manage rentals & requests' : activeRole === 'owner' ? 'Track listings & revenue' : 'Scale your referral network'}
+                            {activeRole === 'renter' ? 'Browse & Manage Rentals' : activeRole === 'owner' ? 'Track Equipment & Revenue' : 'Scale Your Partner Network'}
                         </Text>
                     </View>
                     <View className="flex-row gap-6">
@@ -320,24 +320,36 @@ export default function UnifiedDashboardScreen() {
                 {/* Role Switcher */}
                 <View className="px-6 mt-6 mb-6">
                     <View className="bg-white/80 dark:bg-slate-900 p-1.5 rounded-3xl border-2 border-slate-100 dark:border-slate-800 flex-row gap-2">
-                        {roles.map((role) => {
-                            const isActive = activeRole === role.id;
-                            return (
-                                <TouchableOpacity
-                                    key={role.id}
-                                    onPress={() => setActiveRole(role.id)}
-                                    className={cn(
-                                        "flex-1 flex-row items-center justify-center py-3 rounded-[20px]",
-                                        isActive && (role.id === 'renter' ? 'bg-orange-500 shadow-lg shadow-orange-500/20' : role.id === 'owner' ? 'bg-emerald-500 shadow-lg shadow-emerald-500/20' : 'bg-purple-500 shadow-lg shadow-purple-500/20')
-                                    )}
-                                >
-                                    <role.icon size={16} color={isActive ? 'white' : '#94a3b8'} strokeWidth={2.5} />
-                                    <Text className={cn("ml-2 text-[11px] font-black uppercase tracking-wider", isActive ? 'text-white' : 'text-slate-400')}>
-                                        {role.label}
-                                    </Text>
-                                </TouchableOpacity>
-                            );
-                        })}
+                        {roles
+                            .filter(role => {
+                                // Staff can see everything
+                                if (user?.user_metadata?.role === 'staff') return true;
+                                // Everyone can see Renter
+                                if (role.id === 'renter') return true;
+                                // Only owners can see Owner dashboard
+                                if (role.id === 'owner') return user?.user_metadata?.role === 'owner';
+                                // Only affiliates can see Affiliate dashboard
+                                if (role.id === 'affiliate') return user?.user_metadata?.role === 'affiliate';
+                                return false;
+                            })
+                            .map((role) => {
+                                const isActive = activeRole === role.id;
+                                return (
+                                    <TouchableOpacity
+                                        key={role.id}
+                                        onPress={() => setActiveRole(role.id)}
+                                        className={cn(
+                                            "flex-1 flex-row items-center justify-center py-3 rounded-[20px]",
+                                            isActive && (role.id === 'renter' ? 'bg-orange-500 shadow-lg shadow-orange-500/20' : role.id === 'owner' ? 'bg-emerald-500 shadow-lg shadow-emerald-500/20' : 'bg-purple-500 shadow-lg shadow-purple-500/20')
+                                        )}
+                                    >
+                                        <role.icon size={16} color={isActive ? 'white' : '#94a3b8'} strokeWidth={2.5} />
+                                        <Text className={cn("ml-2 text-[11px] font-black uppercase tracking-wider", isActive ? 'text-white' : 'text-slate-400')}>
+                                            {role.label}
+                                        </Text>
+                                    </TouchableOpacity>
+                                );
+                            })}
                     </View>
                 </View>
 

@@ -2,7 +2,8 @@
 
 import { useState, useId } from "react"
 import { IKContext, IKUpload } from "imagekitio-react"
-import { Loader2, UploadCloud } from "lucide-react"
+import { UploadCloud } from "lucide-react"
+import { LeliLoader } from "@/components/ui/leli-loader"
 import { Button } from "@/components/ui/button"
 
 const publicKey = process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY
@@ -70,7 +71,7 @@ export function ImageUpload({
             authenticator={authenticator}
         >
             <div className={`relative flex items-center gap-2 ${className}`}>
-                {uploading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+                {uploading && <LeliLoader size="sm" />}
 
                 {/* Helper to hide the default input but keep functionality */}
                 <div className="hidden">

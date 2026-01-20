@@ -16,9 +16,10 @@ import { useAuth } from '../../context/auth-context';
 interface HamburgerMenuProps {
     visible: boolean;
     onClose: () => void;
+    activeRole: 'renter' | 'owner' | 'affiliate';
 }
 
-export function HamburgerMenu({ visible, onClose }: HamburgerMenuProps) {
+export function HamburgerMenu({ visible, onClose, activeRole }: HamburgerMenuProps) {
     const router = useRouter();
     const { signOut } = useAuth();
     const colorScheme = useColorScheme();
@@ -38,11 +39,13 @@ export function HamburgerMenu({ visible, onClose }: HamburgerMenuProps) {
         {
             title: "Quick Access",
             items: [
-                { icon: Heart, label: 'Saved Items', color: '#ec4899', href: '/favorites' },
-                { icon: MessageCircle, label: 'Messages', color: '#10b981', href: '/messages' },
-                { icon: Bell, label: 'Notifications', color: '#f59e0b', href: '/notifications' },
-                { icon: Sparkles, label: 'AI Assistant', color: '#8b5cf6', href: '/support/ai-assistant' },
-            ]
+                { icon: Heart, label: 'Saved Items', color: '#ec4899', href: '/favorites', roles: ['renter'] },
+                { icon: MessageCircle, label: 'Messages', color: '#10b981', href: '/messages', roles: ['renter', 'owner', 'affiliate'] },
+                { icon: Bell, label: 'Notifications', color: '#f59e0b', href: '/notifications', roles: ['renter', 'owner', 'affiliate'] },
+                { icon: Sparkles, label: 'AI Assistant', color: '#8b5cf6', href: '/support/ai-assistant', roles: ['renter', 'owner', 'affiliate'] },
+                { icon: Settings, label: 'Asset Manager', color: '#3b82f6', href: '/listings/manage', roles: ['owner'] },
+                { icon: Info, label: 'Partner Portal', color: '#a855f7', href: '/affiliate', roles: ['affiliate'] },
+            ].filter(item => item.roles.includes(activeRole))
         },
         {
             title: "Support & Security",
