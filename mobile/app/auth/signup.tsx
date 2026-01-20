@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, KeyboardAvoidingView, Platform, ScrollView, Dimensions, useColorScheme, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { supabase } from '@/lib/supabase';
+import { supabase, performNativeGoogleSignIn } from '@/lib/supabase';
 import { Mail, Lock, User, Phone } from 'lucide-react-native';
 import { MotiView } from 'moti';
 import { BrandedAlert } from '@/components/ui/branded-alert';
@@ -10,6 +10,8 @@ import { BackgroundGradient } from '@/components/ui/background-gradient';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { BackButton } from '@/components/ui/back-button';
+import * as WebBrowser from 'expo-web-browser';
+import * as Linking from 'expo-linking';
 
 const { width } = Dimensions.get('window');
 
@@ -28,6 +30,57 @@ export default function SignupScreen() {
     const router = useRouter();
     const colorScheme = useColorScheme();
     const isDark = colorScheme === 'dark';
+
+    const handleUrl = useCallback(async (url: string) => {
+        if (url.includes('auth/callback')) {
+            const parsed = Linking.parse(url);
+            const { access_token, refresh_token, error, error_description } = parsed.queryParams as any;
+
+            if (error || error_description) {
+                showAlert('Auth Error', error_description || error, 'error');
+                return;
+            }
+
+            if (access_token && refresh_token) {
+                setLoading(true);
+                const { data: { user }, error: sessionError } = await supabase.auth.setSession({
+                    access_token,
+                    refresh_token,
+                });
+
+                if (!sessionError && user) {
+                    const role = user.user_metadata?.role;
+                    if (!role) {
+                        router.replace('/auth/select-role');
+                    } else {
+                        router.replace('/(tabs)');
+                    }
+                } else if (sessionError) {
+                    showAlert('Session Error', sessionError.message, 'error');
+                }
+                setLoading(false);
+            }
+        }
+    }, [router]);
+
+    useEffect(() => {
+        const handleDeepLink = (event: Linking.EventType) => {
+            console.info('[DeepLink] Event received:', event.url);
+            handleUrl(event.url);
+        };
+
+        const subscription = Linking.addEventListener('url', handleDeepLink);
+
+        // Check for initial URL if the app was opened via a link
+        Linking.getInitialURL().then((url) => {
+            if (url) {
+                console.info('[DeepLink] Initial URL:', url);
+                handleUrl(url);
+            }
+        });
+
+        return () => subscription.remove();
+    }, [handleUrl]);
 
     const showAlert = (title: string, message: string, type: 'success' | 'error' | 'info' = 'info') => {
         setAlertConfig({ visible: true, title, message, type });
@@ -64,6 +117,38 @@ export default function SignupScreen() {
             }, 1500);
         }
         setLoading(false);
+    };
+
+    const handleGoogleLogin = async () => {
+        setLoading(true);
+        try {
+            // Force sign out first to ensure no stale sessions interfere
+            await supabase.auth.signOut();
+
+            console.info('[GoogleLogin] Starting native sign-in');
+            const { data, error } = await performNativeGoogleSignIn();
+
+            if (error) throw error;
+
+            if (data?.user) {
+                console.info('[GoogleLogin] Native success!');
+                const role = data.user.user_metadata?.role;
+                if (!role) {
+                    router.replace('/auth/select-role');
+                } else {
+                    router.replace('/(tabs)');
+                }
+            }
+        } catch (error: any) {
+            if (error.code === '7' || error.message?.includes('Sign in action cancelled')) {
+                console.info('[GoogleLogin] User cancelled');
+            } else {
+                console.error('[GoogleLogin] Error:', error);
+                showAlert('Google Error', error.message, 'error');
+            }
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -149,9 +234,17 @@ export default function SignupScreen() {
                             className="mt-6"
                         />
 
+                        <Button
+                            onPress={handleGoogleLogin}
+                            title="Sign in with Google"
+                            variant="secondary"
+                            className="bg-white border-2 border-slate-100 h-16 mb-8"
+                            textClassName="text-slate-900 normal-case"
+                        />
+
                         <TouchableOpacity
                             onPress={() => router.push('/auth/login')}
-                            className="mt-12 items-center"
+                            className="mt-4 items-center"
                         >
                             <Text className="text-slate-500 font-bold text-lg">
                                 Already have an account? <Text className="text-[#f97316]">Log in.</Text>

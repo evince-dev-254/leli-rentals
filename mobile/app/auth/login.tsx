@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, KeyboardAvoidingView, Platform, ScrollView, Dimensions, useColorScheme, Image, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { supabase } from '@/lib/supabase';
+import { supabase, performNativeGoogleSignIn } from '@/lib/supabase';
 import { Mail, Lock } from 'lucide-react-native';
 import { MotiView } from 'moti';
 import { BrandedAlert } from '@/components/ui/branded-alert';
@@ -29,6 +29,57 @@ export default function LoginScreen() {
     const router = useRouter();
     const colorScheme = useColorScheme();
     const isDark = colorScheme === 'dark';
+
+    const handleUrl = useCallback(async (url: string) => {
+        if (url.includes('auth/callback')) {
+            const parsed = Linking.parse(url);
+            const { access_token, refresh_token, error, error_description } = parsed.queryParams as any;
+
+            if (error || error_description) {
+                showAlert('Auth Error', error_description || error, 'error');
+                return;
+            }
+
+            if (access_token && refresh_token) {
+                setLoading(true);
+                const { data: { user }, error: sessionError } = await supabase.auth.setSession({
+                    access_token,
+                    refresh_token,
+                });
+
+                if (!sessionError && user) {
+                    const role = user.user_metadata?.role;
+                    if (!role) {
+                        router.replace('/auth/select-role');
+                    } else {
+                        router.replace('/(tabs)');
+                    }
+                } else if (sessionError) {
+                    showAlert('Session Error', sessionError.message, 'error');
+                }
+                setLoading(false);
+            }
+        }
+    }, [router]);
+
+    useEffect(() => {
+        const handleDeepLink = (event: Linking.EventType) => {
+            console.info('[DeepLink] Event received:', event.url);
+            handleUrl(event.url);
+        };
+
+        const subscription = Linking.addEventListener('url', handleDeepLink);
+
+        // Check for initial URL if the app was opened via a link
+        Linking.getInitialURL().then((url) => {
+            if (url) {
+                console.info('[DeepLink] Initial URL:', url);
+                handleUrl(url);
+            }
+        });
+
+        return () => subscription.remove();
+    }, [handleUrl]);
 
     const showAlert = (title: string, message: string, type: 'success' | 'error' | 'info' = 'info') => {
         setAlertConfig({ visible: true, title, message, type });
@@ -73,42 +124,30 @@ export default function LoginScreen() {
     const handleGoogleLogin = async () => {
         setLoading(true);
         try {
-            const redirectTo = Linking.createURL('auth/callback');
+            // Force sign out first to ensure no stale sessions interfere
+            await supabase.auth.signOut();
 
-            const { data, error } = await supabase.auth.signInWithOAuth({
-                provider: 'google',
-                options: {
-                    redirectTo,
-                    skipBrowserRedirect: true,
-                }
-            });
+            console.info('[GoogleLogin] Starting native sign-in');
+            const { data, error } = await performNativeGoogleSignIn();
 
             if (error) throw error;
 
-            if (data?.url) {
-                const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
-
-                if (result.type === 'success' && result.url) {
-                    const { queryParams } = Linking.parse(result.url);
-                    if (queryParams?.access_token) {
-                        const { data: { user }, error: sessionError } = await supabase.auth.setSession({
-                            access_token: queryParams.access_token as string,
-                            refresh_token: queryParams.refresh_token as string,
-                        });
-
-                        if (!sessionError && user) {
-                            const role = user.user_metadata?.role;
-                            if (!role) {
-                                router.replace('/auth/select-role');
-                            } else {
-                                router.replace('/(tabs)');
-                            }
-                        }
-                    }
+            if (data?.user) {
+                console.info('[GoogleLogin] Native success!');
+                const role = data.user.user_metadata?.role;
+                if (!role) {
+                    router.replace('/auth/select-role');
+                } else {
+                    router.replace('/(tabs)');
                 }
             }
         } catch (error: any) {
-            showAlert('Google Error', error.message, 'error');
+            if (error.code === '7' || error.message?.includes('Sign in action cancelled')) {
+                console.info('[GoogleLogin] User cancelled');
+            } else {
+                console.error('[GoogleLogin] Error:', error);
+                showAlert('Google Error', error.message, 'error');
+            }
         } finally {
             setLoading(false);
         }

@@ -48,11 +48,24 @@ export async function GET(request: Request) {
                 else if (role === 'admin') redirectPath = '/admin'
             }
 
-            const forwardedHost = request.headers.get('x-forwarded-host') // original origin before load balancer
+            const source = requestUrl.searchParams.get('source')
+
+            // Mobile Bridge: If coming from mobile, redirect back to the app with tokens
+            if (source === 'mobile') {
+                const { data: { session } } = await supabase.auth.getSession()
+                if (session) {
+                    const params = new URLSearchParams({
+                        access_token: session.access_token,
+                        refresh_token: session.refresh_token,
+                    })
+                    return NextResponse.redirect(`leli-rentals://auth/callback?${params.toString()}`)
+                }
+            }
+
+            const forwardedHost = request.headers.get('x-forwarded-host')
             const isLocalEnv = process.env.NODE_ENV === 'development'
 
             if (isLocalEnv) {
-                // we can be sure that there is no load balancer in between, so no need to watch for X-Forwarded-Host
                 return NextResponse.redirect(`${requestUrl.origin}${redirectPath}`)
             } else if (forwardedHost) {
                 return NextResponse.redirect(`https://${forwardedHost}${redirectPath}`)
@@ -61,6 +74,10 @@ export async function GET(request: Request) {
             }
         } else {
             console.error('Auth Callback Error:', error)
+            const source = requestUrl.searchParams.get('source')
+            if (source === 'mobile') {
+                return NextResponse.redirect(`leli-rentals://auth/callback?error=${encodeURIComponent(error.message)}`)
+            }
         }
     }
 

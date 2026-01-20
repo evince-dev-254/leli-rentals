@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, Alert } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { BrandedAlert } from '@/components/ui/branded-alert';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BackgroundGradient } from '@/components/ui/background-gradient';
 import { BackButton } from '@/components/ui/back-button';
@@ -17,18 +18,28 @@ export default function SecurityScreen() {
         new: '',
         confirm: ''
     });
+    const [alertConfig, setAlertConfig] = useState<{ visible: boolean; title: string; message: string; type: 'success' | 'error' | 'info' }>({
+        visible: false,
+        title: '',
+        message: '',
+        type: 'info'
+    });
+
+    const showAlert = (title: string, message: string, type: 'success' | 'error' | 'info' = 'info') => {
+        setAlertConfig({ visible: true, title, message, type });
+    };
 
     const handleUpdatePassword = async () => {
         if (!passwords.new || !passwords.confirm) {
-            Alert.alert('Error', 'Please fill in both fields');
+            showAlert('Error', 'Please fill in both fields', 'error');
             return;
         }
         if (passwords.new !== passwords.confirm) {
-            Alert.alert('Error', 'Passwords do not match');
+            showAlert('Error', 'Passwords do not match', 'error');
             return;
         }
         if (passwords.new.length < 6) {
-            Alert.alert('Error', 'Password must be at least 6 characters');
+            showAlert('Error', 'Password must be at least 6 characters', 'error');
             return;
         }
 
@@ -40,10 +51,10 @@ export default function SecurityScreen() {
 
             if (error) throw error;
 
-            Alert.alert('Success', 'Password updated successfully');
+            showAlert('Success', 'Password updated successfully', 'success');
             setPasswords({ new: '', confirm: '' });
         } catch (error: any) {
-            Alert.alert('Error', error.message);
+            showAlert('Error', error.message, 'error');
         } finally {
             setLoading(false);
         }
@@ -90,7 +101,7 @@ export default function SecurityScreen() {
                     <Button
                         title="Update Password"
                         onPress={handleUpdatePassword}
-                        isLoading={loading}
+                        loading={loading}
                         className="mt-4"
                     />
 
@@ -100,12 +111,20 @@ export default function SecurityScreen() {
                     <Button
                         title="Delete Account"
                         variant="ghost"
-                        onPress={() => Alert.alert('Delete Account', 'Please contact support to delete your account permanently.')}
+                        onPress={() => showAlert('Delete Account', 'Please contact support to delete your account permanently.', 'info')}
                         className="border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-900/10"
                         textClassName="text-red-600 dark:text-red-400"
                     />
                 </ScrollView>
             </SafeAreaView>
+
+            <BrandedAlert
+                visible={alertConfig.visible}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                type={alertConfig.type}
+                onClose={() => setAlertConfig(prev => ({ ...prev, visible: false }))}
+            />
         </View>
     );
 }

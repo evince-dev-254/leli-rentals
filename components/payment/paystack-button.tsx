@@ -12,6 +12,8 @@ interface PaystackPaymentProps {
     onClose?: () => void
     text?: string
     className?: string
+    subaccount?: string
+    transactionCharge?: number // Platform fee in KES
 }
 
 export const PaystackPaymentButton = ({
@@ -22,11 +24,13 @@ export const PaystackPaymentButton = ({
     onSuccess,
     onClose,
     text = "Pay Now",
-    className
+    className,
+    subaccount,
+    transactionCharge
 }: PaystackPaymentProps) => {
     const publicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || ""
 
-    const config = {
+    const config: any = {
         reference: (new Date()).getTime().toString(),
         email,
         amount: amount * 100, // Convert to cents
@@ -35,6 +39,13 @@ export const PaystackPaymentButton = ({
         metadata: metadata || {},
         phone,
     };
+
+    if (subaccount) {
+        config.subaccount = subaccount;
+        if (transactionCharge) {
+            config.transaction_charge = transactionCharge * 100; // Convert to cents
+        }
+    }
 
     const initializePayment = usePaystackPayment(config);
 

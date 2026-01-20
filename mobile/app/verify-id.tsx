@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Image, Text, Alert, ScrollView, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Image, Text, ScrollView, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
+import { BrandedAlert } from '@/components/ui/branded-alert';
 import { Button } from '@/components/ui/button';
 import * as ImagePicker from 'expo-image-picker';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -25,6 +26,16 @@ export default function VerifyIdScreen() {
     const [image, setImage] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState<OCRResult | null>(null);
+    const [alertConfig, setAlertConfig] = useState<{ visible: boolean; title: string; message: string; type: 'success' | 'error' | 'info' }>({
+        visible: false,
+        title: '',
+        message: '',
+        type: 'info'
+    });
+
+    const showAlert = (title: string, message: string, type: 'success' | 'error' | 'info' = 'info') => {
+        setAlertConfig({ visible: true, title, message, type });
+    };
 
     const pickImage = async () => {
         const result = await ImagePicker.launchImageLibraryAsync({
@@ -72,13 +83,14 @@ export default function VerifyIdScreen() {
             if (data.status === 'success' && data.data) {
                 setResult(data.data);
             } else {
-                Alert.alert('Analysis Failed', data.message || 'Could not process image');
+                showAlert('Analysis Failed', data.message || 'Could not process image', 'error');
             }
         } catch (error) {
             console.error(error);
-            Alert.alert(
+            showAlert(
                 'Connection Error',
-                'Could not connect to OCR service. \n\nEnsure:\n1. The Python service is running.\n2. You are using the correct IP (10.0.2.2 for emulator).'
+                'Could not connect to OCR service. \n\nEnsure:\n1. The Python service is running.\n2. You are using the correct IP (10.0.2.2 for emulator).',
+                'error'
             );
         } finally {
             setLoading(false);
@@ -149,6 +161,14 @@ export default function VerifyIdScreen() {
                     )}
                 </ScrollView>
             </SafeAreaView>
+
+            <BrandedAlert
+                visible={alertConfig.visible}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                type={alertConfig.type}
+                onClose={() => setAlertConfig(prev => ({ ...prev, visible: false }))}
+            />
         </View>
     );
 }

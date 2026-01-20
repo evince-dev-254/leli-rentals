@@ -47,7 +47,8 @@
           "photosPermission": "Allow Leli Rentals to access your photos to upload gear images."
         }
       ],
-      "expo-updates"
+      "expo-updates",
+      "@react-native-google-signin/google-signin"
     ],
     "experiments": {
       "typedRoutes": true

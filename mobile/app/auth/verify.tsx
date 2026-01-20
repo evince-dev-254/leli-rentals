@@ -26,13 +26,15 @@ export default function VerifyOtpScreen() {
     const router = useRouter();
 
     useEffect(() => {
-        let interval: NodeJS.Timeout;
+        let interval: ReturnType<typeof setInterval> | undefined;
         if (resendTimer > 0) {
             interval = setInterval(() => {
                 setResendTimer((prev) => prev - 1);
             }, 1000);
         }
-        return () => clearInterval(interval);
+        return () => {
+            if (interval) clearInterval(interval);
+        };
     }, [resendTimer]);
 
     const showAlert = (title: string, message: string, type: 'success' | 'error' | 'info' = 'info') => {

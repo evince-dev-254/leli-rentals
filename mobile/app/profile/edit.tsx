@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, Alert } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Modal, TouchableWithoutFeedback } from 'react-native';
+import { BrandedAlert } from '@/components/ui/branded-alert';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BackgroundGradient } from '@/components/ui/background-gradient';
 import { BackButton } from '@/components/ui/back-button';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { User, Phone, Mail, FileText } from 'lucide-react-native';
+import { User, Phone, Mail, FileText, ChevronDown, X } from 'lucide-react-native';
 import { useAuth } from '../../context/auth-context';
 import { useRouter } from 'expo-router';
 import { supabase } from '@/lib/supabase';
@@ -24,6 +25,19 @@ export default function EditProfileScreen() {
         next_of_kin_phone: '',
         next_of_kin_relation: '',
     });
+    const [showRelationPicker, setShowRelationPicker] = useState(false);
+    const [alertConfig, setAlertConfig] = useState<{ visible: boolean; title: string; message: string; type: 'success' | 'error' | 'info' }>({
+        visible: false,
+        title: '',
+        message: '',
+        type: 'info'
+    });
+
+    const relationOptions = ['Parent', 'Sibling', 'Spouse', 'Child', 'Friend', 'Other'];
+
+    const showAlert = (title: string, message: string, type: 'success' | 'error' | 'info' = 'info') => {
+        setAlertConfig({ visible: true, title, message, type });
+    };
 
     React.useEffect(() => {
         async function fetchProfile() {
@@ -31,7 +45,7 @@ export default function EditProfileScreen() {
             try {
                 const { data, error } = await supabase
                     .from('user_profiles')
-                    .select('full_name, bio, phone_number, next_of_kin_name, next_of_kin_phone, next_of_kin_relation')
+                    .select('full_name, bio, phone, next_of_kin_name, next_of_kin_phone, next_of_kin_relation')
                     .eq('id', user.id)
                     .single();
 
@@ -40,7 +54,7 @@ export default function EditProfileScreen() {
                         ...prev,
                         full_name: data.full_name || prev.full_name,
                         bio: data.bio || prev.bio,
-                        phone: data.phone_number || prev.phone,
+                        phone: data.phone || prev.phone,
                         next_of_kin_name: data.next_of_kin_name || '',
                         next_of_kin_phone: data.next_of_kin_phone || '',
                         next_of_kin_relation: data.next_of_kin_relation || '',
@@ -74,7 +88,7 @@ export default function EditProfileScreen() {
                 .update({
                     full_name: form.full_name,
                     bio: form.bio,
-                    phone_number: form.phone,
+                    phone: form.phone,
                     next_of_kin_name: form.next_of_kin_name,
                     next_of_kin_phone: form.next_of_kin_phone,
                     next_of_kin_relation: form.next_of_kin_relation,
@@ -83,10 +97,12 @@ export default function EditProfileScreen() {
 
             if (profileError) throw profileError;
 
-            Alert.alert('Success', 'Profile updated successfully');
-            router.back();
+            showAlert('Success', 'Profile updated successfully', 'success');
+            setTimeout(() => {
+                router.back();
+            }, 1500);
         } catch (error: any) {
-            Alert.alert('Error', error.message);
+            showAlert('Error', error.message, 'error');
         } finally {
             setLoading(false);
         }
@@ -149,13 +165,19 @@ export default function EditProfileScreen() {
                         placeholder="Name of contact"
                     />
 
-                    <Input
-                        label="Relation"
-                        icon={<User size={20} color="#94a3b8" />}
-                        value={form.next_of_kin_relation}
-                        onChangeText={(text) => setForm({ ...form, next_of_kin_relation: text })}
-                        placeholder="e.g. Spouse, Parent, Sibling"
-                    />
+                    <View className="mb-6">
+                        <Text className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 ml-1">Relation</Text>
+                        <TouchableOpacity
+                            onPress={() => setShowRelationPicker(true)}
+                            className="flex-row items-center px-4 py-4 bg-white dark:bg-slate-900 rounded-2xl border-2 border-slate-100 dark:border-slate-800"
+                        >
+                            <User size={20} color="#94a3b8" />
+                            <Text className={`flex-1 ml-3 text-base ${form.next_of_kin_relation ? 'text-slate-900 dark:text-white' : 'text-slate-400'}`}>
+                                {form.next_of_kin_relation || 'Select relationship'}
+                            </Text>
+                            <ChevronDown size={20} color="#94a3b8" />
+                        </TouchableOpacity>
+                    </View>
 
                     <Input
                         label="Next of Kin Phone"
@@ -168,11 +190,66 @@ export default function EditProfileScreen() {
                     <Button
                         title="Save Changes"
                         onPress={handleUpdate}
-                        isLoading={loading}
+                        loading={loading}
                         className="mt-6"
                     />
                 </ScrollView>
             </SafeAreaView>
+
+            {/* Relation Picker Modal */}
+            <Modal
+                visible={showRelationPicker}
+                transparent
+                animationType="fade"
+                onRequestClose={() => setShowRelationPicker(false)}
+            >
+                <TouchableOpacity
+                    activeOpacity={1}
+                    onPress={() => setShowRelationPicker(false)}
+                    className="flex-1 bg-black/50 justify-end"
+                >
+                    <TouchableWithoutFeedback>
+                        <View className="bg-white dark:bg-slate-900 rounded-t-[32px] p-6">
+                            <View className="flex-row items-center justify-between mb-6">
+                                <Text className="text-xl font-black text-slate-900 dark:text-white">Select Relationship</Text>
+                                <TouchableOpacity onPress={() => setShowRelationPicker(false)}>
+                                    <X size={24} color="#94a3b8" />
+                                </TouchableOpacity>
+                            </View>
+                            <View className="gap-2">
+                                {relationOptions.map((option) => (
+                                    <TouchableOpacity
+                                        key={option}
+                                        onPress={() => {
+                                            setForm({ ...form, next_of_kin_relation: option });
+                                            setShowRelationPicker(false);
+                                        }}
+                                        className={`p-4 rounded-2xl border-2 ${form.next_of_kin_relation === option
+                                            ? 'bg-orange-50 dark:bg-orange-900/20 border-orange-500'
+                                            : 'bg-slate-50 dark:bg-slate-800 border-slate-100 dark:border-slate-700'
+                                            }`}
+                                    >
+                                        <Text className={`text-base font-bold ${form.next_of_kin_relation === option
+                                            ? 'text-orange-600 dark:text-orange-400'
+                                            : 'text-slate-900 dark:text-white'
+                                            }`}>
+                                            {option}
+                                        </Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
+                        </View>
+                    </TouchableWithoutFeedback>
+                </TouchableOpacity>
+            </Modal>
+
+            <BrandedAlert
+                visible={alertConfig.visible}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                type={alertConfig.type}
+                onClose={() => setAlertConfig(prev => ({ ...prev, visible: false }))}
+            />
         </View>
     );
 }

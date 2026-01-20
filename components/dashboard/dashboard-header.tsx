@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { supabase } from "@/lib/supabase"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { AccountTypeSwitcher } from "@/components/dashboard/account-type-switcher"
 
 interface DashboardHeaderProps {
   mobileSidebar: React.ReactNode
@@ -44,6 +45,10 @@ export function DashboardHeader({ mobileSidebar, breadcrumbs }: DashboardHeaderP
             ))}
           </div>
         )}
+      </div>
+
+      <div className="flex items-center gap-3">
+        <AccountTypeSwitcher />
       </div>
     </header>
   )

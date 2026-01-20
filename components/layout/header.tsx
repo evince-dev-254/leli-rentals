@@ -24,12 +24,13 @@ import { NotificationDropdown } from "./notification-dropdown"
 
 const categories = [
   { name: "Vehicles", href: "/categories/vehicles", count: "1,800+" },
+  { name: "Living Spaces", href: "/categories/living", count: "2,500+" },
   { name: "Homes", href: "/categories/homes", count: "2,500+" },
   { name: "Equipment", href: "/categories/equipment", count: "3,200+" },
   { name: "Electronics", href: "/categories/electronics", count: "950+" },
   { name: "Fashion", href: "/categories/fashion", count: "1,200+" },
   { name: "Entertainment", href: "/categories/entertainment", count: "850+" },
-  { name: "Event Spaces", href: "/categories/events", count: "600+" },
+  { name: "Event Spaces", href: "/categories/utility", count: "600+" },
 ]
 
 const navLinks = [
@@ -149,10 +150,10 @@ export function Header() {
   }
 
   return (
-    <header className={`fixed top-0 left-0 right-0 z-50 w-full px-2 sm:px-4 py-2 sm:py-4 transition-[padding,background-color] duration-300 ease-in-out ${isScrolled ? "bg-background/80 backdrop-blur-md" : ""}`}>
+    <header className={`fixed top-0 left-0 right-0 z-50 w-full px-2 sm:px-4 py-6 transition-[padding,background-color] duration-300 ease-in-out ${isScrolled ? "bg-background/80 backdrop-blur-md" : ""}`}>
       <div className="container mx-auto">
         <div
-          className={`flex h-12 sm:h-14 items-center justify-between px-3 sm:px-6 rounded-full shadow-lg transition-[background-color,border-color] duration-300 ease-in-out ${isScrolled
+          className={`flex h-11 sm:h-14 items-center justify-between px-3 sm:px-6 rounded-full shadow-lg transition-[background-color,border-color] duration-300 ease-in-out ${isScrolled
             ? "bg-[#1a1a2e]/95 backdrop-blur-md border border-[#2a2a4e]"
             : "bg-black/80 backdrop-blur-md border border-white/10"
             }`}

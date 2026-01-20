@@ -52,21 +52,49 @@ export default function SelectRoleScreen() {
 
         setLoading(true);
         try {
-            // Update user metadata in Auth
+            // 1. Update user metadata in Auth
             const { error: authError } = await supabase.auth.updateUser({
                 data: { role: selectedRole }
             });
 
             if (authError) throw authError;
 
-            // Also update user_profiles table if it exists and has a role column
+            // 2. Update user_profiles table
+            const updateData: any = { role: selectedRole };
+
+            // If selecting owner, set the owner_at timestamp for verification grace period
+            if (selectedRole === 'owner') {
+                updateData.owner_at = new Date().toISOString();
+            }
+
             const { error: profileError } = await supabase
                 .from('user_profiles')
-                .update({ role: selectedRole })
+                .update(updateData)
                 .eq('id', user.id);
 
-            // We don't strictly throw if profile update fails (column might not exist yet)
-            // But we redirect regardless
+            // 3. If selecting affiliate, ensure record exists in affiliates table
+            if (selectedRole === 'affiliate') {
+                // Check if already exists first to avoid conflict
+                const { data: existingAff } = await supabase
+                    .from('affiliates')
+                    .select('id')
+                    .eq('user_id', user.id)
+                    .single();
+
+                if (!existingAff) {
+                    const inviteCode = `MOB-${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
+                    const referralCode = `${user.user_metadata?.full_name?.split(' ')[0] || 'USER'}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+
+                    await supabase.from('affiliates').insert({
+                        user_id: user.id,
+                        email: user.email,
+                        invite_code: inviteCode,
+                        referral_code: referralCode,
+                        status: 'active', // Assuming mobile signup grants active status like web
+                    });
+                }
+            }
+
             router.replace('/(tabs)');
         } catch (error) {
             console.error('Error updating role:', error);

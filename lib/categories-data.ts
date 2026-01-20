@@ -52,53 +52,36 @@ export const categories = [
         name: "Classic Cars",
         image: "https://images.unsplash.com/photo-1514316454349-750a7fd3da3a?w=400&h=300&fit=crop",
       },
+      { name: "Private jets", image: "https://images.unsplash.com/photo-1514972365-5c4c9f3f6e5b?w=400&h=300&fit=crop" },
+      { name: "Helicopters", image: "https://images.unsplash.com/photo-1514972365-5c4c9f3f6e5b?w=400&h=300&fit=crop" }
     ],
   },
   {
-    id: "homes",
-    name: "Homes & Apartments",
-    description: "Vacation homes, apartments, and temporary accommodations",
+    id: "living",
+    name: "Living Spaces",
+    description: "Homes, apartments, and vacation stays",
     longDescription:
-      "Discover comfortable stays for your trips. From cozy apartments to luxurious vacation homes across Kenya.",
+      "Discover comfortable stays for your trips. From cozy apartments to luxurious vacation homes and coliving spaces.",
     count: 2500,
     icon: Home,
     image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80",
     color: "from-blue-500/20 to-blue-600/10",
     featured: true,
     subcategories: [
-      {
-        name: "Apartments",
-        image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400&h=300&fit=crop",
-      },
-      { name: "Houses", image: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400&h=300&fit=crop" },
-      {
-        name: "Vacation Homes",
-        image: "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?w=400&h=300&fit=crop",
-      },
-      {
-        name: "Shared Spaces",
-        image: "https://images.unsplash.com/photo-1536376072261-38c75010e6c9?w=400&h=300&fit=crop",
-      },
-      { name: "Studios", image: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=400&h=300&fit=crop" },
-      {
-        name: "Penthouses",
-        image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400&h=300&fit=crop",
-      },
-      {
-        name: "Beachfront",
-        image: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=400&h=300&fit=crop",
-      },
-      { name: "Villas", image: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=400&h=300&fit=crop" },
-      {
-        name: "Serviced Apartments",
-        image: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400&h=300&fit=crop",
-      },
-      { name: "Hostels", image: "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=400&h=300&fit=crop" },
-      {
-        name: "Guest Houses",
-        image: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=300&fit=crop",
-      },
+      { name: "Apartments", image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=400&h=300&fit=crop" },
+      { name: "Studio Flats", image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400&h=300&fit=crop" },
+      { name: "Penthouses", image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=400&h=300&fit=crop" },
+      { name: "Duplexes", image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=400&h=300&fit=crop" },
+      { name: "Single-family Homes", image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400&h=300&fit=crop" },
+      { name: "Townhouses", image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400&h=300&fit=crop" },
+      { name: "Luxury Villas", image: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=400&h=300&fit=crop" },
+      { name: "Bungalows", image: "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=400&h=300&fit=crop" },
+      { name: "Coliving Spaces", image: "https://images.unsplash.com/photo-1522204523234-8729aa6e3d5f?w=400&h=300&fit=crop" },
+      { name: "Student Hostels", image: "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=400&h=300&fit=crop" },
       { name: "Cottages", image: "https://images.unsplash.com/photo-1449158743715-0a90ebb6d2d8?w=400&h=300&fit=crop" },
+      { name: "Cabins", image: "https://images.unsplash.com/photo-1478131143081-80f7f84ca84d?w=400&h=300&fit=crop" },
+      { name: "Beach Houses", image: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=400&h=300&fit=crop" },
+      { name: "Farmhouses", image: "https://images.unsplash.com/photo-1500076656116-558758c991c1?w=400&h=300&fit=crop" }
     ],
   },
   {
@@ -304,8 +287,8 @@ export const categories = [
     ],
   },
   {
-    id: "events",
-    name: "Event Spaces",
+    id: "utility",
+    name: "Utility Spaces",
     description: "Venues and spaces for all occasions",
     longDescription:
       "Find the perfect venue for weddings, conferences, parties, and more. Various sizes and styles available.",
@@ -315,36 +298,38 @@ export const categories = [
     color: "from-teal-500/20 to-teal-600/10",
     featured: true,
     subcategories: [
-      {
-        name: "Wedding Venues",
-        image: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=400&h=300&fit=crop",
-      },
-      {
-        name: "Conference Halls",
-        image: "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=400&h=300&fit=crop",
-      },
-      {
-        name: "Outdoor Spaces",
-        image: "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=400&h=300&fit=crop",
-      },
-      { name: "Studios", image: "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=400&h=300&fit=crop" },
-      { name: "Rooftops", image: "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=400&h=300&fit=crop" },
-      { name: "Ballrooms", image: "https://images.unsplash.com/photo-1478146896981-b80fe463b330?w=400&h=300&fit=crop" },
-      { name: "Gardens", image: "https://images.unsplash.com/photo-1510076857177-7470076d4098?w=400&h=300&fit=crop" },
-      { name: "Beach Venues", image: "https://images.unsplash.com/photo-1544078751-58fee2d8a03b?w=400&h=300&fit=crop" },
-      {
-        name: "Meeting Rooms",
-        image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop",
-      },
-      {
-        name: "Exhibition Halls",
-        image: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400&h=300&fit=crop",
-      },
-      {
-        name: "Banquet Halls",
-        image: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=400&h=300&fit=crop",
-      },
-      { name: "Lounges", image: "https://images.unsplash.com/photo-1470337458703-46ad1756a187?w=400&h=300&fit=crop" },
+      { name: "Banquet Halls", image: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=400&h=300&fit=crop" },
+      { name: "Conference Rooms", image: "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=400&h=300&fit=crop" },
+      { name: "Wedding Venues", image: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=400&h=300&fit=crop" },
+      { name: "Rooftop Terraces", image: "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=400&h=300&fit=crop" },
+      { name: "Art Galleries", image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop" },
+      { name: "Creative Studios", image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop" },
+      { name: "Self-storage Units", image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop" },
+      { name: "Parking Spaces", image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop" },
+      { name: "Shipping Containers", image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop" }
+    ],
+  },
+  {
+    id: "business",
+    name: "Business Spaces",
+    description: "Professional spaces for businesses and entrepreneurs",
+    longDescription: "Find the perfect venue for your business needs, from private offices to warehouses.",
+    count: 1200,
+    icon: Briefcase,
+    image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80",
+    color: "from-gray-500/20 to-gray-600/10",
+    featured: false,
+    subcategories: [
+      { name: "Private offices", image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop" },
+      { name: "Coworking desks", image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop" },
+      { name: "Executive suites", image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop" },
+      { name: "Shop fronts", image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop" },
+      { name: "Showrooms", image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop" },
+      { name: "Pop-up shops", image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop" },
+      { name: "Kiosks", image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop" },
+      { name: "Warehouses", image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop" },
+      { name: "Cold storage", image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop" },
+      { name: "Workshops", image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop" }
     ],
   },
   {

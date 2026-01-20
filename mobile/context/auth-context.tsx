@@ -22,15 +22,41 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            setSession(session);
-            setUser(session?.user ?? null);
-            setLoading(false);
-        });
+        const initializeAuth = async () => {
+            try {
+                const { data: { session }, error } = await supabase.auth.getSession();
+                if (error) {
+                    console.warn('Auth session initialization error:', error.message);
+                    // Force clear everything if there's a session error
+                    setSession(null);
+                    setUser(null);
+                } else {
+                    setSession(session);
+                    setUser(session?.user ?? null);
+                }
+            } catch (err) {
+                console.error('Unexpected error during auth initialization:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
-            setSession(session);
-            setUser(session?.user ?? null);
+        initializeAuth();
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+            console.info('[AuthContext] Supabase Auth Event:', event);
+
+            if (event === 'SIGNED_OUT') {
+                setSession(null);
+                setUser(null);
+            } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
+                setSession(session);
+                setUser(session?.user ?? null);
+            } else if (event === 'INITIAL_SESSION') {
+                setSession(session);
+                setUser(session?.user ?? null);
+            }
+
             setLoading(false);
         });
 

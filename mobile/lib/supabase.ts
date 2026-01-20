@@ -1,6 +1,7 @@
 import 'react-native-url-polyfill/auto';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient } from '@supabase/supabase-js';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
 import { AppState, Platform } from 'react-native';
 
@@ -37,6 +38,24 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
         detectSessionInUrl: false,
     },
 });
+
+GoogleSignin.configure({
+    webClientId: '64645396656-unomk59qis0qg2e9k2t8id69oic2m8cl.apps.googleusercontent.com', // Get this from Google Cloud Console
+});
+
+export const performNativeGoogleSignIn = async () => {
+    await GoogleSignin.hasPlayServices();
+    const userInfo = await GoogleSignin.signIn();
+    if (userInfo.data?.idToken) {
+        const { data, error } = await supabase.auth.signInWithIdToken({
+            provider: 'google',
+            token: userInfo.data.idToken,
+        });
+        return { data, error };
+    } else {
+        throw new Error('No ID token present!');
+    }
+};
 
 // Tells Supabase Auth to continuously refresh the session automatically
 // if the app is in the foreground.

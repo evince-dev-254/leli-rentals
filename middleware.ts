@@ -38,7 +38,7 @@ export async function middleware(request: NextRequest) {
     if (user) {
         const { data: profile } = await supabase
             .from('user_profiles')
-            .select('role, account_status, created_at')
+            .select('role, account_status, created_at, owner_at')
             .eq('id', user.id)
             .single()
 
@@ -71,14 +71,26 @@ export async function middleware(request: NextRequest) {
     const refCode = url.searchParams.get('ref')
 
     if (refCode) {
-        response.cookies.set({
-            name: 'affiliate_ref',
-            value: refCode,
-            path: '/',
-            maxAge: 60 * 60 * 24 * 30, // 30 days
-            httpOnly: true,
-            sameSite: 'lax'
-        })
+        // Create clean URL without ref parameter
+        const cleanUrl = new URL(url)
+        cleanUrl.searchParams.delete('ref')
+
+        // Only redirect if URL will actually change
+        if (url.href !== cleanUrl.href) {
+            const redirectResponse = NextResponse.redirect(cleanUrl, 301)
+
+            // Set affiliate cookie on redirect response
+            redirectResponse.cookies.set({
+                name: 'affiliate_ref',
+                value: refCode,
+                path: '/',
+                maxAge: 60 * 60 * 24 * 30, // 30 days
+                httpOnly: true,
+                sameSite: 'lax'
+            })
+
+            return redirectResponse
+        }
     }
 
     return response;

@@ -4,13 +4,14 @@ import { useRouter } from 'expo-router';
 import {
     X, Heart, MessageCircle, Bell, Shield,
     RefreshCw, HelpCircle, Mail, FileText,
-    Lock, ChevronRight, Settings, Info, Sparkles
+    Lock, ChevronRight, Settings, Info, Sparkles, LogOut
 } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MotiView, AnimatePresence } from 'moti';
 import { BlurView } from 'expo-blur';
 import { useColorScheme } from '@/components/useColorScheme';
 import { cn } from '@/lib/utils';
+import { useAuth } from '../../context/auth-context';
 
 interface HamburgerMenuProps {
     visible: boolean;
@@ -19,8 +20,19 @@ interface HamburgerMenuProps {
 
 export function HamburgerMenu({ visible, onClose }: HamburgerMenuProps) {
     const router = useRouter();
+    const { signOut } = useAuth();
     const colorScheme = useColorScheme();
     const isDark = colorScheme === 'dark';
+
+    const handleSignOut = async () => {
+        try {
+            onClose();
+            await signOut();
+            router.replace('/auth/login');
+        } catch (error) {
+            console.error('Error signing out:', error);
+        }
+    };
 
     const menuGroups = [
         {
@@ -125,6 +137,18 @@ export function HamburgerMenu({ visible, onClose }: HamburgerMenuProps) {
 
                                 {/* Footer */}
                                 <View className="p-6 border-t border-slate-50 dark:border-slate-900">
+                                    <TouchableOpacity
+                                        onPress={handleSignOut}
+                                        className="flex-row items-center p-4 bg-red-50 dark:bg-red-900/20 rounded-2xl border border-red-100 dark:border-red-900/30 mb-6"
+                                    >
+                                        <View className="h-10 w-10 rounded-xl bg-white dark:bg-slate-800 items-center justify-center shadow-sm mr-4">
+                                            <LogOut size={18} color="#ef4444" />
+                                        </View>
+                                        <Text className="flex-1 text-sm font-black text-red-600 dark:text-red-400">
+                                            Sign Out
+                                        </Text>
+                                    </TouchableOpacity>
+
                                     <Text className="text-center text-[10px] font-black text-slate-400 uppercase tracking-widest">
                                         Leli Rentals v1.0.1
                                     </Text>

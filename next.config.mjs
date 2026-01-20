@@ -1,3 +1,4 @@
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -33,6 +34,9 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
   },
+
+  // Prevent trailing slash redirects for SEO
+  trailingSlash: false,
 
   // Allow cross-origin requests from local network during development
   allowedDevOrigins: [

@@ -4,7 +4,7 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { motion } from "framer-motion"
-import { Car, Home, Wrench, Smartphone, Shirt, Music, PartyPopper, ArrowRight } from "lucide-react"
+import { Car, Home, Wrench, Smartphone, Shirt, Music, PartyPopper, ArrowRight, Briefcase } from "lucide-react"
 import { staggerContainer, fadeInUp } from "@/lib/animations"
 
 const categories = [
@@ -18,11 +18,11 @@ const categories = [
     image: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&q=80",
   },
   {
-    name: "Homes",
-    description: "Vacation homes & apartments",
+    name: "Living Spaces",
+    description: "Homes & Apartments",
     count: "2,500+",
     icon: Home,
-    href: "/categories/homes",
+    href: "/categories/living",
     color: "bg-green-500",
     image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80",
   },
@@ -63,13 +63,22 @@ const categories = [
     image: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800&q=80",
   },
   {
-    name: "Event Spaces",
-    description: "Venues for all occasions",
+    name: "Utility Spaces",
+    description: "Venues & work spaces",
     count: "600+",
     icon: PartyPopper,
-    href: "/categories/events",
+    href: "/categories/utility",
     color: "bg-teal-500",
     image: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=800&q=80",
+  },
+  {
+    name: "Business Spaces",
+    description: "Office & retail spaces",
+    count: "1,200+",
+    icon: Briefcase,
+    href: "/categories/business",
+    color: "bg-gray-500",
+    image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80",
   },
 ]
 
@@ -135,7 +144,7 @@ export function CategoriesSection() {
             </Link>
           </motion.div>
 
-          {/* Homes (Medium) */}
+          {/* Living Spaces (Medium) */}
           <motion.div
             variants={fadeInUp}
             className="md:row-span-2 group"
@@ -297,10 +306,10 @@ export function CategoriesSection() {
             </Link>
           </motion.div>
 
-          {/* Event Spaces */}
+          {/* Utility Spaces */}
           <motion.div
             variants={fadeInUp}
-            className="md:col-span-2 group"
+            className="group"
           >
             <Link href={categories[6].href} className="block h-full">
               <div className="relative h-[190px] rounded-2xl overflow-hidden">
@@ -309,7 +318,7 @@ export function CategoriesSection() {
                   alt={categories[6].name}
                   fill
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
-                  sizes="(max-width: 768px) 100vw, 50vw"
+                  sizes="(max-width: 768px) 100vw, 25vw"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
@@ -324,7 +333,38 @@ export function CategoriesSection() {
                 {/* Content */}
                 <div className="absolute bottom-0 left-0 right-0 p-4">
                   <h3 className="text-lg font-bold text-white">{categories[6].name}</h3>
-                  <p className="text-white/70 text-sm">{categories[6].description}</p>
+                </div>
+              </div>
+            </Link>
+          </motion.div>
+
+          {/* Business Spaces - New */}
+          <motion.div
+            variants={fadeInUp}
+            className="group"
+          >
+            <Link href={categories[7].href} className="block h-full">
+              <div className="relative h-[190px] rounded-2xl overflow-hidden">
+                <Image
+                  src={categories[7].image || "/placeholder.svg"}
+                  alt={categories[7].name}
+                  fill
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  sizes="(max-width: 768px) 100vw, 25vw"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+
+                {/* Icon Badge */}
+                <div className="absolute top-3 left-3 flex items-center gap-2">
+                  <div className={`w-8 h-8 rounded-full ${categories[7].color} flex items-center justify-center`}>
+                    <Briefcase className="h-4 w-4 text-white" />
+                  </div>
+                  <Badge className="bg-black/50 text-white border-none text-xs">{categories[7].count} items</Badge>
+                </div>
+
+                {/* Content */}
+                <div className="absolute bottom-0 left-0 right-0 p-4">
+                  <h3 className="text-lg font-bold text-white">{categories[7].name}</h3>
                 </div>
               </div>
             </Link>
@@ -337,12 +377,12 @@ export function CategoriesSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.8 }}
-          className="text-center mt-10"
+          className="text-center mt-6"
         >
           <Link href="/categories">
-            <Button variant="outline" size="lg" className="glass-card bg-transparent">
+            <Button size="lg" className="bg-orange-500 text-white hover:bg-orange-600 border-none shadow-lg hover:shadow-xl transition-all duration-300 font-semibold px-8 py-6 rounded-xl text-lg group">
               View All Categories
-              <ArrowRight className="ml-2 h-4 w-4" />
+              <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
             </Button>
           </Link>
         </motion.div>

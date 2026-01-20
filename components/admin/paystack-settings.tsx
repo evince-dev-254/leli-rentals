@@ -288,6 +288,57 @@ export function PaystackSettings() {
                             </div>
                         </div>
                     </Card>
+
+
+                    <Card className="p-6">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="w-10 h-10 bg-blue-500/10 rounded-full flex items-center justify-center">
+                                <CheckCircle className="h-5 w-5 text-blue-500" />
+                            </div>
+                            <div>
+                                <h3 className="font-semibold">Subaccount Configuration</h3>
+                                <p className="text-sm text-muted-foreground">Linked subaccount for LELI RENTALS</p>
+                            </div>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div>
+                                <Label>Subaccount ID</Label>
+                                <div className="flex gap-2 mt-1.5">
+                                    <Input
+                                        value="ACCT_v7y4j39z3huns5q"
+                                        readOnly
+                                        className="font-mono text-sm bg-muted"
+                                    />
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        onClick={() => copyToClipboard("ACCT_v7y4j39z3huns5q", "Subaccount ID")}
+                                    >
+                                        <Copy className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                                <div className="p-3 bg-muted/50 rounded-lg">
+                                    <span className="text-muted-foreground block mb-1">Business Name</span>
+                                    <span className="font-medium">LELI RENTALS</span>
+                                </div>
+                                <div className="p-3 bg-muted/50 rounded-lg">
+                                    <span className="text-muted-foreground block mb-1">Settlement Bank</span>
+                                    <span className="font-medium">Prime Bank Limited</span>
+                                </div>
+                                <div className="p-3 bg-muted/50 rounded-lg">
+                                    <span className="text-muted-foreground block mb-1">Account Number</span>
+                                    <span className="font-medium">3000246157</span>
+                                </div>
+                                <div className="p-3 bg-muted/50 rounded-lg">
+                                    <span className="text-muted-foreground block mb-1">Split Percentage</span>
+                                    <span className="font-medium">100%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </Card>
                 </TabsContent>
             </Tabs>
 
@@ -307,6 +358,6 @@ export function PaystackSettings() {
                     <p>SUPABASE_SERVICE_ROLE_KEY=your_service_role_key</p>
                 </div>
             </Card>
-        </div>
+        </div >
     )
 }

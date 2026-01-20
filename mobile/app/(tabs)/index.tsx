@@ -80,12 +80,13 @@ export default function ExploreScreen() {
         >
           {/* Header */}
           <View className="px-6 pt-12 pb-4 flex-row items-center justify-between">
-            <View>
-              <Text className="text-2xl font-black text-slate-900 dark:text-white">Leli Rentals</Text>
-              <View className="flex-row items-center mt-1">
-                <MapPin size={12} color="#94a3b8" />
-                <Text className="text-[10px] font-bold text-slate-500 ml-1 uppercase tracking-widest">Mauritius, MU</Text>
-              </View>
+            <View className="flex-row items-center">
+              <Image
+                source={require('../../assets/images/logo_black.png')}
+                className="w-32 h-8"
+                resizeMode="contain"
+                alt="Leli Rentals"
+              />
             </View>
             <View className="flex-row gap-6">
               <TouchableOpacity
@@ -136,8 +137,8 @@ export default function ExploreScreen() {
 
               {/* Integrated Search Bar */}
               <MotiView
-                from={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
+                from={{ opacity: 0, translateY: 20 }}
+                animate={{ opacity: 1, translateY: 0 }}
                 transition={{ type: 'timing', duration: 1000, delay: 400 }}
                 className="mt-10 w-full max-w-[340px]"
               >
@@ -230,7 +231,7 @@ export default function ExploreScreen() {
               <Text className="text-3xl font-black text-white mb-2">Why Trust Leli?</Text>
               <Text className="text-slate-400 font-bold text-sm mb-10 leading-6">Your safety and satisfaction are our top priorities.</Text>
 
-              <View className="flex-row flex-wrap gap-4">
+              <View className="flex-row flex-wrap gap-4 justify-between">
                 {[
                   { title: 'Verified & Secure', desc: 'Secure escrow payments', icon: Shield, color: 'bg-emerald-500/10', iconColor: '#10b981' },
                   { title: 'Instant Booking', desc: 'No approvals needed', icon: Zap, color: 'bg-orange-500/10', iconColor: '#f97316' },
@@ -239,8 +240,7 @@ export default function ExploreScreen() {
                 ].map((pillar, idx) => (
                   <View
                     key={pillar.title}
-                    style={{ width: (width - 110) / 2 }}
-                    className="bg-white/5 border border-white/10 rounded-3xl p-5"
+                    className="bg-white/5 border border-white/10 rounded-3xl p-5 flex-1 basis-[48%] min-w-[45%]"
                   >
                     <View className={cn("h-10 w-10 rounded-xl items-center justify-center mb-4", pillar.color)}>
                       <pillar.icon size={20} color={pillar.iconColor} />
