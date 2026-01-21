@@ -11,11 +11,19 @@ const platformLinks = [
 ]
 
 const categoryLinks = [
-  { name: "Homes", href: "/categories/living" },
   { name: "Vehicles", href: "/categories/vehicles" },
-  { name: "Equipment", href: "/categories/equipment" },
-  { name: "Event Spaces", href: "/categories/utility" },
+  { name: "Living Spaces", href: "/categories/living" },
+  { name: "Equipment & Tools", href: "/categories/equipment" },
   { name: "Electronics", href: "/categories/electronics" },
+  { name: "Fashion & Accessories", href: "/categories/fashion" },
+  { name: "Entertainment", href: "/categories/entertainment" },
+  { name: "Utility Spaces", href: "/categories/utility" },
+  { name: "Business Spaces", href: "/categories/business-spaces" },
+  { name: "Photography", href: "/categories/photography" },
+  { name: "Fitness & Sports", href: "/categories/fitness" },
+  { name: "Baby & Kids", href: "/categories/baby" },
+  { name: "Office & Business", href: "/categories/office" },
+  { name: "Bikes & Scooters", href: "/categories/bikes" },
 ]
 
 const supportLinks = [

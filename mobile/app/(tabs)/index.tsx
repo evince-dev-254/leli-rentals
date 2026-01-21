@@ -367,8 +367,22 @@ export default function ExploreScreen() {
               </View>
               <View className="w-[40%]">
                 <Text className="text-slate-900 dark:text-white font-black text-sm uppercase tracking-widest mb-4">Categories</Text>
-                {categories?.slice(0, 5).map((link: any) => (
-                  <TouchableOpacity key={link.id} onPress={() => selectCategory(link.id)} className="mb-3">
+                {[
+                  { name: "Vehicles", id: "vehicles" },
+                  { name: "Living Spaces", id: "living" },
+                  { name: "Equipment & Tools", id: "equipment" },
+                  { name: "Electronics", id: "electronics" },
+                  { name: "Fashion", id: "fashion" },
+                  { name: "Entertainment", id: "entertainment" },
+                  { name: "Utility Spaces", id: "utility" },
+                  { name: "Business", id: "business-spaces" },
+                  { name: "Photography", id: "photography" },
+                  { name: "Fitness", id: "fitness" },
+                  { name: "Baby & Kids", id: "baby" },
+                  { name: "Office", id: "office" },
+                  { name: "Bikes", id: "bikes" },
+                ].map((link) => (
+                  <TouchableOpacity key={link.id} onPress={() => router.push(`/category/${link.id}`)} className="mb-3">
                     <Text className="text-slate-500 dark:text-slate-400 font-bold text-xs">{link.name}</Text>
                   </TouchableOpacity>
                 ))}
