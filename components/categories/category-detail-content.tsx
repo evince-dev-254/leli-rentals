@@ -30,25 +30,42 @@ export function CategoryDetailContent({ categoryId }: CategoryDetailContentProps
   const [viewMode, setViewMode] = useState<"grid" | "list" | "map">("grid")
   const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([])
 
+  const [subcategories, setSubcategories] = useState<any[]>([])
+  const [dbCategory, setDbCategory] = useState<any>(null)
+
   useEffect(() => {
     async function fetchListings() {
       if (!category) return
 
       setLoading(true)
       try {
-        const { data: dbCategory, error: catError } = await supabase
+        // Fetch category and subcategories from DB
+        const { data: dbCat, error: catError } = await supabase
           .from('categories')
-          .select('id')
+          .select('id, name, slug, description, image_url')
           .eq('slug', category.id)
           .single()
 
-        if (catError || !dbCategory) {
+        if (catError || !dbCat) {
           console.error("Error fetching category from DB:", catError)
           setLoading(false)
           return
         }
 
-        const categoryUUID = dbCategory.id
+        setDbCategory(dbCat)
+        const categoryUUID = dbCat.id
+
+        // Fetch subcategories
+        const { data: dbSubs, error: subsError } = await supabase
+          .from('subcategories')
+          .select('*')
+          .eq('category_id', categoryUUID)
+          .eq('is_active', true)
+          .order('display_order', { ascending: true })
+
+        if (!subsError && dbSubs) {
+          setSubcategories(dbSubs)
+        }
 
         const { data, error } = await supabase
           .from("listings")
@@ -165,45 +182,51 @@ export function CategoryDetailContent({ categoryId }: CategoryDetailContentProps
               animate="animate"
               className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3"
             >
-              {category.subcategories.map((sub) => (
-                <motion.button
-                  key={sub.name}
-                  variants={fadeInUp}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => {
-                    if (selectedSubcategories.includes(sub.name)) {
-                      setSelectedSubcategories(selectedSubcategories.filter((s) => s !== sub.name))
-                    } else {
-                      setSelectedSubcategories([...selectedSubcategories, sub.name])
-                    }
-                  }}
-                  className={`group relative rounded-xl overflow-hidden aspect-square transition-all ${selectedSubcategories.includes(sub.name)
-                    ? "ring-2 ring-primary ring-offset-2"
-                    : "hover:ring-2 hover:ring-primary/50"
-                    }`}
-                >
-                  <Image
-                    src={sub.image || "/placeholder.svg"}
-                    alt={sub.name}
-                    fill
-                    className="object-cover group-hover:scale-110 transition-transform duration-300"
-                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 15vw"
-                    priority
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                  <span className="absolute bottom-2 left-2 right-2 text-white text-xs sm:text-sm font-medium truncate">
-                    {sub.name}
-                  </span>
-                  {selectedSubcategories.includes(sub.name) && (
-                    <div className="absolute top-2 right-2 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
-                      <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                      </svg>
-                    </div>
-                  )}
-                </motion.button>
-              ))}
+              {(subcategories.length > 0 ? subcategories : category.subcategories).map((sub) => {
+                const subName = sub.name;
+                const subImage = sub.image_url || sub.image || "/placeholder.svg";
+                const isSelected = selectedSubcategories.includes(subName);
+
+                return (
+                  <motion.button
+                    key={subName}
+                    variants={fadeInUp}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => {
+                      if (isSelected) {
+                        setSelectedSubcategories(selectedSubcategories.filter((s) => s !== subName))
+                      } else {
+                        setSelectedSubcategories([...selectedSubcategories, subName])
+                      }
+                    }}
+                    className={`group relative rounded-xl overflow-hidden aspect-square transition-all ${isSelected
+                      ? "ring-2 ring-primary ring-offset-2"
+                      : "hover:ring-2 hover:ring-primary/50"
+                      }`}
+                  >
+                    <Image
+                      src={subImage}
+                      alt={subName}
+                      fill
+                      className="object-cover group-hover:scale-110 transition-transform duration-300"
+                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 15vw"
+                      priority
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                    <span className="absolute bottom-2 left-2 right-2 text-white text-xs sm:text-sm font-medium truncate">
+                      {subName}
+                    </span>
+                    {isSelected && (
+                      <div className="absolute top-2 right-2 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
+                        <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                    )}
+                  </motion.button>
+                );
+              })}
             </motion.div>
           </div>
         </div>

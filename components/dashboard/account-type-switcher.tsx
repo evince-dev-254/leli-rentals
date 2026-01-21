@@ -78,7 +78,7 @@ export function AccountTypeSwitcher() {
                 <Button
                     variant="outline"
                     size="sm"
-                    className="gap-2 rounded-full px-4 h-10 shadow-md transition-all duration-300 border-orange-500/30 hover:bg-orange-50 text-slate-800 bg-white"
+                    className="gap-2 rounded-full px-4 h-10 shadow-sm transition-all duration-300 border-orange-500/30 hover:bg-orange-100 hover:border-orange-500 active:scale-95 text-slate-800 bg-white"
                 >
                     <LayoutDashboard className="h-4 w-4 text-orange-600" />
                     <span className="font-semibold whitespace-nowrap hidden sm:inline">
@@ -94,10 +94,10 @@ export function AccountTypeSwitcher() {
                     <DropdownMenuItem
                         key={dash.path}
                         onClick={() => handleSwitch(dash.path, dash.label)}
-                        className="cursor-pointer gap-3 py-2"
+                        className="cursor-pointer gap-3 py-2 focus:bg-red-500 focus:text-white group/item"
                     >
-                        <div className={cn("p-1.5 rounded-md", dash.bg)}>
-                            <dash.icon className={cn("h-4 w-4", dash.color)} />
+                        <div className={cn("p-1.5 rounded-md transition-colors", dash.bg, "group-hover/item:bg-white/20")}>
+                            <dash.icon className={cn("h-4 w-4 transition-colors", dash.color, "group-hover/item:text-white")} />
                         </div>
                         <span className="font-medium">{dash.label}</span>
                     </DropdownMenuItem>

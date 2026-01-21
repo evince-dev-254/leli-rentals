@@ -107,8 +107,8 @@ export async function getConversations(userId: string) {
         .select(`
             *,
             listing:listings(title),
-            participant1:user_profiles!participant_1_id(full_name, avatar_url),
-            participant2:user_profiles!participant_2_id(full_name, avatar_url),
+            participant1:user_profiles!participant_1_id(full_name, avatar_url, account_status),
+            participant2:user_profiles!participant_2_id(full_name, avatar_url, account_status),
             last_message:messages(content, created_at, is_read, sender_id)
         `)
         .or(`participant_1_id.eq.${userId},participant_2_id.eq.${userId}`)
@@ -144,12 +144,12 @@ export async function getMessages(conversationId: string) {
 }
 
 /** Send a message (Wrapper for sendMessageWithLookup) */
-export async function sendMessage(conversationId: string, senderId: string, content: string) {
-    return sendMessageWithLookup(conversationId, senderId, content);
+export async function sendMessage(conversationId: string, senderId: string, content: string, attachments?: string[]) {
+    return sendMessageWithLookup(conversationId, senderId, content, attachments);
 }
 
 /** Helper to send message with receiver lookup */
-export async function sendMessageWithLookup(conversationId: string, senderId: string, content: string) {
+export async function sendMessageWithLookup(conversationId: string, senderId: string, content: string, attachments?: string[]) {
     const supabase = await createClient()
     // 1. Get conversation to find receiver
     const { data: conv, error: convError } = await supabase
@@ -168,7 +168,8 @@ export async function sendMessageWithLookup(conversationId: string, senderId: st
             conversation_id: conversationId,
             sender_id: senderId,
             receiver_id: receiverId,
-            content: content
+            content: content,
+            attachments: attachments || []
         })
         .select()
         .single();

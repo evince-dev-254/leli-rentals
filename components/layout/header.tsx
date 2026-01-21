@@ -25,12 +25,17 @@ import { NotificationDropdown } from "./notification-dropdown"
 const categories = [
   { name: "Vehicles", href: "/categories/vehicles", count: "1,800+" },
   { name: "Living Spaces", href: "/categories/living", count: "2,500+" },
-  { name: "Homes", href: "/categories/homes", count: "2,500+" },
-  { name: "Equipment", href: "/categories/equipment", count: "3,200+" },
+  { name: "Equipment & Tools", href: "/categories/equipment", count: "3,200+" },
   { name: "Electronics", href: "/categories/electronics", count: "950+" },
-  { name: "Fashion", href: "/categories/fashion", count: "1,200+" },
+  { name: "Fashion & Accessories", href: "/categories/fashion", count: "1,200+" },
   { name: "Entertainment", href: "/categories/entertainment", count: "850+" },
-  { name: "Event Spaces", href: "/categories/utility", count: "600+" },
+  { name: "Utility Spaces", href: "/categories/utility-spaces", count: "600+" },
+  { name: "Business Spaces", href: "/categories/business-spaces", count: "1,200+" },
+  { name: "Photography", href: "/categories/photography", count: "450+" },
+  { name: "Fitness & Sports", href: "/categories/fitness", count: "380+" },
+  { name: "Baby & Kids", href: "/categories/baby-kids", count: "290+" },
+  { name: "Office & Business", href: "/categories/office", count: "520+" },
+  { name: "Bikes & Scooters", href: "/categories/bikes", count: "340+" },
 ]
 
 const navLinks = [
@@ -246,7 +251,7 @@ export function Header() {
             </DropdownMenu>
 
             {/* Messages Icon */}
-            <Link href="/messages">
+            <Link href="/dashboard/messages">
               <Button
                 variant="ghost"
                 size="icon"
@@ -379,7 +384,7 @@ export function Header() {
                 <div className="flex-1 px-4 py-6 space-y-8">
                   {/* Action Grid */}
                   <div className="grid grid-cols-2 gap-3">
-                    <Link href="/messages" className="group">
+                    <Link href="/dashboard/messages" className="group">
                       <div className="h-28 rounded-2xl bg-[#1a1a2e] border border-white/5 p-4 flex flex-col items-center justify-center gap-2 transition-all group-active:scale-[0.97] hover:bg-[#252540] hover:border-white/10 relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-12 h-12 bg-blue-500/10 rounded-full blur-2xl -mr-6 -mt-6"></div>
                         <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center">

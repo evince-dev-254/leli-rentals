@@ -5,13 +5,15 @@ import { supabase } from "@/lib/supabase"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { AccountTypeSwitcher } from "@/components/dashboard/account-type-switcher"
+import { cn } from "@/lib/utils"
 
 interface DashboardHeaderProps {
   mobileSidebar: React.ReactNode
   breadcrumbs?: { label: string; href?: string }[]
+  className?: string
 }
 
-export function DashboardHeader({ mobileSidebar, breadcrumbs }: DashboardHeaderProps) {
+export function DashboardHeader({ mobileSidebar, breadcrumbs, className }: DashboardHeaderProps) {
   const [user, setUser] = useState<any>(null)
   const router = useRouter()
 
@@ -24,7 +26,7 @@ export function DashboardHeader({ mobileSidebar, breadcrumbs }: DashboardHeaderP
   }, [])
 
   return (
-    <header className="flex h-16 items-center gap-4 border-b bg-background/80 backdrop-blur-sm px-6 sticky top-0 z-20">
+    <header className={cn("flex h-16 items-center gap-4 border-b bg-background/80 backdrop-blur-sm px-6 sticky top-0 z-20", className)}>
       {mobileSidebar}
       <div className="flex-1">
         {breadcrumbs && (

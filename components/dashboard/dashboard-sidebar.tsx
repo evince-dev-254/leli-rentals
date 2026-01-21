@@ -34,7 +34,7 @@ export const allLinks = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard, roles: ["owner", "renter", "affiliate", "staff"], badge: "" },
   { href: "/dashboard/listings", label: "My Listings", icon: Package, roles: ["owner", "renter"], badge: "" },
   { href: "/dashboard/bookings", label: "Bookings", icon: CalendarCheck, roles: ["owner", "renter"], badge: "" },
-  { href: "/dashboard/messages", label: "Messages", icon: MessageCircle, roles: ["owner", "renter"], badge: "" },
+  { href: "/dashboard/messages", label: "Messages", icon: MessageCircle, roles: ["owner", "renter", "affiliate"], badge: "" },
   { href: "/dashboard/notifications", label: "Notifications", icon: Bell, roles: ["owner", "renter", "affiliate", "staff"], badge: "" },
   { href: "/dashboard/earnings", label: "Earnings", icon: DollarSign, roles: ["owner", "affiliate"], badge: "" },
   { href: "/dashboard/affiliate/referrals", label: "My Referees", icon: Users, roles: ["affiliate"], badge: "" },

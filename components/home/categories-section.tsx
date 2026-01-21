@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge"
 import { motion } from "framer-motion"
 import { Car, Home, Wrench, Smartphone, Shirt, Music, PartyPopper, ArrowRight, Briefcase } from "lucide-react"
 import { staggerContainer, fadeInUp } from "@/lib/animations"
+import { useState, useEffect } from "react"
+import { supabase } from "@/lib/supabase"
 
 const categories = [
   {
@@ -83,6 +85,32 @@ const categories = [
 ]
 
 export function CategoriesSection() {
+  const [dbCategories, setDbCategories] = useState<any[]>([])
+
+  useEffect(() => {
+    async function fetchCategories() {
+      try {
+        const { data, error } = await supabase
+          .from('categories')
+          .select('name, slug, image_url')
+          .eq('is_active', true)
+
+        if (!error && data) {
+          setDbCategories(data)
+        }
+      } catch (err) {
+        console.error("Error fetching homepage categories:", err)
+      }
+    }
+    fetchCategories()
+  }, [])
+
+  const getCategoryImage = (index: number) => {
+    const cat = categories[index];
+    const dbCat = dbCategories.find(c => c.slug === cat.href.split('/').pop());
+    return dbCat?.image_url || cat.image;
+  }
+
   return (
     <section className="pt-20 pb-10 px-4">
       <div className="container mx-auto">
@@ -115,7 +143,7 @@ export function CategoriesSection() {
             <Link href={categories[0].href} className="block h-full">
               <div className="relative h-full min-h-[400px] rounded-2xl overflow-hidden">
                 <Image
-                  src={categories[0].image || "/placeholder.svg"}
+                  src={getCategoryImage(0) || "/placeholder.svg"}
                   alt={categories[0].name}
                   fill
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -152,7 +180,7 @@ export function CategoriesSection() {
             <Link href={categories[1].href} className="block h-full">
               <div className="relative h-full min-h-[400px] rounded-2xl overflow-hidden">
                 <Image
-                  src={categories[1].image || "/placeholder.svg"}
+                  src={getCategoryImage(1) || "/placeholder.svg"}
                   alt={categories[1].name}
                   fill
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -185,7 +213,7 @@ export function CategoriesSection() {
             <Link href={categories[2].href} className="block h-full">
               <div className="relative h-[190px] rounded-2xl overflow-hidden">
                 <Image
-                  src={categories[2].image || "/placeholder.svg"}
+                  src={getCategoryImage(2) || "/placeholder.svg"}
                   alt={categories[2].name}
                   fill
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -217,7 +245,7 @@ export function CategoriesSection() {
             <Link href={categories[3].href} className="block h-full">
               <div className="relative h-[190px] rounded-2xl overflow-hidden">
                 <Image
-                  src={categories[3].image || "/placeholder.svg"}
+                  src={getCategoryImage(3) || "/placeholder.svg"}
                   alt={categories[3].name}
                   fill
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -249,7 +277,7 @@ export function CategoriesSection() {
             <Link href={categories[4].href} className="block h-full">
               <div className="relative h-[190px] rounded-2xl overflow-hidden">
                 <Image
-                  src={categories[4].image || "/placeholder.svg"}
+                  src={getCategoryImage(4) || "/placeholder.svg"}
                   alt={categories[4].name}
                   fill
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -281,7 +309,7 @@ export function CategoriesSection() {
             <Link href={categories[5].href} className="block h-full">
               <div className="relative h-[190px] rounded-2xl overflow-hidden">
                 <Image
-                  src={categories[5].image || "/placeholder.svg"}
+                  src={getCategoryImage(5) || "/placeholder.svg"}
                   alt={categories[5].name}
                   fill
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -314,7 +342,7 @@ export function CategoriesSection() {
             <Link href={categories[6].href} className="block h-full">
               <div className="relative h-[190px] rounded-2xl overflow-hidden">
                 <Image
-                  src={categories[6].image || "/placeholder.svg"}
+                  src={getCategoryImage(6) || "/placeholder.svg"}
                   alt={categories[6].name}
                   fill
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -346,7 +374,7 @@ export function CategoriesSection() {
             <Link href={categories[7].href} className="block h-full">
               <div className="relative h-[190px] rounded-2xl overflow-hidden">
                 <Image
-                  src={categories[7].image || "/placeholder.svg"}
+                  src={getCategoryImage(7) || "/placeholder.svg"}
                   alt={categories[7].name}
                   fill
                   className="object-cover transition-transform duration-500 group-hover:scale-105"

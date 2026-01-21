@@ -22,25 +22,37 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
-      <div className="flex flex-1 pt-20 lg:pt-24">
+      <div className="flex flex-1 pt-24 lg:pt-28">
         {/* Desktop Sidebar */}
         <div className="hidden lg:flex w-64 shadow-xl z-10">
           <DashboardSidebar />
         </div>
 
-        <div className="flex-1 flex flex-col min-w-0 bg-background">
+        <div className={cn(
+          "flex-1 flex flex-col min-w-0 bg-background",
+          pathname?.includes('/messages') ? "h-[calc(100vh-6rem)] lg:h-[calc(100vh-7rem)]" : ""
+        )}>
           {/* Header */}
-          <DashboardHeader
-            mobileSidebar={<MobileDashboardSidebar />}
-            breadcrumbs={[
-              { label: "My Account", href: "/dashboard" },
-              { label: "Dashboard" }
-            ]}
-          />
+          {!pathname?.includes('/messages') && (
+            <DashboardHeader
+              mobileSidebar={<MobileDashboardSidebar />}
+              breadcrumbs={[
+                { label: "My Account", href: "/dashboard" },
+                { label: "Dashboard" }
+              ]}
+            />
+          )}
 
           {/* Main Content */}
-          <main className={cn("flex-1 p-4 lg:p-8 overflow-y-auto", gradientClass)}>
-            <div className="mx-auto max-w-7xl animate-in fade-in duration-500">
+          <main className={cn(
+            "flex-1 relative",
+            pathname?.includes('/messages') ? "h-[calc(100vh-6rem)] lg:h-[calc(100vh-7rem)] overflow-hidden" : "p-4 lg:p-8 overflow-y-auto",
+            gradientClass
+          )}>
+            <div className={cn(
+              "mx-auto animate-in fade-in duration-500 h-full flex flex-col",
+              pathname?.includes('/messages') ? "w-full max-w-none" : "max-w-7xl"
+            )}>
               {children}
             </div>
           </main>
