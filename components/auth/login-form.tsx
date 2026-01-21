@@ -116,18 +116,20 @@ export function LoginForm() {
         // Fetch user profile to redirect correctly
         const { data: profile } = await supabase
           .from('user_profiles')
-          .select('role')
+          .select('role, is_admin, is_staff')
           .eq('id', data.user?.id)
           .single()
 
         const role = profile?.role || 'renter'
+        const isAdmin = profile?.is_admin || role === 'admin'
+        const isStaff = profile?.is_staff || role === 'staff'
 
         router.refresh()
 
         if (next) {
           router.push(next)
         } else {
-          if (role === 'admin') router.push('/dashboard/admin')
+          if (isAdmin || isStaff) router.push('/admin')
           else if (role === 'owner') router.push('/dashboard/owner')
           else if (role === 'affiliate') router.push('/dashboard/affiliate')
           else router.push('/categories')

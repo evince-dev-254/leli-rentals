@@ -79,6 +79,8 @@ export function VerificationDetail({ verificationId }: VerificationDetailProps) 
                 referredBy: userData.referred_by ?? null,
                 totalReferrals: userData.total_referrals ?? 0,
                 totalEarnings: userData.total_earnings ?? 0,
+                isAdmin: userData.is_admin ?? false,
+                isStaff: userData.is_staff ?? false,
                 // Helper fields
                 dateOfBirth: userData.date_of_birth,
                 nextOfKinName: userData.next_of_kin_name,

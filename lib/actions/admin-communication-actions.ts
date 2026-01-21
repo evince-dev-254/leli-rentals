@@ -57,11 +57,11 @@ export async function sendAdminBulkCommunication(
         // Verify admin role
         const { data: adminProfile } = await supabase
             .from('user_profiles')
-            .select('role')
+            .select('role, is_admin')
             .eq('id', adminUser.id)
             .single();
 
-        if (adminProfile?.role !== 'admin') {
+        if (!adminProfile?.is_admin && adminProfile?.role !== 'admin') {
             return handleServerError("Unauthorized: Admin access required");
         }
 

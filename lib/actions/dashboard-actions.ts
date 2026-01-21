@@ -432,11 +432,11 @@ export async function getAdminVerificationsAppData() {
 
     const { data: profile } = await authSupabase
         .from('user_profiles')
-        .select('role')
+        .select('role, is_admin')
         .eq('id', user.id)
         .single()
 
-    if (profile?.role !== 'admin') {
+    if (!profile?.is_admin && profile?.role !== 'admin') {
         throw new Error("Unauthorized: Admin access required")
     }
 
@@ -488,11 +488,11 @@ export async function getAdminUsersData() {
 
     const { data: profile } = await authSupabase
         .from('user_profiles')
-        .select('role')
+        .select('role, is_admin')
         .eq('id', user.id)
         .single()
 
-    if (profile?.role !== 'admin') {
+    if (!profile?.is_admin && profile?.role !== 'admin') {
         throw new Error("Unauthorized: Admin access required")
     }
 
@@ -520,11 +520,11 @@ export async function getAdminListingsData() {
 
     const { data: profile } = await authSupabase
         .from('user_profiles')
-        .select('role')
+        .select('role, is_admin')
         .eq('id', user.id)
         .single()
 
-    if (profile?.role !== 'admin') {
+    if (!profile?.is_admin && profile?.role !== 'admin') {
         throw new Error("Unauthorized: Admin access required")
     }
 
@@ -560,11 +560,11 @@ export async function getAdminVerificationDetail(docId: string) {
 
     const { data: profile } = await authSupabase
         .from('user_profiles')
-        .select('role')
+        .select('role, is_admin')
         .eq('id', user.id)
         .single()
 
-    if (profile?.role !== 'admin') {
+    if (!profile?.is_admin && profile?.role !== 'admin') {
         throw new Error("Unauthorized: Admin access required")
     }
 
@@ -602,11 +602,11 @@ export async function getAdminDashboardData() {
 
     const { data: profile } = await authSupabase
         .from('user_profiles')
-        .select('role')
+        .select('role, is_admin')
         .eq('id', user.id)
         .single()
 
-    if (profile?.role !== 'admin') {
+    if (!profile?.is_admin && profile?.role !== 'admin') {
         throw new Error("Unauthorized: Admin access required")
     }
 
@@ -626,7 +626,7 @@ export async function getAdminDashboardData() {
         adminSupabase.from("user_profiles").select("id", { count: "exact", head: true }),
         adminSupabase.from("user_profiles").select("id", { count: "exact", head: true }).eq("role", "owner"),
         adminSupabase.from("user_profiles").select("id", { count: "exact", head: true }).eq("role", "affiliate"),
-        adminSupabase.from("user_profiles").select("id", { count: "exact", head: true }).eq("role", "staff"),
+        adminSupabase.from("user_profiles").select("id", { count: "exact", head: true }).or("is_staff.eq.true,role.eq.staff"),
         adminSupabase.from("listings").select("id", { count: "exact", head: true }).eq("status", "approved"),
         adminSupabase.from("bookings").select("id", { count: "exact", head: true }),
         adminSupabase.from("reviews").select("id", { count: "exact", head: true }),
@@ -761,11 +761,11 @@ export async function createListing(ownerId: string, listingData: any) {
     const baseSupabase = await createClient()
     const { data: profile } = await baseSupabase
         .from('user_profiles')
-        .select('role')
+        .select('role, is_admin')
         .eq('id', ownerId)
         .single()
 
-    const isAdmin = profile?.role === 'admin'
+    const isAdmin = profile?.is_admin || profile?.role === 'admin'
     const supabase = isAdmin ? getAdminSupabase() : baseSupabase
 
     const { data, error } = await supabase

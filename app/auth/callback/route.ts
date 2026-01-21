@@ -36,7 +36,7 @@ export async function GET(request: Request) {
                 // Check if user has a role. If not (and not explicitly requesting one), redirect to selection
                 const { data: profile } = await supabase
                     .from('user_profiles')
-                    .select('role')
+                    .select('role, is_admin, is_staff')
                     .eq('id', user.id)
                     .single()
 
@@ -44,8 +44,9 @@ export async function GET(request: Request) {
                     redirectPath = '/select-role'
                 }
                 else if (role === 'owner' || profile?.role === 'owner') redirectPath = '/dashboard/owner'
-                else if (role === 'affiliate') redirectPath = '/dashboard/affiliate'
-                else if (role === 'admin') redirectPath = '/admin'
+                else if (role === 'affiliate' || profile?.role === 'affiliate') redirectPath = '/dashboard/affiliate'
+                else if (role === 'admin' || profile?.is_admin || profile?.role === 'admin') redirectPath = '/admin'
+                else if (role === 'staff' || profile?.is_staff || profile?.role === 'staff') redirectPath = '/admin'
             }
 
             const source = requestUrl.searchParams.get('source')
