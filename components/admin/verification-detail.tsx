@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
+import Image from "next/image"
 import { useRouter } from "next/navigation"
 import {
     CheckCircle,
@@ -10,10 +11,11 @@ import {
     User,
     Calendar,
     Shield,
-    Loader2,
     Phone,
     Mail
 } from "lucide-react"
+import { LeliLoader } from "@/components/ui/leli-loader"
+import { Spinner } from "@/components/ui/spinner"
 import { BackButton } from "@/components/ui/back-button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -49,9 +51,9 @@ export function VerificationDetail({ verificationId }: VerificationDetailProps) 
 
     useEffect(() => {
         loadDocument()
-    }, [verificationId])
+    }, [loadDocument])
 
-    const loadDocument = async () => {
+    const loadDocument = useCallback(async () => {
         try {
             setLoading(true)
             const { doc: docData, user: userData } = await getAdminVerificationDetail(verificationId)
@@ -111,7 +113,7 @@ export function VerificationDetail({ verificationId }: VerificationDetailProps) 
         } finally {
             setLoading(false)
         }
-    }
+    }, [verificationId, router])
 
     const handleUpdateStatus = async (status: 'approved' | 'rejected', reason?: string) => {
         if (!verificationDoc) return;
@@ -132,7 +134,7 @@ export function VerificationDetail({ verificationId }: VerificationDetailProps) 
     if (loading) {
         return (
             <div className="flex items-center justify-center p-12">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <LeliLoader size="lg" />
             </div>
         )
     }
@@ -270,11 +272,17 @@ export function VerificationDetail({ verificationId }: VerificationDetailProps) 
                                 {verificationDoc.fileUrl?.toLowerCase().endsWith('.pdf') ? (
                                     <iframe src={verificationDoc.fileUrl} className="w-full h-[500px] rounded-md" />
                                 ) : (
-                                    <img
-                                        src={verificationDoc.fileUrl}
-                                        alt="Front Preview"
-                                        className="max-w-full max-h-[500px] object-contain rounded-md shadow-lg"
-                                    />
+                                    <div className="relative w-full h-[500px]">
+                                        <Image
+                                            src={verificationDoc.fileUrl}
+                                            alt="Front Preview"
+                                            fill
+                                            className="object-contain rounded-md shadow-lg"
+                                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                            priority
+                                            unoptimized={verificationDoc.fileUrl.startsWith('data:')}
+                                        />
+                                    </div>
                                 )}
                             </div>
                         </CardContent>
@@ -294,11 +302,16 @@ export function VerificationDetail({ verificationId }: VerificationDetailProps) 
                             </CardHeader>
                             <CardContent>
                                 <div className="bg-muted/30 rounded-lg p-4 min-h-[300px] flex items-center justify-center border border-border overflow-hidden relative">
-                                    <img
-                                        src={verificationDoc.backImageUrl}
-                                        alt="Back Preview"
-                                        className="max-w-full max-h-[500px] object-contain rounded-md shadow-lg"
-                                    />
+                                    <div className="relative w-full h-[500px]">
+                                        <Image
+                                            src={verificationDoc.backImageUrl}
+                                            alt="Back Preview"
+                                            fill
+                                            className="object-contain rounded-md shadow-lg"
+                                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                            unoptimized={verificationDoc.backImageUrl.startsWith('data:')}
+                                        />
+                                    </div>
                                 </div>
                             </CardContent>
                         </Card>
@@ -318,11 +331,16 @@ export function VerificationDetail({ verificationId }: VerificationDetailProps) 
                             </CardHeader>
                             <CardContent>
                                 <div className="bg-muted/30 rounded-lg p-4 min-h-[300px] flex items-center justify-center border border-border overflow-hidden relative">
-                                    <img
-                                        src={verificationDoc.selfieImageUrl}
-                                        alt="Selfie Preview"
-                                        className="max-w-full max-h-[500px] object-contain rounded-md shadow-lg"
-                                    />
+                                    <div className="relative w-full h-[500px]">
+                                        <Image
+                                            src={verificationDoc.selfieImageUrl}
+                                            alt="Selfie Preview"
+                                            fill
+                                            className="object-contain rounded-md shadow-lg"
+                                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                            unoptimized={verificationDoc.selfieImageUrl.startsWith('data:')}
+                                        />
+                                    </div>
                                 </div>
                             </CardContent>
                         </Card>
@@ -356,7 +374,7 @@ export function VerificationDetail({ verificationId }: VerificationDetailProps) 
                             Cancel
                         </Button>
                         <Button variant="destructive" onClick={() => handleUpdateStatus('rejected', rejectionReason)} disabled={processing}>
-                            {processing && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                            {processing && <Spinner className="h-4 w-4 mr-2" variant="white" />}
                             Confirm Rejection
                         </Button>
                     </DialogFooter>

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Image from "next/image"
 import { supabase } from "@/lib/supabase"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -60,9 +61,11 @@ export function RenterReviews() {
                             {reviews.map((review) => (
                                 <div key={review.id} className="p-4 rounded-lg bg-background/50 border border-border">
                                     <div className="flex gap-4">
-                                        <img
+                                        <Image
                                             src={review.listing?.images?.[0] || "/placeholder.svg"}
-                                            className="w-16 h-16 rounded object-cover"
+                                            width={64}
+                                            height={64}
+                                            className="rounded object-cover"
                                             alt="Item"
                                         />
                                         <div>

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Image from "next/image"
 import {
   ShieldCheck,
   ShieldAlert,
@@ -90,9 +91,12 @@ export function VerificationsManagement() {
           updatedAt: u.updated_at ? new Date(u.updated_at) : new Date(),
           lastLoginAt: u.last_login_at ? new Date(u.last_login_at) : null,
           affiliateCode: u.affiliate_code ?? null,
+          isReferred: u.is_referred ?? false,
           referredBy: u.referred_by ?? null,
           totalReferrals: u.total_referrals ?? 0,
           totalEarnings: u.total_earnings ?? 0,
+          isStaff: !!u.is_staff,
+          isAdmin: !!u.is_admin,
           // New Fields
           dateOfBirth: u.date_of_birth,
           nextOfKinName: u.next_of_kin_name,
@@ -428,9 +432,11 @@ export function VerificationsManagement() {
                       >
                         <div className="flex items-center gap-4">
                           {listing.images && listing.images[0] && (
-                            <img
+                            <Image
                               src={listing.images[0]}
                               alt={listing.title}
+                              width={96}
+                              height={64}
                               className="h-16 w-24 object-cover rounded-md"
                             />
                           )}
@@ -631,11 +637,13 @@ export function VerificationsManagement() {
                     Download
                   </Button>
                 </div>
-                <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
-                  <img
+                <div className="aspect-video bg-muted rounded-lg flex items-center justify-center relative overflow-hidden">
+                  <Image
                     src={selectedDocument.fileUrl || "/placeholder.svg"}
                     alt="Document preview"
-                    className="max-h-full max-w-full object-contain rounded-lg"
+                    fill
+                    className="object-contain rounded-lg"
+                    sizes="(max-width: 1200px) 100vw, 800px"
                   />
                 </div>
               </div>

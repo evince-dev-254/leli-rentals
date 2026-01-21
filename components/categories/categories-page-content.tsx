@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Image from "next/image"
 import Link from "next/link"
 import { Search, ArrowRight, Grid3X3, List } from "lucide-react"
 import { Input } from "@/components/ui/input"
@@ -77,15 +78,16 @@ export function CategoriesPageContent() {
                   >
                     {/* Image */}
                     <div className="aspect-video relative overflow-hidden">
-                      <img
+                      <Image
                         src={category.image || "/placeholder.svg"}
                         alt={category.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        loading="eager"
-                        fetchPriority="high"
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        priority
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         onError={(e) => {
                           console.warn('Category page image failed to load:', category.image);
-                          e.currentTarget.src = '/placeholder.svg';
+                          // For Next.js Image, you might need a local state to swap the src if it fails
                         }}
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />

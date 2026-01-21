@@ -431,6 +431,7 @@ export function SubscriptionPage() {
                   onSuccess={handlePaymentSuccess}
                   onClose={() => setShowPaymentDialog(false)}
                   text={`Pay KSh ${plans.find((p) => p.id === selectedPlan)?.price.toLocaleString()}`}
+                  subaccount={process.env.NEXT_PUBLIC_PAYSTACK_SUBACCOUNT_ID}
                 />
                 <div className="bg-yellow-500/10 p-3 rounded-md text-xs text-yellow-600 border border-yellow-500/20">
                   <p className="font-semibold mb-1">Payment Tip:</p>

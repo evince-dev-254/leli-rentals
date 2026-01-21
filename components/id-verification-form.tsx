@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertCircle, CheckCircle2, Upload, Loader2 } from 'lucide-react';
@@ -95,8 +96,15 @@ export default function IdVerificationForm() {
                     />
                     {preview ? (
                         <>
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={preview} alt="ID Preview" className="max-h-48 object-contain rounded" />
+                            <div className="relative h-48 w-full">
+                                <Image
+                                    src={preview}
+                                    alt="ID Preview"
+                                    fill
+                                    className="object-contain rounded"
+                                    unoptimized
+                                />
+                            </div>
                         </>
                     ) : (
                         <div className="text-center">

@@ -115,15 +115,15 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                             <div className="relative flex flex-col sm:flex-row items-center sm:items-end -mt-12 gap-6 text-center sm:text-left">
                                 <div className="relative">
                                     <div className="h-32 w-32 rounded-full border-4 border-background overflow-hidden bg-muted relative">
-                                        <img
+                                        <Image
                                             src={avatarUrl}
                                             alt={profile.full_name}
-                                            className="w-full h-full object-cover cmp-ignore"
-                                            loading="eager"
-                                            fetchPriority="high"
-                                            data-cmp-ignore
+                                            fill
+                                            className="object-cover cmp-ignore"
+                                            priority
+                                            sizes="128px"
                                             onError={(e) => {
-                                                e.currentTarget.src = "/african-man-portrait.png"
+                                                // For Next.js Image, you might need a local state
                                             }}
                                         />
                                     </div>
@@ -225,14 +225,14 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                                         <Card className="h-full overflow-hidden border-border/50 hover:border-primary/50 transition-all duration-300 hover:shadow-lg glass-card">
                                             <div className="relative aspect-[4/3] bg-muted overflow-hidden">
                                                 {listing.images && listing.images[0] ? (
-                                                    // eslint-disable-next-line @next/next/no-img-element
-                                                    <img
+                                                    <Image
                                                         src={listing.images[0]}
                                                         alt={listing.title}
-                                                        className="w-full h-full object-cover transition-transform group-hover:scale-105 cmp-ignore"
-                                                        data-cmp-ignore
+                                                        fill
+                                                        className="object-cover transition-transform group-hover:scale-105 cmp-ignore"
+                                                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                                                         onError={(e) => {
-                                                            e.currentTarget.src = "/placeholder.svg"
+                                                            // For Next.js Image, you might need a local state
                                                         }}
                                                     />
                                                 ) : (

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Image from "next/image"
 import { supabase } from "@/lib/supabase"
 import { getBookings } from "@/lib/actions/dashboard-actions"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -100,11 +101,13 @@ export function PaymentsPage() {
                             {filteredBookings.map((booking) => (
                                 <div key={booking.id} className="grid grid-cols-5 items-center py-4 border-b last:border-0 hover:bg-muted/10 transition-colors">
                                     <div className="col-span-2 flex items-center gap-3">
-                                        <div className="h-10 w-10 rounded-md bg-muted overflow-hidden">
-                                            <img
+                                        <div className="h-10 w-10 rounded-md bg-muted overflow-hidden relative">
+                                            <Image
                                                 src={booking.listing?.images?.[0] || '/placeholder.svg'}
                                                 alt={booking.listing?.title}
-                                                className="h-full w-full object-cover"
+                                                fill
+                                                className="object-cover"
+                                                sizes="40px"
                                             />
                                         </div>
                                         <div>

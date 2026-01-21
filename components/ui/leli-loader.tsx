@@ -1,7 +1,20 @@
 "use client"
 
-import { motion } from "framer-motion"
+import { motion, Variants } from "framer-motion"
 import { cn } from "@/lib/utils"
+
+const dotVariants: Variants = {
+    animate: (i: number) => ({
+        scale: [1, 1.3, 1],
+        opacity: [0.5, 1, 0.5],
+        transition: {
+            duration: 1.2,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: i * 0.2
+        }
+    })
+}
 
 interface LeliLoaderProps {
     className?: string
@@ -20,19 +33,6 @@ export function LeliLoader({
         lg: "h-3 w-3 gap-2"
     }
 
-    const dotVariants = {
-        animate: (i: number) => ({
-            scale: [1, 1.3, 1],
-            opacity: [0.5, 1, 0.5],
-            transition: {
-                duration: 1.2,
-                repeat: Infinity,
-                ease: "easeInOut",
-                delay: i * 0.2
-            }
-        })
-    }
-
     const colors = variant === "white"
         ? ["bg-white", "bg-white/80", "bg-white/60"]
         : ["bg-orange-500", "bg-emerald-500", "bg-purple-500"]
@@ -47,7 +47,7 @@ export function LeliLoader({
                     animate="animate"
                     className={cn(
                         "rounded-full",
-                        variant === "white" ? colors[i] : colors[i],
+                        colors[i],
                         size === "sm" ? "h-1.5 w-1.5" : size === "md" ? "h-2.5 w-2.5" : "h-4 w-4"
                     )}
                 />

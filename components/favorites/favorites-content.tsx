@@ -2,6 +2,7 @@
 
 import { Heart, Trash2, Calendar, MapPin, Star } from "lucide-react"
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -40,11 +41,12 @@ export function FavoritesContent() {
             {favoriteListings.map((listing) => (
               <Card key={listing.id} className="glass-card overflow-hidden group">
                 <div className="relative aspect-[4/3]">
-                  <img
+                  <Image
                     src={listing.images[0] || "/placeholder.svg"}
                     alt={listing.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    suppressHydrationWarning
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-300"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   />
                   <Button
                     variant="ghost"

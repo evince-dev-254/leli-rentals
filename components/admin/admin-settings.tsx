@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Save, Bell, Shield, CreditCard, Globe, Eye, EyeOff, Loader2 } from "lucide-react"
+import { Save, Bell, Shield, CreditCard, Globe, Eye, EyeOff } from "lucide-react"
+import { Spinner } from "@/components/ui/spinner"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -277,7 +278,7 @@ export function AdminSettings() {
                 </div>
               </div>
               <Button onClick={saveSettings} disabled={saving} className="bg-primary text-primary-foreground">
-                {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+                {saving ? <Spinner className="h-4 w-4 mr-2" /> : <Save className="h-4 w-4 mr-2" />}
                 Save Changes
               </Button>
             </CardContent>
@@ -524,7 +525,7 @@ export function AdminSettings() {
               </div>
 
               <Button onClick={saveSettings} disabled={saving} className="bg-primary text-primary-foreground">
-                {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+                {saving ? <Spinner className="h-4 w-4 mr-2" /> : <Save className="h-4 w-4 mr-2" />}
                 Save Changes
               </Button>
             </CardContent>

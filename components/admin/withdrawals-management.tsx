@@ -20,7 +20,6 @@ import {
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
-    Loader2,
     CheckCircle2,
     XCircle,
     Clock,
@@ -29,6 +28,8 @@ import {
     ArrowUpRight,
     Search
 } from "lucide-react"
+import { Spinner } from "@/components/ui/spinner"
+import { LeliLoader } from "@/components/ui/leli-loader"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
@@ -124,7 +125,7 @@ export function WithdrawalsManagement() {
     }
 
     if (loading && withdrawals.length === 0) {
-        return <div className="flex flex-col items-center justify-center p-20"><Loader2 className="animate-spin h-10 w-10 text-primary mb-4" /><p>Loading requests...</p></div>
+        return <div className="flex flex-col items-center justify-center p-20"><LeliLoader className="mb-4" size="lg" /><p>Loading requests...</p></div>
     }
 
     return (
@@ -252,7 +253,7 @@ export function WithdrawalsManagement() {
                                                         onClick={() => handleReject(w.id)}
                                                         disabled={processingId === w.id}
                                                     >
-                                                        {processingId === w.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <XCircle className="w-4 h-4 mr-1" />}
+                                                        {processingId === w.id ? <Spinner className="w-3 h-3" /> : <XCircle className="w-4 h-4 mr-1" />}
                                                         Reject
                                                     </Button>
                                                     <Button
@@ -261,7 +262,7 @@ export function WithdrawalsManagement() {
                                                         onClick={() => handleApprove(w.id)}
                                                         disabled={processingId === w.id}
                                                     >
-                                                        {processingId === w.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-4 h-4 mr-1" />}
+                                                        {processingId === w.id ? <Spinner className="w-3 h-3" variant="white" /> : <CheckCircle2 className="w-4 h-4 mr-1" />}
                                                         Approve
                                                     </Button>
                                                 </>

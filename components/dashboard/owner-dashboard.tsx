@@ -233,12 +233,14 @@ export default function OwnerDashboard() {
                                         <div className="flex items-center gap-3 min-w-0">
                                             <div className="h-12 w-12 rounded-lg bg-secondary overflow-hidden shrink-0 border border-border relative">
                                                 {l.images && l.images[0] ? (
-                                                    <img
+                                                    <Image
                                                         src={l.images[0]}
                                                         alt={l.title}
-                                                        className="h-full w-full object-cover"
+                                                        fill
+                                                        className="object-cover"
+                                                        sizes="48px"
                                                         onError={(e) => {
-                                                            e.currentTarget.src = '/placeholder.svg'
+                                                            // For Next.js Image, you might need a local state
                                                         }}
                                                     />
                                                 ) : (

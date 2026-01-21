@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
-import { CreditCard, Loader2, AlertTriangle } from "lucide-react"
+import { CreditCard, AlertTriangle } from "lucide-react"
+import { LeliLoader } from "@/components/ui/leli-loader"
 import { useRouter } from "next/navigation"
 
 export function TestPayment() {
@@ -42,7 +43,8 @@ export function TestPayment() {
                     value: "true"
                 }
             ]
-        }
+        },
+        subaccount: process.env.NEXT_PUBLIC_PAYSTACK_SUBACCOUNT_ID
     }
 
     const initializePayment = usePaystackPayment(paystackConfig)
@@ -143,12 +145,12 @@ export function TestPayment() {
                 >
                     {loading ? (
                         <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            <LeliLoader size="sm" variant="white" className="mr-2" />
                             Processing...
                         </>
                     ) : !isClient ? (
                         <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            <LeliLoader size="sm" variant="white" className="mr-2" />
                             Loading Payment...
                         </>
                     ) : (

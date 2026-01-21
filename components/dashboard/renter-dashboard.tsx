@@ -168,12 +168,14 @@ export function RenterDashboard() {
                                         <div key={booking.id} className="flex flex-col md:flex-row gap-4 p-4 rounded-xl bg-background/50 border border-border/50 shadow-sm hover:shadow-md transition-all">
                                             <div className="relative w-full md:w-48 h-32 shrink-0">
                                                 {booking.listing?.images?.[0] ? (
-                                                    <img
+                                                    <Image
                                                         src={booking.listing.images[0]}
                                                         alt={booking.listing?.title || "Listing"}
-                                                        className="w-full h-full object-cover rounded-lg"
+                                                        fill
+                                                        className="object-cover rounded-lg"
+                                                        sizes="(max-width: 768px) 100vw, 192px"
                                                         onError={(e) => {
-                                                            e.currentTarget.src = '/placeholder.svg'
+                                                            // For Next.js Image, you might need a local state
                                                         }}
                                                     />
                                                 ) : (
@@ -303,12 +305,14 @@ export function RenterDashboard() {
                                 <Card key={fav.id} className="glass-card overflow-hidden hover:shadow-xl transition-all group flex flex-col h-full border-none">
                                     <div className="aspect-video relative overflow-hidden">
                                         {fav.listing.images?.[0] ? (
-                                            <img
+                                            <Image
                                                 src={fav.listing.images[0]}
                                                 alt={fav.listing.title}
-                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                                fill
+                                                className="object-cover group-hover:scale-105 transition-transform duration-500"
+                                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                                                 onError={(e) => {
-                                                    e.currentTarget.src = '/placeholder.svg'
+                                                    // For Next.js Image, you might need a local state
                                                 }}
                                             />
                                         ) : (
@@ -370,12 +374,14 @@ export function RenterDashboard() {
                                             <div className="flex flex-col sm:flex-row gap-4">
                                                 <div className="relative w-16 h-16 shrink-0">
                                                     {review.listing?.images?.[0] ? (
-                                                        <img
+                                                        <Image
                                                             src={review.listing.images[0]}
                                                             alt={review.listing?.title || "Item"}
-                                                            className="w-full h-full rounded-lg object-cover"
+                                                            fill
+                                                            className="rounded-lg object-cover"
+                                                            sizes="64px"
                                                             onError={(e) => {
-                                                                e.currentTarget.src = '/placeholder.svg'
+                                                                // For Next.js Image, you might need a local state
                                                             }}
                                                         />
                                                     ) : (

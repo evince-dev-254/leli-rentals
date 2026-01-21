@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react"
 import { CreditCard, Check } from "lucide-react"
+import Image from "next/image"
 import dynamic from "next/dynamic"
 import { usePaystackPayment } from 'react-paystack'
 import { AppLoader } from "@/components/ui/app-loader"
@@ -83,7 +84,8 @@ export function BookingModal({ listing, isOpen, onClose }: BookingModalProps) {
           value: listing.title
         }
       ]
-    }
+    },
+    subaccount: process.env.NEXT_PUBLIC_PAYSTACK_SUBACCOUNT_ID
   }), [formData.email, formData.fullName, listing.id, listing.title, calculateTotal]);
 
   const initializePayment = usePaystackPayment(paystackConfig);
@@ -104,7 +106,8 @@ export function BookingModal({ listing, isOpen, onClose }: BookingModalProps) {
           value: listing.title
         }
       ]
-    }
+    },
+    subaccount: process.env.NEXT_PUBLIC_PAYSTACK_SUBACCOUNT_ID
   });
 
   const handlePayWithPaystack = async () => {
@@ -199,12 +202,14 @@ export function BookingModal({ listing, isOpen, onClose }: BookingModalProps) {
             {/* Listing Preview */}
             <div className="flex gap-3 p-3 bg-secondary/50 rounded-lg">
               <div className="relative w-20 h-16 rounded overflow-hidden">
-                <img
+                <Image
                   src={listing.images[0] || "/placeholder.svg"}
                   alt={listing.title}
-                  className="w-full h-full object-cover"
+                  fill
+                  className="object-cover"
+                  sizes="80px"
                   onError={(e) => {
-                    e.currentTarget.src = '/placeholder.svg';
+                    // For Next.js Image, you might need a local state
                   }}
                 />
               </div>
@@ -399,10 +404,12 @@ export function BookingModal({ listing, isOpen, onClose }: BookingModalProps) {
                 and mobile money.
               </p>
               <div className="relative h-6 w-32 opacity-50 dark:invert">
-                <img
+                <Image
                   src="https://website-v3-assets.s3.amazonaws.com/assets/img/hero/Paystack-mark-white-twitter.png"
                   alt="Paystack"
-                  className="w-full h-full object-contain"
+                  fill
+                  className="object-contain"
+                  sizes="128px"
                 />
               </div>
             </div>

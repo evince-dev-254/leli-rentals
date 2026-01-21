@@ -21,9 +21,10 @@ import {
     CheckCircle,
     XCircle,
     Clock,
-    Zap,
-    Loader2
+    Zap
 } from "lucide-react"
+import { LeliLoader } from "@/components/ui/leli-loader"
+import { Spinner } from "@/components/ui/spinner"
 import { getAdminPayments } from "@/lib/actions/admin-actions"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
@@ -332,7 +333,7 @@ export function SubscriptionsManagement() {
                                     title="Refresh data"
                                 >
                                     {loading && activeTab === "payments" ? (
-                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                        <Spinner size="sm" className="mr-2" />
                                     ) : (
                                         <RefreshCw className="h-4 w-4 mr-2" />
                                     )}
@@ -346,7 +347,7 @@ export function SubscriptionsManagement() {
                                     className="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700 text-white"
                                 >
                                     {loading ? (
-                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                        <Spinner size="sm" variant="white" className="mr-2" />
                                     ) : (
                                         <Zap className="h-4 w-4 mr-2" />
                                     )}
@@ -368,7 +369,7 @@ export function SubscriptionsManagement() {
                     <TabsContent value="payments" className="mt-0">
                         {loading ? (
                             <div className="text-center py-12">
-                                <RefreshCw className="h-8 w-8 animate-spin mx-auto text-muted-foreground" />
+                                <LeliLoader size="md" />
                             </div>
                         ) : filteredPayments.length === 0 ? (
                             <div className="text-center py-12 text-muted-foreground">
@@ -421,7 +422,7 @@ export function SubscriptionsManagement() {
                     <TabsContent value="subscriptions" className="mt-0">
                         {loading ? (
                             <div className="text-center py-12">
-                                <RefreshCw className="h-8 w-8 animate-spin mx-auto text-muted-foreground" />
+                                <LeliLoader size="md" />
                             </div>
                         ) : filteredSubscriptions.length === 0 ? (
                             <div className="text-center py-12 text-muted-foreground">

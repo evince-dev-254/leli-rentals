@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Image from "next/image"
 import Link from "next/link"
 import { Search, Filter, MoreHorizontal, Eye, CheckCircle, XCircle, Package, Plus } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -206,9 +207,11 @@ export function ListingsManagement() {
                   <TableRow key={listing.id}>
                     <TableCell>
                       <div className="flex items-center gap-3">
-                        <img
+                        <Image
                           src={listing.images[0] || "/placeholder.svg"}
                           alt={listing.title}
+                          width={64}
+                          height={48}
                           className="h-12 w-16 object-cover rounded-lg"
                         />
                         <div>

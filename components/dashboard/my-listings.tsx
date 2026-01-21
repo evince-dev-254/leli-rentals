@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Image from "next/image"
 import Link from "next/link"
 import { Plus, Search, MoreHorizontal, Eye, Edit, Trash2, ToggleLeft, ToggleRight } from "lucide-react"
 import { LoadingLogo } from "@/components/ui/loading-logo"
@@ -107,10 +108,12 @@ export function MyListings() {
         {filteredListings.map((listing) => (
           <Card key={listing.id} className="glass-card overflow-hidden">
             <div className="aspect-video relative">
-              <img
+              <Image
                 src={listing.images?.[0] || "/placeholder.svg"}
                 alt={listing.title}
-                className="w-full h-full object-cover"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               />
               <Badge
                 className={`absolute top-3 right-3 ${listing.status === "active"

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import {
     Dialog,
@@ -82,7 +83,15 @@ export function LeaveReviewDialog({ bookingId, listingId, listingTitle, listingI
                 <div className="flex flex-col gap-6 py-4">
                     {listingImage && (
                         <div className="flex justify-center">
-                            <img src={listingImage} alt={listingTitle} className="w-32 h-24 object-cover rounded-md" />
+                            <div className="flex justify-center h-24 w-32 mx-auto relative overflow-hidden rounded-md">
+                                <Image
+                                    src={listingImage}
+                                    alt={listingTitle}
+                                    fill
+                                    className="object-cover"
+                                    sizes="128px"
+                                />
+                            </div>
                         </div>
                     )}
 

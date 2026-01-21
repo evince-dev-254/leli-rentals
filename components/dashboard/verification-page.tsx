@@ -2,6 +2,7 @@
 
 import { useRef, useCallback, useState, useEffect } from "react"
 import Webcam from "react-webcam"
+import Image from "next/image"
 import { ShieldCheck, Upload, FileText, Clock, CheckCircle, AlertTriangle, X, Loader2, Camera, RefreshCw } from "lucide-react"
 import { BackButton } from "@/components/ui/back-button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
