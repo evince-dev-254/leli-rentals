@@ -277,17 +277,20 @@ export default function UnifiedDashboardScreen() {
     // Fetch real stats
     const { data: stats, refetch } = useUserStats(user?.id || '');
 
+    // Default to 'renter' but if user has a specific role, use that.
+    // Logic: If role switch is removed, we must strictly obey the metadata.
+    // However, what if a user is an owner but WANTS to rent?
+    // The web app has a 'Switch to Renter' button in the profile menu usually. 
+    // Here we are hard-locking them. 
+    // Ideally, the HamburgerMenu component should allow switching if they have multiple roles.
+    // For now, we trust the `activeRole` state which defaults to metadata role on mount.
+
     useEffect(() => {
         if (user?.user_metadata?.role) {
             setActiveRole(user.user_metadata.role);
         }
     }, [user?.user_metadata?.role]);
 
-    const roles = [
-        { id: 'renter', label: 'Rent', icon: ShoppingBag },
-        { id: 'owner', label: 'Lend', icon: Key },
-        { id: 'affiliate', label: 'Earn', icon: Users },
-    ] as const;
 
     return (
         <View className="flex-1 bg-white dark:bg-slate-950">
@@ -296,8 +299,13 @@ export default function UnifiedDashboardScreen() {
             <SafeAreaView className="flex-1" edges={['top']}>
                 <View className="px-6 pt-10 pb-4 flex-row items-center justify-between">
                     <View className="flex-1 mr-4">
-                        <Text className="text-3xl font-black text-slate-900 dark:text-white leading-tight">Hub</Text>
-                        <Text className="text-slate-400 dark:text-slate-500 font-bold text-xs mt-1">
+                        <Image
+                            source={isDark ? require('../../assets/images/logo_white.png') : require('../../assets/images/logo_black.png')}
+                            className="w-32 h-10 mb-2"
+                            resizeMode="contain"
+                            alt="Leli Rentals"
+                        />
+                        <Text className="text-slate-400 dark:text-slate-500 font-bold text-xs">
                             {activeRole === 'renter' ? 'Browse & Manage Rentals' : activeRole === 'owner' ? 'Track Equipment & Revenue' : 'Scale Your Partner Network'}
                         </Text>
                     </View>
@@ -317,44 +325,10 @@ export default function UnifiedDashboardScreen() {
                     </View>
                 </View>
 
-                {/* Role Switcher */}
-                <View className="px-6 mt-6 mb-6">
-                    <View className="bg-white/80 dark:bg-slate-900 p-1.5 rounded-3xl border-2 border-slate-100 dark:border-slate-800 flex-row gap-2">
-                        {roles
-                            .filter(role => {
-                                // Staff can see everything
-                                if (user?.user_metadata?.role === 'staff') return true;
-                                // Everyone can see Renter
-                                if (role.id === 'renter') return true;
-                                // Only owners can see Owner dashboard
-                                if (role.id === 'owner') return user?.user_metadata?.role === 'owner';
-                                // Only affiliates can see Affiliate dashboard
-                                if (role.id === 'affiliate') return user?.user_metadata?.role === 'affiliate';
-                                return false;
-                            })
-                            .map((role) => {
-                                const isActive = activeRole === role.id;
-                                return (
-                                    <TouchableOpacity
-                                        key={role.id}
-                                        onPress={() => setActiveRole(role.id)}
-                                        className={cn(
-                                            "flex-1 flex-row items-center justify-center py-3 rounded-[20px]",
-                                            isActive && (role.id === 'renter' ? 'bg-orange-500 shadow-lg shadow-orange-500/20' : role.id === 'owner' ? 'bg-emerald-500 shadow-lg shadow-emerald-500/20' : 'bg-purple-500 shadow-lg shadow-purple-500/20')
-                                        )}
-                                    >
-                                        <role.icon size={16} color={isActive ? 'white' : '#94a3b8'} strokeWidth={2.5} />
-                                        <Text className={cn("ml-2 text-[11px] font-black uppercase tracking-wider", isActive ? 'text-white' : 'text-slate-400')}>
-                                            {role.label}
-                                        </Text>
-                                    </TouchableOpacity>
-                                );
-                            })}
-                    </View>
-                </View>
+                {/* Role Switcher Removed - Single Role View Enforced */}
 
                 <ScrollView
-                    className="flex-1 px-6"
+                    className="flex-1 px-6 mt-4"
                     showsVerticalScrollIndicator={false}
                     contentContainerStyle={{ paddingBottom: 120 }}
                     refreshControl={

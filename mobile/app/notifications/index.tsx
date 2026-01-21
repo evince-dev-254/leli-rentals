@@ -19,13 +19,13 @@ export default function NotificationsScreen() {
         queryKey: ['notifications', user?.id, filter],
         queryFn: async () => {
             let query = supabase
-                .from('platform_notifications')
+                .from('notifications')
                 .select('*')
                 .eq('user_id', user?.id)
                 .order('created_at', { ascending: false });
 
             if (filter === 'unread') {
-                query = query.eq('status', 'unread');
+                query = query.eq('is_read', false);
             }
 
             const { data, error } = await query.limit(50);
@@ -51,8 +51,8 @@ export default function NotificationsScreen() {
 
     const markAsRead = async (id: string) => {
         const { error } = await supabase
-            .from('platform_notifications')
-            .update({ status: 'read' })
+            .from('notifications')
+            .update({ is_read: true })
             .eq('id', id);
 
         if (!error) refetch();
@@ -60,7 +60,7 @@ export default function NotificationsScreen() {
 
     const deleteNotification = async (id: string) => {
         const { error } = await supabase
-            .from('platform_notifications')
+            .from('notifications')
             .delete()
             .eq('id', id);
 
@@ -134,7 +134,7 @@ export default function NotificationsScreen() {
                                         transition={{ type: 'timing', duration: 400, delay: idx * 50 }}
                                         className={cn(
                                             "mb-4 bg-white/80 dark:bg-slate-900/80 p-5 rounded-[28px] border-2 shadow-sm flex-row items-start",
-                                            item.status === 'unread' ? "border-blue-100 dark:border-blue-900/30" : "border-slate-50 dark:border-slate-800"
+                                            !item.is_read ? "border-blue-100 dark:border-blue-900/30" : "border-slate-50 dark:border-slate-800"
                                         )}
                                     >
                                         <View className={cn("h-12 w-12 rounded-2xl items-center justify-center mr-4", theme.bg)}>
@@ -145,7 +145,7 @@ export default function NotificationsScreen() {
                                                 <Text className="text-xs font-black text-slate-900 dark:text-white leading-tight pr-4">
                                                     {item.title}
                                                 </Text>
-                                                {item.status === 'unread' && <View className="h-2 w-2 rounded-full bg-blue-500" />}
+                                                {!item.is_read && <View className="h-2 w-2 rounded-full bg-blue-500" />}
                                             </View>
                                             <Text className="text-[11px] text-slate-500 font-bold leading-4 mb-2">
                                                 {item.message}
@@ -155,7 +155,7 @@ export default function NotificationsScreen() {
                                             </Text>
                                         </View>
                                         <TouchableOpacity
-                                            onPress={() => item.status === 'unread' ? markAsRead(item.id) : deleteNotification(item.id)}
+                                            onPress={() => !item.is_read ? markAsRead(item.id) : deleteNotification(item.id)}
                                             className="ml-2 mt-2"
                                         >
                                             <X size={14} color="#94a3b8" />

@@ -1,16 +1,15 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Modal, Pressable } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Modal, Pressable, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import {
     X, Heart, MessageCircle, Bell, Shield,
     RefreshCw, HelpCircle, Mail, FileText,
-    Lock, ChevronRight, Settings, Info, Sparkles, LogOut
+    Lock, ChevronRight, Settings, Info, Sparkles, LogOut,
+    Receipt, Star, Crown
 } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MotiView, AnimatePresence } from 'moti';
-import { BlurView } from 'expo-blur';
 import { useColorScheme } from '@/components/useColorScheme';
-import { cn } from '@/lib/utils';
 import { useAuth } from '../../context/auth-context';
 
 interface HamburgerMenuProps {
@@ -45,6 +44,9 @@ export function HamburgerMenu({ visible, onClose, activeRole }: HamburgerMenuPro
                 { icon: Sparkles, label: 'AI Assistant', color: '#8b5cf6', href: '/support/ai-assistant', roles: ['renter', 'owner', 'affiliate'] },
                 { icon: Settings, label: 'Asset Manager', color: '#3b82f6', href: '/listings/manage', roles: ['owner'] },
                 { icon: Info, label: 'Partner Portal', color: '#a855f7', href: '/affiliate', roles: ['affiliate'] },
+                { icon: Receipt, label: 'Payments', color: '#3b82f6', href: '/payments', roles: ['renter'] },
+                { icon: Star, label: 'My Reviews', color: '#f59e0b', href: '/reviews', roles: ['renter', 'owner'] },
+                { icon: Crown, label: 'Subscription', color: '#8b5cf6', href: '/subscription', roles: ['owner'] },
             ].filter(item => item.roles.includes(activeRole))
         },
         {
@@ -67,6 +69,7 @@ export function HamburgerMenu({ visible, onClose, activeRole }: HamburgerMenuPro
             items: [
                 { icon: FileText, label: 'Terms of Service', color: '#64748b', href: '/legal/terms' },
                 { icon: Lock, label: 'Privacy Policy', color: '#64748b', href: '/legal/privacy' },
+                { icon: FileText, label: 'Cookie Policy', color: '#64748b', href: '/legal/cookies' },
             ]
         }
     ];
@@ -99,8 +102,13 @@ export function HamburgerMenu({ visible, onClose, activeRole }: HamburgerMenuPro
                                 {/* Header */}
                                 <View className="px-6 pt-10 pb-6 border-b border-slate-50 dark:border-slate-900 flex-row items-center justify-between">
                                     <View>
-                                        <Text className="text-2xl font-black text-slate-900 dark:text-white">Leli Menu</Text>
-                                        <Text className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Quick Links</Text>
+                                        <Image
+                                            source={isDark ? require('../../assets/images/logo_white.png') : require('../../assets/images/logo_black.png')}
+                                            className="w-32 h-8 mb-1"
+                                            resizeMode="contain"
+                                            alt="Leli Rentals"
+                                        />
+                                        <Text className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Quick Links</Text>
                                     </View>
                                     <TouchableOpacity
                                         onPress={onClose}
@@ -111,6 +119,26 @@ export function HamburgerMenu({ visible, onClose, activeRole }: HamburgerMenuPro
                                 </View>
 
                                 <ScrollView className="flex-1 px-4 py-6" showsVerticalScrollIndicator={false}>
+
+                                    {/* Switch Account Section */}
+                                    <View className="mb-8">
+                                        <Text className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2 mb-4">
+                                            Profile
+                                        </Text>
+                                        <TouchableOpacity
+                                            onPress={() => handleNavigate('/auth/select-role')}
+                                            className="flex-row items-center p-4 mb-2 bg-slate-50/50 dark:bg-slate-900/50 rounded-2xl border border-transparent active:border-slate-100 dark:active:border-slate-800"
+                                        >
+                                            <View className="h-10 w-10 rounded-xl bg-white dark:bg-slate-800 items-center justify-center shadow-sm mr-4">
+                                                <RefreshCw size={18} color="#3b82f6" />
+                                            </View>
+                                            <Text className="flex-1 text-sm font-black text-slate-700 dark:text-slate-300">
+                                                Switch Account Role
+                                            </Text>
+                                            <ChevronRight size={16} color="#94a3b8" />
+                                        </TouchableOpacity>
+                                    </View>
+
                                     {menuGroups.map((group, gIdx) => (
                                         <View key={gIdx} className="mb-8">
                                             <Text className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2 mb-4">
@@ -153,7 +181,7 @@ export function HamburgerMenu({ visible, onClose, activeRole }: HamburgerMenuPro
                                     </TouchableOpacity>
 
                                     <Text className="text-center text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                                        Leli Rentals v1.0.1
+                                        Leli Rentals v1.0.2
                                     </Text>
                                 </View>
                             </SafeAreaView>
@@ -164,4 +192,3 @@ export function HamburgerMenu({ visible, onClose, activeRole }: HamburgerMenuPro
         </Modal>
     );
 }
-

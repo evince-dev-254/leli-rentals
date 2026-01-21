@@ -20,6 +20,7 @@ import {
   Share2,
   Wallet,
   Bell,
+  Smartphone
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -45,6 +46,7 @@ export const allLinks = [
   { href: "/dashboard/subscription", label: "Subscription", icon: CreditCard, roles: ["owner"], badge: "" },
   { href: "/dashboard/verification", label: "Verification", icon: ShieldCheck, roles: ["owner"], badge: "" },
   { href: "/dashboard/settings", label: "Settings", icon: Settings, roles: ["owner", "renter", "affiliate", "staff"], badge: "" },
+  { href: "/dashboard/admin/mobile", label: "Mobile Manager", icon: Smartphone, roles: ["staff_only"], badge: "New" },
 ]
 
 interface SidebarContentProps {

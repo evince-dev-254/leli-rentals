@@ -3,6 +3,7 @@ import { View, Text, KeyboardAvoidingView, Platform, ScrollView, Dimensions, use
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { supabase, performNativeGoogleSignIn } from '@/lib/supabase';
+import { GoogleSigninButton } from '@react-native-google-signin/google-signin';
 import { Mail, Lock } from 'lucide-react-native';
 import { MotiView } from 'moti';
 import { BrandedAlert } from '@/components/ui/branded-alert';
@@ -191,12 +192,12 @@ export default function LoginScreen() {
                             </MotiView>
                         </View>
 
-                        <Button
+                        <GoogleSigninButton
+                            size={GoogleSigninButton.Size.Wide}
+                            color={isDark ? GoogleSigninButton.Color.Dark : GoogleSigninButton.Color.Light}
                             onPress={handleGoogleLogin}
-                            title="Sign in with Google"
-                            variant="secondary"
-                            className="bg-white border-2 border-slate-100 h-16 mb-8"
-                            textClassName="text-slate-900 normal-case"
+                            disabled={loading}
+                            style={{ width: '100%', height: 60, marginBottom: 32 }}
                         />
 
                         <View>
