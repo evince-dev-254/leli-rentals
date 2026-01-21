@@ -82,7 +82,7 @@ export function AccountTypeSwitcher() {
                 >
                     <LayoutDashboard className="h-4 w-4 text-orange-600" />
                     <span className="font-semibold whitespace-nowrap hidden sm:inline">
-                        Switch Dashboard
+                        Switch Account
                     </span>
                     <RefreshCcw className="h-4 w-4 text-orange-500" />
                 </Button>

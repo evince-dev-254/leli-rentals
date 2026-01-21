@@ -253,7 +253,7 @@ export default function AffiliateDashboard() {
                                     <DollarSign className="h-6 w-6" />
                                 </div>
                                 <div>
-                                    <h3 className="font-semibold text-lg">Earn 10% Commission</h3>
+                                    <h3 className="font-semibold text-lg">Earn {stats?.global_commission_rate || 10}% Commission</h3>
                                     <p className="text-muted-foreground">Get paid for every successful booking made through your referral link.</p>
                                 </div>
                             </div>
@@ -389,7 +389,7 @@ export default function AffiliateDashboard() {
                 <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
                     <DashboardStatCard
                         title="Commission Rate"
-                        value={`${stats?.commission_rate || 10}%`}
+                        value={`${stats?.global_commission_rate || stats?.commission_rate || 10}%`}
                         icon={MousePointerClick}
                         color="teal"
                         description="Per booking"

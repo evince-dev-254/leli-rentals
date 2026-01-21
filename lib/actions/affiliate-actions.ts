@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase"
 import { supabaseAdmin } from "@/lib/supabase-admin"
 import { createServerClient } from '@supabase/ssr'
 import { revalidatePath } from "next/cache"
+import { getAffiliateCommissionRate } from "./settings-actions"
 
 // ... existing joinAffiliateProgram ...
 
@@ -89,7 +90,7 @@ export async function joinAffiliateProgram(userId: string, email: string) {
             invite_code: inviteCode,
             referral_code: referralCode,
             status: 'active', // Auto-activate
-            commission_rate: 10.00
+            commission_rate: await getAffiliateCommissionRate()
         })
         .select()
         .single();

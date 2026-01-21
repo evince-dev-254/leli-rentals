@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { getPaystackSecretKey } from '@/lib/actions/settings-actions'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -11,7 +12,7 @@ export async function POST(req: Request) {
         const { reference, planId, userId, amount, email } = await req.json()
 
         // 1. Verify with Paystack
-        const secretKey = process.env.PAYSTACK_SECRET_KEY
+        const secretKey = await getPaystackSecretKey()
         if (!secretKey) throw new Error("Paystack secret key missing")
 
         const verifyRes = await fetch(`https://api.paystack.co/transaction/verify/${reference}`, {

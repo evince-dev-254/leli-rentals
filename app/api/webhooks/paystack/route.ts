@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
 import { createClient } from '@supabase/supabase-js'
+import { getPaystackSecretKey } from '@/lib/actions/settings-actions'
 
 // Create admin client for webhook operations
 const supabaseAdmin = createClient(
@@ -12,10 +13,16 @@ export async function POST(req: NextRequest) {
     try {
         const body = await req.text()
         const signature = req.headers.get('x-paystack-signature')
+        const paystackSecretKey = await getPaystackSecretKey()
+
+        if (!paystackSecretKey) {
+            console.error('Paystack secret key not configured')
+            return NextResponse.json({ error: 'Config error' }, { status: 500 })
+        }
 
         // Verify webhook signature
         const hash = crypto
-            .createHmac('sha512', process.env.PAYSTACK_SECRET_KEY!)
+            .createHmac('sha512', paystackSecretKey)
             .update(body)
             .digest('hex')
 

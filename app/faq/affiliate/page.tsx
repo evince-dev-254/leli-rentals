@@ -3,8 +3,11 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { HelpCircle, DollarSign, Settings, Mail } from "lucide-react";
 import { BackButton } from "@/components/ui/back-button"
+import { getAffiliateCommissionRate } from "@/lib/actions/settings-actions";
 
-export default function AffiliateFAQPage() {
+export default async function AffiliateFAQPage() {
+    const commissionRate = await getAffiliateCommissionRate();
+
     return (
         <div className="relative">
             {/* Hero Section with Video/Image Background */}
@@ -91,10 +94,10 @@ export default function AffiliateFAQPage() {
                                     How much can I earn?
                                 </AccordionTrigger>
                                 <AccordionContent className="text-muted-foreground text-lg leading-relaxed pb-6">
-                                    You earn a <span className="font-semibold text-foreground">10% commission</span> on every successful booking made by users you refer.
+                                    You earn a <span className="font-semibold text-foreground">{commissionRate}% commission</span> on every successful booking made by users you refer.
                                     There is no cap on how much you can earn. The more you refer, the more you make!
                                     <br /><br />
-                                    Example: If a user books a rental for KES 10,000, you earn KES 1,000 instantly.
+                                    Example: If a user books a rental for KES 10,000, you earn KES {(10000 * commissionRate / 100).toLocaleString()} instantly.
                                 </AccordionContent>
                             </AccordionItem>
 

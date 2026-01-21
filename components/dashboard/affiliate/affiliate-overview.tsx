@@ -110,7 +110,7 @@ export function AffiliateOverview({ user, stats, refreshing, onRefresh }: Affili
                 <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
                     <DashboardStatCard
                         title="Commission Rate"
-                        value={`${stats?.commission_rate || 10}%`}
+                        value={`${stats?.global_commission_rate || stats?.commission_rate || 10}%`}
                         icon={MousePointerClick}
                         color="teal"
                         description="Per booking"

@@ -318,7 +318,8 @@ export async function uploadVerification(userId: string, frontUrl: string, backU
     return data;
 }
 
-import { handleServerError, ActionResponse } from '../error-handler';
+import { ActionResponse, handleServerError } from '../error-handler';
+import { getAffiliateCommissionRate } from './settings-actions';
 
 // ... (other imports)
 
@@ -352,7 +353,11 @@ export async function getAffiliateData(userId: string) {
         .single();
 
     if (error && error.code !== 'PGRST116') throw error; // Ignore not found
-    return data ? data : null;
+
+    const globalRate = await getAffiliateCommissionRate();
+
+    const result = data ? { ...data, global_commission_rate: globalRate } : null;
+    return result;
 }
 
 /** Fetch referrals for an affiliate */

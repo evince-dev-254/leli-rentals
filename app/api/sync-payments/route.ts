@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { revalidatePath } from 'next/cache'
+import { getPaystackSecretKey } from '@/lib/actions/settings-actions'
 
 const supabaseAdmin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -8,7 +10,7 @@ const supabaseAdmin = createClient(
 
 export async function POST() {
     try {
-        const paystackSecretKey = process.env.PAYSTACK_SECRET_KEY
+        const paystackSecretKey = await getPaystackSecretKey()
 
         if (!paystackSecretKey) {
             return NextResponse.json({ error: 'Paystack secret key not configured' }, { status: 500 })
@@ -85,6 +87,13 @@ export async function POST() {
             if (!error) {
                 syncedCount++
                 console.log(`Successfully synced payment: ${transaction.reference}`)
+
+                // Revalidate relevant paths to fix stale data issue
+                revalidatePath('/admin/subscriptions')
+                revalidatePath('/dashboard')
+                revalidatePath('/dashboard/renter')
+                revalidatePath('/dashboard/owner')
+                revalidatePath('/dashboard/affiliate')
 
                 // Send email notification
                 try {

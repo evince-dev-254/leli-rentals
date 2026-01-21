@@ -7,7 +7,8 @@ const supabaseAdmin = createClient(
     process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-import { COMMISSION_RATE, MINIMUM_WITHDRAWAL } from '../constants'
+import { MINIMUM_WITHDRAWAL } from '../constants'
+import { getAffiliateCommissionRate } from './settings-actions'
 
 /**
  * Calculate commission for a booking
@@ -30,8 +31,9 @@ export async function calculateCommission(bookingId: string) {
             return { success: false, message: 'No referral found' }
         }
 
-        // Calculate commission (5% of subtotal)
-        const commissionAmount = (booking.subtotal * COMMISSION_RATE) / 100
+        // Calculate commission using dynamic rate from settings
+        const currentRate = await getAffiliateCommissionRate()
+        const commissionAmount = (booking.subtotal * currentRate) / 100
 
         // Create commission record
         const { data: commission, error: commissionError } = await supabaseAdmin
@@ -41,7 +43,7 @@ export async function calculateCommission(bookingId: string) {
                 booking_id: bookingId,
                 referral_id: booking.renter_id,
                 amount: commissionAmount,
-                commission_rate: COMMISSION_RATE,
+                commission_rate: currentRate,
                 status: 'paid', // Mark as paid immediately when booking is paid
                 paid_at: new Date().toISOString()
             })

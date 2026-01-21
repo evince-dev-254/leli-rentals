@@ -8,6 +8,8 @@ import { supabase } from "@/lib/supabase"
 import { useRouter } from "next/navigation"
 import { AppLoader } from "@/components/ui/app-loader"
 
+import { StaffAccessRequest } from "@/components/staff/staff-access-request"
+
 export default function StaffLayout({
     children,
 }: {
@@ -15,6 +17,8 @@ export default function StaffLayout({
 }) {
     const router = useRouter()
     const [verifying, setVerifying] = useState(true)
+    const [user, setUser] = useState<any>(null)
+    const [accessStatus, setAccessStatus] = useState<"none" | "pending" | "authorized">("none")
 
     useEffect(() => {
         const checkRole = async () => {
@@ -24,22 +28,48 @@ export default function StaffLayout({
                 return
             }
 
+            setUser(user)
+
             const { data: profile } = await supabase
                 .from('user_profiles')
-                .select('role')
+                .select('role, is_staff, is_admin')
                 .eq('id', user.id)
                 .single()
 
-            if (!profile || profile.role !== 'staff') {
+            if (!profile) {
                 router.replace('/dashboard')
                 return
             }
+
+            if (profile.is_staff || profile.is_admin || profile.role === 'staff' || profile.role === 'admin') {
+                setAccessStatus("authorized")
+            } else if (profile.role === 'staff_pending') {
+                setAccessStatus("pending")
+            } else {
+                setAccessStatus("none")
+            }
+
             setVerifying(false)
         }
         checkRole()
     }, [router])
 
     if (verifying) return <div className="min-h-screen flex items-center justify-center bg-background"><AppLoader size="lg" /></div>
+
+    if (accessStatus !== "authorized") {
+        return (
+            <div className="min-h-screen flex flex-col">
+                <Header />
+                <main className="flex-1 flex items-center justify-center p-4 bg-muted/30 pt-24">
+                    <StaffAccessRequest
+                        userId={user?.id}
+                        status={accessStatus}
+                        onSuccess={() => setAccessStatus("pending")}
+                    />
+                </main>
+            </div>
+        )
+    }
 
     return (
         <div className="flex flex-col min-h-screen">
