@@ -1,20 +1,33 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, Alert, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
-import { Calendar, Clock, CreditCard, ArrowRight } from 'lucide-react-native';
+import { Calendar, Clock, CreditCard, ArrowRight, X } from 'lucide-react-native';
 import { BackButton } from '@/components/ui/back-button';
 import { BackgroundGradient } from '@/components/ui/background-gradient';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
+import { PaystackCheckout } from '@/components/payment/paystack-checkout';
 
 export default function CreateBookingScreen() {
-    const { listingId, listingTitle } = useLocalSearchParams();
+    const { listingId, listingTitle, pricePerDay, ownerId } = useLocalSearchParams();
     const router = useRouter();
-    const [startDate, setStartDate] = useState<Date | null>(null);
-    const [endDate, setEndDate] = useState<Date | null>(null);
+    const [startDate, setStartDate] = useState<Date | null>(new Date());
+    const [endDate, setEndDate] = useState<Date | null>(new Date());
     const [duration, setDuration] = useState(1);
     const [loading, setLoading] = useState(false);
+    const [showPaystack, setShowPaystack] = useState(false);
+    const [user, setUser] = useState<any>(null);
+
+    const listingPrice = Number(pricePerDay) || 1000;
+
+    useEffect(() => {
+        const getUser = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            setUser(user);
+        };
+        getUser();
+    }, []);
 
     const handleCreateBooking = async () => {
         if (!startDate || !endDate) {
@@ -22,42 +35,71 @@ export default function CreateBookingScreen() {
             return;
         }
 
+        // Instead of creating booking immediately, show Paystack
+        setShowPaystack(true);
+    };
+
+    const handlePaymentSuccess = async (response: any) => {
+        setShowPaystack(false);
         setLoading(true);
+
         try {
-            const { data: { user } } = await supabase.auth.getUser();
             if (!user) {
                 Alert.alert('Error', 'Please login to continue');
                 router.push('/auth/login');
                 return;
             }
 
-            // Create booking
-            const { data, error } = await supabase
+            const totalAmount = duration * listingPrice;
+
+            // 1. Create booking after successful payment
+            const { data: booking, error: bookingError } = await supabase
                 .from('bookings')
                 .insert({
                     listing_id: listingId,
                     renter_id: user.id,
-                    start_date: startDate.toISOString(),
-                    end_date: endDate.toISOString(),
-                    total_price: duration * 1000, // Calculate based on listing price
-                    status: 'pending'
+                    owner_id: ownerId,
+                    start_date: startDate?.toISOString().split('T')[0],
+                    end_date: endDate?.toISOString().split('T')[0],
+                    total_days: duration,
+                    price_per_day: listingPrice,
+                    subtotal: totalAmount,
+                    total_amount: totalAmount,
+                    status: 'confirmed',
+                    payment_status: 'paid'
                 })
                 .select()
                 .single();
 
-            if (error) throw error;
+            if (bookingError) throw bookingError;
+
+            // 2. Create transaction record
+            const { error: txError } = await supabase
+                .from('transactions')
+                .insert({
+                    booking_id: booking.id,
+                    user_id: user.id,
+                    transaction_type: 'booking_payment',
+                    amount: totalAmount,
+                    payment_method: 'paystack',
+                    provider_reference: response.transactionRef.reference,
+                    status: 'completed',
+                    metadata: { paystack_response: response }
+                });
+
+            if (txError) console.error('Transaction log error:', txError);
 
             Alert.alert(
                 'Success!',
-                'Your booking request has been sent to the owner.',
+                'Payment received and booking confirmed.',
                 [
-                    { text: 'View Bookings', onPress: () => router.push('/bookings') },
+                    { text: 'View Bookings', onPress: () => router.push('/bookings' as any) },
                     { text: 'OK', onPress: () => router.back() }
                 ]
             );
         } catch (error) {
             console.error('Booking error:', error);
-            Alert.alert('Error', 'Failed to create booking. Please try again.');
+            Alert.alert('Error', 'Payment was successful but failed to save booking. Please contact support.');
         } finally {
             setLoading(false);
         }
@@ -91,7 +133,12 @@ export default function CreateBookingScreen() {
                                 {[1, 3, 7, 14, 30].map((days) => (
                                     <TouchableOpacity
                                         key={days}
-                                        onPress={() => setDuration(days)}
+                                        onPress={() => {
+                                            setDuration(days);
+                                            const end = new Date();
+                                            end.setDate(end.getDate() + days);
+                                            setEndDate(end);
+                                        }}
                                         className={`flex-1 py-3 rounded-2xl ${duration === days ? 'bg-orange-500' : 'bg-slate-100 dark:bg-slate-800'}`}
                                     >
                                         <Text className={`text-center font-bold ${duration === days ? 'text-white' : 'text-slate-900 dark:text-white'}`}>
@@ -111,8 +158,8 @@ export default function CreateBookingScreen() {
                             <View className="flex-row items-center">
                                 <CreditCard size={24} color="#f97316" />
                                 <View className="ml-3">
-                                    <Text className="text-base font-bold text-slate-900 dark:text-white">M-Pesa</Text>
-                                    <Text className="text-xs text-slate-400">Pay securely with M-Pesa</Text>
+                                    <Text className="text-base font-bold text-slate-900 dark:text-white">Paystack</Text>
+                                    <Text className="text-xs text-slate-400">Secure Payment via Paystack</Text>
                                 </View>
                             </View>
                             <ArrowRight size={20} color="#94a3b8" />
@@ -128,12 +175,12 @@ export default function CreateBookingScreen() {
                         </View>
                         <View className="flex-row justify-between mb-2">
                             <Text className="text-slate-600 dark:text-slate-400">Rate per day</Text>
-                            <Text className="font-bold text-slate-900 dark:text-white">KES 1,000</Text>
+                            <Text className="font-bold text-slate-900 dark:text-white">KES {listingPrice.toLocaleString()}</Text>
                         </View>
                         <View className="h-px bg-slate-200 dark:bg-slate-700 my-3" />
                         <View className="flex-row justify-between">
                             <Text className="text-lg font-black text-slate-900 dark:text-white">Total</Text>
-                            <Text className="text-2xl font-black text-orange-500">KES {(duration * 1000).toLocaleString()}</Text>
+                            <Text className="text-2xl font-black text-orange-500">KES {(duration * listingPrice).toLocaleString()}</Text>
                         </View>
                     </View>
                 </ScrollView>
@@ -141,12 +188,32 @@ export default function CreateBookingScreen() {
                 {/* Bottom Action */}
                 <View className="px-8 py-6 border-t border-slate-100 dark:border-slate-800">
                     <Button
-                        title={loading ? "Processing..." : "Confirm Booking"}
+                        title={loading ? "Processing..." : "Confirm & Pay"}
                         onPress={handleCreateBooking}
                         disabled={loading}
                         className="h-16 rounded-[28px] bg-orange-500"
                     />
                 </View>
+
+                {/* Paystack Modal */}
+                <Modal visible={showPaystack} animationType="slide">
+                    <View className="flex-1">
+                        <SafeAreaView className="flex-row items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800">
+                            <Text className="text-xl font-black text-slate-900 dark:text-white">Secure Payment</Text>
+                            <TouchableOpacity onPress={() => setShowPaystack(false)}>
+                                <X size={24} color="#f97316" />
+                            </TouchableOpacity>
+                        </SafeAreaView>
+                        <PaystackCheckout
+                            paystackKey={process.env.EXPO_PUBLIC_PAYSTACK_PUBLIC_KEY || ''}
+                            amount={duration * listingPrice * 100} // Paystack expects kobo/cents
+                            email={user?.email || ''}
+                            billingName={user?.user_metadata?.full_name}
+                            onSuccess={handlePaymentSuccess}
+                            onCancel={() => setShowPaystack(false)}
+                        />
+                    </View>
+                </Modal>
             </SafeAreaView>
         </View>
     );

@@ -71,7 +71,12 @@ export default function ListingDetailScreen() {
             // Navigate to booking screen with listing data
             router.push({
                 pathname: '/bookings/create',
-                params: { listingId: listing.id, listingTitle: listing.title }
+                params: {
+                    listingId: listing.id,
+                    listingTitle: listing.title,
+                    pricePerDay: listing.price_per_day,
+                    ownerId: listing.owner_id
+                }
             });
         }
     };
@@ -99,8 +104,8 @@ export default function ListingDetailScreen() {
             const { data: conversation, error: convError } = await supabase
                 .from('conversations')
                 .insert({
-                    participant1_id: user.id,
-                    participant2_id: listing.owner_id,
+                    participant_1_id: user.id,
+                    participant_2_id: listing.owner_id,
                     listing_id: listing.id
                 })
                 .select()
@@ -110,12 +115,28 @@ export default function ListingDetailScreen() {
                 throw convError;
             }
 
+            // Get the conversation if it already exists
+            let activeConversationId = conversation?.id;
+            if (!activeConversationId) {
+                const { data: existingConv } = await supabase
+                    .from('conversations')
+                    .select('id')
+                    .eq('participant_1_id', user.id)
+                    .eq('participant_2_id', listing.owner_id)
+                    .eq('listing_id', listing.id)
+                    .single();
+                activeConversationId = existingConv?.id;
+            }
+
+            if (!activeConversationId) throw new Error('Could not find or create conversation');
+
             // Send message
             const { error: msgError } = await supabase
                 .from('messages')
                 .insert({
-                    conversation_id: conversation?.id,
+                    conversation_id: activeConversationId,
                     sender_id: user.id,
+                    receiver_id: listing.owner_id,
                     content: chatMessage
                 });
 
