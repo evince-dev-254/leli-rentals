@@ -15,21 +15,61 @@ export default function PrivacyScreen() {
                 </View>
 
                 <ScrollView className="flex-1" contentContainerStyle={{ padding: 32 }} showsVerticalScrollIndicator={false}>
-                    <Text className="text-sm text-slate-400 font-bold mb-8 italic">Last Updated: January 16, 2026</Text>
+                    <Text className="text-sm text-slate-400 font-bold mb-8 italic">Last Updated: January 2026</Text>
 
-                    <Text className="text-xl font-black text-slate-900 dark:text-white mb-4">1. Data Collection</Text>
+                    <Text className="text-xl font-black text-slate-900 dark:text-white mb-4">1. Introduction</Text>
                     <Text className="text-slate-500 dark:text-slate-400 font-bold leading-6 mb-8">
-                        We collect information you provide directly to us when you create an account, list an item, or make a booking. This includes your name, email, phone number, and ID for verification.
+                        Leli Rentals Limited (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;) is committed to protecting your privacy. This policy explains how we collect, use, and safeguard your information when you use our Platform.
                     </Text>
 
-                    <Text className="text-xl font-black text-slate-900 dark:text-white mb-4">2. How we use your data</Text>
-                    <Text className="text-slate-500 dark:text-slate-400 font-bold leading-6 mb-8">
-                        Your data is used to provide, maintain, and improve our services, including processing transactions and verifying account authenticity.
+                    <Text className="text-xl font-black text-slate-900 dark:text-white mb-4">2. Information We Collect</Text>
+                    <Text className="text-lg font-bold text-slate-800 dark:text-slate-200 mb-2">2.1 Information You Provide</Text>
+                    <Text className="text-slate-500 dark:text-slate-400 font-bold leading-6 mb-4">
+                        • Account Info: Name, email, phone, password.{'\n'}
+                        • Profile: Bio, photo, location.{'\n'}
+                        • Verification: IDs, permits.{'\n'}
+                        • Payment: Processed via Paystack.{'\n'}
+                        • Listing: Item details, photos.
                     </Text>
 
-                    <Text className="text-xl font-black text-slate-900 dark:text-white mb-4">3. Data Security</Text>
+                    <Text className="text-lg font-bold text-slate-800 dark:text-slate-200 mb-2">2.2 Automatically Collected</Text>
                     <Text className="text-slate-500 dark:text-slate-400 font-bold leading-6 mb-8">
-                        We take reasonable measures to protect your information from loss, theft, misuse, and unauthorized access. All payments are processed through secure, PCI-compliant providers.
+                        • Device Info: IP, OS, browser type.{'\n'}
+                        • Usage Data: Features used, time spent.{'\n'}
+                        • Location: Approximate location directly or via IP.
+                    </Text>
+
+                    <Text className="text-xl font-black text-slate-900 dark:text-white mb-4">3. How We Use Your Information</Text>
+                    <Text className="text-slate-500 dark:text-slate-400 font-bold leading-6 mb-8">
+                        • Provide Services: Manage accounts, process rentals.{'\n'}
+                        • Improve Platform: Analytics, new features.{'\n'}
+                        • Communication: Support, updates, marketing.{'\n'}
+                        • Safety: Verify identities, prevent fraud.
+                    </Text>
+
+                    <Text className="text-xl font-black text-slate-900 dark:text-white mb-4">4. Sharing Information</Text>
+                    <Text className="text-slate-500 dark:text-slate-400 font-bold leading-6 mb-8">
+                        We do not sell your personal data. We share it with:{'\n'}
+                        • Other Users: As needed for rentals.{'\n'}
+                        • Service Providers: Paystack (payments), Supabase (db), ImageKit (images), Resend (email), Google Analytics.
+                    </Text>
+
+                    <Text className="text-xl font-black text-slate-900 dark:text-white mb-4">5. Data Security</Text>
+                    <Text className="text-slate-500 dark:text-slate-400 font-bold leading-6 mb-8">
+                        We use SSL encryption and secure storage. However, no internet transmission is 100% secure.
+                    </Text>
+
+                    <Text className="text-xl font-black text-slate-900 dark:text-white mb-4">6. Your Rights</Text>
+                    <Text className="text-slate-500 dark:text-slate-400 font-bold leading-6 mb-8">
+                        You can access, update, or request deletion of your data. You can also opt-out of marketing emails.
+                    </Text>
+
+                    <Text className="text-xl font-black text-slate-900 dark:text-white mb-4">7. Contact Us</Text>
+                    <Text className="text-slate-500 dark:text-slate-400 font-bold leading-6 mb-8">
+                        Leli Rentals Limited - Data Protection Officer{'\n'}
+                        Email: lelirentalsmail@gmail.com{'\n'}
+                        Phone: +254 112 081 866{'\n'}
+                        Address: 123 Rental Street, Nairobi, Kenya
                     </Text>
 
                     <View className="h-40" />

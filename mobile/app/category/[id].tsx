@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Image, StyleSheet, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -14,6 +14,11 @@ import { cn } from '@/lib/utils';
 
 const { width } = Dimensions.get('window');
 
+function isUuid(str: string) {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(str);
+}
+
 export default function CategoryDetailScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
     const router = useRouter();
@@ -25,12 +30,63 @@ export default function CategoryDetailScreen() {
     const [selectedSubcategory, setSelectedSubcategory] = React.useState<string | undefined>();
     const debouncedSearch = useDebounce(searchQuery, 500);
 
-    // Data Hooks
-    const { data: categories } = useCategories();
-    const { data: subcategories, isLoading: subsLoading } = useSubcategories(id);
-    const { data: listings, isLoading: listingsLoading } = useListings(id, debouncedSearch, selectedSubcategory);
+    // 1. Fetch ALL categories fast
+    const { data: categories, isLoading: catsLoading } = useCategories();
 
-    const currentCategory = categories?.find((c: any) => c.id === id);
+    // 2. Resolve the "real" UUID from the param (which could be 'vehicles' or a UUID)
+    const currentCategory = useMemo(() => {
+        if (!categories || !id) return null;
+
+        // Try direct UUID match
+        const directMatch = categories.find((c: any) => c.id === id);
+        if (directMatch) return directMatch;
+
+        // Try Slug/Name match (e.g. 'living-spaces', 'vehicles')
+        const normalizedId = id.toLowerCase().trim();
+        return categories.find((c: any) => {
+            const name = c.name.toLowerCase();
+            const slug = c.slug?.toLowerCase(); // if slug exists
+            // Check exact name, or slug, or basic kebab-case match
+            return (
+                name === normalizedId ||
+                slug === normalizedId ||
+                name.replace(/\s+/g, '-').replace('&', 'and') === normalizedId ||
+                name.replace(/\s+/g, '-').replace('&', '').replace('--', '-') === normalizedId || // Handle "Equipment & Tools" -> "equipment-tools" vs "equipment-and-tools"
+                name.split(' ')[0] === normalizedId // Handle "Living Spaces" -> "living"
+            );
+        });
+    }, [categories, id]);
+
+    // If we resolved a category, use its ID. Otherwise, if the original param was a UUID, use that.
+    const resolvedId = currentCategory?.id || (id && isUuid(id) ? id : undefined);
+
+    // 3. Fetch subcategories and listings using the RESOLVED ID
+    const { data: subcategories, isLoading: subsLoading } = useSubcategories(resolvedId);
+    const { data: listings, isLoading: listingsLoading } = useListings(resolvedId, debouncedSearch, selectedSubcategory);
+
+    // Loading state while resolving category
+    if (catsLoading && !currentCategory) {
+        return (
+            <View className="flex-1 bg-white dark:bg-slate-950 items-center justify-center">
+                <BackgroundGradient />
+                <ActivityIndicator size="large" color="#f97316" />
+                <Text className="text-slate-500 mt-4 font-bold">Finding Category...</Text>
+            </View>
+        );
+    }
+
+    if (!resolvedId && !catsLoading) {
+        return (
+            <View className="flex-1 bg-white dark:bg-slate-950 items-center justify-center p-8">
+                <BackgroundGradient />
+                <Text className="text-xl font-black text-slate-900 dark:text-white mb-2">Category Not Found</Text>
+                <Text className="text-slate-500 text-center mb-6">We couldn't find the category "{id}".</Text>
+                <TouchableOpacity onPress={() => router.back()} className="bg-slate-900 dark:bg-white px-6 py-3 rounded-full">
+                    <Text className="text-white dark:text-slate-900 font-bold">Go Back</Text>
+                </TouchableOpacity>
+            </View>
+        );
+    }
 
     return (
         <View className="flex-1 bg-white dark:bg-slate-950">
@@ -107,27 +163,36 @@ export default function CategoryDetailScreen() {
                             {subsLoading ? (
                                 <ActivityIndicator size="small" color="#f97316" />
                             ) : (
-                                subcategories?.map((sub: any) => (
-                                    <TouchableOpacity
-                                        key={sub.id}
-                                        onPress={() => setSelectedSubcategory(sub.id === selectedSubcategory ? undefined : sub.id)}
-                                        className={cn(
-                                            "px-5 py-2.5 rounded-full border mb-4",
-                                            selectedSubcategory === sub.id
-                                                ? "bg-slate-900 dark:bg-white border-slate-900 dark:border-white"
-                                                : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800"
-                                        )}
-                                    >
-                                        <Text className={cn(
-                                            "font-bold text-xs uppercase tracking-wider",
-                                            selectedSubcategory === sub.id
-                                                ? "text-white dark:text-slate-900"
-                                                : "text-slate-600 dark:text-slate-400"
-                                        )}>
-                                            {sub.name}
-                                        </Text>
-                                    </TouchableOpacity>
-                                ))
+                                subcategories?.map((sub: any) => {
+                                    const Icon = sub.icon ? getIcon(sub.icon) : null;
+                                    return (
+                                        <TouchableOpacity
+                                            key={sub.id}
+                                            onPress={() => setSelectedSubcategory(sub.id === selectedSubcategory ? undefined : sub.id)}
+                                            className={cn(
+                                                "px-5 py-2.5 rounded-full border mb-4 flex-row items-center gap-2",
+                                                selectedSubcategory === sub.id
+                                                    ? "bg-slate-900 dark:bg-white border-slate-900 dark:border-white"
+                                                    : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800"
+                                            )}
+                                        >
+                                            {Icon && (
+                                                <Icon
+                                                    size={14}
+                                                    color={selectedSubcategory === sub.id ? (isDark ? "#0f172a" : "white") : "#64748b"}
+                                                />
+                                            )}
+                                            <Text className={cn(
+                                                "font-bold text-xs uppercase tracking-wider",
+                                                selectedSubcategory === sub.id
+                                                    ? "text-white dark:text-slate-900"
+                                                    : "text-slate-600 dark:text-slate-400"
+                                            )}>
+                                                {sub.name}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    );
+                                })
                             )}
                         </ScrollView>
                     </View>
@@ -200,8 +265,9 @@ export default function CategoryDetailScreen() {
                             </View>
                         )}
                     </View>
-                </ScrollView>
-            </SafeAreaView>
-        </View>
+                </ScrollView >
+            </SafeAreaView >
+        </View >
     );
 }
+

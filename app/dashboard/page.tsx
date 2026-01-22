@@ -56,7 +56,7 @@ export default function DashboardPage() {
           router.push('/dashboard/owner')
         } else if (profileData.role === 'affiliate') {
           router.push('/dashboard/affiliate')
-        } else if (profileData.role === 'staff') {
+        } else if (profileData.role === 'staff' || profileData.is_staff) {
           router.push('/staff')
         }
 

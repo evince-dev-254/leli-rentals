@@ -15,26 +15,45 @@ export default function TermsScreen() {
                 </View>
 
                 <ScrollView className="flex-1" contentContainerStyle={{ padding: 32 }} showsVerticalScrollIndicator={false}>
-                    <Text className="text-sm text-slate-400 font-bold mb-8 italic">Last Updated: January 16, 2026</Text>
+                    <Text className="text-sm text-slate-400 font-bold mb-8 italic">Last Updated: January 2026</Text>
 
                     <Text className="text-xl font-black text-slate-900 dark:text-white mb-4">1. Acceptance of Terms</Text>
                     <Text className="text-slate-500 dark:text-slate-400 font-bold leading-6 mb-8">
-                        By accessing or using the Leli Rentals marketplace, you agree to be bound by these Terms of Service. If you do not agree to all of these terms, do not use our services.
+                        By accessing and using Leli Rentals (&quot;the Platform&quot;), you accept and agree to be bound by these Terms of Service. If you do not agree to these Terms, please do not use our Platform.
                     </Text>
 
-                    <Text className="text-xl font-black text-slate-900 dark:text-white mb-4">2. User Verification</Text>
+                    <Text className="text-xl font-black text-slate-900 dark:text-white mb-4">2. User Accounts</Text>
                     <Text className="text-slate-500 dark:text-slate-400 font-bold leading-6 mb-8">
-                        To ensure community safety, all owners and affiliates must complete our verification process within 5 days of registration. Failure to do so will result in temporary account suspension.
+                        To use certain features, you must register for an account. You agree to provide accurate information and maintain the security of your password. We may require identity verification for Owners and Affiliates.
                     </Text>
 
-                    <Text className="text-xl font-black text-slate-900 dark:text-white mb-4">3. Rental Agreements</Text>
+                    <Text className="text-xl font-black text-slate-900 dark:text-white mb-4">3. Listings and Rentals</Text>
+                    <Text className="text-slate-500 dark:text-slate-400 font-bold leading-6 mb-4">
+                        Owner Responsibilities: Provide accurate descriptions, fair prices, and maintain items in good condition.
+                    </Text>
                     <Text className="text-slate-500 dark:text-slate-400 font-bold leading-6 mb-8">
-                        Leli Rentals provides the platform to connect users but is not a party to the rental agreements entered into between renters and listers. Users are responsible for inspecting items and ensuring their suitability.
+                        Renter Responsibilities: Use items responsibly, return them in the same condition, and pay all fees on time.
                     </Text>
 
-                    <Text className="text-xl font-black text-slate-900 dark:text-white mb-4">4. Fees & Payments</Text>
+                    <Text className="text-xl font-black text-slate-900 dark:text-white mb-4">4. Payments and Fees</Text>
+                    <Text className="text-slate-500 dark:text-slate-400 font-bold leading-6 mb-4">
+                        We charge service fees (5% for Renters, 10% for Owners) on transactions. All payments are processed securely through Paystack.
+                    </Text>
                     <Text className="text-slate-500 dark:text-slate-400 font-bold leading-6 mb-8">
-                        We use Paystack to process payments. Service fees apply to each transaction. Owners receive payouts 24 hours after a successful rental completion.
+                        Cancellations made 48+ hours before rental receive a refund minus fees. Less than 24 hours receive no refund.
+                    </Text>
+
+                    <Text className="text-xl font-black text-slate-900 dark:text-white mb-4">5. Liability</Text>
+                    <Text className="text-slate-500 dark:text-slate-400 font-bold leading-6 mb-8">
+                        Leli Rentals is a marketplace. We do not own the items listed and are not liable for disputes, damage, or quality issues. Owners are encouraged to maintain insurance.
+                    </Text>
+
+                    <Text className="text-xl font-black text-slate-900 dark:text-white mb-4">6. Contact Us</Text>
+                    <Text className="text-slate-500 dark:text-slate-400 font-bold leading-6 mb-8">
+                        Leli Rentals Limited{'\n'}
+                        Email: lelirentalsmail@gmail.com{'\n'}
+                        Phone: +254 112 081 866{'\n'}
+                        Address: 123 Rental Street, Nairobi, Kenya
                     </Text>
 
                     <View className="h-40" />

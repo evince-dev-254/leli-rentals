@@ -101,6 +101,9 @@ export default function ProfileScreen() {
         { icon: HelpCircle, label: 'Help Hub', color: '#64748b', href: '/support/faq' },
     ];
 
+    const isStaff = user?.user_metadata?.is_staff === true || user?.user_metadata?.role === 'staff' || user?.user_metadata?.role === 'admin';
+
+
     const legalItems = [
         { label: 'Terms of Service', href: '/legal/terms' },
         { label: 'Privacy Policy', href: '/legal/privacy' },
@@ -128,7 +131,7 @@ export default function ProfileScreen() {
                     >
                         <View className="h-24 w-24 rounded-[32px] bg-orange-100 items-center justify-center border-4 border-white dark:border-slate-800 shadow-sm overflow-hidden mb-4">
                             {user?.user_metadata?.avatar_url ? (
-                                <Image source={{ uri: user.user_metadata.avatar_url }} className="h-full w-full" />
+                                <Image source={{ uri: user.user_metadata.avatar_url }} className="h-full w-full" alt="User Avatar" />
                             ) : (
                                 <User size={40} color="#f97316" strokeWidth={1.5} />
                             )}
@@ -156,12 +159,12 @@ export default function ProfileScreen() {
                                                             '#f59e0b'} />
                                 </View>
                                 <Text className="text-sm font-black text-slate-900 dark:text-white">{stat.value}</Text>
-                                <Text className="text-[8px] font-black text-slate-400 uppercase tracking-widest">{stat.label}</Text>
+                                <Text className="text-[8px] font-black text-slate-400 dark:text-slate-300 uppercase tracking-widest">{stat.label}</Text>
                             </View>
                         ))}
                     </View>
 
-                    <Text className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-2 mb-3">Account</Text>
+                    <Text className="text-[10px] font-black text-slate-400 dark:text-slate-300 uppercase tracking-[0.2em] px-2 mb-3">Account</Text>
                     <View className="bg-white/80 dark:bg-slate-900/80 rounded-[32px] border-2 border-slate-50 dark:border-slate-800 overflow-hidden mb-8 shadow-sm">
                         {accountItems.map((item, idx) => (
                             <TouchableOpacity
@@ -178,7 +181,7 @@ export default function ProfileScreen() {
                         ))}
                     </View>
 
-                    <Text className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-2 mb-3">Others</Text>
+                    <Text className="text-[10px] font-black text-slate-400 dark:text-slate-300 uppercase tracking-[0.2em] px-2 mb-3">Others</Text>
                     <View className="bg-white/80 dark:bg-slate-900/80 rounded-[32px] border-2 border-slate-50 dark:border-slate-800 overflow-hidden mb-6 shadow-sm">
                         {otherItems.map((item, idx) => (
                             <TouchableOpacity
@@ -194,6 +197,28 @@ export default function ProfileScreen() {
                             </TouchableOpacity>
                         ))}
                     </View>
+
+                    {isStaff && (
+                        <>
+                            <Text className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-2 mb-3">Admin</Text>
+                            <View className="bg-blue-50/50 dark:bg-blue-900/10 rounded-[32px] border-2 border-blue-100 dark:border-blue-900/30 overflow-hidden mb-6 shadow-sm">
+                                <TouchableOpacity
+                                    onPress={() => router.push('/staff')}
+                                    className="flex-row items-center p-5"
+                                >
+                                    <View className="h-10 w-10 rounded-2xl bg-blue-500 items-center justify-center mr-4 shadow-sm">
+                                        <Shield size={20} color="white" />
+                                    </View>
+                                    <View className="flex-1">
+                                        <Text className="text-base font-black text-blue-900 dark:text-blue-100">Staff Portal</Text>
+                                        <Text className="text-[10px] font-bold text-blue-500 uppercase tracking-widest">Management & Reviews</Text>
+                                    </View>
+                                    <ChevronRight size={18} color="#3b82f6" />
+                                </TouchableOpacity>
+                            </View>
+                        </>
+                    )}
+
 
                     <View className="flex-row justify-center gap-6 mb-10">
                         {legalItems.map((item, idx) => (

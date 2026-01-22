@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Stack, useRouter } from 'expo-router';
+import { Stack, useRouter, Redirect } from 'expo-router';
+import { useAuth } from '../../context/auth-context';
 import {
     ShieldCheck,
     Activity,
@@ -10,12 +11,30 @@ import {
     Bell,
     Settings,
     ArrowRight,
-    ChevronRight
+    ChevronRight,
+    Smartphone
 } from 'lucide-react-native';
 import { AppLoader } from '../../components/ui/app-loader';
 
 export default function StaffDashboard() {
+    const { user, loading } = useAuth();
     const router = useRouter();
+
+    // Protection logic
+    React.useEffect(() => {
+        if (!loading && user) {
+            const isStaff = user.user_metadata?.is_staff === true || user.user_metadata?.role === 'staff' || user.user_metadata?.role === 'admin';
+            if (!isStaff) {
+                console.warn('[StaffAccess] Unauthorized access attempt by:', user.email);
+                router.replace('/(tabs)');
+            }
+        } else if (!loading && !user) {
+            router.replace('/auth/login');
+        }
+    }, [user, loading, router]);
+
+    if (loading) return <AppLoader fullscreen />;
+
 
     const menuItems = [
         {
@@ -26,11 +45,11 @@ export default function StaffDashboard() {
             route: '/staff/verifications',
         },
         {
-            title: 'Platform Pulse',
-            desc: 'Real-time system health',
-            icon: Activity,
+            title: 'Mobile Operations',
+            desc: 'Mission control & push',
+            icon: Smartphone,
             color: 'bg-emerald-500',
-            route: '/staff/health',
+            route: '/staff/ops',
         },
         {
             title: 'Brand Registry',

@@ -119,6 +119,9 @@ export default function SignupScreen() {
         setLoading(false);
     };
 
+
+
+
     const handleGoogleLogin = async () => {
         setLoading(true);
         try {
@@ -241,6 +244,8 @@ export default function SignupScreen() {
                             className="bg-white border-2 border-slate-100 h-16 mb-8"
                             textClassName="text-slate-900 normal-case"
                         />
+
+
 
                         <TouchableOpacity
                             onPress={() => router.push('/auth/login')}

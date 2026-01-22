@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Text, ScrollView, TextInput, TouchableOpacity, Dimensions, ActivityIndicator, Image, ImageSourcePropType, RefreshControl, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Search, MapPin, Bell, SlidersHorizontal, X, Star, Globe, Menu, Shield, Car, Home, HardHat, Smartphone, Shirt, Music, Building2, Zap, Clock, Mail, ChevronRight } from 'lucide-react-native';
+import { Search, MapPin, Bell, SlidersHorizontal, X, Star, Globe, Menu, Shield, Car, Home, HardHat, Smartphone, Shirt, Music, Building2, Zap, Clock, Mail, ChevronRight, Facebook, Twitter, Instagram, Linkedin, Github } from 'lucide-react-native';
+import { Linking } from 'react-native';
 import { cn } from '@/lib/utils';
 import { BlurView } from 'expo-blur';
 import { MotiView, AnimatePresence } from 'moti';
@@ -12,6 +13,7 @@ import { BackgroundGradient } from '@/components/ui/background-gradient';
 import { useDebounce } from '@/lib/hooks/useDebounce';
 import { getIcon } from '@/lib/icon-mapping';
 import { HamburgerMenu } from '@/components/ui/hamburger-menu';
+import { useAuth } from '../../context/auth-context';
 
 const { width } = Dimensions.get('window');
 
@@ -34,6 +36,9 @@ export default function ExploreScreen() {
   const [selectedSubcategory, setSelectedSubcategory] = React.useState<string | undefined>();
   const [refreshing, setRefreshing] = React.useState(false);
   const [menuVisible, setMenuVisible] = React.useState(false);
+
+  const { user } = useAuth();
+  const activeRole = user?.user_metadata?.role || 'renter';
 
   // Update category when param changes
   React.useEffect(() => {
@@ -67,7 +72,7 @@ export default function ExploreScreen() {
   return (
     <View className="flex-1 bg-white dark:bg-slate-950">
       <BackgroundGradient />
-      <HamburgerMenu visible={menuVisible} onClose={() => setMenuVisible(false)} />
+      <HamburgerMenu visible={menuVisible} onClose={() => setMenuVisible(false)} activeRole={activeRole} />
       <SafeAreaView className="flex-1" edges={['top']}>
         <ScrollView
           ref={scrollViewRef}
@@ -355,10 +360,12 @@ export default function ExploreScreen() {
                 <Text className="text-slate-900 dark:text-white font-black text-sm uppercase tracking-widest mb-4">Platform</Text>
                 {[
                   { label: 'Home', action: () => scrollViewRef.current?.scrollTo({ y: 0, animated: true }) },
-                  { label: 'About Us', action: () => router.push('/support/about') },
-                  { label: 'Pricing', action: () => router.push('/support/about') },
-                  { label: 'Contact', action: () => router.push('/support/contact') },
-                  { label: 'Privacy Policy', action: () => router.push('/legal/privacy') },
+                  { label: 'Become an Owner', action: () => router.push('/dashboard/verification' as any) },
+                  { label: 'Affiliate Program', action: () => router.push('/affiliate' as any) },
+                  { label: 'About Us', action: () => router.push('/support/about' as any) },
+                  { label: 'Pricing', action: () => router.push('/support/pricing' as any) },
+                  { label: 'Contact', action: () => router.push('/support/contact' as any) },
+                  { label: 'Privacy Policy', action: () => router.push('/legal/privacy' as any) },
                 ].map(link => (
                   <TouchableOpacity key={link.label} onPress={link.action} className="mb-3">
                     <Text className="text-slate-500 dark:text-slate-400 font-bold text-xs">{link.label}</Text>
@@ -366,26 +373,35 @@ export default function ExploreScreen() {
                 ))}
               </View>
               <View className="w-[40%]">
-                <Text className="text-slate-900 dark:text-white font-black text-sm uppercase tracking-widest mb-4">Categories</Text>
+                <Text className="text-slate-900 dark:text-white font-black text-sm uppercase tracking-widest mb-4">Support</Text>
                 {[
-                  { name: "Vehicles", id: "vehicles" },
-                  { name: "Living Spaces", id: "living" },
-                  { name: "Equipment & Tools", id: "equipment" },
-                  { name: "Electronics", id: "electronics" },
-                  { name: "Fashion", id: "fashion" },
-                  { name: "Entertainment", id: "entertainment" },
-                  { name: "Utility Spaces", id: "utility" },
-                  { name: "Business", id: "business-spaces" },
-                  { name: "Photography", id: "photography" },
-                  { name: "Fitness", id: "fitness" },
-                  { name: "Baby & Kids", id: "baby" },
-                  { name: "Office", id: "office" },
-                  { name: "Bikes", id: "bikes" },
+                  { label: 'Help Center', action: () => router.push('/support/faq') },
+                  { label: 'Trust & Safety', action: () => router.push('/support/about') },
+                  { label: 'Terms of Service', action: () => router.push('/legal/terms') },
+                  { label: 'Insurance Info', action: () => router.push('/support/about') },
                 ].map((link) => (
-                  <TouchableOpacity key={link.id} onPress={() => router.push(`/category/${link.id}`)} className="mb-3">
-                    <Text className="text-slate-500 dark:text-slate-400 font-bold text-xs">{link.name}</Text>
+                  <TouchableOpacity key={link.label} onPress={link.action} className="mb-3">
+                    <Text className="text-slate-500 dark:text-slate-400 font-bold text-xs">{link.label}</Text>
                   </TouchableOpacity>
                 ))}
+
+                <Text className="text-slate-900 dark:text-white font-black text-sm uppercase tracking-widest mt-8 mb-4">Social</Text>
+                <View className="flex-row gap-4">
+                  {[
+                    { icon: Facebook, url: 'https://facebook.com/lelirentals' },
+                    { icon: Twitter, url: 'https://twitter.com/lelirentals' },
+                    { icon: Instagram, url: 'https://instagram.com/lelirentals' },
+                    { icon: Linkedin, url: 'https://linkedin.com/company/leli-rentals' },
+                  ].map((platform, i) => (
+                    <TouchableOpacity
+                      key={i}
+                      onPress={() => Linking.openURL(platform.url)}
+                      className="h-8 w-8 bg-slate-100 dark:bg-slate-800 rounded-lg items-center justify-center border border-slate-200 dark:border-slate-700"
+                    >
+                      <platform.icon size={16} color={isDark ? "#94a3b8" : "#475569"} />
+                    </TouchableOpacity>
+                  ))}
+                </View>
               </View>
             </View>
 

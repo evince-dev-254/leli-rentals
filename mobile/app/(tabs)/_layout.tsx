@@ -3,7 +3,8 @@ import { Tabs } from 'expo-router';
 import { BlurView } from 'expo-blur';
 import { Platform, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Home, LayoutDashboard, Grid, User } from 'lucide-react-native';
+import { Home, LayoutDashboard, Grid, User, Bell } from 'lucide-react-native';
+import { ThemeSwitcher } from '@/components/ui/theme-switcher';
 
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
@@ -60,6 +61,11 @@ export default function TabLayout() {
         name="dashboard"
         options={{
           title: 'Dashboard',
+          headerShown: true,
+          headerTitle: 'My Dashboard',
+          headerTitleStyle: { fontWeight: '900', fontSize: 24 },
+          headerRight: () => <ThemeSwitcher />,
+          headerStyle: { backgroundColor: isDark ? '#0f172a' : '#ffffff' },
           tabBarIcon: ({ color, focused }) => <LayoutDashboard color={color} size={24} strokeWidth={focused ? 3 : 2} />,
         }}
       />
@@ -74,6 +80,9 @@ export default function TabLayout() {
         name="profile"
         options={{
           title: 'Profile',
+          headerShown: true,
+          headerRight: () => <ThemeSwitcher />,
+          headerStyle: { backgroundColor: isDark ? '#0f172a' : '#ffffff' },
           tabBarIcon: ({ color, focused }) => <User color={color} size={24} strokeWidth={focused ? 3 : 2} />,
         }}
       />

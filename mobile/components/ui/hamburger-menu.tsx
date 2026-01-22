@@ -5,7 +5,7 @@ import {
     X, Heart, MessageCircle, Bell, Shield,
     RefreshCw, HelpCircle, Mail, FileText,
     Lock, ChevronRight, Settings, Info, Sparkles, LogOut,
-    Receipt, Star, Crown
+    Receipt, Star, Crown, DollarSign, Users, HelpCircle as HelpHub
 } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MotiView, AnimatePresence } from 'moti';
@@ -42,26 +42,29 @@ export function HamburgerMenu({ visible, onClose, activeRole }: HamburgerMenuPro
                 { icon: MessageCircle, label: 'Messages', color: '#10b981', href: '/messages', roles: ['renter', 'owner', 'affiliate'] },
                 { icon: Bell, label: 'Notifications', color: '#f59e0b', href: '/notifications', roles: ['renter', 'owner', 'affiliate'] },
                 { icon: Sparkles, label: 'AI Assistant', color: '#8b5cf6', href: '/support/ai-assistant', roles: ['renter', 'owner', 'affiliate'] },
+                { icon: Users, label: 'Affiliate Program', color: '#a855f7', href: '/affiliate', roles: ['renter', 'owner'] },
+                { icon: Crown, label: 'Become an Owner', color: '#f97316', href: '/dashboard/verification', roles: ['renter'] },
                 { icon: Settings, label: 'Asset Manager', color: '#3b82f6', href: '/listings/manage', roles: ['owner'] },
-                { icon: Info, label: 'Partner Portal', color: '#a855f7', href: '/affiliate', roles: ['affiliate'] },
                 { icon: Receipt, label: 'Payments', color: '#3b82f6', href: '/payments', roles: ['renter'] },
                 { icon: Star, label: 'My Reviews', color: '#f59e0b', href: '/reviews', roles: ['renter', 'owner'] },
                 { icon: Crown, label: 'Subscription', color: '#8b5cf6', href: '/subscription', roles: ['owner'] },
+                { icon: Info, label: 'Partner Portal', color: '#a855f7', href: '/affiliate', roles: ['affiliate'] },
             ].filter(item => item.roles.includes(activeRole))
         },
         {
             title: "Support & Security",
             items: [
-                { icon: Shield, label: 'Security', color: '#3b82f6', href: '/profile/security' },
-                { icon: HelpCircle, label: 'Help Hub', color: '#6366f1', href: '/support/faq' },
-                { icon: Mail, label: 'Contact Support', color: '#f97316', href: '/support/contact' },
+                { icon: HelpHub, label: 'Help Center', color: '#6366f1', href: '/support/faq' },
+                { icon: DollarSign, label: 'Pricing Plans', color: '#10b981', href: '/support/pricing' },
+                { icon: Shield, label: 'Security Portal', color: '#3b82f6', href: '/profile/security' },
+                { icon: Mail, label: 'Contact Us', color: '#f97316', href: '/support/contact' },
             ]
         },
         {
-            title: "App Settings",
+            title: "Resource Hub",
             items: [
-                { icon: RefreshCw, label: 'Software Updates', color: '#f97316', href: '/settings/updates' },
-                { icon: Info, label: 'About Leli', color: '#94a3b8', href: '/support/about' },
+                { icon: Info, label: 'About Leli Rentals', color: '#94a3b8', href: '/support/about' },
+                { icon: RefreshCw, label: 'Check Updates', color: '#64748b', href: '/settings/updates' },
             ]
         },
         {

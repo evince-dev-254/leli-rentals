@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { motion } from "framer-motion"
-import { Search, Filter, MapPin, Star, Heart, Grid3X3, List, SlidersHorizontal, Loader2, Map as MapIcon } from "lucide-react"
+import { Search, Filter, MapPin, Star, Heart, Grid3X3, List, SlidersHorizontal, Loader2, Map as MapIcon, Check } from "lucide-react"
 import { staggerContainer, fadeInUp, hoverScale } from "@/lib/animations"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -184,7 +184,8 @@ export function CategoryDetailContent({ categoryId }: CategoryDetailContentProps
             >
               {(subcategories.length > 0 ? subcategories : category.subcategories).map((sub) => {
                 const subName = sub.name;
-                const subImage = sub.image_url || sub.image || "/placeholder.svg";
+                // Try multiple possible image fields from different sources (DB vs hardcoded)
+                const subImage = sub.image_url || sub.image || sub.imageUrl;
                 const isSelected = selectedSubcategories.includes(subName);
 
                 return (
@@ -200,28 +201,38 @@ export function CategoryDetailContent({ categoryId }: CategoryDetailContentProps
                         setSelectedSubcategories([...selectedSubcategories, subName])
                       }
                     }}
-                    className={`group relative rounded-xl overflow-hidden aspect-square transition-all ${isSelected
+                    className={`group relative rounded-xl overflow-hidden aspect-square shadow-sm transition-all ${isSelected
                       ? "ring-2 ring-primary ring-offset-2"
-                      : "hover:ring-2 hover:ring-primary/50"
+                      : "hover:ring-2 hover:ring-primary/50 border border-white/10"
                       }`}
                   >
-                    <Image
-                      src={subImage}
-                      alt={subName}
-                      fill
-                      className="object-cover group-hover:scale-110 transition-transform duration-300"
-                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 15vw"
-                      priority
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                    <span className="absolute bottom-2 left-2 right-2 text-white text-xs sm:text-sm font-medium truncate">
-                      {subName}
-                    </span>
+                    {subImage ? (
+                      <Image
+                        src={subImage}
+                        alt={subName}
+                        fill
+                        className="object-cover group-hover:scale-110 transition-transform duration-500"
+                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 15vw"
+                        priority
+                      />
+                    ) : (
+                      <div className="absolute inset-0 bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center">
+                        <category.icon className="h-8 w-8 text-slate-400 opacity-20" />
+                      </div>
+                    )}
+
+                    {/* Modern Overlay with better readability */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
+
+                    <div className="absolute inset-x-0 bottom-0 p-3">
+                      <span className="text-white text-xs sm:text-sm font-bold leading-tight line-clamp-2">
+                        {subName}
+                      </span>
+                    </div>
+
                     {isSelected && (
-                      <div className="absolute top-2 right-2 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
-                        <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                        </svg>
+                      <div className="absolute top-2 right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center shadow-lg border border-white/20">
+                        <Check className="w-3.5 h-3.5 text-white" />
                       </div>
                     )}
                   </motion.button>

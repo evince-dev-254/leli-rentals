@@ -1,61 +1,55 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import { ChevronLeft } from 'lucide-react-native';
-import { MotiView } from 'moti';
+import { BackgroundGradient } from '@/components/ui/background-gradient';
+import { BackButton } from '@/components/ui/back-button';
 
-export default function CookiesPolicyScreen() {
-    const router = useRouter();
-
+export default function CookiesScreen() {
     return (
         <View className="flex-1 bg-white dark:bg-slate-950">
-            <SafeAreaView className="flex-1" edges={['top']}>
-                <View className="px-6 py-4 flex-row items-center border-b border-slate-100 dark:border-slate-800">
-                    <TouchableOpacity
-                        onPress={() => router.back()}
-                        className="bg-slate-50 dark:bg-slate-800 p-2 rounded-xl mr-4"
-                    >
-                        <ChevronLeft size={24} color="#64748b" />
-                    </TouchableOpacity>
-                    <Text className="text-xl font-black text-slate-900 dark:text-white">Cookie Policy</Text>
+            <BackgroundGradient />
+            <SafeAreaView className="flex-1">
+                <View className="px-8 py-4 flex-row items-center border-b border-slate-100 dark:border-slate-800 bg-white/50 backdrop-blur-md">
+                    <BackButton />
+                    <Text className="ml-4 text-xl font-black text-slate-900 dark:text-white">Cookie Policy</Text>
                 </View>
 
-                <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 24, paddingBottom: 100 }}>
-                    <MotiView from={{ opacity: 0, translateY: 10 }} animate={{ opacity: 1, translateY: 0 }} transition={{ delay: 100 }}>
-                        <Text className="text-slate-500 font-bold mb-8 leading-6">
-                            Effective Date: January 1, 2026
-                        </Text>
+                <ScrollView className="flex-1" contentContainerStyle={{ padding: 32 }} showsVerticalScrollIndicator={false}>
+                    <Text className="text-sm text-slate-400 font-bold mb-8 italic">Last Updated: January 2026</Text>
 
-                        <Text className="text-lg font-black text-slate-900 dark:text-white mb-4">1. What Are Cookies?</Text>
-                        <Text className="text-slate-600 dark:text-slate-400 font-medium leading-6 mb-6">
-                            Cookies are small text files that are stored on your device when you visit our website or use our app. They help us provide you with a better experience, analyze how you use our services, and deliver personalized content.
-                        </Text>
+                    <Text className="text-xl font-black text-slate-900 dark:text-white mb-4">1. What Are Cookies?</Text>
+                    <Text className="text-slate-500 dark:text-slate-400 font-bold leading-6 mb-8">
+                        Cookies are small data files placed on your device when you visit a website/app. They help our platform work efficiently and provide reporting information.
+                    </Text>
 
-                        <Text className="text-lg font-black text-slate-900 dark:text-white mb-4">2. How We Use Cookies</Text>
-                        <Text className="text-slate-600 dark:text-slate-400 font-medium leading-6 mb-6">
-                            We use cookies for the following purposes:
-                            {'\n\n'}• <Text className="font-bold">Essential Cookies:</Text> These are necessary for the app to function correctly (e.g., keeping you logged in).
-                            {'\n'}• <Text className="font-bold">Performance Cookies:</Text> These help us understand how you use the app so we can improve it.
-                            {'\n'}• <Text className="font-bold">Functional Cookies:</Text> These allow the app to remember your choices (e.g., language preferences).
-                            {'\n'}• <Text className="font-bold">Marketing Cookies:</Text> These are used to deliver relevant ads and track ad performance.
-                        </Text>
+                    <Text className="text-xl font-black text-slate-900 dark:text-white mb-4">2. Why We Use Cookies</Text>
+                    <Text className="text-slate-500 dark:text-slate-400 font-bold leading-6 mb-8">
+                        We use cookies to: {'\n'}
+                        • Provide and maintain our service{'\n'}
+                        • Understand how you interact with our app{'\n'}
+                        • Improve your experience{'\n'}
+                        • Ensure security
+                    </Text>
 
-                        <Text className="text-lg font-black text-slate-900 dark:text-white mb-4">3. Managing Cookies</Text>
-                        <Text className="text-slate-600 dark:text-slate-400 font-medium leading-6 mb-6">
-                            You can control and manage cookies through your device settings. However, please note that disabling certain cookies may affect the functionality of the app.
-                        </Text>
+                    <Text className="text-xl font-black text-slate-900 dark:text-white mb-4">3. Types of Cookies</Text>
+                    <Text className="text-slate-500 dark:text-slate-400 font-bold leading-6 mb-8">
+                        • Essential: Required for basic functionality (login, security){'\n'}
+                        • Analytics: Help us measure performance (e.g., Google Analytics){'\n'}
+                        • Functional: Remember your preferences{'\n'}
+                        • Marketing: Deliver relevant ads
+                    </Text>
 
-                        <Text className="text-lg font-black text-slate-900 dark:text-white mb-4">4. Updates to This Policy</Text>
-                        <Text className="text-slate-600 dark:text-slate-400 font-medium leading-6 mb-6">
-                            We may update this Cookie Policy from time to time. We encourage you to review it periodically to stay informed about how we use cookies.
-                        </Text>
+                    <Text className="text-xl font-black text-slate-900 dark:text-white mb-4">4. Third-Party Services</Text>
+                    <Text className="text-slate-500 dark:text-slate-400 font-bold leading-6 mb-8">
+                        We use trusted third parties like Google Analytics, Cloudflare Turnstile, and Paystack, who may set their own cookies to provide their services.
+                    </Text>
 
-                        <Text className="text-lg font-black text-slate-900 dark:text-white mb-4">5. Contact Us</Text>
-                        <Text className="text-slate-600 dark:text-slate-400 font-medium leading-6 mb-6">
-                            If you have any questions about this Cookie Policy, please contact us at support@leli.rentals.
-                        </Text>
-                    </MotiView>
+                    <Text className="text-xl font-black text-slate-900 dark:text-white mb-4">5. Managing Cookies</Text>
+                    <Text className="text-slate-500 dark:text-slate-400 font-bold leading-6 mb-8">
+                        You can control cookies through your device or browser settings. Disabling cookies may limit some features of the platform.
+                    </Text>
+
+                    <View className="h-40" />
                 </ScrollView>
             </SafeAreaView>
         </View>

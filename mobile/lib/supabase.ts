@@ -40,7 +40,10 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 });
 
 GoogleSignin.configure({
-    webClientId: '64645396656-unomk59qis0qg2e9k2t8id69oic2m8cl.apps.googleusercontent.com', // Get this from Google Cloud Console
+    // IMPORTANT: This must be the WEB Client ID, not the Android Client ID.
+    // Go to Google Cloud Console -> Credentials -> Web application (create one if needed)
+    webClientId: '323268122303-kdeirpoi308p5p90jcau0n1pci5fvrm5.apps.googleusercontent.com',
+    offlineAccess: true,
 });
 
 export const performNativeGoogleSignIn = async () => {

@@ -122,6 +122,7 @@ export default function LoginScreen() {
     };
 
 
+
     const handleGoogleLogin = async () => {
         setLoading(true);
         try {
@@ -199,6 +200,8 @@ export default function LoginScreen() {
                             disabled={loading}
                             style={{ width: '100%', height: 60, marginBottom: 32 }}
                         />
+
+
 
                         <View>
                             <Input

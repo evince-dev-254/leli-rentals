@@ -1,12 +1,12 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { DarkTheme, DefaultTheme, ThemeProvider as NavThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack, useRouter, Redirect } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
 
-import { useColorScheme } from '@/components/useColorScheme';
+import { ThemeProvider, useTheme } from '@/components/theme-provider';
 import { AuthProvider, useAuth } from '../context/auth-context';
 import { AppLoader } from '@/components/ui/app-loader';
 import { UpdateBanner } from '@/components/ui/update-banner';
@@ -64,22 +64,24 @@ export default function RootLayout() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <RootLayoutNav />
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <RootLayoutNav />
+        </AuthProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }
 
 function RootLayoutNav() {
-  const colorScheme = useColorScheme();
+  const { theme } = useTheme();
   const { user, loading } = useAuth();
   const router = useRouter();
 
   if (loading) return <AppLoader fullscreen />;
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <NavThemeProvider value={theme === 'dark' ? DarkTheme : DefaultTheme}>
       <UpdateBanner />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="index" />
@@ -91,6 +93,6 @@ function RootLayoutNav() {
 
       {/* Robust Redirection: Handled inside the ThemeProvider (navigation context) but after Stack definition */}
       {user && !user.user_metadata?.role && <Redirect href="/auth/select-role" />}
-    </ThemeProvider>
+    </NavThemeProvider>
   );
 }
