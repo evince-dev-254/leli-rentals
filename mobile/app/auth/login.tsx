@@ -126,9 +126,6 @@ export default function LoginScreen() {
     const handleGoogleLogin = async () => {
         setLoading(true);
         try {
-            // Force sign out first to ensure no stale sessions interfere
-            await supabase.auth.signOut();
-
             console.info('[GoogleLogin] Starting native sign-in');
             const { data, error } = await performNativeGoogleSignIn();
 
@@ -136,7 +133,20 @@ export default function LoginScreen() {
 
             if (data?.user) {
                 console.info('[GoogleLogin] Native success!');
-                const role = data.user.user_metadata?.role;
+
+                // 1. Check metadata
+                let role = data.user.user_metadata?.role;
+
+                // 2. If metadata missing, check user_profiles table
+                if (!role) {
+                    const { data: profile } = await supabase
+                        .from('user_profiles')
+                        .select('role')
+                        .eq('id', data.user.id)
+                        .single();
+                    role = profile?.role;
+                }
+
                 if (!role) {
                     router.replace('/auth/select-role');
                 } else {
