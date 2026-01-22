@@ -1,13 +1,13 @@
-import React from 'react';
-import { Paystack } from 'react-native-paystack-webview';
-import { View } from 'react-native';
+import * as React from 'react';
+import { useEffect } from 'react';
+import { usePaystack } from 'react-native-paystack-webview';
+import { View, ActivityIndicator } from 'react-native';
 
 interface PaystackCheckoutProps {
     onSuccess: (response: any) => void;
     onCancel: () => void;
     amount: number;
     email: string;
-    paystackKey: string;
     billingName?: string;
 }
 
@@ -16,27 +16,43 @@ export const PaystackCheckout = ({
     onCancel,
     amount,
     email,
-    paystackKey,
     billingName
 }: PaystackCheckoutProps) => {
-    return (
-        <View style={{ flex: 1 }}>
-            <Paystack
-                paystackKey={paystackKey}
-                amount={amount}
-                billingEmail={email}
-                billingName={billingName}
-                currency="KES"
-                onCancel={(e) => {
-                    console.log('Payment Cancelled', e);
-                    onCancel();
-                }}
-                onSuccess={(res) => {
+    const { popup } = usePaystack();
+
+    useEffect(() => {
+        if (popup) {
+            popup.checkout({
+                email,
+                amount: amount / 100, // v5 expects amount in main currency (e.g. Naira/KES), not kobo/cents
+                metadata: billingName ? {
+                    custom_fields: [
+                        {
+                            display_name: "Billing Name",
+                            variable_name: "billing_name",
+                            value: billingName
+                        }
+                    ]
+                } : {},
+                onSuccess: (res) => {
                     console.log('Payment Successful', res);
                     onSuccess(res);
-                }}
-                autoStart={true}
-            />
+                },
+                onCancel: () => {
+                    console.log('Payment Cancelled');
+                    onCancel();
+                },
+                onError: (err: { message: string }) => {
+                    console.error('Paystack Error', err);
+                    onCancel();
+                }
+            });
+        }
+    }, [popup, email, amount, billingName, onSuccess, onCancel]);
+
+    return (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <ActivityIndicator size="large" color="#f97316" />
         </View>
     );
 };
