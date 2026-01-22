@@ -50,6 +50,7 @@ export default function SelectRolePage() {
     const [loading, setLoading] = useState(false)
     const [initializing, setInitializing] = useState(true)
     const [user, setUser] = useState<any>(null)
+    const [existingProfile, setExistingProfile] = useState<any>(null)
     const router = useRouter()
 
     useEffect(() => {
@@ -68,9 +69,13 @@ export default function SelectRolePage() {
             // Fetch profile to identify current role
             const { data: profile } = await supabase
                 .from('user_profiles')
-                .select('role')
+                .select('*')
                 .eq('id', user.id)
                 .single()
+
+            if (profile) {
+                setExistingProfile(profile)
+            }
 
             if (profile && profile.role) {
                 setCurrentRole(profile.role)
@@ -108,84 +113,61 @@ export default function SelectRolePage() {
                 }
             }
 
-            // Check if profile exists
-            const { data: existingProfile } = await supabase
+            // Consolidate profile creation/update with upsert
+            const profileData: any = {
+                id: user.id,
+                email: user.email,
+                role: selectedRole,
+                full_name: user.user_metadata?.full_name || user.user_metadata?.name || 'Unknown User',
+                avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
+                last_login_at: new Date().toISOString()
+            }
+
+            // Set owner_at if becoming owner for first time
+            if (selectedRole === 'owner' && (!existingProfile || !existingProfile.owner_at)) {
+                profileData.owner_at = new Date().toISOString()
+            }
+
+            // Reset suspension if switching away from owner
+            if (selectedRole !== 'owner' && existingProfile?.account_status === 'suspended') {
+                profileData.account_status = 'active'
+            }
+
+            const { error: upsertError } = await supabase
                 .from('user_profiles')
-                .select('*')
-                .eq('id', user.id)
-                .single()
+                .upsert(profileData, { onConflict: 'id' })
 
-            let error
+            if (upsertError) throw upsertError
 
-            if (!existingProfile) {
-                // Create new profile
-                const { error: insertError } = await supabase
-                    .from('user_profiles')
-                    .insert({
-                        id: user.id,
-                        email: user.email,
-                        role: selectedRole,
-                        full_name: user.user_metadata?.full_name || user.user_metadata?.name || 'Unknown User',
-                        avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
-                        last_login_at: new Date().toISOString()
-                    })
-                error = insertError
-            } else {
-                // Update existing
-                const updates: any = { role: selectedRole }
+            // Handle Affiliate record
+            if (selectedRole === 'affiliate') {
+                const { data: existingAffiliate } = await supabase
+                    .from('affiliates')
+                    .select('id')
+                    .eq('user_id', user.id)
+                    .single()
 
-                // If becomes owner for the first time or switching back to owner, 
-                // we should check if owner_at needs to be set.
-                // For simplicity, if role is owner, we set owner_at if it's missing.
-                if (selectedRole === 'owner' && !existingProfile.owner_at) {
-                    updates.owner_at = new Date().toISOString()
-                }
+                if (!existingAffiliate) {
+                    const uniqueSuffix = Math.random().toString(36).substring(2, 7);
+                    const inviteCode = `REF-${Date.now().toString().slice(-4)}${uniqueSuffix}`.toUpperCase();
 
-                // If switching away from owner and was suspended, potentially un-suspend
-                // assuming the suspension was just for verification.
-                if (selectedRole !== 'owner' && existingProfile.account_status === 'suspended') {
-                    updates.account_status = 'active'
-                }
-
-                const { error: updateError } = await supabase
-                    .from('user_profiles')
-                    .update(updates)
-                    .eq('id', user.id)
-                error = updateError
-
-                // If switching to affiliate, ensure affiliate record exists
-                if (!error && selectedRole === 'affiliate') {
-                    const { data: existingAffiliate } = await supabase
+                    const { error: affiliateError } = await supabase
                         .from('affiliates')
-                        .select('id')
-                        .eq('user_id', user.id)
-                        .single()
+                        .insert({
+                            user_id: user.id,
+                            email: user.email,
+                            invite_code: inviteCode,
+                            status: 'active',
+                            commission_rate: 10.00
+                        })
 
-                    if (!existingAffiliate) {
-                        // Generate a simple unique invite code logic (timestamp + random)
-                        const uniqueSuffix = Math.random().toString(36).substring(2, 7);
-                        const inviteCode = `REF-${Date.now().toString().slice(-4)}${uniqueSuffix}`.toUpperCase();
-
-                        const { error: affiliateError } = await supabase
-                            .from('affiliates')
-                            .insert({
-                                user_id: user.id,
-                                email: user.email,
-                                invite_code: inviteCode,
-                                status: 'active', // Auto-activate for now, or use 'pending' if manual approval needed
-                                commission_rate: 10.00
-                            })
-
-                        if (affiliateError) {
-                            console.error('Error creating affiliate record:', affiliateError)
-                            // We don't block the profile update, but we warn
-                            toast.warning("Profile updated but affiliate account creation failed. Please contact support.")
-                        }
+                    if (affiliateError) {
+                        console.error('Error creating affiliate record:', affiliateError)
+                        toast.warning("Profile updated but affiliate account creation failed. Please contact support.")
                     }
                 }
             }
 
-            if (error) throw error
 
             toast.success("Account set up successfully!")
 
@@ -220,7 +202,10 @@ export default function SelectRolePage() {
             <main className="flex-1 flex flex-col items-center justify-center py-12 px-4 relative z-10">
                 <div className="w-full max-w-5xl">
                     <div className="mb-8 flex items-center justify-between">
-                        <BackButton href="/dashboard" label="Back to Dashboard" />
+                        <BackButton
+                            href={currentRole && currentRole !== 'staff_pending' ? getRoleRedirect(currentRole) : "/categories"}
+                            label={currentRole && currentRole !== 'staff_pending' ? "Back to Dashboard" : "Back to Explore"}
+                        />
                         <Image src="/logo.png" alt="Leli Rentals" width={120} height={32} className="h-8 w-auto dark:invert opacity-50" />
                     </div>
 
@@ -340,7 +325,7 @@ function getRoleRedirect(role: string): string {
         case 'affiliate':
             return '/dashboard/affiliate'
         case 'admin':
-            return '/dashboard/admin'
+            return '/admin'
         case 'staff':
             return '/staff'
         default:

@@ -69,29 +69,39 @@ export default function SelectRoleScreen() {
 
             const { error: profileError } = await supabase
                 .from('user_profiles')
-                .update(updateData)
-                .eq('id', user.id);
+                .upsert({
+                    id: user.id,
+                    ...updateData
+                }, { onConflict: 'id' });
+
+            if (profileError) throw profileError;
 
             // 3. If selecting affiliate, ensure record exists in affiliates table
             if (selectedRole === 'affiliate') {
-                // Check if already exists first to avoid conflict
-                const { data: existingAff } = await supabase
-                    .from('affiliates')
-                    .select('id')
-                    .eq('user_id', user.id)
-                    .single();
+                try {
+                    // Check if already exists first to avoid conflict
+                    const { data: existingAff } = await supabase
+                        .from('affiliates')
+                        .select('id')
+                        .eq('user_id', user.id)
+                        .maybeSingle();
 
-                if (!existingAff) {
-                    const inviteCode = `MOB-${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
-                    const referralCode = `${user.user_metadata?.full_name?.split(' ')[0] || 'USER'}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+                    if (!existingAff) {
+                        const inviteCode = `MOB-${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
+                        const referralCode = `${user.user_metadata?.full_name?.split(' ')[0] || 'USER'}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
 
-                    await supabase.from('affiliates').insert({
-                        user_id: user.id,
-                        email: user.email,
-                        invite_code: inviteCode,
-                        referral_code: referralCode,
-                        status: 'active', // Assuming mobile signup grants active status like web
-                    });
+                        const { error: affError } = await supabase.from('affiliates').insert({
+                            user_id: user.id,
+                            email: user.email,
+                            invite_code: inviteCode,
+                            referral_code: referralCode,
+                            status: 'active', // Assuming mobile signup grants active status like web
+                        });
+
+                        if (affError) console.error('Affiliate creation error:', affError);
+                    }
+                } catch (affErr) {
+                    console.error('Error handling affiliate record:', affErr);
                 }
             }
 
