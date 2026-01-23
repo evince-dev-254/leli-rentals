@@ -1,9 +1,11 @@
-import React from 'react';
-import { Paystack } from 'react-native-paystack-webview';
+import * as React from 'react';
+import { useEffect } from 'react';
+import { usePaystack } from 'react-native-paystack-webview';
+import type { SuccessResponse } from 'react-native-paystack-webview/production/lib/types';
 import { View, ActivityIndicator } from 'react-native';
 
 interface PaystackCheckoutProps {
-    onSuccess: (response: any) => void;
+    onSuccess: (response: SuccessResponse) => void;
     onCancel: () => void;
     amount: number;
     email: string;
@@ -17,29 +19,33 @@ export const PaystackCheckout = ({
     email,
     billingName
 }: PaystackCheckoutProps) => {
+    const { popup } = usePaystack();
+
+    useEffect(() => {
+        // Trigger payment on mount
+        popup.checkout({
+            email,
+            amount,
+            metadata: billingName ? { billing_name: billingName } : undefined,
+            onSuccess: (res: SuccessResponse) => {
+                console.log('Payment Successful', res);
+                onSuccess(res);
+            },
+            onCancel: () => {
+                console.log('Payment Cancelled');
+                onCancel();
+            },
+            onError: (err: { message: string }) => {
+                console.error('Payment Error', err);
+                onCancel();
+            }
+        });
+    }, [popup, email, amount, billingName, onSuccess, onCancel]);
+
+    // Show loading indicator while payment is being processed
     return (
-        <View style={{ flex: 1 }}>
-            <Paystack
-                paystackKey={process.env.EXPO_PUBLIC_PAYSTACK_PUBLIC_KEY || ''}
-                amount={(amount / 100).toString()} // The library often expects a string or handles formatting
-                billingEmail={email}
-                billingName={billingName}
-                currency="KES"
-                onCancel={(e) => {
-                    console.log('Payment Cancelled', e);
-                    onCancel();
-                }}
-                onSuccess={(res) => {
-                    console.log('Payment Successful', res);
-                    onSuccess(res);
-                }}
-                autoStart={true}
-                renderLoading={() => (
-                    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                        <ActivityIndicator size="large" color="#f97316" />
-                    </View>
-                )}
-            />
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <ActivityIndicator size="large" color="#f97316" />
         </View>
     );
 };
