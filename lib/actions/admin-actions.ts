@@ -250,3 +250,69 @@ export async function getAdminPayments() {
         return { success: false, error: error.message || "Failed to fetch payments" }
     }
 }
+
+export async function resetDatabase() {
+    try {
+        // 1. Get current auth user to ensure they are admin and to preserve them
+        const { data: { user: adminUser }, error: authError } = await supabaseAdmin.auth.getUser()
+        if (authError || !adminUser) throw new Error("Unauthorized")
+
+        // 2. Verify admin status
+        const { data: profile, error: profileError } = await supabaseAdmin
+            .from("user_profiles")
+            .select("role")
+            .eq("id", adminUser.id)
+            .single()
+
+        if (profileError || profile.role !== 'admin') {
+            throw new Error("Unauthorized: Admin privileges required")
+        }
+
+        // 3. Identify all users EXCEPT admins (to avoid locking out admins)
+        const { data: allUsers, error: usersError } = await supabaseAdmin
+            .from("user_profiles")
+            .select("id, role")
+
+        if (usersError) throw usersError
+
+        const nonAdminUserIds = allUsers
+            .filter(u => u.role !== 'admin')
+            .map(u => u.id)
+
+        // 4. Delete Listings (cascades to Bookings, Reviews, Favorites, Conversations, Messages)
+        // Note: Using a logic that allows deleting all rows (neq a non-existent UUID or just use range)
+        const { error: listingsError } = await supabaseAdmin
+            .from("listings")
+            .delete()
+            .neq("id", "00000000-0000-0000-0000-000000000000")
+
+        if (listingsError) throw listingsError
+
+        // 5. Delete Other Auxiliary data explicitly if cascade isn't perfect
+        await supabaseAdmin.from("transactions").delete().neq("id", "00000000-0000-0000-0000-000000000000")
+        await supabaseAdmin.from("notifications").delete().neq("id", "00000000-0000-0000-0000-000000000000")
+        await supabaseAdmin.from("support_tickets").delete().neq("id", "00000000-0000-0000-0000-000000000000")
+        await supabaseAdmin.from("affiliates").delete().neq("id", "00000000-0000-0000-0000-000000000000")
+        await supabaseAdmin.from("verification_documents").delete().neq("id", "00000000-0000-0000-0000-000000000000")
+
+        // 6. Delete non-admin auth users (cascades to user_profiles)
+        for (const userId of nonAdminUserIds) {
+            try {
+                const { error: delError } = await supabaseAdmin.auth.admin.deleteUser(userId)
+                if (delError) console.error(`Failed to delete auth user ${userId}:`, delError)
+            } catch (e) {
+                console.error(`Exception deleting auth user ${userId}:`, e)
+            }
+        }
+
+        revalidatePath("/")
+        revalidatePath("/admin")
+        revalidatePath("/admin/users")
+        revalidatePath("/admin/listings")
+
+        return { success: true }
+    } catch (error: any) {
+        console.error("Error resetting database:", error)
+        return { success: false, error: error.message || "Failed to reset database" }
+    }
+}

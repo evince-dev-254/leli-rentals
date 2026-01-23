@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../context/auth-context';
 import { BackgroundGradient } from '@/components/ui/background-gradient';
 import { Button } from '@/components/ui/button';
-import { LogOut, User, Settings, Shield, Bell, HelpCircle, MessageCircle, ShoppingBag, Plus, Star, RefreshCw, Wallet, ChevronRight, MousePointerClick, Users, Heart } from 'lucide-react-native';
+import { LogOut, User, Settings, Shield, Bell, HelpCircle, MessageCircle, ShoppingBag, Plus, Star, RefreshCw, Wallet, ChevronRight, MousePointerClick, Users, Heart, Moon, Landmark, CreditCard } from 'lucide-react-native';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'expo-router';
 import { MotiView } from 'moti';
@@ -91,10 +91,13 @@ export default function ProfileScreen() {
         { icon: User, label: 'Edit Profile', color: '#3b82f6', href: '/profile/edit' },
         { icon: ShoppingBag, label: 'My Bookings', color: '#f97316', href: '/bookings' },
         { icon: Plus, label: 'My Listings', color: '#10b981', href: '/listings' },
+        { icon: CreditCard, label: 'Payment Methods', color: '#ec4899', href: '/settings/cards' },
         { icon: Wallet, label: 'Wallet', color: '#8b5cf6', href: '/financial' },
     ];
 
     const otherItems = [
+        { icon: Moon, label: 'Appearance', color: '#8b5cf6', href: '/settings/theme' },
+        { icon: Landmark, label: 'Payout Settings', color: '#10b981', href: '/settings/payout' },
         { icon: Bell, label: 'Notifications', color: '#f59e0b', href: '/notifications' },
         { icon: Shield, label: 'Security', color: '#6366f1', href: '/profile/security' },
         { icon: RefreshCw, label: 'Software Updates', color: '#f43f5e', href: '/settings/updates' },

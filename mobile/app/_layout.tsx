@@ -11,7 +11,11 @@ import { AuthProvider, useAuth } from '../context/auth-context';
 import { AppLoader } from '@/components/ui/app-loader';
 import { UpdateBanner } from '@/components/ui/update-banner';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import "../global.css";
+import { PaystackProvider } from 'react-native-paystack-webview';
+import NetInfo from '@react-native-community/netinfo';
+import { useState } from 'react';
+import { ConnectivityScreen } from '@/components/ui/connectivity-screen';
+
 
 import {
   Outfit_400Regular,
@@ -52,6 +56,15 @@ export default function RootLayout() {
     if (error) throw error;
   }, [error]);
 
+  const [isConnected, setIsConnected] = useState<boolean | null>(true);
+
+  useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener(state => {
+      setIsConnected(state.isConnected);
+    });
+    return () => unsubscribe();
+  }, []);
+
   useEffect(() => {
     if (loaded) {
       SplashScreen.hideAsync();
@@ -62,11 +75,20 @@ export default function RootLayout() {
     return null;
   }
 
+  if (isConnected === false) {
+    return <ConnectivityScreen onRetry={() => setIsConnected(true)} />;
+  }
+
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <AuthProvider>
-          <RootLayoutNav />
+          <PaystackProvider
+            publicKey={process.env.EXPO_PUBLIC_PAYSTACK_PUBLIC_KEY || ''}
+            currency="KES"
+          >
+            <RootLayoutNav />
+          </PaystackProvider>
         </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>

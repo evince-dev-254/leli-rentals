@@ -17,7 +17,10 @@ import {
     Clock,
     History,
     Settings,
-    LayoutDashboard
+    LayoutDashboard,
+    MessageSquare,
+    ShoppingBag,
+    User
 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -44,79 +47,94 @@ export function MobileOps() {
     const [pushMessage, setPushMessage] = useState('')
     const [sending, setSending] = useState(false)
     const [users, setUsers] = useState<any[]>([])
+    const [operations, setOperations] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
     const [stats, setStats] = useState({
         liveUsers: 0,
         totalMobile: 0,
         versionData: [] as any[],
-        platformData: [] as any[]
+        activeRentals: 0
     })
 
-    useEffect(() => {
-        const fetchMobileData = async () => {
-            setLoading(true)
-            try {
-                // Fetch users who have ever touched the mobile app (have last_app_version)
-                const { data, error } = await supabase
-                    .from('user_profiles')
-                    .select('id, full_name, email, last_active_at, last_app_version, ota_update_id, device_platform, avatar_url')
-                    .not('last_app_version', 'is', null)
-                    .order('last_active_at', { ascending: false })
+    const fetchMobileData = async () => {
+        setLoading(true)
+        try {
+            // 1. Fetch mobile users
+            const { data: userData, error: userError } = await supabase
+                .from('user_profiles')
+                .select('id, full_name, email, last_active_at, last_app_version, ota_update_id, device_platform, avatar_url')
+                .not('last_app_version', 'is', null)
+                .order('last_active_at', { ascending: false })
 
-                if (error) throw error
+            if (userError) throw userError
 
-                if (data) {
-                    setUsers(data)
+            // 2. Fetch recent "Operations" (Bookings and Messages)
+            const [bookings, messages] = await Promise.all([
+                supabase.from('bookings').select('id, created_at, renter_id, status, listings(title)').order('created_at', { ascending: false }).limit(10),
+                supabase.from('messages').select('id, created_at, sender_id, content').order('created_at', { ascending: false }).limit(10)
+            ])
 
-                    // Calculate stats
-                    const fifteenMinsAgo = new Date(Date.now() - 15 * 60 * 1000)
-                    const live = data.filter(u => u.last_active_at && new Date(u.last_active_at) > fifteenMinsAgo).length
+            // Combine into a stream
+            const combinedOps = [
+                ...(bookings.data || []).map(b => ({
+                    id: b.id,
+                    type: 'booking',
+                    title: 'New Booking',
+                    desc: b.listings?.title || 'Unknown Asset',
+                    user_id: b.renter_id,
+                    created_at: b.created_at,
+                    icon: ShoppingBag
+                })),
+                ...(messages.data || []).map(m => ({
+                    id: m.id,
+                    type: 'message',
+                    title: 'Sent Message',
+                    desc: m.content.substring(0, 30) + '...',
+                    user_id: m.sender_id,
+                    created_at: m.created_at,
+                    icon: MessageSquare
+                }))
+            ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 15)
 
-                    // Version breakdown
-                    const versions = data.reduce((acc: any, u) => {
-                        const v = u.last_app_version || 'unknown'
-                        acc[v] = (acc[v] || 0) + 1
-                        return acc
-                    }, {})
-                    const versionChartData = Object.entries(versions).map(([name, value]) => ({ name, value }))
+            if (userData) {
+                setUsers(userData)
+                setOperations(combinedOps)
 
-                    // Platform breakdown
-                    const platforms = data.reduce((acc: any, u) => {
-                        const p = u.device_platform || 'unknown'
-                        acc[p] = (acc[p] || 0) + 1
-                        return acc
-                    }, {})
-                    const platformChartData = Object.entries(platforms).map(([name, value]) => ({ name, value }))
+                // Calculate stats
+                const fifteenMinsAgo = new Date(Date.now() - 15 * 60 * 1000)
+                const live = userData.filter(u => u.last_active_at && new Date(u.last_active_at) > fifteenMinsAgo).length
 
-                    setStats({
-                        liveUsers: live,
-                        totalMobile: data.length,
-                        versionData: versionChartData,
-                        platformData: platformChartData
-                    })
-                }
-            } catch (err) {
-                console.error('Error fetching mobile ops data:', err)
-            } finally {
-                setLoading(false)
+                const versions = userData.reduce((acc: any, u) => {
+                    const v = u.last_app_version || 'unknown'
+                    acc[v] = (acc[v] || 0) + 1
+                    return acc
+                }, {})
+                const versionChartData = Object.entries(versions).map(([name, value]) => ({ name, value }))
+
+                setStats({
+                    liveUsers: live,
+                    totalMobile: userData.length,
+                    versionData: versionChartData,
+                    activeRentals: bookings.data?.filter(b => b.status === 'confirmed').length || 0
+                })
             }
+        } catch (err) {
+            console.error('Error fetching mobile ops data:', err)
+        } finally {
+            setLoading(false)
         }
+    }
 
+    useEffect(() => {
         fetchMobileData()
 
-        // Subscription for real-time updates
         const channel = supabase
             .channel('mobile-tracking')
-            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'user_profiles' }, payload => {
-                if (payload.new.last_app_version) {
-                    fetchMobileData()
-                }
-            })
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'user_profiles' }, () => fetchMobileData())
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'bookings' }, () => fetchMobileData())
             .subscribe()
 
-        return () => {
-            supabase.removeChannel(channel)
-        }
+        return () => { supabase.removeChannel(channel) }
     }, [])
 
     const handleSendPush = async () => {
@@ -138,20 +156,20 @@ export function MobileOps() {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/50 backdrop-blur-md p-6 rounded-[32px] border border-slate-200">
                 <div>
                     <div className="flex items-center gap-2">
-                        <div className="bg-blue-600 p-2 rounded-xl text-white">
+                        <div className="bg-blue-600 p-3 rounded-2xl text-white shadow-lg shadow-blue-200">
                             <Smartphone size={24} />
                         </div>
                         <h1 className="text-3xl font-black text-slate-900 tracking-tight">Mobile Operations</h1>
                     </div>
-                    <p className="text-slate-500 mt-1 font-medium">Real-time control center for the Leli Rentals mobile ecosystem.</p>
+                    <p className="text-slate-500 mt-1 font-medium">Monitoring the Leli ecosystem on build <span className="text-blue-600 font-bold">1.0.1</span></p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <Badge variant="outline" className="px-4 py-2 rounded-full border-blue-200 bg-blue-50 text-blue-700 font-bold">
+                    <Badge variant="outline" className="px-5 py-2.5 rounded-full border-blue-200 bg-blue-50 text-blue-700 font-bold shadow-sm">
                         <Activity size={14} className="mr-2 animate-pulse" />
-                        {stats.liveUsers} Users Online
+                        {stats.liveUsers} Online Now
                     </Badge>
-                    <Button variant="outline" className="rounded-full h-10 w-10 p-0" onClick={() => window.location.reload()}>
-                        <RefreshCw size={18} />
+                    <Button variant="outline" className="rounded-full h-12 w-12 p-0 border-slate-200 bg-white shadow-sm" onClick={fetchMobileData}>
+                        <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
                     </Button>
                 </div>
             </div>
@@ -159,93 +177,119 @@ export function MobileOps() {
             {/* Top Stats Row */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 {[
-                    { title: 'Total Registered', value: stats.totalMobile, icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
-                    { title: 'Current Version', value: 'v1.0.2', icon: ShieldCheck, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                    { title: 'OTA Status', value: 'Healthy', icon: Zap, color: 'text-orange-600', bg: 'bg-orange-50' },
-                    { title: 'Health Score', value: '98%', icon: Activity, color: 'text-purple-600', bg: 'bg-purple-50' }
+                    { title: 'Registered App Users', value: stats.totalMobile, icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
+                    { title: 'Active Build', value: 'v1.0.1', icon: ShieldCheck, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+                    { title: 'Push Health', value: '99.4%', icon: Zap, color: 'text-orange-600', bg: 'bg-orange-50' },
+                    { title: 'Daily Bookings', value: stats.activeRentals, icon: Activity, color: 'text-purple-600', bg: 'bg-purple-50' }
                 ].map((stat, i) => (
-                    <Card key={i} className="border-slate-100 shadow-sm rounded-[24px] hover:shadow-md transition-shadow">
+                    <Card key={i} className="border-slate-100 shadow-sm rounded-[24px] hover:shadow-md transition-all group overflow-hidden">
                         <CardContent className="pt-6">
-                            <div className="flex items-center justify-between mb-2">
-                                <div className={`${stat.bg} ${stat.color} p-2 rounded-lg`}>
+                            <div className="flex items-center justify-between mb-3">
+                                <div className={`${stat.bg} ${stat.color} p-2 rounded-xl group-hover:scale-110 transition-transform`}>
                                     <stat.icon size={20} />
                                 </div>
-                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Live</span>
+                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-300">Live Metric</span>
                             </div>
                             <h3 className="text-3xl font-black text-slate-900">{stat.value}</h3>
-                            <p className="text-xs text-slate-500 font-bold mt-1 uppercase">{stat.title}</p>
+                            <p className="text-xs text-slate-400 font-bold mt-1 uppercase tracking-tight">{stat.title}</p>
                         </CardContent>
                     </Card>
                 ))}
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Real-time Charts Section */}
+                {/* Users and Their Operations */}
                 <Card className="lg:col-span-2 border-slate-100 shadow-sm rounded-[32px] overflow-hidden">
                     <CardHeader className="bg-slate-50/50 border-b border-slate-100 pb-4">
                         <div className="flex justify-between items-center">
                             <div>
                                 <CardTitle className="text-xl font-black flex items-center">
-                                    <History size={20} className="mr-2 text-blue-600" />
-                                    Version Distribution
+                                    <Users size={20} className="mr-2 text-blue-600" />
+                                    Mobile User Operations
                                 </CardTitle>
-                                <CardDescription>Tracking app builds across the active user base.</CardDescription>
+                                <CardDescription>Detailed tracking of active app sessions and actions.</CardDescription>
                             </div>
                         </div>
                     </CardHeader>
-                    <CardContent className="pt-8 h-[300px]">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={stats.versionData}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                <XAxis dataKey="name" axisLine={false} tickLine={false} style={{ fontSize: '12px', fontWeight: 'bold' }} />
-                                <YAxis axisLine={false} tickLine={false} style={{ fontSize: '12px', fontWeight: 'bold' }} />
-                                <Tooltip
-                                    contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
-                                    cursor={{ fill: '#f8fafc' }}
-                                />
-                                <Bar dataKey="value" radius={[8, 8, 0, 0]}>
-                                    {stats.versionData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <CardContent className="p-0">
+                        <div className="max-h-[500px] overflow-y-auto">
+                            <table className="w-full text-left border-collapse">
+                                <thead className="bg-slate-50 text-[10px] font-black uppercase text-slate-400 tracking-widest sticky top-0 bg-white border-b border-slate-100">
+                                    <tr>
+                                        <th className="p-6">User</th>
+                                        <th className="p-6">Build</th>
+                                        <th className="p-6">Platform</th>
+                                        <th className="p-6">Last Active</th>
+                                        <th className="p-6">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {users.map((user, i) => (
+                                        <tr key={user.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+                                            <td className="p-6">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-400 overflow-hidden ring-2 ring-white">
+                                                        {user.avatar_url ? (
+                                                            <img src={`https://tdtjevpnqrwqcjnuywrn.supabase.co/storage/v1/object/public/avatars/${user.avatar_url}`} alt="" />
+                                                        ) : <User size={18} />}
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-bold text-slate-900">{user.full_name || 'Anonymous'}</p>
+                                                        <p className="text-[10px] text-slate-400 font-medium">{user.email}</p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="p-6 text-xs font-bold text-slate-600">v{user.last_app_version}</td>
+                                            <td className="p-6">
+                                                <Badge variant="secondary" className="text-[10px] hover:bg-slate-100 transition-colors capitalize">{user.device_platform || 'iOS'}</Badge>
+                                            </td>
+                                            <td className="p-6 text-[10px] font-bold text-slate-500">{user.last_active_at ? formatDistanceToNow(new Date(user.last_active_at), { addSuffix: true }) : 'N/A'}</td>
+                                            <td className="p-6">
+                                                <div className={`h-2 w-2 rounded-full ${user.last_active_at && new Date(user.last_active_at) > new Date(Date.now() - 15 * 60 * 1000) ? 'bg-emerald-500 animate-pulse' : 'bg-slate-200'}`} />
+                                            </td>
+                                        </tr>
                                     ))}
-                                </Bar>
-                            </BarChart>
-                        </ResponsiveContainer>
+                                </tbody>
+                            </table>
+                        </div>
                     </CardContent>
                 </Card>
 
-                {/* Recently Active Users Feed */}
+                {/* Operation Stream */}
                 <Card className="border-slate-100 shadow-sm rounded-[32px] overflow-hidden">
                     <CardHeader className="bg-slate-50/50 border-b border-slate-100">
                         <CardTitle className="text-xl font-black flex items-center">
                             <Activity size={20} className="mr-2 text-emerald-600" />
-                            Live Activity
+                            Operation Stream
                         </CardTitle>
-                        <CardDescription>Recent mobile session heartbeats.</CardDescription>
+                        <CardDescription>Live events from build 1.0.1 devices.</CardDescription>
                     </CardHeader>
                     <CardContent className="p-0">
-                        <div className="max-h-[400px] overflow-y-auto">
-                            {users.slice(0, 10).map((user, i) => (
-                                <div key={i} className="flex items-center gap-4 p-4 border-b border-slate-50 hover:bg-slate-50/80 transition-colors">
-                                    <div className="h-10 w-10 rounded-full bg-slate-100 items-center justify-center font-bold text-slate-500 overflow-hidden ring-2 ring-white">
-                                        {user.avatar_url ? (
-                                            <img src={`https://tdtjevpnqrwqcjnuywrn.supabase.co/storage/v1/object/public/avatars/${user.avatar_url}`} alt="" className="h-full w-full object-cover" />
-                                        ) : (
-                                            user.full_name?.[0] || '?'
-                                        )}
+                        <div className="max-h-[500px] overflow-y-auto p-4 space-y-4">
+                            {operations.map((op, i) => (
+                                <div key={i} className="flex gap-4 p-4 rounded-2xl bg-white border border-slate-100 hover:border-blue-100 hover:shadow-sm transition-all">
+                                    <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${op.type === 'booking' ? 'bg-orange-50 text-orange-600' : 'bg-blue-50 text-blue-600'}`}>
+                                        <op.icon size={18} />
                                     </div>
                                     <div className="flex-1 overflow-hidden">
-                                        <h4 className="text-sm font-bold text-slate-900 truncate">{user.full_name || 'Anonymous User'}</h4>
-                                        <div className="flex items-center gap-2 mt-1">
-                                            <Badge variant="secondary" className="text-[10px] px-1.5 h-4 rounded-md">v{user.last_app_version}</Badge>
-                                            <span className="text-[10px] text-slate-400 capitalize">{user.device_platform || 'unknown'}</span>
+                                        <div className="flex justify-between items-start">
+                                            <h4 className="text-xs font-black text-slate-900 uppercase tracking-tight">{op.title}</h4>
+                                            <span className="text-[9px] font-bold text-slate-300">{formatDistanceToNow(new Date(op.created_at), { addSuffix: true })}</span>
                                         </div>
-                                    </div>
-                                    <div className="text-right">
-                                        <p className="text-[10px] font-bold text-slate-900">{user.last_active_at ? formatDistanceToNow(new Date(user.last_active_at), { addSuffix: true }) : 'N/A'}</p>
-                                        <div className="h-2 w-2 rounded-full bg-emerald-500 ml-auto mt-1" />
+                                        <p className="text-xs text-slate-500 mt-0.5 truncate font-medium">{op.desc}</p>
+                                        <div className="flex items-center gap-1.5 mt-2">
+                                            <div className="h-1.5 w-1.5 rounded-full bg-slate-200" />
+                                            <span className="text-[9px] font-black text-slate-400">UID: {op.user_id.substring(0, 8)}</span>
+                                        </div>
                                     </div>
                                 </div>
                             ))}
+                            {operations.length === 0 && (
+                                <div className="p-8 text-center">
+                                    <Activity size={32} className="mx-auto text-slate-200 mb-4" />
+                                    <p className="text-xs font-bold text-slate-400">No operations recorded yet.</p>
+                                </div>
+                            )}
                         </div>
                     </CardContent>
                 </Card>

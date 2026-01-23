@@ -1,3 +1,4 @@
+/// <reference types="nativewind/types" />
 import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, Platform } from 'react-native';
 import * as Updates from 'expo-updates';

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Save, Bell, Shield, CreditCard, Globe, Eye, EyeOff } from "lucide-react"
+import { Save, Bell, Shield, CreditCard, Globe, Eye, EyeOff, AlertTriangle, RotateCcw } from "lucide-react"
 import { Spinner } from "@/components/ui/spinner"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -11,6 +11,7 @@ import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { getAdmins, getUserByEmail, updateProfile } from "@/lib/actions/dashboard-actions"
+import { resetDatabase } from "@/lib/actions/admin-actions"
 import { toast } from "sonner"
 import { supabase } from "@/lib/supabase"
 
@@ -39,6 +40,10 @@ export function AdminSettings() {
   const [adminNewPassword, setAdminNewPassword] = useState("")
   const [adminConfirmPassword, setAdminConfirmPassword] = useState("")
   const [showAdminPassword, setShowAdminPassword] = useState(false)
+
+  // System Reset State
+  const [resetConfirmText, setResetConfirmText] = useState("")
+  const [resetting, setResetting] = useState(false)
 
   useEffect(() => {
     // loadAdmins() // Moved
@@ -150,6 +155,31 @@ export function AdminSettings() {
   const handleRemoveAdmin = ... // Moved
   */
 
+  const handleResetSystem = async () => {
+    if (resetConfirmText !== "RESET") {
+      toast.error("Please type RESET to confirm")
+      return
+    }
+
+    try {
+      setResetting(true)
+      const result = await resetDatabase()
+      if (result.success) {
+        toast.success("System reset successfully. All non-admin data cleared.")
+        setResetConfirmText("")
+        // Optional: redirect to login or dashboard
+        setTimeout(() => window.location.reload(), 2000)
+      } else {
+        toast.error(result.error || "Failed to reset system")
+      }
+    } catch (error) {
+      console.error("Error resetting system:", error)
+      toast.error("An unexpected error occurred")
+    } finally {
+      setResetting(false)
+    }
+  }
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -166,6 +196,7 @@ export function AdminSettings() {
           <TabsTrigger value="verification">Verification</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
           <TabsTrigger value="payments">Payments</TabsTrigger>
+          <TabsTrigger value="maintenance">Maintenance</TabsTrigger>
         </TabsList>
 
         <TabsContent value="security">
@@ -528,6 +559,59 @@ export function AdminSettings() {
                 {saving ? <Spinner className="h-4 w-4 mr-2" /> : <Save className="h-4 w-4 mr-2" />}
                 Save Changes
               </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="maintenance">
+          <Card className="border-destructive/50 glass-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-destructive">
+                <AlertTriangle className="h-5 w-5" />
+                Maintenance & Danger Zone
+              </CardTitle>
+              <CardDescription>
+                Critical system operations. Proceed with extreme caution.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4">
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className="h-5 w-5 text-destructive mt-0.5" />
+                  <div className="space-y-1">
+                    <p className="font-medium text-destructive">Reset Application Data</p>
+                    <p className="text-sm text-muted-foreground mr-4">
+                      This will permanently delete ALL listings, bookings, reviews, and non-admin user accounts.
+                      This action cannot be undone. System configuration like categories will be preserved.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-6 space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="reset-confirm">Type <span className="font-bold text-destructive">RESET</span> to confirm</Label>
+                    <Input
+                      id="reset-confirm"
+                      value={resetConfirmText}
+                      onChange={(e) => setResetConfirmText(e.target.value)}
+                      placeholder="RESET"
+                      className="max-w-[200px] border-destructive/50"
+                    />
+                  </div>
+                  <Button
+                    variant="destructive"
+                    onClick={handleResetSystem}
+                    disabled={resetConfirmText !== "RESET" || resetting}
+                    className="w-full sm:w-auto"
+                  >
+                    {resetting ? (
+                      <Spinner className="h-4 w-4 mr-2" />
+                    ) : (
+                      <RotateCcw className="h-4 w-4 mr-2" />
+                    )}
+                    Clear All Data and Start Afresh
+                  </Button>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

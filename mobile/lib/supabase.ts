@@ -1,7 +1,7 @@
 import 'react-native-url-polyfill/auto';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient } from '@supabase/supabase-js';
-import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import { configureGoogle, signInWithGoogle } from './google-auth';
 
 import { AppState, Platform } from 'react-native';
 
@@ -39,16 +39,10 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     },
 });
 
-GoogleSignin.configure({
-    // IMPORTANT: This must be the WEB Client ID, not the Android Client ID.
-    // Go to Google Cloud Console -> Credentials -> Web application (create one if needed)
-    webClientId: '323268122303-kdeirpoi308p5p90jcau0n1pci5fvrm5.apps.googleusercontent.com',
-    offlineAccess: true,
-});
+configureGoogle();
 
 export const performNativeGoogleSignIn = async () => {
-    await GoogleSignin.hasPlayServices();
-    const userInfo = await GoogleSignin.signIn();
+    const userInfo = await signInWithGoogle();
     if (userInfo.data?.idToken) {
         const { data, error } = await supabase.auth.signInWithIdToken({
             provider: 'google',

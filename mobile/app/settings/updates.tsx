@@ -12,11 +12,17 @@ import { BrandedAlert } from '@/components/ui/branded-alert';
 
 const isExpoGo = Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
 
+interface UpdateManifest {
+    id: string;
+    createdAt: string;
+    runtimeVersion: string;
+}
+
 export default function UpdatesScreen() {
     const [checking, setChecking] = useState(false);
     const [updateAvailable, setUpdateAvailable] = useState(false);
-    const [status, setStatus] = useState<string>('Up to date');
-    const [manifest, setManifest] = useState<any>(null);
+    const [status, setStatus] = useState<string>('Ready to check');
+    const [manifest, setManifest] = useState<UpdateManifest | null>(null);
     const [alertConfig, setAlertConfig] = useState<{ visible: boolean; title: string; message: string; type: 'success' | 'error' | 'info' }>({
         visible: false,
         title: '',
@@ -58,7 +64,7 @@ export default function UpdatesScreen() {
             const update = await Updates.checkForUpdateAsync();
             if (update.isAvailable) {
                 setUpdateAvailable(true);
-                setManifest(update.manifest);
+                setManifest(update.manifest as unknown as UpdateManifest);
                 setStatus('New update available!');
             } else {
                 setUpdateAvailable(false);
@@ -164,10 +170,22 @@ export default function UpdatesScreen() {
                                 <Clock size={18} color="#94a3b8" />
                             </View>
                             <View className="flex-1">
-                                <Text className="text-xs font-black text-slate-400 uppercase">Last Checked</Text>
-                                <Text className="text-slate-900 dark:text-white font-black">Just now</Text>
+                                <Text className="text-xs font-black text-slate-400 uppercase">Channel</Text>
+                                <Text className="text-slate-900 dark:text-white font-black">{Updates.channel || 'Development'}</Text>
                             </View>
                         </View>
+
+                        {manifest && (
+                            <View className="bg-white/40 dark:bg-slate-900/40 p-5 rounded-3xl border border-slate-100 dark:border-slate-800 flex-row items-center">
+                                <View className="h-10 w-10 rounded-2xl bg-orange-100 items-center justify-center mr-4">
+                                    <RefreshCw size={18} color="#f97316" />
+                                </View>
+                                <View className="flex-1">
+                                    <Text className="text-xs font-black text-slate-400 uppercase">Update ID</Text>
+                                    <Text className="text-slate-900 dark:text-white font-black text-[10px]">{manifest.id}</Text>
+                                </View>
+                            </View>
+                        )}
                     </View>
 
                     <View className="mt-10 p-6 bg-orange-50 dark:bg-orange-900/20 rounded-3xl border border-orange-100 dark:border-orange-900/30">

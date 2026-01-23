@@ -1,8 +1,9 @@
+/// <reference types="nativewind/types" />
 import React from 'react';
 import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { cn } from '@/lib/utils';
 import { MotiView, AnimatePresence } from 'moti';
-import { LinearTransition } from 'react-native-reanimated';
+import Animated, { LinearTransition } from 'react-native-reanimated';
 
 interface Tab {
     id: string;
@@ -36,12 +37,8 @@ export function DashboardTabs({ tabs, activeTab, onTabChange, activeColor = '#f9
                             >
                                 {isActive && (
                                     <AnimatePresence>
-                                        <MotiView
+                                        <Animated.View
                                             layout={LinearTransition.springify().damping(20).stiffness(200)}
-                                            from={{ opacity: 0, scale: 0.9 }}
-                                            animate={{ opacity: 1, scale: 1 }}
-                                            exit={{ opacity: 0, scale: 0.9 }}
-                                            transition={{ type: 'spring', damping: 20, stiffness: 200 }}
                                             className="absolute inset-0 bg-white dark:bg-slate-800 shadow-sm"
                                         />
                                     </AnimatePresence>

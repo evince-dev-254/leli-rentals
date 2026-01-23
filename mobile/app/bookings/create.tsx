@@ -205,8 +205,7 @@ export default function CreateBookingScreen() {
                             </TouchableOpacity>
                         </SafeAreaView>
                         <PaystackCheckout
-                            paystackKey={process.env.EXPO_PUBLIC_PAYSTACK_PUBLIC_KEY || ''}
-                            amount={duration * listingPrice * 100} // Paystack expects kobo/cents
+                            amount={duration * listingPrice * 100} // Keep it as cents here, the component handles the conversion back for v5
                             email={user?.email || ''}
                             billingName={user?.user_metadata?.full_name}
                             onSuccess={handlePaymentSuccess}
