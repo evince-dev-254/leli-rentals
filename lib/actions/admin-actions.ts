@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { supabaseAdmin } from "@/lib/supabase-admin"
+import { createClient } from "@/lib/supabase-server"
 import { resend } from "@/lib/resend"
 import WelcomeEmail from "@/components/emails/welcome-email" // Fallback template for generic messages if needed, or we just send text
 
@@ -253,31 +254,62 @@ export async function getAdminPayments() {
 
 export async function resetDatabase() {
     try {
-        // 1. Get current auth user to ensure they are admin and to preserve them
-        const { data: { user: adminUser }, error: authError } = await supabaseAdmin.auth.getUser()
-        if (authError || !adminUser) throw new Error("Unauthorized")
+        console.log('[resetDatabase] Starting database reset...')
 
-        // 2. Verify admin status
-        const { data: profile, error: profileError } = await supabaseAdmin
+        // 1. Get current auth user to ensure they are admin and to preserve them
+        // Using session-aware client for authentication
+        const supabase = await createClient()
+        console.log('[resetDatabase] Created Supabase client')
+
+        const { data: { user: adminUser }, error: authError } = await supabase.auth.getUser()
+
+        if (authError) {
+            console.error('[resetDatabase] Auth error:', authError)
+            throw new Error("Unauthorized: No valid session found")
+        }
+
+        if (!adminUser) {
+            console.error('[resetDatabase] No user found in session')
+            throw new Error("Unauthorized: No valid session found")
+        }
+
+        console.log('[resetDatabase] User authenticated:', { id: adminUser.id, email: adminUser.email })
+
+        // 2. Verify admin status via profile
+        const { data: profile, error: profileError } = await supabase
             .from("user_profiles")
-            .select("role")
+            .select("role, is_admin")
             .eq("id", adminUser.id)
             .single()
 
-        if (profileError || profile.role !== 'admin') {
+        if (profileError) {
+            console.error('[resetDatabase] Profile fetch error:', profileError)
+            throw new Error("Unauthorized: Failed to verify admin status")
+        }
+
+        console.log('[resetDatabase] User profile:', profile)
+
+        if (!profile.is_admin && profile.role !== 'admin') {
+            console.error('[resetDatabase] User is not admin:', { is_admin: profile.is_admin, role: profile.role })
             throw new Error("Unauthorized: Admin privileges required")
         }
 
-        // 3. Identify all users EXCEPT admins (to avoid locking out admins)
+        console.log('[resetDatabase] Admin verification passed. Proceeding with reset...')
+
+        // 3. User is authorized. Now use supabaseAdmin (Service Role) for destructive data operations.
+
+        // 4. Identify all users EXCEPT admins (to avoid locking out the requester and other admins)
         const { data: allUsers, error: usersError } = await supabaseAdmin
             .from("user_profiles")
-            .select("id, role")
+            .select("id, role, is_admin")
 
         if (usersError) throw usersError
 
         const nonAdminUserIds = allUsers
-            .filter(u => u.role !== 'admin')
+            .filter(u => !u.is_admin && u.role !== 'admin')
             .map(u => u.id)
+
+        console.log('[resetDatabase] Found non-admin users to delete:', nonAdminUserIds.length)
 
         // 4. Delete Listings (cascades to Bookings, Reviews, Favorites, Conversations, Messages)
         // Note: Using a logic that allows deleting all rows (neq a non-existent UUID or just use range)
@@ -287,6 +319,7 @@ export async function resetDatabase() {
             .neq("id", "00000000-0000-0000-0000-000000000000")
 
         if (listingsError) throw listingsError
+        console.log('[resetDatabase] Deleted all listings')
 
         // 5. Delete Other Auxiliary data explicitly if cascade isn't perfect
         await supabaseAdmin.from("transactions").delete().neq("id", "00000000-0000-0000-0000-000000000000")
@@ -294,6 +327,7 @@ export async function resetDatabase() {
         await supabaseAdmin.from("support_tickets").delete().neq("id", "00000000-0000-0000-0000-000000000000")
         await supabaseAdmin.from("affiliates").delete().neq("id", "00000000-0000-0000-0000-000000000000")
         await supabaseAdmin.from("verification_documents").delete().neq("id", "00000000-0000-0000-0000-000000000000")
+        console.log('[resetDatabase] Deleted auxiliary data')
 
         // 6. Delete non-admin auth users (cascades to user_profiles)
         for (const userId of nonAdminUserIds) {
@@ -304,15 +338,23 @@ export async function resetDatabase() {
                 console.error(`Exception deleting auth user ${userId}:`, e)
             }
         }
+        console.log('[resetDatabase] Deleted non-admin users')
 
         revalidatePath("/")
         revalidatePath("/admin")
         revalidatePath("/admin/users")
         revalidatePath("/admin/listings")
 
+        console.log('[resetDatabase] Database reset completed successfully')
+
         return { success: true }
     } catch (error: any) {
-        console.error("Error resetting database:", error)
+        console.error("[resetDatabase] Error resetting database:", error)
+        console.error("[resetDatabase] Error details:", {
+            message: error.message,
+            stack: error.stack,
+            name: error.name
+        })
         return { success: false, error: error.message || "Failed to reset database" }
     }
 }
