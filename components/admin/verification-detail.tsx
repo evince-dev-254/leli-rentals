@@ -49,9 +49,7 @@ export function VerificationDetail({ verificationId }: VerificationDetailProps) 
     const [rejectionReason, setRejectionReason] = useState("")
     const [processing, setProcessing] = useState(false)
 
-    useEffect(() => {
-        loadDocument()
-    }, [loadDocument])
+
 
     const loadDocument = useCallback(async () => {
         try {
@@ -116,6 +114,10 @@ export function VerificationDetail({ verificationId }: VerificationDetailProps) 
             setLoading(false)
         }
     }, [verificationId, router])
+
+    useEffect(() => {
+        loadDocument()
+    }, [loadDocument])
 
     const handleUpdateStatus = async (status: 'approved' | 'rejected', reason?: string) => {
         if (!verificationDoc) return;

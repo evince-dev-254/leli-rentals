@@ -251,20 +251,7 @@ export async function createNotification(userId: string, data: {
 }
 
 
-/** Helper to get Supabase Admin client (Service Role) */
-export function getAdminSupabase() {
-    return createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!,
-        {
-            cookies: {
-                get(name: string) {
-                    return undefined
-                },
-            },
-        }
-    )
-}
+import { getAdminSupabase } from "@/lib/supabase-admin"
 
 /** Fetch verification documents */
 export async function getVerifications(userId: string) {

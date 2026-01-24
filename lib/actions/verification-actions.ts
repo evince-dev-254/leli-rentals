@@ -2,7 +2,7 @@
 
 import { createServerClient } from "@supabase/ssr"
 import { createClient } from "@/lib/supabase-server"
-import { getAdminSupabase } from "./dashboard-actions"
+import { getAdminSupabase } from "@/lib/supabase-admin"
 import { ActionResponse, handleServerError } from "@/lib/error-handler"
 import { sendVerificationStatusEmail } from "./email-actions"
 
