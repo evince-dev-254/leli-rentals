@@ -252,7 +252,7 @@ export async function createNotification(userId: string, data: {
 
 
 /** Helper to get Supabase Admin client (Service Role) */
-function getAdminSupabase() {
+export function getAdminSupabase() {
     return createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -429,61 +429,7 @@ export async function getAdminData() {
 }
 
 /** Fetch all data needed for the Admin Verifications Management panel */
-export async function getAdminVerificationsAppData() {
-    // 1. Verify User is an Admin before proceeding
-    const authSupabase = await createClient()
-    const { data: { user } } = await authSupabase.auth.getUser()
 
-    if (!user) throw new Error("Not authenticated")
-
-    const { data: profile } = await authSupabase
-        .from('user_profiles')
-        .select('role, is_admin')
-        .eq('id', user.id)
-        .single()
-
-    if (!profile?.is_admin && profile?.role !== 'admin') {
-        throw new Error("Unauthorized: Admin access required")
-    }
-
-    // 2. Use Admin Client to fetch all data bypassing RLS
-    const adminSupabase = getAdminSupabase()
-
-    const [docsRes, listingsRes] = await Promise.all([
-        adminSupabase.from('verification_documents').select('*'),
-        adminSupabase.from('listings').select('*').eq('status', 'pending')
-    ])
-
-    if (docsRes.error) throw docsRes.error
-    if (listingsRes.error) throw listingsRes.error
-
-    const docs = docsRes.data || []
-    const listings = listingsRes.data || []
-
-    // 3. Collect all user IDs from docs and listings
-    const userIds = Array.from(new Set([
-        ...docs.map(d => d.user_id),
-        ...listings.map(l => l.owner_id)
-    ]))
-
-    // 4. Fetch profiles for these users
-    let users = []
-    if (userIds.length > 0) {
-        const { data, error: usersError } = await adminSupabase
-            .from('user_profiles')
-            .select('*')
-            .in('id', userIds)
-
-        if (usersError) throw usersError
-        users = data || []
-    }
-
-    return {
-        docs,
-        listings,
-        users
-    }
-}
 
 /** Fetch all users for Admin User Management bypassing RLS */
 export async function getAdminUsersData() {
@@ -558,46 +504,7 @@ export async function getAdminListingsData() {
 }
 
 /** Fetch a single verification document and related user data bypassing RLS */
-export async function getAdminVerificationDetail(docId: string) {
-    const authSupabase = await createClient()
-    const { data: { user } } = await authSupabase.auth.getUser()
 
-    if (!user) throw new Error("Not authenticated")
-
-    const { data: profile } = await authSupabase
-        .from('user_profiles')
-        .select('role, is_admin')
-        .eq('id', user.id)
-        .single()
-
-    if (!profile?.is_admin && profile?.role !== 'admin') {
-        throw new Error("Unauthorized: Admin access required")
-    }
-
-    const adminSupabase = getAdminSupabase()
-
-    const { data: doc, error: docError } = await adminSupabase
-        .from("verification_documents")
-        .select("*")
-        .eq("id", docId)
-        .single()
-
-    if (docError) throw docError
-    if (!doc) throw new Error("Document not found")
-
-    const { data: userData, error: userError } = await adminSupabase
-        .from("user_profiles")
-        .select("*")
-        .eq("id", doc.user_id)
-        .single()
-
-    if (userError) throw userError
-
-    return {
-        doc,
-        user: userData
-    }
-}
 
 /** Fetch all summary data for the Admin Dashboard bypassing RLS */
 export async function getAdminDashboardData() {
@@ -956,18 +863,7 @@ export async function getEarnings(userId: string, limit: number = 50) {
 }
 
 /** Update Verification Document Status */
-export async function updateDocumentStatus(docId: string, status: 'approved' | 'rejected', reason?: string) {
-    const supabase = getAdminSupabase() // Use Admin Client to bypass RLS
-    const updateData: any = { status };
-    if (reason) updateData.rejection_reason = reason;
 
-    const { error } = await supabase
-        .from('verification_documents')
-        .update(updateData)
-        .eq('id', docId);
-
-    if (error) throw error;
-}
 
 /** Find a user by email */
 export async function getUserByEmail(email: string) {

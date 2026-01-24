@@ -32,7 +32,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { supabase } from "@/lib/supabase"
 import type { User, VerificationDocument } from "@/lib/types"
-import { updateDocumentStatus, getAdminVerificationsAppData } from "@/lib/actions/dashboard-actions"
+import { updateDocumentStatus, getAdminVerificationsAppData } from "@/lib/actions/verification-actions"
 import { toast } from "sonner"
 
 export function VerificationsManagement() {

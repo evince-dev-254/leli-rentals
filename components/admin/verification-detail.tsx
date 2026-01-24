@@ -34,7 +34,7 @@ import {
 } from "@/components/ui/dialog"
 import { toast } from "sonner"
 import { supabase } from "@/lib/supabase"
-import { updateDocumentStatus, getAdminVerificationDetail } from "@/lib/actions/dashboard-actions"
+import { updateDocumentStatus, getAdminVerificationDetail } from "@/lib/actions/verification-actions"
 import type { User as UserType, VerificationDocument } from "@/lib/types"
 
 interface VerificationDetailProps {
