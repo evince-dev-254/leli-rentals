@@ -45,7 +45,7 @@ export default function DashboardPage() {
 
         // Redirect logic
         // If user is an admin, always use the dedicated admin area
-        if (profileData.role === 'admin' || profileData.is_admin) {
+        if (profileData.role === 'admin') {
           router.push('/admin')
           return
         }

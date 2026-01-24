@@ -129,7 +129,8 @@ export function LoginForm() {
         if (next) {
           router.push(next)
         } else {
-          if (isAdmin || isStaff) router.push('/admin')
+          if (role === 'admin') router.push('/admin')
+          else if (role === 'staff') router.push('/staff')
           else if (role === 'owner') router.push('/dashboard/owner')
           else if (role === 'affiliate') router.push('/dashboard/affiliate')
           else router.push('/categories')
