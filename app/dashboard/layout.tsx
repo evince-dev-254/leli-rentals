@@ -6,9 +6,22 @@ import { DashboardSidebar, MobileDashboardSidebar } from "@/components/dashboard
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import { Header } from "@/components/layout/header"
 import { cn } from "@/lib/utils"
+import { supabase } from "@/lib/supabase"
+import { useState, useEffect } from "react"
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
+  const [userRole, setUserRole] = useState<string | null>(null)
+
+  useEffect(() => {
+    const getUserRole = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        setUserRole(user.user_metadata?.role || 'renter')
+      }
+    }
+    getUserRole()
+  }, [])
 
   let gradientClass = "gradient-mesh"
   if (pathname?.includes('/admin')) {
@@ -17,6 +30,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     gradientClass = "gradient-mesh-affiliate"
   } else if (pathname?.includes('/renter')) {
     gradientClass = "gradient-mesh-renter"
+  }
+
+  // Determine dashboard title from path
+  let dashboardTitle = "Dashboard"
+  if (pathname?.includes('/dashboard/owner')) {
+    dashboardTitle = "Owner Dashboard"
+  } else if (pathname?.includes('/dashboard/affiliate')) {
+    dashboardTitle = "Affiliate Dashboard"
+  } else if (pathname?.includes('/dashboard/renter')) {
+    dashboardTitle = "Renter Dashboard"
+  } else if (pathname?.includes('/admin')) {
+    dashboardTitle = "Admin Dashboard"
+  } else if (userRole) {
+    // Fallback to user role if at root /dashboard
+    dashboardTitle = `${userRole.charAt(0).toUpperCase() + userRole.slice(1)} Dashboard`
   }
 
   return (
@@ -36,10 +64,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {!pathname?.includes('/messages') && (
             <DashboardHeader
               mobileSidebar={<MobileDashboardSidebar />}
-              breadcrumbs={[
-                { label: "My Account", href: "/dashboard" },
-                { label: "Dashboard" }
-              ]}
+              breadcrumbs={[{
+                label: dashboardTitle
+              }]}
             />
           )}
 

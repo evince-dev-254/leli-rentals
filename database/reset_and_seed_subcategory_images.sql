@@ -7,14 +7,33 @@ UPDATE public.subcategories SET image_url = NULL;
 
 -- 2. Update images for each subcategory by slug
 
+-- ============================================
+-- CATEGORY IMAGES (Top Level)
+-- ============================================
+UPDATE public.categories SET image_url = 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&q=80' WHERE slug = 'vehicles';
+UPDATE public.categories SET image_url = 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80' WHERE slug = 'living';
+UPDATE public.categories SET image_url = 'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=800&q=80' WHERE slug = 'equipment';
+UPDATE public.categories SET image_url = 'https://images.unsplash.com/photo-1468495244123-6c6c332eeece?w=800&q=80' WHERE slug = 'electronics';
+UPDATE public.categories SET image_url = 'https://images.unsplash.com/photo-1558171813-4c088753af8f?w=800&q=80' WHERE slug = 'fashion';
+UPDATE public.categories SET image_url = 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800&q=80' WHERE slug = 'entertainment';
+UPDATE public.categories SET image_url = 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=800&q=80' WHERE slug = 'utility';
+UPDATE public.categories SET image_url = 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80' WHERE slug = 'business';
+UPDATE public.categories SET image_url = 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&q=80' WHERE slug = 'photography';
+UPDATE public.categories SET image_url = 'https://images.unsplash.com/photo-1576678927484-cc907957088c?w=800&q=80' WHERE slug = 'fitness';
+UPDATE public.categories SET image_url = 'https://images.unsplash.com/photo-1519689680058-324335c77eba?w=800&q=80' WHERE slug = 'baby';
+UPDATE public.categories SET image_url = 'https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=800&q=80' WHERE slug = 'office';
+UPDATE public.categories SET image_url = 'https://images.unsplash.com/photo-1571068316344-75bc76f77890?w=800&q=80' WHERE slug = 'bikes';
+
 -- VEHICLES
 UPDATE public.subcategories SET image_url = 'https://images.unsplash.com/photo-1542362567-b07e54358753?auto=format&fit=crop&w=800&q=80' WHERE slug = 'cars';
 UPDATE public.subcategories SET image_url = 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=800&q=80' WHERE slug = 'motorcycles';
 UPDATE public.subcategories SET image_url = 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=800&q=80' WHERE slug = 'trucks';
-UPDATE public.subcategories SET image_url = 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=800&q=80' WHERE slug = 'vans';
+UPDATE public.subcategories SET image_url = 'https://images.unsplash.com/photo-1559416523-140ddc3d238c?auto=format&fit=crop&w=800&q=80' WHERE slug = 'vans';
+UPDATE public.subcategories SET image_url = 'https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?auto=format&fit=crop&w=800&q=80' WHERE slug = 'sedans';
+UPDATE public.subcategories SET image_url = 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=800&q=80' WHERE slug = 'suvs';
 UPDATE public.subcategories SET image_url = 'https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=800&q=80' WHERE slug = 'luxury-cars';
 UPDATE public.subcategories SET image_url = 'https://images.unsplash.com/photo-1540962351504-03099e0a754b?auto=format&fit=crop&w=800&q=80' WHERE slug = 'private-jets';
-UPDATE public.subcategories SET image_url = 'https://images.unsplash.com/photo-1540962351504-03099e0a754b?auto=format&fit=crop&w=800&q=80' WHERE slug = 'helicopters';
+UPDATE public.subcategories SET image_url = 'https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=800&q=80' WHERE slug = 'helicopters';
 
 -- LIVING SPACES (Formerly Homes & Apartments)
 UPDATE public.subcategories SET image_url = 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=800&q=80' WHERE slug = 'apartments';
@@ -69,26 +88,40 @@ UPDATE public.subcategories SET image_url = 'https://images.unsplash.com/photo-1
 UPDATE public.subcategories SET image_url = 'https://images.unsplash.com/photo-1528747045269-390fe33c19f2?auto=format&fit=crop&w=800&q=80' WHERE slug = 'cleaning';
 UPDATE public.subcategories SET image_url = 'https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?auto=format&fit=crop&w=800&q=80' WHERE slug = 'ladders';
 UPDATE public.subcategories SET image_url = 'https://images.unsplash.com/photo-1478146059778-26028b07395a?auto=format&fit=crop&w=800&q=80' WHERE slug = 'party-rentals';
+UPDATE public.subcategories SET image_url = 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=800&q=80' WHERE slug = 'decorations';
 UPDATE public.subcategories SET image_url = 'https://images.unsplash.com/photo-1478131143081-80f7f84ca84d?auto=format&fit=crop&w=800&q=80' WHERE slug = 'outdoor-gear';
+UPDATE public.subcategories SET image_url = 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=800&q=80' WHERE slug = 'camping-gear';
 
 -- ELECTRONICS
 UPDATE public.subcategories SET image_url = 'https://images.unsplash.com/photo-1545454675-3531b543be5d?auto=format&fit=crop&w=800&q=80' WHERE slug = 'audio';
+UPDATE public.subcategories SET image_url = 'https://images.unsplash.com/photo-1545454675-3531b543be5d?auto=format&fit=crop&w=800&q=80' WHERE slug = 'audio-equipment';
 UPDATE public.subcategories SET image_url = 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=800&q=80' WHERE slug = 'computers';
+UPDATE public.subcategories SET image_url = 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=800&q=80' WHERE slug = 'laptops';
 UPDATE public.subcategories SET image_url = 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=800&q=80' WHERE slug = 'gaming';
+UPDATE public.subcategories SET image_url = 'https://images.unsplash.com/photo-1605901309584-818e25960a8f?auto=format&fit=crop&w=800&q=80' WHERE slug = 'gaming-consoles';
 UPDATE public.subcategories SET image_url = 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=800&q=80' WHERE slug = 'projectors';
 UPDATE public.subcategories SET image_url = 'https://images.unsplash.com/photo-1473968512647-3e447244af8f?auto=format&fit=crop&w=800&q=80' WHERE slug = 'drones';
 
 -- FASHION & ACCESSORIES
 UPDATE public.subcategories SET image_url = 'https://images.unsplash.com/photo-1490114538077-0a7f8cb49891?auto=format&fit=crop&w=800&q=80' WHERE slug = 'mens-wear';
 UPDATE public.subcategories SET image_url = 'https://images.unsplash.com/photo-1539008835657-9e8e9680c956?auto=format&fit=crop&w=800&q=80' WHERE slug = 'womens-wear';
+UPDATE public.subcategories SET image_url = 'https://images.unsplash.com/photo-1594552072238-b8a33785b261?auto=format&fit=crop&w=800&q=80' WHERE slug = 'wedding-gowns';
+UPDATE public.subcategories SET image_url = 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=800&q=80' WHERE slug = 'suits';
+UPDATE public.subcategories SET image_url = 'https://images.unsplash.com/photo-1598808503746-f34c53b9323e?auto=format&fit=crop&w=800&q=80' WHERE slug = 'tuxedos';
+UPDATE public.subcategories SET image_url = 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=800&q=80' WHERE slug = 'handbags';
 UPDATE public.subcategories SET image_url = 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=800&q=80' WHERE slug = 'jewelry';
 UPDATE public.subcategories SET image_url = 'https://images.unsplash.com/photo-1524250502761-1ac6f2e30d43?auto=format&fit=crop&w=800&q=80' WHERE slug = 'costumes-fashion';
+UPDATE public.subcategories SET image_url = 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=800&q=80' WHERE slug = 'suits';
+UPDATE public.subcategories SET image_url = 'https://images.unsplash.com/photo-1598808503746-f34c53b9323e?auto=format&fit=crop&w=800&q=80' WHERE slug = 'tuxedos';
+UPDATE public.subcategories SET image_url = 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=800&q=80' WHERE slug = 'handbags';
 UPDATE public.subcategories SET image_url = 'https://images.unsplash.com/photo-1576053139778-7e32f2ae3cfd?auto=format&fit=crop&w=800&q=80' WHERE slug = 'accessories';
 
 -- ENTERTAINMENT
 UPDATE public.subcategories SET image_url = 'https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=800&q=80' WHERE slug = 'instruments';
 UPDATE public.subcategories SET image_url = 'https://images.unsplash.com/photo-1574169208507-84376144848b?auto=format&fit=crop&w=800&q=80' WHERE slug = 'dj-gear';
-UPDATE public.subcategories SET image_url = 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=800&q=80' WHERE slug = 'party-lights';
+UPDATE public.subcategories SET image_url = 'https://images.unsplash.com/photo-1504509546545-e000b4a62425?auto=format&fit=crop&w=800&q=80' WHERE slug = 'stage-lighting';
+UPDATE public.subcategories SET image_url = 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=800&q=80' WHERE slug = 'party-supplies';
+UPDATE public.subcategories SET image_url = 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=800&q=80' WHERE slug = 'sound-systems';
 UPDATE public.subcategories SET image_url = 'https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=800&q=80' WHERE slug = 'games';
 UPDATE public.subcategories SET image_url = 'https://images.unsplash.com/photo-1533245270348-821d4d5c7514?auto=format&fit=crop&w=800&q=80' WHERE slug = 'inflatables';
 

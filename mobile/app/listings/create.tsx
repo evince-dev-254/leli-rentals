@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useCategories, useSubcategories } from '@/lib/hooks/useData';
 import { supabase } from '@/lib/supabase';
+import { useQueryClient } from '@tanstack/react-query';
 import * as ImagePicker from 'expo-image-picker';
 import { cn } from '@/lib/utils';
 import { uploadImage } from '@/lib/imagekit';
@@ -24,6 +25,7 @@ const STEPS = [
 
 export default function CreateListingScreen() {
     const router = useRouter();
+    const queryClient = useQueryClient();
     const { data: categories, isLoading: catsLoading } = useCategories();
     const [currentStep, setCurrentStep] = useState(0);
     const [loading, setLoading] = useState(false);
@@ -41,6 +43,12 @@ export default function CreateListingScreen() {
     const [amenities, setAmenities] = useState<string[]>([]);
     const [newAmenity, setNewAmenity] = useState('');
     const [images, setImages] = useState<string[]>([]);
+
+    // Dynamic Creation State
+    const [isCreatingCat, setIsCreatingCat] = useState(false);
+    const [newCatName, setNewCatName] = useState('');
+    const [isCreatingSub, setIsCreatingSub] = useState(false);
+    const [newSubName, setNewSubName] = useState('');
 
     const { data: subcategories, isLoading: subsLoading } = useSubcategories(categoryId);
 
@@ -82,6 +90,62 @@ export default function CreateListingScreen() {
         if (newAmenity.trim() && !amenities.includes(newAmenity.trim())) {
             setAmenities([...amenities, newAmenity.trim()]);
             setNewAmenity('');
+        }
+    };
+
+    const handleCreateCategory = async () => {
+        if (!newCatName.trim()) return;
+        setLoading(true);
+        try {
+            const { data, error } = await supabase
+                .from('categories')
+                .insert([{
+                    name: newCatName.trim(),
+                    slug: newCatName.trim().toLowerCase().replace(/\s+/g, '-'),
+                    icon: 'Tag' // Default icon
+                }])
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            await queryClient.invalidateQueries({ queryKey: ['categories'] });
+            setCategoryId(data.id);
+            setSubcategoryId(''); // Reset subcategory when category changes
+            setIsCreatingCat(false);
+            setNewCatName('');
+        } catch (e: any) {
+            Alert.alert("Error", "Failed to create category. It might already exist.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleCreateSubcategory = async () => {
+        if (!newSubName.trim() || !categoryId) return;
+        setLoading(true);
+        try {
+            const { data, error } = await supabase
+                .from('subcategories')
+                .insert([{
+                    category_id: categoryId,
+                    name: newSubName.trim(),
+                    slug: newSubName.trim().toLowerCase().replace(/\s+/g, '-'),
+                    icon: 'Tag'
+                }])
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            await queryClient.invalidateQueries({ queryKey: ['subcategories', categoryId] });
+            setSubcategoryId(data.id);
+            setIsCreatingSub(false);
+            setNewSubName('');
+        } catch (e: any) {
+            Alert.alert("Error", "Failed to create subcategory.");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -150,6 +214,7 @@ export default function CreateListingScreen() {
                                         onPress={() => {
                                             setCategoryId(cat.id);
                                             setSubcategoryId('');
+                                            setIsCreatingCat(false);
                                         }}
                                         className={cn(
                                             "px-6 py-3 rounded-2xl border-2",
@@ -159,11 +224,33 @@ export default function CreateListingScreen() {
                                         <Text className={cn("font-black text-xs", categoryId === cat.id ? "text-white" : "text-slate-500")}>{cat.name}</Text>
                                     </TouchableOpacity>
                                 ))}
+                                <TouchableOpacity
+                                    onPress={() => setIsCreatingCat(!isCreatingCat)}
+                                    className={cn("px-6 py-3 rounded-2xl border-2 border-dashed border-slate-300 dark:border-slate-700", isCreatingCat ? "bg-slate-100 dark:bg-slate-800" : "bg-transparent")}
+                                >
+                                    <Text className="font-bold text-xs text-slate-500 dark:text-slate-400">+ Create New</Text>
+                                </TouchableOpacity>
                             </View>
+
+                            {/* Create New Category Input */}
+                            {isCreatingCat && (
+                                <MotiView from={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 60 }} className="mt-4 flex-row gap-2">
+                                    <View className="flex-1">
+                                        <Input placeholder="New Category Name" value={newCatName} onChangeText={setNewCatName} />
+                                    </View>
+                                    <TouchableOpacity
+                                        onPress={handleCreateCategory}
+                                        disabled={loading || !newCatName.trim()}
+                                        className="bg-blue-600 px-4 rounded-xl items-center justify-center"
+                                    >
+                                        {loading ? <ActivityIndicator color="white" /> : <Check size={20} color="white" />}
+                                    </TouchableOpacity>
+                                </MotiView>
+                            )}
                         </View>
 
                         <AnimatePresence>
-                            {categoryId && (
+                            {categoryId && !isCreatingCat && (
                                 <MotiView
                                     from={{ opacity: 0, translateY: 10 }}
                                     animate={{ opacity: 1, translateY: 0 }}
@@ -175,7 +262,10 @@ export default function CreateListingScreen() {
                                         {subsLoading ? <ActivityIndicator /> : subcategories?.map((sub: any) => (
                                             <TouchableOpacity
                                                 key={sub.id}
-                                                onPress={() => setSubcategoryId(sub.id)}
+                                                onPress={() => {
+                                                    setSubcategoryId(sub.id);
+                                                    setIsCreatingSub(false);
+                                                }}
                                                 className={cn(
                                                     "px-5 py-2.5 rounded-xl border-2",
                                                     subcategoryId === sub.id ? "bg-slate-900 border-slate-900 dark:bg-white dark:border-white" : "bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800"
@@ -184,7 +274,29 @@ export default function CreateListingScreen() {
                                                 <Text className={cn("font-bold text-[11px]", subcategoryId === sub.id ? "text-white dark:text-slate-900" : "text-slate-500")}>{sub.name}</Text>
                                             </TouchableOpacity>
                                         ))}
+                                        <TouchableOpacity
+                                            onPress={() => setIsCreatingSub(!isCreatingSub)}
+                                            className={cn("px-5 py-2.5 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700", isCreatingSub ? "bg-slate-100 dark:bg-slate-800" : "bg-transparent")}
+                                        >
+                                            <Text className="font-bold text-[11px] text-slate-500 dark:text-slate-400">+ Create New</Text>
+                                        </TouchableOpacity>
                                     </View>
+
+                                    {/* Create New Subcategory Input */}
+                                    {isCreatingSub && (
+                                        <MotiView from={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 60 }} className="mt-4 flex-row gap-2">
+                                            <View className="flex-1">
+                                                <Input placeholder="New Subcategory Name" value={newSubName} onChangeText={setNewSubName} />
+                                            </View>
+                                            <TouchableOpacity
+                                                onPress={handleCreateSubcategory}
+                                                disabled={loading || !newSubName.trim()}
+                                                className="bg-slate-900 dark:bg-white px-4 rounded-xl items-center justify-center"
+                                            >
+                                                {loading ? <ActivityIndicator color="white" /> : <Check size={20} className="text-white dark:text-slate-900" />}
+                                            </TouchableOpacity>
+                                        </MotiView>
+                                    )}
                                 </MotiView>
                             )}
                         </AnimatePresence>

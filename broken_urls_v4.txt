@@ -1,0 +1,15 @@
+Scanning categories-data.ts...
+Scanning reset_and_seed_subcategory_images.sql...
+Found 246 unique URLs to check across all files.
+[404] Broken: https://images.unsplash.com/photo-1517013393976-92809ee87200?w=400&h=300&fit=crop
+[404] Broken: https://images.unsplash.com/photo-1506543730-a35276a1f147?w=400&h=300&fit=crop
+Checked 50/246
+Checked 100/246
+Checked 150/246
+[404] Broken: https://images.unsplash.com/photo-1517013393976-92809ee87200?auto=format&fit=crop&w=800&q=80
+[404] Broken: https://images.unsplash.com/photo-1506543730-a35276a1f147?auto=format&fit=crop&w=800&q=80
+Checked 200/246
+Checked 246/246
+
+Done.
+Found 4 broken URLs.

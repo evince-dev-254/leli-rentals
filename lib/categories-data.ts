@@ -39,8 +39,8 @@ export const categories = [
       },
       { name: "Sports Cars", image: "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=400&h=300&fit=crop" },
       { name: "Motorcycles", image: "https://images.unsplash.com/photo-1558981285-6f0c94958bb6?w=400&h=300&fit=crop" },
-      { name: "Trucks", image: "https://images.unsplash.com/photo-1566008885218-90abf9200ddb?w=400&h=300&fit=crop" },
-      { name: "Vans", image: "https://images.unsplash.com/photo-1570125909232-eb263c188f7e?w=400&h=300&fit=crop" },
+      { name: "Trucks", image: "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=400&h=300&fit=crop" },
+      { name: "Vans", image: "https://images.unsplash.com/photo-1559416523-140ddc3d238c?w=400&h=300&fit=crop" },
       { name: "Buses", image: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=400&h=300&fit=crop" },
       { name: "Boats", image: "https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?w=400&h=300&fit=crop" },
       { name: "Pickups", image: "https://images.unsplash.com/photo-1559416523-140ddc3d238c?w=400&h=300&fit=crop" },
@@ -53,7 +53,7 @@ export const categories = [
         image: "https://images.unsplash.com/photo-1514316454349-750a7fd3da3a?w=400&h=300&fit=crop",
       },
       { name: "Private jets", image: "https://images.unsplash.com/photo-1540962351504-03099e0a754b?w=400&h=300&fit=crop" },
-      { name: "Helicopters", image: "https://images.unsplash.com/photo-1540962351504-03099e0a754b?w=400&h=300&fit=crop" }
+      { name: "Helicopters", image: "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=400&h=300&fit=crop" }
     ],
   },
   {
@@ -131,7 +131,7 @@ export const categories = [
       },
       {
         name: "Party Rentals",
-        image: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=400&h=300&fit=crop",
+        image: "https://images.unsplash.com/photo-1478146059778-26028b07395a?w=400&h=300&fit=crop",
       },
       {
         name: "Outdoor Gear",
@@ -159,7 +159,7 @@ export const categories = [
       },
       {
         name: "Gaming Consoles",
-        image: "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=400&h=300&fit=crop",
+        image: "https://images.unsplash.com/photo-1605901309584-818e25960a8f?w=400&h=300&fit=crop",
       },
       { name: "Drones", image: "https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=400&h=300&fit=crop" },
       {
@@ -259,6 +259,10 @@ export const categories = [
       {
         name: "Party Supplies",
         image: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=400&h=300&fit=crop",
+      },
+      {
+        name: "Stage Lighting",
+        image: "https://images.unsplash.com/photo-1504509546545-e000b4a62425?w=400&h=300&fit=crop",
       },
       {
         name: "Bouncy Castles",
