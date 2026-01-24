@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 import { Button } from "@/components/ui/button"
 import {
@@ -29,6 +29,7 @@ export function AccountTypeSwitcher() {
     const [profile, setProfile] = useState<any>(null)
     const [loading, setLoading] = useState(true)
     const router = useRouter()
+    const pathname = usePathname()
 
     useEffect(() => {
         const getProfile = async () => {
@@ -59,11 +60,8 @@ export function AccountTypeSwitcher() {
     const dashboards = [
         { label: 'Renter Dashboard', path: '/dashboard/renter', icon: User, color: 'text-teal-600', bg: 'bg-teal-50' },
         { label: 'Owner Dashboard', path: '/dashboard/owner', icon: Building2, color: 'text-blue-600', bg: 'bg-blue-50' },
+        { label: 'Affiliate Dashboard', path: '/dashboard/affiliate', icon: UserPlus, color: 'text-pink-600', bg: 'bg-pink-50' }
     ]
-
-    if (profile.role === 'affiliate') {
-        dashboards.push({ label: 'Affiliate Dashboard', path: '/dashboard/affiliate', icon: UserPlus, color: 'text-pink-600', bg: 'bg-pink-50' })
-    }
 
     // Staff Portal hidden from switcher - accessed via direct URL only
 
@@ -90,7 +88,7 @@ export function AccountTypeSwitcher() {
             <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel>My Dashboards</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                {dashboards.map((dash) => (
+                {dashboards.filter(dash => !pathname?.includes(dash.path.replace('/dashboard', ''))).map((dash) => (
                     <DropdownMenuItem
                         key={dash.path}
                         onClick={() => handleSwitch(dash.path, dash.label)}

@@ -6,7 +6,7 @@ import { Linking } from 'react-native';
 import { cn } from '@/lib/utils';
 import { BlurView } from 'expo-blur';
 import { MotiView, AnimatePresence } from 'moti';
-import { useColorScheme } from '@/components/useColorScheme';
+import { useTheme } from '@/components/theme-provider';
 import { useCategories, useListings, useSubcategories } from '@/lib/hooks/useData';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { BackgroundGradient } from '@/components/ui/background-gradient';
@@ -22,8 +22,8 @@ const LOGO_BLACK = require('../../assets/images/logo_black.png');
 const LOGO_WHITE = require('../../assets/images/logo_white.png');
 
 export default function ExploreScreen() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const router = useRouter();
   const scrollViewRef = React.useRef<ScrollView>(null);
   const listingsSectionRef = React.useRef<View>(null);

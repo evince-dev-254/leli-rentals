@@ -52,8 +52,8 @@ export const categories = [
         name: "Classic Cars",
         image: "https://images.unsplash.com/photo-1514316454349-750a7fd3da3a?w=400&h=300&fit=crop",
       },
-      { name: "Private jets", image: "https://images.unsplash.com/photo-1514972365-5c4c9f3f6e5b?w=400&h=300&fit=crop" },
-      { name: "Helicopters", image: "https://images.unsplash.com/photo-1514972365-5c4c9f3f6e5b?w=400&h=300&fit=crop" }
+      { name: "Private jets", image: "https://images.unsplash.com/photo-1540962351504-03099e0a754b?w=400&h=300&fit=crop" },
+      { name: "Helicopters", image: "https://images.unsplash.com/photo-1540962351504-03099e0a754b?w=400&h=300&fit=crop" }
     ],
   },
   {
@@ -135,7 +135,7 @@ export const categories = [
       },
       {
         name: "Outdoor Gear",
-        image: "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=400&h=300&fit=crop",
+        image: "https://images.unsplash.com/photo-1478131143081-80f7f84ca84d?w=400&h=300&fit=crop",
       },
     ],
   },
@@ -298,7 +298,7 @@ export const categories = [
     color: "from-teal-500/20 to-teal-600/10",
     featured: true,
     subcategories: [
-      { name: "Banquet Halls", image: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=400&h=300&fit=crop" },
+      { name: "Banquet Halls", image: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=400&h=300&fit=crop" },
       { name: "Conference Rooms", image: "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=400&h=300&fit=crop" },
       { name: "Wedding Venues", image: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=400&h=300&fit=crop" },
       { name: "Rooftop Terraces", image: "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=400&h=300&fit=crop" },
@@ -457,7 +457,7 @@ export const categories = [
         image: "https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=400&h=300&fit=crop",
       },
       { name: "Toys", image: "https://images.unsplash.com/photo-1558060370-d644479cb6f7?w=400&h=300&fit=crop" },
-      { name: "Swings", image: "https://images.unsplash.com/photo-1564429238909-8b56e09a0587?w=400&h=300&fit=crop" },
+      { name: "Swings", image: "https://images.unsplash.com/photo-1558060370-d644479cb6f7?w=400&h=300&fit=crop" },
       {
         name: "Baby Carriers",
         image: "https://images.unsplash.com/photo-1544006659-f0b21884ce1d?w=400&h=300&fit=crop",

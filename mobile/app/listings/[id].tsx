@@ -6,7 +6,7 @@ import { Share, Heart, MapPin, ShieldCheck, Clock, Star, MessageCircle, ChevronL
 import { BlurView } from 'expo-blur';
 import { MotiView } from 'moti';
 import { useListingDetail } from '../../lib/hooks/useData';
-import { useColorScheme } from '@/components/useColorScheme';
+import { useTheme } from '@/components/theme-provider';
 import { supabase } from '@/lib/supabase';
 
 import { BackgroundGradient } from '@/components/ui/background-gradient';
@@ -18,7 +18,8 @@ const { width } = Dimensions.get('window');
 export default function ListingDetailScreen() {
     const { id } = useLocalSearchParams();
     const router = useRouter();
-    const isDark = useColorScheme() === 'dark';
+    const { theme } = useTheme();
+    const isDark = theme === 'dark';
     const { data: listing, isLoading } = useListingDetail(id as string);
 
     const [currentImageIndex, setCurrentImageIndex] = useState(0);

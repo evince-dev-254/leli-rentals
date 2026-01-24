@@ -103,7 +103,7 @@ function RootLayoutNav() {
   if (loading) return <AppLoader fullscreen />;
 
   return (
-    <NavThemeProvider value={theme === 'dark' ? DarkTheme : DefaultTheme}>
+    <NavThemeProvider value={DefaultTheme}>
       <UpdateBanner />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="index" />

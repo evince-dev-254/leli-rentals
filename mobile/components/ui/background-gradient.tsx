@@ -6,7 +6,7 @@ const { width, height } = Dimensions.get('window');
 export const BackgroundGradient = () => {
     const isDark = useColorScheme() === 'dark';
     return (
-        <View style={[StyleSheet.absoluteFill, { backgroundColor: isDark ? '#020617' : '#ffffff' }]} pointerEvents="none">
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: isDark ? '#020617' : '#ffffff', pointerEvents: 'none' }]}>
             {/* Purple Orb */}
             <View
                 style={{

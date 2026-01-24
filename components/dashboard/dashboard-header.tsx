@@ -30,7 +30,7 @@ export function DashboardHeader({ mobileSidebar, breadcrumbs, className }: Dashb
       {mobileSidebar}
       <div className="flex-1">
         {breadcrumbs && (
-          <div className="hidden md:flex items-center gap-2 text-sm text-muted-foreground overflow-hidden">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
             {breadcrumbs.map((crumb, index) => (
               <div key={crumb.label} className="flex items-center gap-2">
                 {crumb.href ? (

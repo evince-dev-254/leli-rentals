@@ -51,8 +51,8 @@ export const WebViewWrapper = ({ url, title, showNavigationButtons = true }: Web
         };
 
         if (Platform.OS === 'android') {
-            BackHandler.addEventListener('hardwareBackPress', handleBackPress);
-            return () => BackHandler.removeEventListener('hardwareBackPress', handleBackPress);
+            const backHandler = BackHandler.addEventListener('hardwareBackPress', handleBackPress);
+            return () => backHandler.remove();
         }
     }, [canWebGoBack]);
 
@@ -139,6 +139,9 @@ export const WebViewWrapper = ({ url, title, showNavigationButtons = true }: Web
                             <ActivityIndicator size="large" color="#f97316" />
                         </View>
                     )}
+                    userAgent={Platform.OS === 'android'
+                        ? 'Mozilla/5.0 (Linux; Android 10; Mobile; rv:89.0) Gecko/89.0 Firefox/89.0'
+                        : 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.3 Mobile/15E148 Safari/604.1'}
                 />
 
                 {/* Optional Bottom Navigation Bar for WebView */}
@@ -249,11 +252,8 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-evenly',
-        // Shadow for iOS
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 10,
+        // Shadow for web and iOS
+        boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
         // Elevation for Android
         elevation: 5,
         borderWidth: 1,

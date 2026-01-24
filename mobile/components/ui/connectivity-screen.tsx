@@ -34,7 +34,7 @@ export const ConnectivityScreen: React.FC<ConnectivityScreenProps> = ({ onRetry 
 
                     <Text style={styles.title}>Connection Lost</Text>
                     <Text style={styles.message}>
-                        Oops! It looks like you're offline. Leli Rentals requires an active internet connection to function properly.
+                        Oops! It looks like you&apos;re offline. Leli Rentals requires an active internet connection to function properly.
                     </Text>
 
                     <TouchableOpacity
@@ -67,10 +67,7 @@ const styles = StyleSheet.create({
         borderRadius: 40,
         padding: 40,
         alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.1,
-        shadowRadius: 20,
+        boxShadow: '0px 10px 20px rgba(0, 0, 0, 0.1)',
         elevation: 5,
         width: '100%',
         maxWidth: 400,

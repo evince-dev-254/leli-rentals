@@ -7,7 +7,7 @@ import { AnimatePresence, MotiView } from 'moti';
 import { BackgroundGradient } from '@/components/ui/background-gradient';
 import { useAuth } from '../../context/auth-context';
 import { HamburgerMenu } from '@/components/ui/hamburger-menu';
-import { useColorScheme } from '@/components/useColorScheme';
+import { useTheme } from '@/components/theme-provider';
 import { useUserStats } from '@/lib/hooks/useData';
 
 // Import new modular views
@@ -22,8 +22,8 @@ export default function UnifiedDashboardScreen() {
     const [activeRole, setActiveRole] = useState<UserRole>('renter');
     const [menuVisible, setMenuVisible] = useState(false);
     const router = useRouter();
-    const colorScheme = useColorScheme();
-    const isDark = colorScheme === 'dark';
+    const { theme } = useTheme();
+    const isDark = theme === 'dark';
 
     // Fetch real stats
     const { data: stats, refetch, isFetching } = useUserStats(user?.id || '');

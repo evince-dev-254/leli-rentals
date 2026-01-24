@@ -7,6 +7,7 @@ import { OfflineBanner } from "@/components/ui/offline-banner"
 import { FavoritesProvider } from "@/lib/favorites-context"
 import { MessagesProvider } from "@/lib/messages-context"
 import { ThemeProvider } from "@/components/theme-provider"
+import { ConsoleWarning } from "@/components/security/console-warning"
 import "./globals.css"
 
 const outfit = Outfit({
@@ -111,12 +112,14 @@ export default function RootLayout({
           </FavoritesProvider>
         </ThemeProvider>
 
-        {/* CookieYes - Load after page is interactive */}
-        <Script
-          id="cookieyes"
-          src="https://cdn-cookieyes.com/client_data/be8a3339e81a28dfeba5c085b6d4786b/script.js"
-          strategy="afterInteractive"
-        />
+        {/* CookieYes - Load after page is interactive (Production only) */}
+        {process.env.NODE_ENV === 'production' && (
+          <Script
+            id="cookieyes"
+            src="https://cdn-cookieyes.com/client_data/be8a3339e81a28dfeba5c085b6d4786b/script.js"
+            strategy="afterInteractive"
+          />
+        )}
 
         {/* Tawk.to - Load lazily after everything else */}
         <Script
@@ -136,6 +139,7 @@ export default function RootLayout({
             `
           }}
         />
+        <ConsoleWarning />
       </body>
     </html>
   )

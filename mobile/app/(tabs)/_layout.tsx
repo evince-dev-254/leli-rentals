@@ -7,11 +7,11 @@ import { Home, LayoutDashboard, Grid, User, Bell } from 'lucide-react-native';
 import { ThemeSwitcher } from '@/components/ui/theme-switcher';
 
 import Colors from '@/constants/Colors';
-import { useColorScheme } from '@/components/useColorScheme';
+import { useTheme } from '@/components/theme-provider';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
 
   const insets = useSafeAreaInsets();
 

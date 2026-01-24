@@ -9,7 +9,7 @@ import { getIcon } from '@/lib/icon-mapping';
 import { useDebounce } from '@/lib/hooks/useDebounce';
 import { TextInput } from 'react-native';
 import { BlurView } from 'expo-blur';
-import { useColorScheme } from '@/components/useColorScheme';
+import { useTheme } from '@/components/theme-provider';
 import { cn } from '@/lib/utils';
 
 const { width } = Dimensions.get('window');
@@ -22,8 +22,8 @@ function isUuid(str: string) {
 export default function CategoryDetailScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
     const router = useRouter();
-    const colorScheme = useColorScheme();
-    const isDark = colorScheme === 'dark';
+    const { theme } = useTheme();
+    const isDark = theme === 'dark';
 
     // State
     const [searchQuery, setSearchQuery] = React.useState('');
@@ -143,17 +143,23 @@ export default function CategoryDetailScreen() {
                         >
                             <TouchableOpacity
                                 onPress={() => setSelectedSubcategory(undefined)}
-                                className={cn(
-                                    "px-5 py-2.5 rounded-full border mb-4",
-                                    !selectedSubcategory
-                                        ? "bg-slate-900 dark:bg-white border-slate-900 dark:border-white"
-                                        : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800"
-                                )}
+                                className="mr-3 mb-4 items-center"
+                                style={{ width: 100 }}
                             >
-                                <Text className={cn(
-                                    "font-bold text-xs uppercase tracking-wider",
+                                <View className={cn(
+                                    "h-24 w-24 rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-800 border mb-2 items-center justify-center",
                                     !selectedSubcategory
-                                        ? "text-white dark:text-slate-900"
+                                        ? "border-orange-500 border-2"
+                                        : "border-slate-200 dark:border-slate-800"
+                                )}>
+                                    <View className={cn("h-10 w-10 rounded-full items-center justify-center", !selectedSubcategory ? "bg-orange-500" : "bg-slate-200 dark:bg-slate-700")}>
+                                        <SlidersHorizontal size={18} color={!selectedSubcategory ? "white" : "#94a3b8"} />
+                                    </View>
+                                </View>
+                                <Text className={cn(
+                                    "text-center text-[10px] uppercase tracking-wider font-bold",
+                                    !selectedSubcategory
+                                        ? "text-orange-500"
                                         : "text-slate-600 dark:text-slate-400"
                                 )}>
                                     All
@@ -165,29 +171,39 @@ export default function CategoryDetailScreen() {
                             ) : (
                                 subcategories?.map((sub: any) => {
                                     const Icon = sub.icon ? getIcon(sub.icon) : null;
+
                                     return (
                                         <TouchableOpacity
                                             key={sub.id}
                                             onPress={() => setSelectedSubcategory(sub.id === selectedSubcategory ? undefined : sub.id)}
-                                            className={cn(
-                                                "px-5 py-2.5 rounded-full border mb-4 flex-row items-center gap-2",
-                                                selectedSubcategory === sub.id
-                                                    ? "bg-slate-900 dark:bg-white border-slate-900 dark:border-white"
-                                                    : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800"
-                                            )}
+                                            className="mr-3 mb-4 items-center"
+                                            style={{ width: 100 }}
                                         >
-                                            {Icon && (
-                                                <Icon
-                                                    size={14}
-                                                    color={selectedSubcategory === sub.id ? (isDark ? "#0f172a" : "white") : "#64748b"}
-                                                />
-                                            )}
-                                            <Text className={cn(
-                                                "font-bold text-xs uppercase tracking-wider",
+                                            <View className={cn(
+                                                "h-24 w-24 rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-800 border mb-2",
                                                 selectedSubcategory === sub.id
-                                                    ? "text-white dark:text-slate-900"
-                                                    : "text-slate-600 dark:text-slate-400"
+                                                    ? "border-orange-500 border-2"
+                                                    : "border-slate-200 dark:border-slate-800"
                                             )}>
+                                                {sub.image_url ? (
+                                                    <Image source={{ uri: sub.image_url }} className="w-full h-full" resizeMode="cover" />
+                                                ) : (
+                                                    <View className="flex-1 items-center justify-center bg-slate-50 dark:bg-slate-900">
+                                                        {Icon ? <Icon size={32} color={selectedSubcategory === sub.id ? "#f97316" : "#94a3b8"} /> : <Text className="text-slate-400">?</Text>}
+                                                    </View>
+                                                )}
+
+                                                {/* Selected Overlay */}
+                                                {selectedSubcategory === sub.id && (
+                                                    <View className="absolute inset-0 bg-orange-500/20" />
+                                                )}
+                                            </View>
+                                            <Text className={cn(
+                                                "text-center text-[10px] uppercase tracking-wider font-bold h-8",
+                                                selectedSubcategory === sub.id
+                                                    ? "text-orange-500"
+                                                    : "text-slate-600 dark:text-slate-400"
+                                            )} numberOfLines={2}>
                                                 {sub.name}
                                             </Text>
                                         </TouchableOpacity>

@@ -9,7 +9,7 @@ import {
 } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MotiView, AnimatePresence } from 'moti';
-import { useColorScheme } from '@/components/useColorScheme';
+import { useTheme } from '@/components/theme-provider';
 import { useAuth } from '../../context/auth-context';
 
 interface HamburgerMenuProps {
@@ -21,8 +21,8 @@ interface HamburgerMenuProps {
 export function HamburgerMenu({ visible, onClose, activeRole }: HamburgerMenuProps) {
     const router = useRouter();
     const { signOut } = useAuth();
-    const colorScheme = useColorScheme();
-    const isDark = colorScheme === 'dark';
+    const { theme } = useTheme();
+    const isDark = theme === 'dark';
 
     const handleSignOut = async () => {
         try {

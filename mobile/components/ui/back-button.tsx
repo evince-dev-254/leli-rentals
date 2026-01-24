@@ -2,7 +2,7 @@ import React from 'react';
 import { TouchableOpacity, Text, View } from 'react-native';
 import { ChevronLeft } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
-import { useColorScheme } from '@/components/useColorScheme';
+import { useTheme } from '@/components/theme-provider';
 import { cn } from '@/lib/utils';
 import { MotiView } from 'moti';
 
@@ -13,8 +13,8 @@ interface BackButtonProps {
 
 export const BackButton = ({ className = '', onPress }: BackButtonProps) => {
     const router = useRouter();
-    const colorScheme = useColorScheme();
-    const isDark = colorScheme === 'dark';
+    const { theme } = useTheme();
+    const isDark = theme === 'dark';
 
     const handlePress = () => {
         if (onPress) {

@@ -32,10 +32,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         await AsyncStorage.setItem(THEME_STORAGE_KEY, newMode);
     };
 
-    // Logical theme applied to UI
-    const theme = mode === 'system'
-        ? (deviceColorScheme ?? 'light')
-        : mode;
+    // Logical theme applied to UI - FORCED TO LIGHT ONLY
+    const theme = 'light'; // Always use light theme, dark mode disabled
 
     return (
         <ThemeContext.Provider value={{ theme, mode, setThemeMode }}>
@@ -50,4 +48,13 @@ export function useTheme() {
         throw new Error('useTheme must be used within a ThemeProvider');
     }
     return context;
+}
+
+/**
+ * Helper hook that returns the resolved theme ('light' | 'dark')
+ * Drop-in replacement for useColorScheme() to ensure consistency
+ */
+export function useAppColorScheme() {
+    const { theme } = useTheme();
+    return theme;
 }

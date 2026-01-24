@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, TextInput, TouchableOpacity, Text, TextInputProps } from 'react-native';
 import { Eye, EyeOff } from 'lucide-react-native';
 import { cn } from '@/lib/utils';
-import { useColorScheme } from '@/components/useColorScheme';
+import { useTheme } from '@/components/theme-provider';
 
 interface InputProps extends TextInputProps {
     label?: string;
@@ -20,8 +20,8 @@ export const Input = ({
     ...props
 }: InputProps) => {
     const [showPassword, setShowPassword] = useState(false);
-    const colorScheme = useColorScheme();
-    const isDark = colorScheme === 'dark';
+    const { theme } = useTheme();
+    const isDark = theme === 'dark';
 
     return (
         <View className={cn('mb-6', containerClassName)}>
