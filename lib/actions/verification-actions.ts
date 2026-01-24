@@ -111,29 +111,34 @@ export async function getAdminVerificationDetail(docId: string) {
     }
 }
 
+import { revalidatePath } from "next/cache"
+
 /** 
  * Update Verification Document Status 
  * Moved from dashboard-actions.ts
  */
 export async function updateDocumentStatus(docId: string, status: 'approved' | 'rejected', reason?: string) {
-    const supabase = getAdminSupabase() // Use Admin Client to bypass RLS
-    const updateData: any = { status };
+    const authSupabase = await createClient()
+    const { data: { user: adminUser } } = await authSupabase.auth.getUser()
+
+    const adminSupabase = getAdminSupabase() // Use Admin Client to bypass RLS
+    const updateData: any = {
+        status,
+        verified_at: new Date().toISOString(),
+        verified_by: adminUser?.id
+    };
     if (reason) updateData.rejection_reason = reason;
 
     // Update the document
-    const { error } = await supabase
+    const { error } = await adminSupabase
         .from('verification_documents')
         .update(updateData)
         .eq('id', docId);
 
     if (error) throw error;
 
-    // ---------------------------------------------------------
-    // Additional logic originally handled implicitly or needing explicit trigger
-    // ---------------------------------------------------------
-
     // Fetch the doc to get the user ID
-    const { data: doc } = await supabase
+    const { data: doc } = await adminSupabase
         .from('verification_documents')
         .select('user_id')
         .eq('id', docId)
@@ -141,7 +146,7 @@ export async function updateDocumentStatus(docId: string, status: 'approved' | '
 
     if (doc && doc.user_id) {
         // Fetch user info for email
-        const { data: userProfile } = await supabase
+        const { data: userProfile } = await adminSupabase
             .from('user_profiles')
             .select('email, full_name, role')
             .eq('id', doc.user_id)
@@ -159,7 +164,7 @@ export async function updateDocumentStatus(docId: string, status: 'approved' | '
 
         // If Approved, update user profile verification status
         if (status === 'approved') {
-            await supabase
+            await adminSupabase
                 .from('user_profiles')
                 .update({
                     verification_status: 'verified',
@@ -169,4 +174,9 @@ export async function updateDocumentStatus(docId: string, status: 'approved' | '
                 .eq('id', doc.user_id)
         }
     }
+
+    // Revalidate relevant paths to clear Next.js data cache
+    revalidatePath('/admin/verifications')
+    revalidatePath('/admin/users')
+    revalidatePath('/admin')
 }
