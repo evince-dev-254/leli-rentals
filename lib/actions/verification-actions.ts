@@ -157,15 +157,14 @@ export async function updateDocumentStatus(docId: string, status: 'approved' | '
             )
         }
 
-        // If Approved, update user profile verification status if all docs are likely approved
-        // For simplicity, if this doc is approved, we mark the user as 'verified' if they are an Owner
-        // In a real scenario you might check if *all* required docs are approved.
-        if (status === 'approved' && userProfile?.role === 'owner') {
+        // If Approved, update user profile verification status
+        if (status === 'approved') {
             await supabase
                 .from('user_profiles')
                 .update({
                     verification_status: 'verified',
-                    account_status: 'active' // Unsuspend if they were suspended
+                    account_status: 'active', // Unsuspend if they were suspended
+                    updated_at: new Date().toISOString()
                 })
                 .eq('id', doc.user_id)
         }
