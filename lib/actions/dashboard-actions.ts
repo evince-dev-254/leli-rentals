@@ -440,6 +440,7 @@ export async function getAdminUsersData() {
         .from("user_profiles")
         .select(`
             *,
+            is_super_admin,
             referrer:referred_by (
                 full_name
             )

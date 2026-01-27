@@ -97,6 +97,7 @@ export function VerificationsManagement() {
           totalEarnings: u.total_earnings ?? 0,
           isStaff: !!u.is_staff,
           isAdmin: !!u.is_admin,
+          isSuperAdmin: !!u.is_super_admin,
           // New Fields
           dateOfBirth: u.date_of_birth,
           nextOfKinName: u.next_of_kin_name,
@@ -346,7 +347,7 @@ export function VerificationsManagement() {
           <Card className="glass-card">
             <CardHeader>
               <CardTitle>Users Awaiting Document Submission</CardTitle>
-              <CardDescription>Owners and affiliates who have not submitted verification documents</CardDescription>
+              <CardDescription>Property owners who have not yet submitted their required verification documents</CardDescription>
             </CardHeader>
             <CardContent>
               {pendingUsers.length === 0 ? (

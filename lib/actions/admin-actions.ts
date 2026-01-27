@@ -6,8 +6,60 @@ import { createClient } from "@/lib/supabase-server"
 import { resend } from "@/lib/resend"
 import WelcomeEmail from "@/components/emails/welcome-email" // Fallback template for generic messages if needed, or we just send text
 
+// Helper to check for Super Admin status
+async function checkSuperAdmin() {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+        throw new Error("Unauthorized: No session found")
+    }
+
+    const { data: profile } = await supabase
+        .from("user_profiles")
+        .select("is_super_admin")
+        .eq("id", user.id)
+        .single()
+
+    if (!profile?.is_super_admin) {
+        throw new Error("Unauthorized: Super Admin privileges required")
+    }
+
+    return user
+}
+
+export async function toggleSuperAdmin(targetUserId: string) {
+    try {
+        await checkSuperAdmin()
+
+        // Get current status
+        const { data: profile, error: fetchError } = await supabaseAdmin
+            .from("user_profiles")
+            .select("is_super_admin")
+            .eq("id", targetUserId)
+            .single()
+
+        if (fetchError) throw fetchError
+
+        // Toggle
+        const { error: updateError } = await supabaseAdmin
+            .from("user_profiles")
+            .update({ is_super_admin: !profile.is_super_admin })
+            .eq("id", targetUserId)
+
+        if (updateError) throw updateError
+
+        revalidatePath("/admin/users")
+        return { success: true, isSuperAdmin: !profile.is_super_admin }
+    } catch (error: any) {
+        console.error("Error toggling super admin:", error)
+        return { success: false, error: error.message }
+    }
+}
+
 export async function suspendUsers(userIds: string[]) {
     try {
+        await checkSuperAdmin()
         const { error } = await supabaseAdmin
             .from("user_profiles")
             .update({ account_status: "suspended" })
@@ -24,6 +76,7 @@ export async function suspendUsers(userIds: string[]) {
 
 export async function reactivateUsers(userIds: string[]) {
     try {
+        await checkSuperAdmin()
         const { error } = await supabaseAdmin
             .from("user_profiles")
             .update({ account_status: "active" })
@@ -40,17 +93,42 @@ export async function reactivateUsers(userIds: string[]) {
 
 export async function deleteUsers(userIds: string[]) {
     try {
-        // Delete from auth.users - this will cascade to user_profiles due to FK constraint
+        await checkSuperAdmin()
+        console.log(`[deleteUsers] Starting deletion for ${userIds.length} users...`)
+
         for (const userId of userIds) {
-            const { error } = await supabaseAdmin.auth.admin.deleteUser(userId)
-            if (error) throw error
+            // 1. Manually clean up key dependent data to ensure no FK violations prevent auth deletion
+            // Cleanup bookings where user is involved
+            await supabaseAdmin.from("bookings").delete().or(`renter_id.eq.${userId},owner_id.eq.${userId}`)
+
+            // Cleanup reviews by the user or on their listings
+            await supabaseAdmin.from("reviews").delete().eq("reviewer_id", userId)
+
+            // Cleanup listings (this should cascade to any remaining reviews/bookings if configured)
+            await supabaseAdmin.from("listings").delete().eq("owner_id", userId)
+
+            // Cleanup auxiliary tables
+            await supabaseAdmin.from("notifications").delete().eq("user_id", userId)
+            await supabaseAdmin.from("verification_documents").delete().eq("user_id", userId)
+            await supabaseAdmin.from("affiliates").delete().eq("user_id", userId)
+            await supabaseAdmin.from("referrals").delete().or(`referrer_id.eq.${userId},referred_user_id.eq.${userId}`)
+            await supabaseAdmin.from("support_tickets").delete().eq("user_id", userId)
+            await supabaseAdmin.from("transactions").delete().eq("user_id", userId)
+
+            // 2. Delete from auth.users - this will cascade to user_profiles
+            const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(userId)
+            if (authError) {
+                console.error(`[deleteUsers] Error deleting auth user ${userId}:`, authError)
+                throw authError
+            }
         }
 
         revalidatePath("/admin/users")
+        revalidatePath("/admin/staff")
         return { success: true }
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error deleting users:", error)
-        return { success: false, error: "Failed to delete users" }
+        return { success: false, error: error.message || "Failed to delete users" }
     }
 }
 
@@ -122,15 +200,15 @@ export async function getUserDetails(userId: string) {
         // Fetch user profile
         const { data: profile, error: profileError } = await supabaseAdmin
             .from("user_profiles")
-            .select("*")
+            .select("*, is_super_admin")
             .eq("id", userId)
             .single()
 
         if (profileError) throw profileError
 
-        // Fetch verification documents if owner or affiliate
+        // Fetch verification documents ONLY if owner
         let verificationDocs = null
-        if (profile.role === "owner" || profile.role === "affiliate") {
+        if (profile.role === "owner") {
             const { data: docs } = await supabaseAdmin
                 .from("verification_documents")
                 .select("*")
@@ -258,41 +336,8 @@ export async function resetDatabase() {
 
         // 1. Get current auth user to ensure they are admin and to preserve them
         // Using session-aware client for authentication
-        const supabase = await createClient()
-        console.log('[resetDatabase] Created Supabase client')
-
-        const { data: { user: adminUser }, error: authError } = await supabase.auth.getUser()
-
-        if (authError) {
-            console.error('[resetDatabase] Auth error:', authError)
-            throw new Error("Unauthorized: No valid session found")
-        }
-
-        if (!adminUser) {
-            console.error('[resetDatabase] No user found in session')
-            throw new Error("Unauthorized: No valid session found")
-        }
-
-        console.log('[resetDatabase] User authenticated:', { id: adminUser.id, email: adminUser.email })
-
-        // 2. Verify admin status via profile
-        const { data: profile, error: profileError } = await supabase
-            .from("user_profiles")
-            .select("role, is_admin")
-            .eq("id", adminUser.id)
-            .single()
-
-        if (profileError) {
-            console.error('[resetDatabase] Profile fetch error:', profileError)
-            throw new Error("Unauthorized: Failed to verify admin status")
-        }
-
-        console.log('[resetDatabase] User profile:', profile)
-
-        if (!profile.is_admin && profile.role !== 'admin') {
-            console.error('[resetDatabase] User is not admin:', { is_admin: profile.is_admin, role: profile.role })
-            throw new Error("Unauthorized: Admin privileges required")
-        }
+        const adminUser = await checkSuperAdmin()
+        console.log('[resetDatabase] Super Admin authenticated:', { id: adminUser.id, email: adminUser.email })
 
         console.log('[resetDatabase] Admin verification passed. Proceeding with reset...')
 

@@ -1,4 +1,5 @@
 "use client"
+import { supabase } from "@/lib/supabase"
 
 import { useEffect, useState, useCallback } from "react"
 import { getUserDetails, suspendUsers, reactivateUsers } from "@/lib/actions/admin-actions"
@@ -8,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { LoadingLogo } from "@/components/ui/loading-logo"
+import { ActionConfirmModal } from "./action-confirm-modal"
 import {
     User,
     Mail,
@@ -35,6 +37,23 @@ export function UserDetail({ userId }: UserDetailProps) {
     const [loading, setLoading] = useState(true)
     const [data, setData] = useState<any>(null)
     const [actionLoading, setActionLoading] = useState(false)
+    const [isSuperAdmin, setIsSuperAdmin] = useState(false)
+
+    // Consent Modal State
+    const [confirmModal, setConfirmModal] = useState<{
+        open: boolean;
+        title: string;
+        description: string;
+        onConfirm: () => void;
+        variant: "default" | "destructive" | "warning";
+        confirmText?: string;
+    }>({
+        open: false,
+        title: "",
+        description: "",
+        onConfirm: () => { },
+        variant: "default",
+    });
 
     const loadData = useCallback(async () => {
         setLoading(true)
@@ -45,6 +64,13 @@ export function UserDetail({ userId }: UserDetailProps) {
             toast.error(result.error || "Failed to load user details")
         }
         setLoading(false)
+
+        // Check Permissions
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+            const { data: profile } = await supabase.from('user_profiles').select('is_super_admin').eq('id', user.id).single()
+            setIsSuperAdmin(!!profile?.is_super_admin)
+        }
     }, [userId])
 
     useEffect(() => {
@@ -52,27 +78,47 @@ export function UserDetail({ userId }: UserDetailProps) {
     }, [loadData])
 
     async function handleSuspend() {
-        setActionLoading(true)
-        const result = await suspendUsers([userId])
-        if (result.success) {
-            toast.success("User suspended")
-            loadData()
-        } else {
-            toast.error("Failed to suspend user")
-        }
-        setActionLoading(false)
+        setConfirmModal({
+            open: true,
+            title: "Confirm Suspension",
+            description: "Are you sure you want to suspend this user? They will not be able to log in or use the platform.",
+            variant: "destructive",
+            confirmText: "Suspend",
+            onConfirm: async () => {
+                setActionLoading(true)
+                const result = await suspendUsers([userId])
+                setActionLoading(false)
+                setConfirmModal(prev => ({ ...prev, open: false }))
+                if (result.success) {
+                    toast.success("User suspended")
+                    loadData()
+                } else {
+                    toast.error("Failed to suspend user")
+                }
+            }
+        })
     }
 
     async function handleReactivate() {
-        setActionLoading(true)
-        const result = await reactivateUsers([userId])
-        if (result.success) {
-            toast.success("User reactivated")
-            loadData()
-        } else {
-            toast.error("Failed to reactivate user")
-        }
-        setActionLoading(false)
+        setConfirmModal({
+            open: true,
+            title: "Confirm Reactivation",
+            description: "Are you sure you want to reactivate this user's account?",
+            variant: "default",
+            confirmText: "Reactivate",
+            onConfirm: async () => {
+                setActionLoading(true)
+                const result = await reactivateUsers([userId])
+                setActionLoading(false)
+                setConfirmModal(prev => ({ ...prev, open: false }))
+                if (result.success) {
+                    toast.success("User reactivated")
+                    loadData()
+                } else {
+                    toast.error("Failed to reactivate user")
+                }
+            }
+        })
     }
 
     if (loading) {
@@ -133,12 +179,12 @@ export function UserDetail({ userId }: UserDetailProps) {
 
                             <div className="flex gap-2 pt-2">
                                 {isSuspended ? (
-                                    <Button onClick={handleReactivate} disabled={actionLoading} variant="default">
+                                    <Button onClick={handleReactivate} disabled={actionLoading || !isSuperAdmin} variant="default">
                                         <CheckCircle className="h-4 w-4 mr-2" />
                                         Reactivate Account
                                     </Button>
                                 ) : (
-                                    <Button onClick={handleSuspend} disabled={actionLoading} variant="destructive">
+                                    <Button onClick={handleSuspend} disabled={actionLoading || !isSuperAdmin} variant="destructive">
                                         <XCircle className="h-4 w-4 mr-2" />
                                         Suspend Account
                                     </Button>
@@ -158,7 +204,7 @@ export function UserDetail({ userId }: UserDetailProps) {
             {/* Tabbed Content */}
             <Tabs defaultValue="verification" className="w-full">
                 <TabsList className="bg-muted/50">
-                    {(profile.role === "owner" || profile.role === "affiliate") && (
+                    {profile.role === "owner" && (
                         <TabsTrigger value="verification">
                             <Shield className="h-4 w-4 mr-2" />
                             Verification
@@ -183,7 +229,7 @@ export function UserDetail({ userId }: UserDetailProps) {
                 </TabsList>
 
                 {/* Verification Tab */}
-                {(profile.role === "owner" || profile.role === "affiliate") && (
+                {profile.role === "owner" && (
                     <TabsContent value="verification" className="space-y-4">
                         <Card className="glass-card">
                             <CardHeader>
@@ -468,6 +514,17 @@ export function UserDetail({ userId }: UserDetailProps) {
                     </TabsContent>
                 )}
             </Tabs>
-        </div>
+
+            <ActionConfirmModal
+                open={confirmModal.open}
+                onOpenChange={(open) => setConfirmModal((prev) => ({ ...prev, open }))}
+                onConfirm={confirmModal.onConfirm}
+                title={confirmModal.title}
+                description={confirmModal.description}
+                variant={confirmModal.variant}
+                confirmText={confirmModal.confirmText}
+                loading={actionLoading}
+            />
+        </div >
     )
 }

@@ -71,7 +71,9 @@ import {
   reactivateUsers,
   deleteUsers,
   sendBulkReminders,
+  toggleSuperAdmin,
 } from "@/lib/actions/admin-actions";
+import { ActionConfirmModal } from "./action-confirm-modal";
 import {
   getAdminUsersData,
   updateProfile,
@@ -88,6 +90,7 @@ export function UsersManagement() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [users, setUsers] = useState<User[]>([]);
+  const [currentUser, setCurrentUser] = useState<{ id: string, isSuperAdmin: boolean } | null>(null);
   const [loadingUsers, setLoadingUsers] = useState<boolean>(true);
 
   // Bulk Actions State
@@ -96,6 +99,24 @@ export function UsersManagement() {
   const [reminderOpen, setReminderOpen] = useState(false);
   const [reminderSubject, setReminderSubject] = useState("");
   const [reminderMessage, setReminderMessage] = useState("");
+
+  // Consent Modal State
+  const [confirmModal, setConfirmModal] = useState<{
+    open: boolean;
+    title: string;
+    description: string;
+    onConfirm: () => void;
+    variant: "default" | "destructive" | "warning";
+    confirmText?: string;
+  }>({
+    open: false,
+    title: "",
+    description: "",
+    onConfirm: () => { },
+    variant: "default",
+  });
+
+  const isSuperAdmin = currentUser?.isSuperAdmin || false;
 
   // Filter users fetched from Supabase
   const filteredUsers = users.filter((user) => {
@@ -124,7 +145,7 @@ export function UsersManagement() {
         accountStatus: (u.account_status as any) ?? "active",
         verificationStatus:
           (u.verification_status as any) ||
-          (["owner", "affiliate", "staff"].includes(u.role) ? "pending" : null),
+          (u.role === "owner" ? "pending" : null),
         verificationDeadline: u.verification_deadline
           ? new Date(u.verification_deadline)
           : null,
@@ -143,9 +164,25 @@ export function UsersManagement() {
         totalEarnings: u.total_earnings ?? 0,
         isStaff: !!u.is_staff,
         isAdmin: !!u.is_admin,
+        isSuperAdmin: !!u.is_super_admin,
       }));
 
       setUsers(mapped);
+
+      // Fetch current user status for permission gating
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        // Find self in mapped (optimization) or fetch separately if pagination was used (which isn't here yet)
+        const selfProfile = mapped.find(u => u.id === user.id);
+        if (selfProfile) {
+          setCurrentUser({ id: user.id, isSuperAdmin: !!selfProfile.isSuperAdmin });
+        } else {
+          // Fallback fetch if current admin not in the list (e.g. filtered out)
+          const { data: profile } = await supabase.from('user_profiles').select('is_super_admin').eq('id', user.id).single();
+          setCurrentUser({ id: user.id, isSuperAdmin: !!profile?.is_super_admin });
+        }
+      }
+
     } finally {
       setLoadingUsers(false);
     }
@@ -173,82 +210,85 @@ export function UsersManagement() {
   };
 
   // Action Handlers
-  const handleBulkSuspend = async () => {
-    if (
-      !confirm(
-        `Are you sure you want to suspend ${selectedUserIds.length} users?`,
-      )
-    )
-      return;
+  const handleBulkSuspend = async (ids?: string[]) => {
+    const targetIds = ids || selectedUserIds;
+    if (targetIds.length === 0) return;
 
-    setActionLoading(true);
-    const result = await suspendUsers(selectedUserIds);
-    setActionLoading(false);
+    setConfirmModal({
+      open: true,
+      title: "Confirm Suspension",
+      description: `Are you sure you want to suspend ${targetIds.length} user(s)? They will not be able to log in.`,
+      variant: "warning",
+      confirmText: "Suspend",
+      onConfirm: async () => {
+        setActionLoading(true);
+        const result = await suspendUsers(targetIds);
+        setActionLoading(false);
+        setConfirmModal((prev) => ({ ...prev, open: false }));
 
-    if (result.success) {
-      toast({ title: "Success", description: "Users suspended successfully" });
-      loadUsers();
-      setSelectedUserIds([]);
-    } else {
-      toast({
-        title: "Error",
-        description: "Failed to suspend users",
-        variant: "destructive",
-      });
-    }
+        if (result.success) {
+          toast({ title: "Success", description: "Users suspended successfully" });
+          loadUsers();
+          setSelectedUserIds([]);
+        } else {
+          toast({ title: "Error", description: "Failed to suspend users", variant: "destructive" });
+        }
+      }
+    });
   };
 
-  const handleBulkReactivate = async () => {
-    if (
-      !confirm(
-        `Are you sure you want to reactivate ${selectedUserIds.length} users?`,
-      )
-    )
-      return;
+  const handleBulkReactivate = async (ids?: string[]) => {
+    const targetIds = ids || selectedUserIds;
+    if (targetIds.length === 0) return;
 
-    setActionLoading(true);
-    const result = await reactivateUsers(selectedUserIds);
-    setActionLoading(false);
+    setConfirmModal({
+      open: true,
+      title: "Confirm Reactivation",
+      description: `Are you sure you want to reactivate ${targetIds.length} user(s)?`,
+      variant: "default",
+      confirmText: "Reactivate",
+      onConfirm: async () => {
+        setActionLoading(true);
+        const result = await reactivateUsers(targetIds);
+        setActionLoading(false);
+        setConfirmModal((prev) => ({ ...prev, open: false }));
 
-    if (result.success) {
-      toast({
-        title: "Success",
-        description: "Users reactivated successfully",
-      });
-      loadUsers();
-      setSelectedUserIds([]);
-    } else {
-      toast({
-        title: "Error",
-        description: "Failed to reactivate users",
-        variant: "destructive",
-      });
-    }
+        if (result.success) {
+          toast({ title: "Success", description: "Users reactivated successfully" });
+          loadUsers();
+          setSelectedUserIds([]);
+        } else {
+          toast({ title: "Error", description: "Failed to reactivate users", variant: "destructive" });
+        }
+      }
+    });
   };
 
-  const handleBulkDelete = async () => {
-    if (
-      !confirm(
-        `Are you sure you want to PERMANENTLY DELETE ${selectedUserIds.length} users? This action cannot be undone.`,
-      )
-    )
-      return;
+  const handleBulkDelete = async (ids?: string[]) => {
+    const targetIds = ids || selectedUserIds;
+    if (targetIds.length === 0) return;
 
-    setActionLoading(true);
-    const result = await deleteUsers(selectedUserIds);
-    setActionLoading(false);
+    setConfirmModal({
+      open: true,
+      title: "DELETE USERS PERMANENTLY",
+      description: `Are you sure you want to PERMANENTLY DELETE ${targetIds.length} user(s)? This will remove all their data and cannot be undone.`,
+      variant: "destructive",
+      confirmText: "Delete Permanently",
+      onConfirm: async () => {
+        setActionLoading(true);
+        const result = await deleteUsers(targetIds);
+        setActionLoading(false);
+        setConfirmModal((prev) => ({ ...prev, open: false }));
 
-    if (result.success) {
-      toast({ title: "Success", description: "Users deleted successfully" });
-      loadUsers();
-      setSelectedUserIds([]);
-    } else {
-      toast({
-        title: "Error",
-        description: "Failed to delete users",
-        variant: "destructive",
-      });
-    }
+        if (result.success) {
+          toast({ title: "Success", description: "Users deleted successfully" });
+          loadUsers();
+          setSelectedUserIds([]);
+        } else {
+          toast({ title: "Error", description: result.error || "Failed to delete users", variant: "destructive" });
+        }
+      }
+    });
   };
 
   const handleSendReminder = async () => {
@@ -289,79 +329,122 @@ export function UsersManagement() {
 
   const handleToggleAdmin = async (user: User) => {
     const nextValue = !user.isAdmin;
-    if (
-      !confirm(
-        `Are you sure you want to ${nextValue ? "promote" : "revoke"} admin access for ${user.fullName}?`,
-      )
-    )
-      return;
+    setConfirmModal({
+      open: true,
+      title: nextValue ? "Promote to Admin" : "Revoke Admin Access",
+      description: `Are you sure you want to ${nextValue ? "promote" : "revoke"} admin access for ${user.fullName}?`,
+      variant: nextValue ? "default" : "warning",
+      confirmText: nextValue ? "Promote" : "Revoke",
+      onConfirm: async () => {
+        setActionLoading(true);
+        const result = await updateProfile(user.id, { is_admin: nextValue });
+        setActionLoading(false);
+        setConfirmModal((prev) => ({ ...prev, open: false }));
 
-    setActionLoading(true);
-    const result = await updateProfile(user.id, { is_admin: nextValue });
-    setActionLoading(false);
-
-    if (result.success) {
-      toast({ title: "Success", description: `User admin status updated` });
-      loadUsers();
-    } else {
-      toast({
-        title: "Error",
-        description: result.error || "Failed to update admin status",
-        variant: "destructive",
-      });
-    }
+        if (result.success) {
+          toast({ title: "Success", description: `User admin status updated` });
+          loadUsers();
+        } else {
+          toast({ title: "Error", description: result.error || "Failed to update admin status", variant: "destructive" });
+        }
+      }
+    });
   };
 
   const handleToggleStaff = async (user: User) => {
     const nextValue = !user.isStaff;
-    if (
-      !confirm(
-        `Are you sure you want to ${nextValue ? "promote" : "revoke"} staff access for ${user.fullName}?`,
-      )
-    )
-      return;
+    setConfirmModal({
+      open: true,
+      title: nextValue ? "Promote to Staff" : "Revoke Staff Access",
+      description: `Are you sure you want to ${nextValue ? "promote" : "revoke"} staff access for ${user.fullName}?`,
+      variant: nextValue ? "default" : "warning",
+      confirmText: nextValue ? "Promote" : "Revoke",
+      onConfirm: async () => {
+        setActionLoading(true);
+        const result = await updateProfile(user.id, { is_staff: nextValue });
+        setActionLoading(false);
+        setConfirmModal((prev) => ({ ...prev, open: false }));
 
-    setActionLoading(true);
-    const result = await updateProfile(user.id, { is_staff: nextValue });
-    setActionLoading(false);
+        if (result.success) {
+          toast({ title: "Success", description: `User staff status updated` });
+          loadUsers();
+        } else {
+          toast({ title: "Error", description: result.error || "Failed to update staff status", variant: "destructive" });
+        }
+      }
+    });
+  };
 
-    if (result.success) {
-      toast({ title: "Success", description: `User staff status updated` });
-      loadUsers();
-    } else {
-      toast({
-        title: "Error",
-        description: result.error || "Failed to update staff status",
-        variant: "destructive",
-      });
-    }
+  const handleToggleSuperAdmin = async (user: User) => {
+    // Only allow if current viewer is super admin (double check)
+    if (!isSuperAdmin) return;
+
+    setConfirmModal({
+      open: true,
+      title: user.isSuperAdmin ? "Revoke Super Admin" : "Promote to Super Admin",
+      description: `Are you sure you want to ${user.isSuperAdmin ? "revoke" : "grant"} Super Admin privileges for ${user.fullName}? This is a high-level permission.`,
+      variant: user.isSuperAdmin ? "warning" : "default",
+      confirmText: user.isSuperAdmin ? "Revoke" : "Promote",
+      onConfirm: async () => {
+        setActionLoading(true);
+        const result = await toggleSuperAdmin(user.id);
+        setActionLoading(false);
+        setConfirmModal((prev) => ({ ...prev, open: false }));
+
+        if (result.success) {
+          toast({ title: "Success", description: `Super Admin status updated` });
+          loadUsers();
+        } else {
+          toast({ title: "Error", description: result.error || "Failed to update status", variant: "destructive" });
+        }
+      }
+    });
   };
 
   const handleUpdateRole = async (userId: string, newRole: string) => {
-    if (
-      !confirm(
-        `Are you sure you want to change this user's role to ${newRole}?`,
-      )
-    )
-      return;
+    setConfirmModal({
+      open: true,
+      title: "Update User Role",
+      description: `Are you sure you want to change this user's role to ${newRole}?`,
+      variant: "default",
+      confirmText: "Update Role",
+      onConfirm: async () => {
+        setActionLoading(true);
+        const result = await updateProfile(userId, { role: newRole });
+        setActionLoading(false);
+        setConfirmModal((prev) => ({ ...prev, open: false }));
 
-    setActionLoading(true);
-    const result = await updateProfile(userId, { role: newRole });
-    setActionLoading(false);
+        if (result.success) {
+          toast({ title: "Success", description: `User role updated to ${newRole}` });
+          loadUsers();
+        } else {
+          toast({ title: "Error", description: result.error || "Failed to update role", variant: "destructive" });
+        }
+      }
+    });
+  };
 
-    if (result.success) {
-      toast({
-        title: "Success",
-        description: `User role updated to ${newRole}`,
-      });
-      loadUsers();
-    } else {
-      toast({
-        title: "Error",
-        description: result.error || "Failed to update role",
-        variant: "destructive",
-      });
-    }
+  const handleApproveStaff = async (user: User) => {
+    setConfirmModal({
+      open: true,
+      title: "Approve Staff Request",
+      description: `Are you sure you want to approve the staff request for ${user.fullName}?`,
+      variant: "default",
+      confirmText: "Approve",
+      onConfirm: async () => {
+        setActionLoading(true);
+        const result = await promoteToStaff(user.email);
+        setActionLoading(false);
+        setConfirmModal((prev) => ({ ...prev, open: false }));
+
+        if (result.success) {
+          toast({ title: "Approved", description: result.message });
+          loadUsers();
+        } else {
+          toast({ title: "Error", description: result.error, variant: "destructive" });
+        }
+      }
+    });
   };
 
   const getStatusBadge = (status: string) => {
@@ -481,8 +564,8 @@ export function UsersManagement() {
             <Button
               variant="outline"
               size="sm"
-              onClick={handleBulkSuspend}
-              disabled={actionLoading}
+              onClick={() => handleBulkSuspend()}
+              disabled={actionLoading || !isSuperAdmin}
               className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
             >
               <Ban className="h-4 w-4 mr-2" />
@@ -491,8 +574,8 @@ export function UsersManagement() {
             <Button
               variant="outline"
               size="sm"
-              onClick={handleBulkReactivate}
-              disabled={actionLoading}
+              onClick={() => handleBulkReactivate()}
+              disabled={actionLoading || !isSuperAdmin}
               className="text-green-600 hover:text-green-700 hover:bg-green-50"
             >
               <CheckCircle className="h-4 w-4 mr-2" />
@@ -501,8 +584,8 @@ export function UsersManagement() {
             <Button
               variant="destructive"
               size="sm"
-              onClick={handleBulkDelete}
-              disabled={actionLoading}
+              onClick={() => handleBulkDelete()}
+              disabled={actionLoading || !isSuperAdmin}
             >
               <Trash2 className="h-4 w-4 mr-2" />
               Delete
@@ -633,7 +716,7 @@ export function UsersManagement() {
                   <TableCell>{getRoleBadge(user.role)}</TableCell>
                   <TableCell>{getStatusBadge(user.accountStatus)}</TableCell>
                   <TableCell>
-                    {["owner", "affiliate", "staff"].includes(user.role) ? (
+                    {user.role === "owner" ? (
                       <Badge
                         variant={
                           user.verificationStatus === "verified"
@@ -646,7 +729,7 @@ export function UsersManagement() {
                         {user.verificationStatus || "pending"}
                       </Badge>
                     ) : (
-                      <span className="text-xs text-muted-foreground italic">
+                      <span className="text-muted-foreground text-xs italic">
                         Not Required
                       </span>
                     )}
@@ -688,9 +771,10 @@ export function UsersManagement() {
                         {user.accountStatus === "suspended" ? (
                           <DropdownMenuItem
                             className="text-green-600"
+                            disabled={!isSuperAdmin}
                             onClick={() => {
                               setSelectedUserIds([user.id]);
-                              handleBulkReactivate();
+                              handleBulkReactivate([user.id]);
                             }}
                           >
                             <CheckCircle className="h-4 w-4 mr-2" />
@@ -699,9 +783,10 @@ export function UsersManagement() {
                         ) : (
                           <DropdownMenuItem
                             className="text-destructive"
+                            disabled={!isSuperAdmin}
                             onClick={() => {
                               setSelectedUserIds([user.id]);
-                              handleBulkSuspend();
+                              handleBulkSuspend([user.id]);
                             }}
                           >
                             <Ban className="h-4 w-4 mr-2" />
@@ -749,33 +834,36 @@ export function UsersManagement() {
                         {user.role === "staff_pending" && (
                           <DropdownMenuItem
                             className="text-green-600 font-bold"
-                            onClick={async () => {
-                              if (!confirm(`Approve staff request for ${user.fullName}?`)) return;
-                              setActionLoading(true);
-                              const result = await promoteToStaff(user.email);
-                              setActionLoading(false);
-                              if (result.success) {
-                                toast({ title: "Approved", description: result.message });
-                                loadUsers();
-                              } else {
-                                toast({ title: "Error", description: result.error, variant: "destructive" });
-                              }
-                            }}
+                            onClick={() => handleApproveStaff(user)}
                           >
                             <CheckCircle className="h-4 w-4 mr-2" /> Approve Staff Request
                           </DropdownMenuItem>
                         )}
 
                         <DropdownMenuSeparator />
+                        {isSuperAdmin && (
+                          <DropdownMenuItem
+                            className={
+                              user.isSuperAdmin ? "text-orange-600" : "text-red-600 font-bold"
+                            }
+                            onClick={() => handleToggleSuperAdmin(user)}
+                          >
+                            <Shield className="h-4 w-4 mr-2" />
+                            {user.isSuperAdmin ? "Revoke Super Admin" : "Promote to Super Admin"}
+                          </DropdownMenuItem>
+                        )}
+
+                        <DropdownMenuSeparator />
                         <DropdownMenuItem
                           className="text-destructive"
+                          disabled={!isSuperAdmin}
                           onClick={() => {
-                            setSelectedUserIds([user.id]);
-                            handleBulkDelete();
+                            // Bug Fix: pass ID directly to avoid reliance on selection state for single action
+                            handleBulkDelete([user.id]);
                           }}
                         >
                           <Trash2 className="h-4 w-4 mr-2" />
-                          Delete Account
+                          Delete User
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -1006,6 +1094,17 @@ export function UsersManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+
+      <ActionConfirmModal
+        open={confirmModal.open}
+        onOpenChange={(open) => setConfirmModal((prev) => ({ ...prev, open }))}
+        onConfirm={confirmModal.onConfirm}
+        title={confirmModal.title}
+        description={confirmModal.description}
+        variant={confirmModal.variant}
+        confirmText={confirmModal.confirmText}
+        loading={actionLoading}
+      />
+    </div >
   );
 }

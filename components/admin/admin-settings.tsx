@@ -26,6 +26,7 @@ export function AdminSettings() {
   // const [newAdminEmail, setNewAdminEmail] = useState("") // Moved
   // const [loading, setLoading] = useState(true) // Moved
   const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null)
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false)
 
   // Settings State
   const [settings, setSettings] = useState<Record<string, string>>({})
@@ -53,7 +54,11 @@ export function AdminSettings() {
 
   const getCurrentUser = async () => {
     const { data: { user } } = await supabase.auth.getUser()
-    if (user) setCurrentUserEmail(user.email ?? null)
+    if (user) {
+      setCurrentUserEmail(user.email ?? null)
+      const { data: profile } = await supabase.from('user_profiles').select('is_super_admin').eq('id', user.id).single()
+      setIsSuperAdmin(!!profile?.is_super_admin)
+    }
   }
 
   const handleAdminPasswordChange = async () => {
@@ -587,6 +592,12 @@ export function AdminSettings() {
                 </div>
 
                 <div className="mt-6 space-y-4">
+                  {!isSuperAdmin && (
+                    <div className="bg-orange-100 border-l-4 border-orange-500 text-orange-700 p-4 mb-4" role="alert">
+                      <p className="font-bold">Restricted Access</p>
+                      <p>Only Super Admins can reset the database.</p>
+                    </div>
+                  )}
                   <div className="space-y-2">
                     <Label htmlFor="reset-confirm">Type <span className="font-bold text-destructive">RESET</span> to confirm</Label>
                     <Input
@@ -594,13 +605,14 @@ export function AdminSettings() {
                       value={resetConfirmText}
                       onChange={(e) => setResetConfirmText(e.target.value)}
                       placeholder="RESET"
+                      disabled={!isSuperAdmin}
                       className="max-w-[200px] border-destructive/50"
                     />
                   </div>
                   <Button
                     variant="destructive"
                     onClick={handleResetSystem}
-                    disabled={resetConfirmText !== "RESET" || resetting}
+                    disabled={resetConfirmText !== "RESET" || resetting || !isSuperAdmin}
                     className="w-full sm:w-auto"
                   >
                     {resetting ? (

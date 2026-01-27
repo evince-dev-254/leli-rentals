@@ -22,6 +22,7 @@ import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { getAdminStaffData, promoteToStaff, demoteFromStaff, getPendingStaffRequests, rejectStaffRequest } from "@/lib/actions/staff-actions"
 import { suspendUsers, reactivateUsers, deleteUsers } from "@/lib/actions/admin-actions"
+import { ActionConfirmModal } from "./action-confirm-modal"
 import { UserSelector } from "./user-selector"
 
 export function StaffManagement() {
@@ -33,6 +34,22 @@ export function StaffManagement() {
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
     const [selectedUser, setSelectedUser] = useState<any>(null)
     const [actionLoading, setActionLoading] = useState(false)
+
+    // Consent Modal State
+    const [confirmModal, setConfirmModal] = useState<{
+        open: boolean;
+        title: string;
+        description: string;
+        onConfirm: () => void;
+        variant: "default" | "destructive" | "warning";
+        confirmText?: string;
+    }>({
+        open: false,
+        title: "",
+        description: "",
+        onConfirm: () => { },
+        variant: "default",
+    });
 
     const loadStaff = useCallback(async () => {
         setLoading(true)
@@ -74,75 +91,135 @@ export function StaffManagement() {
     }
 
     const handleApprove = async (email: string) => {
-        setActionLoading(true)
-        const result = await promoteToStaff(email)
-        setActionLoading(false)
-        if (result.success) {
-            toast({ title: "Approved", description: result.message })
-            loadStaff()
-        } else {
-            toast({ title: "Error", description: result.error, variant: "destructive" })
-        }
+        setConfirmModal({
+            open: true,
+            title: "Approve Staff Request",
+            description: `Are you sure you want to approve the staff request for ${email}?`,
+            variant: "default",
+            confirmText: "Approve",
+            onConfirm: async () => {
+                setActionLoading(true)
+                const result = await promoteToStaff(email)
+                setActionLoading(false)
+                setConfirmModal(prev => ({ ...prev, open: false }))
+                if (result.success) {
+                    toast({ title: "Approved", description: result.message })
+                    loadStaff()
+                } else {
+                    toast({ title: "Error", description: result.error, variant: "destructive" })
+                }
+            }
+        })
     }
 
     const handleReject = async (userId: string) => {
-        if (!confirm("Are you sure you want to reject this staff request?")) return
-        setActionLoading(true)
-        const result = await rejectStaffRequest(userId)
-        setActionLoading(false)
-        if (result.success) {
-            toast({ title: "Rejected", description: result.message })
-            loadStaff()
-        } else {
-            toast({ title: "Error", description: result.error, variant: "destructive" })
-        }
+        setConfirmModal({
+            open: true,
+            title: "Reject Staff Request",
+            description: "Are you sure you want to reject this staff request? The user will return to their previous role.",
+            variant: "warning",
+            confirmText: "Reject",
+            onConfirm: async () => {
+                setActionLoading(true)
+                const result = await rejectStaffRequest(userId)
+                setActionLoading(false)
+                setConfirmModal(prev => ({ ...prev, open: false }))
+                if (result.success) {
+                    toast({ title: "Rejected", description: result.message })
+                    loadStaff()
+                } else {
+                    toast({ title: "Error", description: result.error, variant: "destructive" })
+                }
+            }
+        })
     }
 
     const handleDemote = async (userId: string) => {
-        if (!confirm("Are you sure you want to demote this staff member? they will return to a standard user role.")) return
-        setActionLoading(true)
-        const result = await demoteFromStaff(userId)
-        setActionLoading(false)
-        if (result.success) {
-            toast({ title: "Success", description: result.message })
-            loadStaff()
-        } else {
-            toast({ title: "Error", description: result.error, variant: "destructive" })
-        }
+        setConfirmModal({
+            open: true,
+            title: "Demote Staff Member",
+            description: "Are you sure you want to demote this staff member? They will return to a standard user role.",
+            variant: "warning",
+            confirmText: "Demote",
+            onConfirm: async () => {
+                setActionLoading(true)
+                const result = await demoteFromStaff(userId)
+                setActionLoading(false)
+                setConfirmModal(prev => ({ ...prev, open: false }))
+                if (result.success) {
+                    toast({ title: "Success", description: result.message })
+                    loadStaff()
+                } else {
+                    toast({ title: "Error", description: result.error, variant: "destructive" })
+                }
+            }
+        })
     }
 
     const handleSuspend = async (userId: string) => {
-        if (!confirm("Suspend this staff member's account?")) return
-        setActionLoading(true)
-        const result = await suspendUsers([userId])
-        setActionLoading(false)
-        if (result.success) {
-            toast({ title: "Success", description: "Staff account suspended" })
-            loadStaff()
-        }
+        setConfirmModal({
+            open: true,
+            title: "Suspend Staff Account",
+            description: "Are you sure you want to suspend this staff member's account? They will lose access to the platform.",
+            variant: "destructive",
+            confirmText: "Suspend",
+            onConfirm: async () => {
+                setActionLoading(true)
+                const result = await suspendUsers([userId])
+                setActionLoading(false)
+                setConfirmModal(prev => ({ ...prev, open: false }))
+                if (result.success) {
+                    toast({ title: "Success", description: "Staff account suspended" })
+                    loadStaff()
+                } else {
+                    toast({ title: "Error", description: "Failed to suspend account", variant: "destructive" })
+                }
+            }
+        })
     }
 
     const handleReactivate = async (userId: string) => {
-        setActionLoading(true)
-        const result = await reactivateUsers([userId])
-        setActionLoading(false)
-        if (result.success) {
-            toast({ title: "Success", description: "Staff account reactivated" })
-            loadStaff()
-        }
+        setConfirmModal({
+            open: true,
+            title: "Reactivate Staff Account",
+            description: "Are you sure you want to reactivate this staff member's account?",
+            variant: "default",
+            confirmText: "Reactivate",
+            onConfirm: async () => {
+                setActionLoading(true)
+                const result = await reactivateUsers([userId])
+                setActionLoading(false)
+                setConfirmModal(prev => ({ ...prev, open: false }))
+                if (result.success) {
+                    toast({ title: "Success", description: "Staff account reactivated" })
+                    loadStaff()
+                } else {
+                    toast({ title: "Error", description: "Failed to reactivate account", variant: "destructive" })
+                }
+            }
+        })
     }
 
     const handleDelete = async (userId: string) => {
-        if (!confirm("Are you sure you want to PERMANENTLY DELETE this staff member? This action cannot be undone.")) return
-        setActionLoading(true)
-        const result = await deleteUsers([userId])
-        setActionLoading(false)
-        if (result.success) {
-            toast({ title: "Success", description: "Staff member deleted successfully" })
-            loadStaff()
-        } else {
-            toast({ title: "Error", description: result.error, variant: "destructive" })
-        }
+        setConfirmModal({
+            open: true,
+            title: "DELETE STAFF PERMANENTLY",
+            description: "Are you sure you want to PERMANENTLY DELETE this staff member? This will remove all their data and cannot be undone.",
+            variant: "destructive",
+            confirmText: "Delete Permanently",
+            onConfirm: async () => {
+                setActionLoading(true)
+                const result = await deleteUsers([userId])
+                setActionLoading(false)
+                setConfirmModal(prev => ({ ...prev, open: false }))
+                if (result.success) {
+                    toast({ title: "Success", description: "Staff member deleted successfully" })
+                    loadStaff()
+                } else {
+                    toast({ title: "Error", description: result.error || "Failed to delete staff", variant: "destructive" })
+                }
+            }
+        })
     }
 
     const filteredStaff = staff.filter(s =>
@@ -391,6 +468,17 @@ export function StaffManagement() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            <ActionConfirmModal
+                open={confirmModal.open}
+                onOpenChange={(open) => setConfirmModal((prev) => ({ ...prev, open }))}
+                onConfirm={confirmModal.onConfirm}
+                title={confirmModal.title}
+                description={confirmModal.description}
+                variant={confirmModal.variant}
+                confirmText={confirmModal.confirmText}
+                loading={actionLoading}
+            />
         </div>
     )
 }

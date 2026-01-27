@@ -1,6 +1,6 @@
 // User types and verification system types
 
-export type UserRole = "renter" | "owner" | "affiliate" | "admin" | "staff"
+export type UserRole = "renter" | "owner" | "affiliate" | "admin" | "staff" | "staff_pending"
 
 export type VerificationStatus = "pending" | "submitted" | "verified" | "rejected" | "suspended"
 
@@ -32,6 +32,7 @@ export interface User {
   totalEarnings: number
   isStaff: boolean
   isAdmin: boolean
+  isSuperAdmin: boolean
 }
 
 export interface VerificationDocument {
