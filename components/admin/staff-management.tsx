@@ -1,6 +1,6 @@
 "use client"
 
-import { Search, Plus, MoreHorizontal, UserMinus, Shield, ShieldOff, Ban, CheckCircle, Mail, Eye } from "lucide-react"
+import { Search, Plus, MoreHorizontal, UserMinus, Shield, ShieldOff, Ban, CheckCircle, Mail, Eye, Trash2 } from "lucide-react"
 import { useState, useEffect, useCallback } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -21,7 +21,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { getAdminStaffData, promoteToStaff, demoteFromStaff, getPendingStaffRequests, rejectStaffRequest } from "@/lib/actions/staff-actions"
-import { suspendUsers, reactivateUsers } from "@/lib/actions/admin-actions"
+import { suspendUsers, reactivateUsers, deleteUsers } from "@/lib/actions/admin-actions"
 import { UserSelector } from "./user-selector"
 
 export function StaffManagement() {
@@ -129,6 +129,19 @@ export function StaffManagement() {
         if (result.success) {
             toast({ title: "Success", description: "Staff account reactivated" })
             loadStaff()
+        }
+    }
+
+    const handleDelete = async (userId: string) => {
+        if (!confirm("Are you sure you want to PERMANENTLY DELETE this staff member? This action cannot be undone.")) return
+        setActionLoading(true)
+        const result = await deleteUsers([userId])
+        setActionLoading(false)
+        if (result.success) {
+            toast({ title: "Success", description: "Staff member deleted successfully" })
+            loadStaff()
+        } else {
+            toast({ title: "Error", description: result.error, variant: "destructive" })
         }
     }
 
@@ -243,6 +256,11 @@ export function StaffManagement() {
                                                                     Reactivate Account
                                                                 </DropdownMenuItem>
                                                             )}
+                                                            <DropdownMenuSeparator />
+                                                            <DropdownMenuItem onClick={() => handleDelete(member.id)} className="text-destructive">
+                                                                <Trash2 className="h-4 w-4 mr-2" />
+                                                                Delete Account
+                                                            </DropdownMenuItem>
                                                         </DropdownMenuContent>
                                                     </DropdownMenu>
                                                 </TableCell>

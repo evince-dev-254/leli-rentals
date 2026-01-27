@@ -76,6 +76,7 @@ import {
   getAdminUsersData,
   updateProfile,
 } from "@/lib/actions/dashboard-actions";
+import { promoteToStaff } from "@/lib/actions/staff-actions";
 
 export function UsersManagement() {
   const { toast } = useToast();
@@ -420,6 +421,18 @@ export function UsersManagement() {
             Renter
           </Badge>
         );
+      case "staff":
+        return (
+          <Badge className="bg-indigo-500/20 text-indigo-600 border-indigo-500/30">
+            Staff
+          </Badge>
+        );
+      case "staff_pending":
+        return (
+          <Badge className="bg-yellow-500/20 text-yellow-600 border-yellow-500/30 animate-pulse">
+            Staff Pending
+          </Badge>
+        );
       default:
         return <Badge variant="outline">{role}</Badge>;
     }
@@ -731,6 +744,38 @@ export function UsersManagement() {
                               Staff
                             </>
                           )}
+                        </DropdownMenuItem>
+
+                        {user.role === "staff_pending" && (
+                          <DropdownMenuItem
+                            className="text-green-600 font-bold"
+                            onClick={async () => {
+                              if (!confirm(`Approve staff request for ${user.fullName}?`)) return;
+                              setActionLoading(true);
+                              const result = await promoteToStaff(user.email);
+                              setActionLoading(false);
+                              if (result.success) {
+                                toast({ title: "Approved", description: result.message });
+                                loadUsers();
+                              } else {
+                                toast({ title: "Error", description: result.error, variant: "destructive" });
+                              }
+                            }}
+                          >
+                            <CheckCircle className="h-4 w-4 mr-2" /> Approve Staff Request
+                          </DropdownMenuItem>
+                        )}
+
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          className="text-destructive"
+                          onClick={() => {
+                            setSelectedUserIds([user.id]);
+                            handleBulkDelete();
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete Account
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
