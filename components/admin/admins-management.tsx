@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { getAdmins, updateProfile } from "@/lib/actions/dashboard-actions"
+import { getAmISuperAdmin } from "@/lib/actions/admin-actions"
 import { toast } from "sonner"
 import { supabase } from "@/lib/supabase"
 import { UserSelector } from "./user-selector"
@@ -18,6 +19,7 @@ export function AdminsManagement() {
     const [selectedUser, setSelectedUser] = useState<any>(null)
     const [loading, setLoading] = useState(true)
     const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null)
+    const [isSuperAdmin, setIsSuperAdmin] = useState(false)
 
     useEffect(() => {
         loadAdmins()
@@ -26,7 +28,11 @@ export function AdminsManagement() {
 
     const getCurrentUser = async () => {
         const { data: { user } } = await supabase.auth.getUser()
-        if (user) setCurrentUserEmail(user.email ?? null)
+        if (user) {
+            setCurrentUserEmail(user.email ?? null)
+            const isSuper = await getAmISuperAdmin()
+            setIsSuperAdmin(isSuper)
+        }
     }
 
     const loadAdmins = async () => {
@@ -42,7 +48,7 @@ export function AdminsManagement() {
     }
 
     const handleAddAdmin = async () => {
-        if (currentUserEmail !== '1paulkihiu@gmail.com') {
+        if (!isSuperAdmin) {
             toast.error("Restricted: Only the Super Admin can add new admins.")
             return
         }
@@ -72,7 +78,7 @@ export function AdminsManagement() {
             return
         }
 
-        if (currentUserEmail !== '1paulkihiu@gmail.com') {
+        if (!isSuperAdmin) {
             toast.error("Restricted: Only the Super Admin can remove admins.")
             return
         }
@@ -111,7 +117,7 @@ export function AdminsManagement() {
                     <CardDescription>
                         Grant or revoke administrator privileges.
                         <span className="block mt-1 text-amber-600 font-medium">
-                            Note: Only the Super Admin (1paulkihiu@gmail.com) can modify admin list.
+                            Note: Only Super Admins can modify the admin list.
                         </span>
                     </CardDescription>
                 </CardHeader>
@@ -123,7 +129,7 @@ export function AdminsManagement() {
                                 onSelect={setSelectedUser}
                                 excludeRoles={['admin']}
                                 placeholder="Search users by name or email..."
-                                disabled={currentUserEmail !== '1paulkihiu@gmail.com'}
+                                disabled={!isSuperAdmin}
                             />
                         </div>
                         <div className="flex flex-col gap-1">
@@ -161,8 +167,8 @@ export function AdminsManagement() {
                                                 <span className="text-xs text-muted-foreground bg-secondary px-2 py-1 rounded">You</span>
                                             )}
 
-                                            {/* Super Admin Badge for 1paulkihiu@gmail.com */}
-                                            {admin.email === '1paulkihiu@gmail.com' && (
+                                            {/* Super Admin Badge */}
+                                            {admin.is_super_admin && (
                                                 <span className="text-xs text-amber-600 bg-amber-100 border border-amber-200 px-2 py-1 rounded font-medium">Super Admin</span>
                                             )}
 
@@ -171,8 +177,8 @@ export function AdminsManagement() {
                                                 size="icon"
                                                 className="text-destructive hover:text-destructive hover:bg-destructive/10"
                                                 onClick={() => handleRemoveAdmin(admin.id, admin.email)}
-                                                disabled={admin.email === currentUserEmail || currentUserEmail !== '1paulkihiu@gmail.com'}
-                                                title={currentUserEmail !== '1paulkihiu@gmail.com' ? "Restricted to Super Admin" : "Remove Admin"}
+                                                disabled={admin.email === currentUserEmail || !isSuperAdmin}
+                                                title={!isSuperAdmin ? "Restricted to Super Admin" : "Remove Admin"}
                                             >
                                                 <Trash2 className="h-4 w-4" />
                                             </Button>
