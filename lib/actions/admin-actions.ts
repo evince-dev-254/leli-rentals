@@ -403,3 +403,24 @@ export async function resetDatabase() {
         return { success: false, error: error.message || "Failed to reset database" }
     }
 }
+
+export async function getAmISuperAdmin() {
+    try {
+        const supabase = await createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+
+        if (!user) return false
+
+        // Use supabaseAdmin to bypass RLS, ensuring we get the true value
+        const { data: profile } = await supabaseAdmin
+            .from("user_profiles")
+            .select("is_super_admin")
+            .eq("id", user.id)
+            .single()
+
+        return !!profile?.is_super_admin
+    } catch (error) {
+        console.error("Error checking super admin status:", error)
+        return false
+    }
+}

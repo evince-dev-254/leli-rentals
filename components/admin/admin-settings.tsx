@@ -11,7 +11,7 @@ import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { getAdmins, getUserByEmail, updateProfile } from "@/lib/actions/dashboard-actions"
-import { resetDatabase } from "@/lib/actions/admin-actions"
+import { resetDatabase, getAmISuperAdmin } from "@/lib/actions/admin-actions"
 import { toast } from "sonner"
 import { supabase } from "@/lib/supabase"
 
@@ -56,8 +56,12 @@ export function AdminSettings() {
     const { data: { user } } = await supabase.auth.getUser()
     if (user) {
       setCurrentUserEmail(user.email ?? null)
-      const { data: profile } = await supabase.from('user_profiles').select('is_super_admin').eq('id', user.id).single()
-      setIsSuperAdmin(!!profile?.is_super_admin)
+      try {
+        const isSuper = await getAmISuperAdmin()
+        setIsSuperAdmin(isSuper)
+      } catch (e) {
+        console.error("Failed to check super admin status:", e)
+      }
     }
   }
 

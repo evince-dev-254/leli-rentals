@@ -72,6 +72,7 @@ import {
   deleteUsers,
   sendBulkReminders,
   toggleSuperAdmin,
+  getAmISuperAdmin,
 } from "@/lib/actions/admin-actions";
 import { ActionConfirmModal } from "./action-confirm-modal";
 import {
@@ -169,17 +170,17 @@ export function UsersManagement() {
 
       setUsers(mapped);
 
-      // Fetch current user status for permission gating
+      // Fetch current user status for permission gating using secure server action
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        // Find self in mapped (optimization) or fetch separately if pagination was used (which isn't here yet)
-        const selfProfile = mapped.find(u => u.id === user.id);
-        if (selfProfile) {
-          setCurrentUser({ id: user.id, isSuperAdmin: !!selfProfile.isSuperAdmin });
-        } else {
-          // Fallback fetch if current admin not in the list (e.g. filtered out)
-          const { data: profile } = await supabase.from('user_profiles').select('is_super_admin').eq('id', user.id).single();
-          setCurrentUser({ id: user.id, isSuperAdmin: !!profile?.is_super_admin });
+        try {
+          // Use server action to bypass RLS and get true status
+          const isSuper = await getAmISuperAdmin();
+          setCurrentUser({ id: user.id, isSuperAdmin: isSuper });
+        } catch (e) {
+          console.error("Failed to check super admin status:", e);
+          // Fallback to false
+          setCurrentUser({ id: user.id, isSuperAdmin: false });
         }
       }
 
