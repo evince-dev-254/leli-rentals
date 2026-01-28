@@ -22,8 +22,6 @@ const categoryLinks = [
   { name: "Photography", href: "/categories/photography" },
   { name: "Fitness & Sports", href: "/categories/fitness" },
   { name: "Baby & Kids", href: "/categories/baby" },
-  { name: "Office & Business", href: "/categories/office" },
-  { name: "Bikes & Scooters", href: "/categories/bikes" },
 ]
 
 const supportLinks = [

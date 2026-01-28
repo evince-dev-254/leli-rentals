@@ -15,8 +15,6 @@ export const CATEGORY_UUID_MAP: Record<string, string> = {
     photography: '88888888-8888-8888-8888-888888888888',
     fitness: '99999999-9999-9999-9999-999999999999',
     baby: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
-    office: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
-    bikes: 'cccccccc-cccc-cccc-cccc-cccccccccccc',
 }
 
 /**

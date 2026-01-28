@@ -25,7 +25,7 @@ export const categories = [
     description: "Cars, motorcycles, trucks, and more for your transportation needs",
     longDescription:
       "Find the perfect vehicle for any occasion. From luxury cars for special events to practical trucks for moving, we have it all.",
-    count: 1800,
+    count: 2140,
     icon: Car,
     image: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&q=80",
     color: "from-orange-500/20 to-orange-600/10",
@@ -41,6 +41,7 @@ export const categories = [
       { name: "Motorcycles", image: "https://images.unsplash.com/photo-1558981285-6f0c94958bb6?w=400&h=300&fit=crop" },
       { name: "Trucks", image: "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=400&h=300&fit=crop" },
       { name: "Vans", image: "https://images.unsplash.com/photo-1559416523-140ddc3d238c?w=400&h=300&fit=crop" },
+      { name: "Vans & Trucks", image: "https://images.unsplash.com/photo-1559416523-140ddc3d238c?w=400&h=300&fit=crop" },
       { name: "Buses", image: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=400&h=300&fit=crop" },
       { name: "Boats", image: "https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?w=400&h=300&fit=crop" },
       { name: "Pickups", image: "https://images.unsplash.com/photo-1559416523-140ddc3d238c?w=400&h=300&fit=crop" },
@@ -53,7 +54,47 @@ export const categories = [
         image: "https://images.unsplash.com/photo-1514316454349-750a7fd3da3a?w=400&h=300&fit=crop",
       },
       { name: "Private jets", image: "https://images.unsplash.com/photo-1540962351504-03099e0a754b?w=400&h=300&fit=crop" },
-      { name: "Helicopters", image: "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=400&h=300&fit=crop" }
+      { name: "Helicopters", image: "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=400&h=300&fit=crop" },
+      // Moved from Bikes & Scooters
+      {
+        name: "Mountain Bikes",
+        image: "https://images.unsplash.com/photo-1544191696-102dbdaeeaa0?w=400&h=300&fit=crop",
+      },
+      {
+        name: "Road Bikes",
+        image: "https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=400&h=300&fit=crop",
+      },
+      { name: "E-Bikes", image: "https://images.unsplash.com/photo-1571068316344-75bc76f77890?w=400&h=300&fit=crop" },
+      {
+        name: "Electric Scooters",
+        image: "https://images.unsplash.com/photo-1568632234157-ce7aecd03d0d?w=400&h=300&fit=crop",
+      },
+      {
+        name: "Kids Bikes",
+        image: "https://images.unsplash.com/photo-1571068316344-75bc76f77890?w=400&h=300&fit=crop",
+      },
+      { name: "BMX Bikes", image: "https://images.unsplash.com/photo-1583467875263-d50dec37a88c?w=400&h=300&fit=crop" },
+      {
+        name: "Folding Bikes",
+        image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
+      },
+      {
+        name: "Tandem Bikes",
+        image: "https://images.unsplash.com/photo-1502744688674-c619d1586c9e?w=400&h=300&fit=crop",
+      },
+      {
+        name: "Cargo Bikes",
+        image: "https://images.unsplash.com/photo-1571333250630-f0230c320b6d?w=400&h=300&fit=crop",
+      },
+      {
+        name: "Cruiser Bikes",
+        image: "https://images.unsplash.com/photo-1507035895480-2b3156c31fc8?w=400&h=300&fit=crop",
+      },
+      {
+        name: "Hybrid Bikes",
+        image: "https://images.unsplash.com/photo-1576435728678-68d0fbf94e91?w=400&h=300&fit=crop",
+      },
+      { name: "Tricycles", image: "https://images.unsplash.com/photo-1565803974275-dccd2f933cbb?w=400&h=300&fit=crop" },
     ],
   },
   {
@@ -137,6 +178,14 @@ export const categories = [
         name: "Outdoor Gear",
         image: "https://images.unsplash.com/photo-1478131143081-80f7f84ca84d?w=400&h=300&fit=crop",
       },
+      {
+        name: "Photography Gear",
+        image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=400&h=300&fit=crop",
+      },
+      {
+        name: "Sports Equipment",
+        image: "https://images.unsplash.com/photo-1576678927484-cc907957088c?w=400&h=300&fit=crop",
+      }
     ],
   },
   {
@@ -200,13 +249,15 @@ export const categories = [
         image: "https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=300&fit=crop",
       },
       {
-        name: "Wedding Gowns",
+        name: "Wedding Dresses",
         image: "https://images.unsplash.com/photo-1594552072238-b8a33785b261?w=400&h=300&fit=crop",
       },
       { name: "Suits", image: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=400&h=300&fit=crop" },
       { name: "Tuxedos", image: "https://images.unsplash.com/photo-1598808503746-f34c53b9323e?w=400&h=300&fit=crop" },
+      { name: "Suits & Tuxedos", image: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=400&h=300&fit=crop" },
+      { name: "Women's Wear", image: "https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=300&fit=crop" },
       { name: "Jewelry", image: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=400&h=300&fit=crop" },
-      { name: "Handbags", image: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=400&h=300&fit=crop" },
+      { name: "Designer Bags", image: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=400&h=300&fit=crop" },
       { name: "Shoes", image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=300&fit=crop" },
       {
         name: "Traditional Wear",
@@ -277,10 +328,6 @@ export const categories = [
         image: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=300&fit=crop",
       },
       {
-        name: "Stage Lighting",
-        image: "https://images.unsplash.com/photo-1504509546545-e000b4a62425?w=400&h=300&fit=crop",
-      },
-      {
         name: "Fog Machines",
         image: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400&h=300&fit=crop",
       },
@@ -288,6 +335,10 @@ export const categories = [
         name: "Arcade Games",
         image: "https://images.unsplash.com/photo-1511882150382-421056c89033?w=400&h=300&fit=crop",
       },
+      {
+        name: "Party Lights",
+        image: "https://images.unsplash.com/photo-1504509546545-e000b4a62425?w=400&h=300&fit=crop",
+      }
     ],
   },
   {
@@ -310,7 +361,9 @@ export const categories = [
       { name: "Creative Studios", image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop" },
       { name: "Self-storage Units", image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop" },
       { name: "Parking Spaces", image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop" },
-      { name: "Shipping Containers", image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop" }
+      { name: "Shipping Containers", image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop" },
+      { name: "Tents & Canopies", image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop" },
+      { name: "Tables & Chairs", image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop" }
     ],
   },
   {
@@ -478,107 +531,6 @@ export const categories = [
         name: "Baby Walkers",
         image: "https://images.unsplash.com/photo-1587654780291-39c9404d746b?w=400&h=300&fit=crop",
       },
-    ],
-  },
-  {
-    id: "office",
-    name: "Office & Business",
-    description: "Office furniture and business equipment",
-    longDescription: "Professional office setups for temporary workspaces, events, or expanding businesses.",
-    count: 520,
-    icon: Briefcase,
-    image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80",
-    color: "from-slate-500/20 to-slate-600/10",
-    featured: false,
-    subcategories: [
-      { name: "Desks", image: "https://images.unsplash.com/photo-1518455027359-f3f8164ba6bd?w=400&h=300&fit=crop" },
-      {
-        name: "Office Chairs",
-        image: "https://images.unsplash.com/photo-1580480055273-228ff5388ef8?w=400&h=300&fit=crop",
-      },
-      {
-        name: "Conference Tables",
-        image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop",
-      },
-      { name: "Computers", image: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=400&h=300&fit=crop" },
-      {
-        name: "Projectors",
-        image: "https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=400&h=300&fit=crop",
-      },
-      { name: "Printers", image: "https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=400&h=300&fit=crop" },
-      { name: "Scanners", image: "https://images.unsplash.com/photo-1544725121-be3bf52e2dc8?w=400&h=300&fit=crop" },
-      {
-        name: "Whiteboards",
-        image: "https://images.unsplash.com/photo-1532619187608-e5375cab36aa?w=400&h=300&fit=crop",
-      },
-      {
-        name: "Filing Cabinets",
-        image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
-      },
-      {
-        name: "Reception Furniture",
-        image: "https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=400&h=300&fit=crop",
-      },
-      {
-        name: "Partitions",
-        image: "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=400&h=300&fit=crop",
-      },
-      {
-        name: "Standing Desks",
-        image: "https://images.unsplash.com/photo-1593642634367-d91a135587b5?w=400&h=300&fit=crop",
-      },
-    ],
-  },
-  {
-    id: "bikes",
-    name: "Bikes & Scooters",
-    description: "Bicycles, e-bikes, and electric scooters",
-    longDescription: "Eco-friendly transportation options. Perfect for exploring cities or daily commuting.",
-    count: 340,
-    icon: Bike,
-    image: "https://images.unsplash.com/photo-1571068316344-75bc76f77890?w=800&q=80",
-    color: "from-emerald-500/20 to-emerald-600/10",
-    featured: false,
-    subcategories: [
-      {
-        name: "Mountain Bikes",
-        image: "https://images.unsplash.com/photo-1544191696-102dbdaeeaa0?w=400&h=300&fit=crop",
-      },
-      {
-        name: "Road Bikes",
-        image: "https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=400&h=300&fit=crop",
-      },
-      { name: "E-Bikes", image: "https://images.unsplash.com/photo-1571068316344-75bc76f77890?w=400&h=300&fit=crop" },
-      {
-        name: "Electric Scooters",
-        image: "https://images.unsplash.com/photo-1568632234157-ce7aecd03d0d?w=400&h=300&fit=crop",
-      },
-      {
-        name: "Kids Bikes",
-        image: "https://images.unsplash.com/photo-1571068316344-75bc76f77890?w=400&h=300&fit=crop",
-      },
-      { name: "BMX Bikes", image: "https://images.unsplash.com/photo-1583467875263-d50dec37a88c?w=400&h=300&fit=crop" },
-      {
-        name: "Folding Bikes",
-        image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
-      },
-      {
-        name: "Tandem Bikes",
-        image: "https://images.unsplash.com/photo-1502744688674-c619d1586c9e?w=400&h=300&fit=crop",
-      },
-      {
-        name: "Cargo Bikes",
-        image: "https://images.unsplash.com/photo-1571333250630-f0230c320b6d?w=400&h=300&fit=crop",
-      },
-      {
-        name: "Cruiser Bikes",
-        image: "https://images.unsplash.com/photo-1507035895480-2b3156c31fc8?w=400&h=300&fit=crop",
-      },
-      {
-        name: "Hybrid Bikes",
-        image: "https://images.unsplash.com/photo-1576435728678-68d0fbf94e91?w=400&h=300&fit=crop",
-      },
-      { name: "Tricycles", image: "https://images.unsplash.com/photo-1565803974275-dccd2f933cbb?w=400&h=300&fit=crop" },
     ],
   },
 ]

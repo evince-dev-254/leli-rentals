@@ -23,7 +23,7 @@ import { BackButton } from "@/components/ui/back-button"
 import { NotificationDropdown } from "./notification-dropdown"
 
 const categories = [
-  { name: "Vehicles", href: "/categories/vehicles", count: "1,800+" },
+  { name: "Vehicles", href: "/categories/vehicles", count: "2,100+" },
   { name: "Living Spaces", href: "/categories/living", count: "2,500+" },
   { name: "Equipment & Tools", href: "/categories/equipment", count: "3,200+" },
   { name: "Electronics", href: "/categories/electronics", count: "950+" },
@@ -34,8 +34,6 @@ const categories = [
   { name: "Photography", href: "/categories/photography", count: "450+" },
   { name: "Fitness & Sports", href: "/categories/fitness", count: "380+" },
   { name: "Baby & Kids", href: "/categories/baby-kids", count: "290+" },
-  { name: "Office & Business", href: "/categories/office", count: "520+" },
-  { name: "Bikes & Scooters", href: "/categories/bikes", count: "340+" },
 ]
 
 const navLinks = [
