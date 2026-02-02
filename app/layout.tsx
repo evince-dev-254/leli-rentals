@@ -23,6 +23,9 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://www.leli.rentals'),
+  alternates: {
+    canonical: './',
+  },
   title: {
     default: "Leli Rentals - Find Your Perfect Rental",
     template: "%s | Leli Rentals"

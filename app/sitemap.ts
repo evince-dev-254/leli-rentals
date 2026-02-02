@@ -1,7 +1,8 @@
 import type { MetadataRoute } from 'next'
 import { blogPosts, categories as blogCategories, slugify } from '@/lib/blog-data'
+import { supabase } from '@/lib/supabase'
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const baseUrl = 'https://www.leli.rentals'
 
     // Static pages
@@ -72,5 +73,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
         priority: 0.7,
     }))
 
-    return [...staticPages, categoriesIndex, ...categories, blogIndex, ...blogPostEntries, ...blogCategoryEntries]
+    // Fetch listings from database
+    const { data: listings } = await supabase
+        .from('listings')
+        .select('id, updated_at')
+        .eq('status', 'approved')
+        .in('availability_status', ['available', 'rented'])
+
+    const listingEntries = (listings || []).map((listing) => ({
+        url: `${baseUrl}/listings/${listing.id}`,
+        lastModified: new Date(listing.updated_at),
+        changeFrequency: 'weekly' as const,
+        priority: 0.8,
+    }))
+
+    return [...staticPages, categoriesIndex, ...categories, blogIndex, ...blogPostEntries, ...blogCategoryEntries, ...listingEntries]
 }
