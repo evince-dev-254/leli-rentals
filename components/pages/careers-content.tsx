@@ -14,7 +14,7 @@ import { Textarea } from "@/components/ui/textarea"
 const benefits = [
   { icon: Heart, title: "Health Insurance", description: "Comprehensive medical cover for you and family" },
   { icon: Globe, title: "Remote Friendly", description: "Work from anywhere in Kenya" },
-  { icon: Zap, title: "Learning Budget", description: "KSh 50,000/year for courses and conferences" },
+  { icon: Zap, title: "Learning Budget", description: "$400/year for courses and conferences" },
   { icon: Coffee, title: "Flexible Hours", description: "Results matter, not hours at desk" },
   { icon: Users, title: "Great Team", description: "Collaborate with passionate people" },
   { icon: Briefcase, title: "Equity Options", description: "Own a piece of what you build" },
@@ -27,7 +27,7 @@ const openPositions = [
     department: "Engineering",
     location: "Nairobi / Remote",
     type: "Full-time",
-    salary: "KSh 150,000 - 250,000",
+    salary: "$1,200 - $2,000",
     description: "Build and maintain our core rental platform using Next.js, TypeScript, and PostgreSQL.",
     requirements: [
       "5+ years experience in full-stack development",
@@ -42,7 +42,7 @@ const openPositions = [
     department: "Design",
     location: "Nairobi",
     type: "Full-time",
-    salary: "KSh 100,000 - 180,000",
+    salary: "$800 - $1,400",
     description: "Create intuitive user experiences for our web and mobile platforms.",
     requirements: [
       "3+ years experience in product design",
@@ -57,7 +57,7 @@ const openPositions = [
     department: "Operations",
     location: "Nairobi / Mombasa",
     type: "Full-time",
-    salary: "KSh 80,000 - 120,000",
+    salary: "$600 - $900",
     description: "Help owners and renters succeed on our platform with excellent support.",
     requirements: [
       "2+ years in customer success or support",
@@ -72,7 +72,7 @@ const openPositions = [
     department: "Marketing",
     location: "Remote",
     type: "Full-time",
-    salary: "KSh 90,000 - 140,000",
+    salary: "$700 - $1,100",
     description: "Grow and manage our affiliate network across East Africa.",
     requirements: [
       "3+ years in affiliate or partnership management",
@@ -87,7 +87,7 @@ const openPositions = [
     department: "Engineering",
     location: "Nairobi / Remote",
     type: "Full-time",
-    salary: "KSh 120,000 - 200,000",
+    salary: "$900 - $1,500",
     description: "Build our mobile apps for iOS and Android using React Native.",
     requirements: [
       "3+ years React Native experience",
@@ -131,7 +131,7 @@ export function CareersContent() {
       <section className="py-12">
         <div className="container mx-auto px-4">
           <div className="relative h-[300px] md:h-[400px] rounded-2xl overflow-hidden">
-            <Image src="/diverse-african-tech-team-working-together-modern-.jpg" alt="leli rentals Team" fill className="object-cover" />
+            <Image src="/african-tech-team.png" alt="leli rentals Team" fill className="object-cover" />
             <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent" />
             <div className="absolute bottom-8 left-8 text-white max-w-lg">
               <h2 className="text-2xl md:text-3xl font-bold mb-2">Build Something Meaningful</h2>

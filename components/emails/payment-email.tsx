@@ -73,7 +73,7 @@ export const PaymentSuccessEmail = ({
                             </div>
                             <div className="flex justify-between mb-1">
                                 <Text className="text-gray-700 m-0">Amount:</Text>
-                                <Text className="text-black font-semibold m-0">KSh {amount.toLocaleString()}</Text>
+                                <Text className="text-black font-semibold m-0">$ {amount.toLocaleString()}</Text>
                             </div>
                             <div className="flex justify-between mb-1">
                                 <Text className="text-gray-700 m-0">Transaction ID:</Text>

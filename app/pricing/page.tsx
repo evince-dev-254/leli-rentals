@@ -71,7 +71,7 @@ export default function PricingPage() {
                                     </div>
                                     <h3 className="text-2xl font-bold mb-2">Weekly Plan</h3>
                                     <div className="flex items-baseline gap-1 mb-2">
-                                        <span className="text-4xl font-bold">KSh 500</span>
+                                        <span className="text-4xl font-bold">$5</span>
                                         <span className="text-muted-foreground">/ 7 days</span>
                                     </div>
                                     <p className="text-muted-foreground">Perfect for trying out the platform or short-term listing needs.</p>
@@ -136,7 +136,7 @@ export default function PricingPage() {
                                     </div>
                                     <h3 className="text-2xl font-bold mb-2">Monthly Plan</h3>
                                     <div className="flex items-baseline gap-1 mb-2">
-                                        <span className="text-4xl font-bold">KSh 1,000</span>
+                                        <span className="text-4xl font-bold">$10</span>
                                         <span className="text-muted-foreground">/ 30 days</span>
                                     </div>
                                     <p className="text-muted-foreground">For serious renters wanting maximum exposure and unlimited growth.</p>

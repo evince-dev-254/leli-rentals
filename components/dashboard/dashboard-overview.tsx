@@ -13,7 +13,7 @@ export function DashboardOverview() {
     { title: "Total Bookings", value: "24", icon: CalendarCheck, change: "+5 this week", color: "text-green-500" },
     {
       title: "Total Earnings",
-      value: "KSh 245,000",
+      value: "$ 2,450",
       icon: DollarSign,
       change: "+18% this month",
       color: "text-primary",
@@ -133,7 +133,7 @@ export function DashboardOverview() {
                     >
                       {booking.status}
                     </Badge>
-                    <p className="text-sm font-medium mt-1">KSh {booking.amount.toLocaleString()}</p>
+                    <p className="text-sm font-medium mt-1">$ {booking.amount.toLocaleString()}</p>
                   </div>
                 </div>
               ))}

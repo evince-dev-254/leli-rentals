@@ -36,7 +36,7 @@ async function updateSubscription() {
         start_date: startDate.toISOString(),
         end_date: endDate.toISOString(),
         price: 1000,
-        currency: 'KES'
+        currency: 'USD'
     }
 
     // First delete any existing rows to be sure

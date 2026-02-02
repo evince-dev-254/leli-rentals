@@ -620,7 +620,7 @@ export async function getAdminDashboardData() {
             action: 'New booking',
             user: `Booking #${b.id.slice(0, 8)}`,
             time: b.created_at,
-            details: `KSh ${b.total_amount}`
+            details: `$ ${b.total_amount}`
         }))
     ].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()).slice(0, 10)
 

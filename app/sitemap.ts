@@ -1,4 +1,5 @@
 import type { MetadataRoute } from 'next'
+import { blogPosts, categories as blogCategories, slugify } from '@/lib/blog-data'
 
 export default function sitemap(): MetadataRoute.Sitemap {
     const baseUrl = 'https://www.leli.rentals'
@@ -21,15 +22,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
         priority: route === '' ? 1 : 0.8,
     }))
 
-    // Category pages
+    // Category pages - using actual category IDs from categories-data.ts
     const categories = [
         'vehicles',
-        'homes',
+        'living',
         'equipment',
         'electronics',
         'fashion',
         'entertainment',
-        'events',
+        'utility',
+        'business',
+        'photography',
+        'fitness',
+        'baby',
     ].map((category) => ({
         url: `${baseUrl}/categories/${category}`,
         lastModified: new Date(),
@@ -45,5 +50,27 @@ export default function sitemap(): MetadataRoute.Sitemap {
         priority: 0.9,
     }
 
-    return [...staticPages, categoriesIndex, ...categories]
+    // Blog Pages
+    const blogIndex = {
+        url: `${baseUrl}/blog`,
+        lastModified: new Date(),
+        changeFrequency: 'daily' as const,
+        priority: 0.9,
+    }
+
+    const blogPostEntries = blogPosts.map((post) => ({
+        url: `${baseUrl}/blog/${post.slug}`,
+        lastModified: new Date(post.date),
+        changeFrequency: 'monthly' as const,
+        priority: 0.8,
+    }))
+
+    const blogCategoryEntries = blogCategories.map((category) => ({
+        url: `${baseUrl}/blog/category/${slugify(category)}`,
+        lastModified: new Date(),
+        changeFrequency: 'weekly' as const,
+        priority: 0.7,
+    }))
+
+    return [...staticPages, categoriesIndex, ...categories, blogIndex, ...blogPostEntries, ...blogCategoryEntries]
 }

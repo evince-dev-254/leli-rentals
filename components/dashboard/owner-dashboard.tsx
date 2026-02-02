@@ -161,7 +161,7 @@ export default function OwnerDashboard() {
                     <div className="relative group h-full">
                         <DashboardStatCard
                             title="Total Earnings"
-                            value={`KSh ${(stats?.totalEarnings || 0).toLocaleString()}`}
+                            value={`$ ${(stats?.totalEarnings || 0).toLocaleString()}`}
                             icon={DollarSign}
                             color="sunset"
                             description="Lifetime revenue"
@@ -260,7 +260,7 @@ export default function OwnerDashboard() {
                                             </div>
                                         </div>
                                         <div className="text-right shrink-0">
-                                            <div className="font-bold text-primary text-sm sm:text-base">KSh {l.price_per_day?.toLocaleString()}</div>
+                                            <div className="font-bold text-primary text-sm sm:text-base">$ {l.price_per_day?.toLocaleString()}</div>
                                             <div className="text-xs text-muted-foreground">per day</div>
                                         </div>
                                     </div>
@@ -298,7 +298,7 @@ export default function OwnerDashboard() {
                                                 </div>
                                             </div>
                                             <div className="font-bold text-sm">
-                                                KSh {booking.total_amount?.toLocaleString()}
+                                                $ {booking.total_amount?.toLocaleString()}
                                             </div>
                                         </div>
                                     ))}

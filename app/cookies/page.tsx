@@ -6,6 +6,9 @@ import { Card, CardContent } from "@/components/ui/card"
 export const metadata = {
   title: "Cookie Policy | Leli Rentals",
   description: "Learn about how we use cookies to enhance your experience on Leli Rentals.",
+  alternates: {
+    canonical: 'https://www.leli.rentals/cookies',
+  },
 }
 
 export default function CookiePolicyPage() {

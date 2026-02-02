@@ -29,7 +29,7 @@ export function TestPayment() {
         email: email,
         amount: Number(amount) * 100, // Paystack expects kobo/cents
         publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "",
-        currency: 'KES',
+        currency: 'USD',
         metadata: {
             custom_fields: [
                 {
@@ -56,7 +56,7 @@ export function TestPayment() {
         }
 
         if (!email || !amount || Number(amount) < 1) {
-            alert("Please enter valid email and amount (min 1 KES)")
+            alert("Please enter valid email and amount (min $0.10)")
             return
         }
 
@@ -123,7 +123,7 @@ export function TestPayment() {
                 </div>
 
                 <div>
-                    <Label htmlFor="amount">Amount (KES)</Label>
+                    <Label htmlFor="amount">Amount (USD)</Label>
                     <Input
                         id="amount"
                         type="number"
@@ -133,7 +133,7 @@ export function TestPayment() {
                         className="mt-1.5"
                     />
                     <p className="text-xs text-muted-foreground mt-1">
-                        Minimum: 1 KES • Currency: Kenyan Shillings
+                        Minimum: $0.10 • Currency: US Dollars
                     </p>
                 </div>
 
@@ -156,7 +156,7 @@ export function TestPayment() {
                     ) : (
                         <>
                             <CreditCard className="mr-2 h-4 w-4" />
-                            {isLiveMode ? `Pay KSh ${Number(amount).toLocaleString()}` : `Test KSh ${Number(amount).toLocaleString()}`}
+                            {isLiveMode ? `Pay $${Number(amount).toLocaleString()}` : `Test $${Number(amount).toLocaleString()}`}
                         </>
                     )}
                 </Button>

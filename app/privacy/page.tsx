@@ -6,6 +6,9 @@ import { Card, CardContent } from "@/components/ui/card"
 export const metadata = {
   title: "Privacy Policy | Leli Rentals",
   description: "How Leli Rentals collects, uses, and protects your personal information.",
+  alternates: {
+    canonical: 'https://www.leli.rentals/privacy',
+  },
 }
 
 export default function PrivacyPage() {

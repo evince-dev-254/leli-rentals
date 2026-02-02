@@ -153,7 +153,7 @@ export function CreateListing() {
           cancellation_policy: cancellationPolicy
         },
         availability_status: 'available',
-        currency: 'KES'
+        currency: 'USD'
       }
 
       await createListing(user.id, listingData)
@@ -332,15 +332,15 @@ export function CreateListing() {
               <CardContent>
                 <div className="grid gap-4 md:grid-cols-3">
                   <div className="space-y-2">
-                    <Label htmlFor="pricePerDay">Price per Day (KSh)</Label>
+                    <Label htmlFor="pricePerDay">Price per Day ($)</Label>
                     <Input name="pricePerDay" id="pricePerDay" type="number" placeholder="0" required />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="pricePerWeek">Price per Week (KSh)</Label>
+                    <Label htmlFor="pricePerWeek">Price per Week ($)</Label>
                     <Input name="pricePerWeek" id="pricePerWeek" type="number" placeholder="0" />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="pricePerMonth">Price per Month (KSh)</Label>
+                    <Label htmlFor="pricePerMonth">Price per Month ($)</Label>
                     <Input name="pricePerMonth" id="pricePerMonth" type="number" placeholder="0" />
                   </div>
                 </div>

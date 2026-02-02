@@ -3,8 +3,9 @@ import { Footer } from "@/components/layout/footer"
 import { CategoriesPageContent } from "@/components/categories/categories-page-content"
 
 export const metadata = {
-  title: "All Categories - leli rentals",
-  description: "Browse all rental categories. Find vehicles, homes, equipment, electronics, fashion, and more.",
+  title: "All Categories - Browse Rentals",
+  description: "Explore all rental categories on Leli Rentals. Find vehicles, living spaces, equipment & tools, electronics, fashion & accessories, entertainment, utility spaces, business spaces, photography gear, fitness equipment, and baby & kids items. Rent anything you need in Kenya.",
+  keywords: ["rental categories", "browse rentals Kenya", "all categories", "rental marketplace"],
 }
 
 export default function CategoriesPage() {

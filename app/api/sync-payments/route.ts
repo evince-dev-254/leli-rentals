@@ -71,7 +71,7 @@ export async function POST() {
                     booking_id: transaction.metadata?.booking_id || null,
                     subscription_id: transaction.metadata?.subscription_id || null,
                     amount: transaction.amount / 100,
-                    currency: transaction.currency || 'KES',
+                    currency: transaction.currency || 'USD',
                     status: 'success',
                     payment_method: transaction.channel,
                     customer_email: transaction.customer.email,

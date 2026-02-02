@@ -90,7 +90,7 @@ async function handleSuccessfulPayment(data: any) {
                 booking_id: metadata?.booking_id || null,
                 subscription_id: metadata?.subscription_id || null,
                 amount: amount / 100, // Convert from kobo to naira
-                currency: data.currency || 'KES',
+                currency: data.currency || 'USD',
                 status: 'success',
                 payment_method: channel,
                 customer_email: customer.email,

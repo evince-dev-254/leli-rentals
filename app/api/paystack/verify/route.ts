@@ -50,7 +50,7 @@ export async function POST(req: Request) {
             await supabaseAdmin.from('transactions').insert({
                 user_id: userId,
                 amount: amount,
-                currency: 'KES',
+                currency: 'USD',
                 status: 'completed',
                 reference: reference,
                 description: `Subscription - ${planId}`,
@@ -75,7 +75,7 @@ export async function POST(req: Request) {
             start_date: startDate.toISOString(),
             end_date: endDate.toISOString(),
             price: amount,
-            currency: 'KES',
+            currency: 'USD',
             billing_cycle: planId === 'monthly' ? 'monthly' : 'monthly', // default to monthly for schema constraint? or needs 'weekly' if added? Schema said 'monthly', 'yearly'. Weekly might be invalid.
             // If schema limits billing_cycle to monthly/yearly, we might need to force 'monthly' or update schema.
             // For now we set 'monthly' even for weekly plan to satisfy constraint if it exists.

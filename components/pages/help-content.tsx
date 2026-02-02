@@ -77,7 +77,7 @@ const faqs = [
     questions: [
       {
         q: "What subscription plans are available?",
-        a: "We offer two plans: Weekly (KSh 500 for up to 10 listings, 7 days) and Monthly (KSh 1,000 for unlimited listings, 30 days). Choose based on your listing volume.",
+        a: "We offer two plans: Weekly ($5 for up to 10 listings, 7 days) and Monthly ($10 for unlimited listings, 30 days). Choose based on your listing volume.",
       },
       {
         q: "How do I upgrade my plan?",

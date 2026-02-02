@@ -169,7 +169,7 @@ export function FeaturedListings() {
                     {/* Price */}
                     <div className="flex items-baseline gap-1 mb-2">
                       <span className="text-xl font-bold text-primary">
-                        {listing.currency || 'KES'} {listing.price_per_day?.toLocaleString()}
+                        {listing.currency || 'USD'} {listing.price_per_day?.toLocaleString()}
                       </span>
                       <span className="text-sm text-muted-foreground">/ day</span>
                     </div>

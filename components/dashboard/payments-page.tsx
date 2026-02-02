@@ -53,7 +53,7 @@ export function PaymentsPage() {
                         <Receipt className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">KSh {getTotalSpent().toLocaleString()}</div>
+                        <div className="text-2xl font-bold">$ {getTotalSpent().toLocaleString()}</div>
                         <p className="text-xs text-muted-foreground">On confirmed/completed bookings</p>
                     </CardContent>
                 </Card>
@@ -128,7 +128,7 @@ export function PaymentsPage() {
                                         </Badge>
                                     </div>
                                     <div className="text-right font-medium">
-                                        KSh {Number(booking.total_amount).toLocaleString()}
+                                        $ {Number(booking.total_amount).toLocaleString()}
                                     </div>
                                 </div>
                             ))}

@@ -5,6 +5,7 @@ import { Facebook, Twitter, Instagram, Linkedin, Mail, Phone, MapPin } from "luc
 const platformLinks = [
   { name: "Home", href: "/" },
   { name: "About Us", href: "/about" },
+  { name: "Blog", href: "/blog" },
   { name: "Pricing", href: "/pricing" },
   { name: "Contact", href: "/contact" },
   { name: "Privacy Policy", href: "/privacy" },

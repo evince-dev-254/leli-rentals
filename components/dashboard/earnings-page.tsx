@@ -120,7 +120,7 @@ export function EarningsPage() {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <DashboardStatCard
           title="Total Earnings"
-          value={`KSh ${(stats?.totalEarnings || 0).toLocaleString()}`}
+          value={`$ ${(stats?.totalEarnings || 0).toLocaleString()}`}
           icon={DollarSign}
           color="sunset"
           description="Gross income all-time"
@@ -129,7 +129,7 @@ export function EarningsPage() {
         <div className="relative group">
           <DashboardStatCard
             title="Available Balance"
-            value={`KSh ${(stats?.availableBalance || 0).toLocaleString()}`}
+            value={`$ ${(stats?.availableBalance || 0).toLocaleString()}`}
             icon={Wallet}
             color="amber-glow"
             description="Ready for withdrawal"
@@ -144,13 +144,13 @@ export function EarningsPage() {
             >
               Withdraw Funds
             </Button>
-            <p className="text-[10px] text-muted-foreground bg-white/50 px-1.5 py-0.5 rounded backdrop-blur-sm">Min: KSh 1,000</p>
+            <p className="text-[10px] text-muted-foreground bg-white/50 px-1.5 py-0.5 rounded backdrop-blur-sm">Min: $ 10</p>
           </div>
         </div>
 
         <DashboardStatCard
           title="Pending Processing"
-          value={`KSh ${(stats?.pendingEarnings || 0).toLocaleString()}`}
+          value={`$ ${(stats?.pendingEarnings || 0).toLocaleString()}`}
           icon={TrendingUp}
           color="warm-blend"
           description="In clearing period"
@@ -158,7 +158,7 @@ export function EarningsPage() {
         />
         <DashboardStatCard
           title="Total Withdrawn"
-          value={`KSh ${(stats?.totalWithdrawn || 0).toLocaleString()}`}
+          value={`$ ${(stats?.totalWithdrawn || 0).toLocaleString()}`}
           icon={CreditCard}
           color="rose-highlight"
           description="Successfully paid out"
@@ -198,7 +198,7 @@ export function EarningsPage() {
                       boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
                       backdropFilter: 'blur(8px)'
                     }}
-                    formatter={(value: any) => [`KSh ${value.toLocaleString()}`, 'Earnings']}
+                    formatter={(value: any) => [`$ ${value.toLocaleString()}`, 'Earnings']}
                   />
                   <Area
                     type="monotone"
@@ -252,7 +252,7 @@ export function EarningsPage() {
                         </div>
                       </div>
                       <div className={`font-semibold text-sm ${tx.type === 'earning' ? 'text-green-600 dark:text-green-400' : ''}`}>
-                        {tx.type === 'earning' ? '+' : '-'} KSh {Math.abs(tx.amount).toLocaleString()}
+                        {tx.type === 'earning' ? '+' : '-'} $ {Math.abs(tx.amount).toLocaleString()}
                       </div>
                     </div>
                   ))

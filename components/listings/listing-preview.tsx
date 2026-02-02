@@ -103,14 +103,14 @@ export function ListingPreview({
                         <div className="glass-card p-4 rounded-lg">
                             <p className="text-sm text-muted-foreground">Per Day</p>
                             <p className="text-2xl font-bold text-primary">
-                                KSh {listingData.pricePerDay.toLocaleString()}
+                                $ {listingData.pricePerDay.toLocaleString()}
                             </p>
                         </div>
                         {listingData.pricePerWeek && (
                             <div className="glass-card p-4 rounded-lg">
                                 <p className="text-sm text-muted-foreground">Per Week</p>
                                 <p className="text-2xl font-bold text-primary">
-                                    KSh {listingData.pricePerWeek.toLocaleString()}
+                                    $ {listingData.pricePerWeek.toLocaleString()}
                                 </p>
                             </div>
                         )}
@@ -118,7 +118,7 @@ export function ListingPreview({
                             <div className="glass-card p-4 rounded-lg">
                                 <p className="text-sm text-muted-foreground">Per Month</p>
                                 <p className="text-2xl font-bold text-primary">
-                                    KSh {listingData.pricePerMonth.toLocaleString()}
+                                    $ {listingData.pricePerMonth.toLocaleString()}
                                 </p>
                             </div>
                         )}
@@ -158,7 +158,7 @@ export function ListingPreview({
                                 <p>Maximum rental: {listingData.maxRentalPeriod} day(s)</p>
                             )}
                             {listingData.depositAmount && (
-                                <p>Security deposit: KSh {listingData.depositAmount.toLocaleString()}</p>
+                                <p>Security deposit: $ {listingData.depositAmount.toLocaleString()}</p>
                             )}
                         </div>
                     </div>

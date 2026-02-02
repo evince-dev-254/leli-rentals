@@ -42,7 +42,7 @@ const affiliateBenefits = [
 const ownerPlans = [
   {
     name: "Weekly Plan",
-    price: "KSh 500",
+    price: "$5",
     period: "/week",
     features: [
       "Up to 10 listings",
@@ -56,7 +56,7 @@ const ownerPlans = [
   },
   {
     name: "Monthly Plan",
-    price: "KSh 1,000",
+    price: "$10",
     period: "/month",
     features: [
       "Unlimited listings",
@@ -71,10 +71,10 @@ const ownerPlans = [
 ]
 
 const affiliateTiers = [
-  { tier: "Starter", earnings: "KSh 0 - 10,000", commission: "10%" },
-  { tier: "Bronze", earnings: "KSh 10,001 - 50,000", commission: "12%" },
-  { tier: "Silver", earnings: "KSh 50,001 - 100,000", commission: "15%" },
-  { tier: "Gold", earnings: "KSh 100,001+", commission: "20%" },
+  { tier: "Starter", earnings: "$0 - $100", commission: "10%" },
+  { tier: "Bronze", earnings: "$101 - $500", commission: "12%" },
+  { tier: "Silver", earnings: "$501 - $1,000", commission: "15%" },
+  { tier: "Gold", earnings: "$1,001+", commission: "20%" },
 ]
 
 const steps = [

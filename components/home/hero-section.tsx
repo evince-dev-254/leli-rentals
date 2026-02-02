@@ -50,7 +50,7 @@ export function HeroSection() {
             variants={fadeInUp}
             className="text-base sm:text-lg md:text-xl text-white/80 mb-10 max-w-2xl mx-auto text-pretty px-4"
           >
-            The premier peer-to-peer rental marketplace in Kenya. Discover amazing rentals for every occasion — from cars to equipment, homes to fashion.
+            The premier peer-to-peer rental marketplace. Discover amazing rentals for every occasion — from cars to equipment, homes to fashion.
           </motion.p>
 
           {/* Advanced Search Engine */}

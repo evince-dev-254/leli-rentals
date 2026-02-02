@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { usePaystackPayment } from 'react-paystack'
 
 interface PaystackPaymentProps {
-    amount: number // in KES
+    amount: number // in USD
     email: string
     phone?: string
     metadata?: any
@@ -13,7 +13,7 @@ interface PaystackPaymentProps {
     text?: string
     className?: string
     subaccount?: string
-    transactionCharge?: number // Platform fee in KES
+    transactionCharge?: number // Platform fee in USD
 }
 
 export const PaystackPaymentButton = ({
@@ -35,7 +35,7 @@ export const PaystackPaymentButton = ({
         email,
         amount: amount * 100, // Convert to cents
         publicKey,
-        currency: 'KES',
+        currency: 'USD',
         metadata: metadata || {},
         phone,
     };

@@ -24,11 +24,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://www.leli.rentals'),
   title: {
-    default: "Leli Rentals - Find Your Perfect Rental in Kenya",
+    default: "Leli Rentals - Find Your Perfect Rental",
     template: "%s | Leli Rentals"
   },
   description:
-    "The premier destination for all your rental needs in Kenya. Discover amazing rentals for every occasion - from cars to equipment, homes to fashion. Rent what you need, when you need it.",
+    "The premier destination for all your rental needs. Discover amazing rentals for every occasion - from cars to equipment, homes to fashion. Rent what you need, when you need it.",
   generator: "evince Agency",
   applicationName: "Leli Rentals",
   keywords: [
@@ -44,7 +44,11 @@ export const metadata: Metadata = {
     "rent items Kenya",
     "peer to peer rental",
     "rental marketplace",
-    "Leli Rentals"
+    "Leli Rentals",
+    "rental tips Kenya",
+    "rental market insights",
+    "sharing economy blog",
+    "rental guides Kenya"
   ],
   authors: [{ name: "Leli Rentals" }],
   creator: "evince Agency",
@@ -67,11 +71,11 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: 'website',
-    locale: 'en_KE',
+    locale: 'en_US',
     url: 'https://www.leli.rentals',
     siteName: 'Leli Rentals',
-    title: 'Leli Rentals - Find Your Perfect Rental in Kenya',
-    description: 'The premier destination for all your rental needs in Kenya. Discover amazing rentals for every occasion - from cars to equipment, homes to fashion.',
+    title: 'Leli Rentals - Find Your Perfect Rental',
+    description: 'The premier destination for all your rental needs. Discover amazing rentals for every occasion - from cars to equipment, homes to fashion.',
     images: [
       {
         url: '/og-image.png',
@@ -121,6 +125,23 @@ export default function RootLayout({
           />
         )}
 
+        {/* Ahrefs Web Analytics - Load after page is interactive */}
+        <Script
+          id="ahrefs-analytics"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function(){
+                var s=document.createElement('script');
+                s.src='https://analytics.ahrefs.com/analytics.js';
+                s.setAttribute('data-key','ShZx2eLOXdw8j+XqKVfzDw');
+                s.async=true;
+                document.head.appendChild(s);
+              })();
+            `
+          }}
+        />
+
         {/* Tawk.to - Load lazily after everything else */}
         <Script
           id="tawk-to"
@@ -137,6 +158,62 @@ export default function RootLayout({
                 s0.parentNode.insertBefore(s1,s0);
               })();
             `
+          }}
+        />
+
+        {/* Structured Data for SEO */}
+        <Script
+          id="organization-schema"
+          type="application/ld+json"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'Organization',
+              name: 'Leli Rentals',
+              url: 'https://www.leli.rentals',
+              logo: 'https://www.leli.rentals/logo.png',
+              description: 'The premier destination for all your rental needs in Kenya.',
+              address: {
+                '@type': 'PostalAddress',
+                addressCountry: 'KE',
+                addressLocality: 'Nairobi',
+              },
+              contactPoint: {
+                '@type': 'ContactPoint',
+                contactType: 'Customer Service',
+                email: 'support@leli.rentals',
+                availableLanguage: ['English', 'Swahili'],
+              },
+              sameAs: [
+                'https://twitter.com/lelirentals',
+                'https://facebook.com/lelirentals',
+                'https://instagram.com/lelirentals',
+                'https://tiktok.com/@lelirentals',
+              ],
+            })
+          }}
+        />
+        <Script
+          id="website-schema"
+          type="application/ld+json"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'WebSite',
+              name: 'Leli Rentals',
+              url: 'https://www.leli.rentals',
+              description: 'The premier destination for all your rental needs in Kenya.',
+              potentialAction: {
+                '@type': 'SearchAction',
+                target: {
+                  '@type': 'EntryPoint',
+                  urlTemplate: 'https://www.leli.rentals/search?q={search_term_string}',
+                },
+                'query-input': 'required name=search_term_string',
+              },
+            })
           }}
         />
         <ConsoleWarning />

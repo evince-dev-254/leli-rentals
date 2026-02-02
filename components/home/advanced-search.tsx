@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { LocationSearch } from "@/components/ui/location-search"
 import { categories } from "@/lib/categories-data"
 
-const KENYAN_CITIES = [
+const POPULAR_CITIES = [
     "Nairobi",
     "Mombasa",
     "Kisumu",
@@ -143,7 +143,7 @@ export function AdvancedSearch() {
                 <span className="opacity-20">•</span>
                 <div className="flex items-center gap-1">
                     <Sparkles className="h-3 w-3 text-yellow-500" />
-                    Kenya&apos;s #1 Rental App
+                    World&apos;s #1 Rental App
                 </div>
             </div>
         </div>

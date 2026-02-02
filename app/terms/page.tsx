@@ -6,6 +6,9 @@ import { Card, CardContent } from "@/components/ui/card"
 export const metadata = {
   title: "Terms of Service | Leli Rentals",
   description: "Terms and conditions for using Leli Rentals platform.",
+  alternates: {
+    canonical: 'https://www.leli.rentals/terms',
+  },
 }
 
 export default function TermsPage() {

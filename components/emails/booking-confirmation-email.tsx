@@ -72,7 +72,7 @@ export const BookingConfirmationEmail = ({
                                 <strong>Dates:</strong> {startDate} - {endDate}
                             </Text>
                             <Text className="text-black text-[14px] m-0">
-                                <strong>Total:</strong> KSh {totalAmount.toLocaleString()}
+                                <strong>Total:</strong> $ {totalAmount.toLocaleString()}
                             </Text>
                         </Section>
                         <Section className="text-center mt-[32px] mb-[32px]">

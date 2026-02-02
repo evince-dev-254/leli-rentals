@@ -54,9 +54,11 @@ export function Header() {
   const [unreadMessages, setUnreadMessages] = useState(0)
   const [unreadNotifications, setUnreadNotifications] = useState(0)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
+    setMounted(true)
     let ticking = false
     const handleScroll = () => {
       if (!ticking) {
@@ -188,65 +190,69 @@ export function Header() {
             ))}
 
             {/* Categories Dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="text-gray-200 hover:text-white hover:bg-white/10 text-sm font-medium"
-                >
-                  Categories <ChevronDown className="ml-1 h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56 bg-[#1a1a2e] border-[#2a2a4e]">
-                {categories.map((category) => (
-                  <DropdownMenuItem key={category.name} asChild>
-                    <Link
-                      href={category.href}
-                      className="flex justify-between text-gray-200 hover:text-white focus:text-white focus:bg-white/10"
-                    >
-                      <span>{category.name}</span>
-                      <span className="text-gray-400 text-xs">{category.count}</span>
+            {mounted && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="text-gray-200 hover:text-white hover:bg-white/10 text-sm font-medium"
+                  >
+                    Categories <ChevronDown className="ml-1 h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56 bg-[#1a1a2e] border-[#2a2a4e]">
+                  {categories.map((category) => (
+                    <DropdownMenuItem key={category.name} asChild>
+                      <Link
+                        href={category.href}
+                        className="flex justify-between text-gray-200 hover:text-white focus:text-white focus:bg-white/10"
+                      >
+                        <span>{category.name}</span>
+                        <span className="text-gray-400 text-xs">{category.count}</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                  <DropdownMenuItem asChild>
+                    <Link href="/categories" className="text-purple-400 font-medium hover:text-purple-300">
+                      View All Categories
                     </Link>
                   </DropdownMenuItem>
-                ))}
-                <DropdownMenuItem asChild>
-                  <Link href="/categories" className="text-purple-400 font-medium hover:text-purple-300">
-                    View All Categories
-                  </Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </nav>
 
           <div className="flex items-center gap-3">
             {/* Theme Toggle - Multi-theme support */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-gray-200 hover:text-orange-400 hover:bg-white/10 relative h-9 w-9"
-                >
-                  <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                  <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-                  <span className="sr-only">Toggle theme</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="bg-[#1a1a2e] border-[#2a2a4e] text-gray-200">
-                <DropdownMenuItem onClick={() => setTheme("light")} className="hover:bg-white/10 focus:bg-white/10 cursor-pointer">
-                  <Sun className="mr-2 h-4 w-4" />
-                  <span>Light</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTheme("dark")} className="hover:bg-white/10 focus:bg-white/10 cursor-pointer">
-                  <Moon className="mr-2 h-4 w-4" />
-                  <span>Dark</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTheme("system")} className="hover:bg-white/10 focus:bg-white/10 cursor-pointer">
-                  <Settings className="mr-2 h-4 w-4" />
-                  <span>System</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {mounted && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-gray-200 hover:text-orange-400 hover:bg-white/10 relative h-9 w-9"
+                  >
+                    <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                    <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                    <span className="sr-only">Toggle theme</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="bg-[#1a1a2e] border-[#2a2a4e] text-gray-200">
+                  <DropdownMenuItem onClick={() => setTheme("light")} className="hover:bg-white/10 focus:bg-white/10 cursor-pointer">
+                    <Sun className="mr-2 h-4 w-4" />
+                    <span>Light</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setTheme("dark")} className="hover:bg-white/10 focus:bg-white/10 cursor-pointer">
+                    <Moon className="mr-2 h-4 w-4" />
+                    <span>Dark</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setTheme("system")} className="hover:bg-white/10 focus:bg-white/10 cursor-pointer">
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>System</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
 
             {/* Messages Icon */}
             <Link href="/dashboard/messages">
@@ -263,7 +269,7 @@ export function Header() {
             </Link>
 
             {/* Notifications Icon */}
-            {user && (
+            {user && mounted && (
               <NotificationDropdown userId={user.id} unreadCount={unreadNotifications} />
             )}
 
@@ -279,7 +285,7 @@ export function Header() {
             </Link>
 
             {/* Login/Profile Button - Desktop */}
-            {user ? (
+            {user && mounted ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <div className="hidden lg:flex cursor-pointer">
@@ -334,7 +340,7 @@ export function Header() {
             {/* Mobile Menu */}
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger asChild className="lg:hidden">
-                <Button variant="ghost" size="icon" className="text-gray-200 hover:text-white hover:bg-white/10">
+                <Button variant="ghost" size="icon" className="text-gray-200 hover:text-white hover:bg-white/10" suppressHydrationWarning>
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>

@@ -69,7 +69,7 @@ export function FavoritesContent() {
                   </div>
                   <div className="flex items-center justify-between">
                     <div>
-                      <span className="text-lg font-bold text-primary">KSh {listing.pricePerDay.toLocaleString()}</span>
+                      <span className="text-lg font-bold text-primary">$ {listing.pricePerDay.toLocaleString()}</span>
                       <span className="text-sm text-muted-foreground">/day</span>
                     </div>
                     <div className="flex items-center text-sm">

@@ -173,7 +173,7 @@ export function MyBookings() {
                     </div>
                     <div className="text-right">
                       {getStatusBadge(booking.status)}
-                      <p className="font-semibold mt-1">KSh {booking.total_amount?.toLocaleString()}</p>
+                      <p className="font-semibold mt-1">$ {booking.total_amount?.toLocaleString()}</p>
                     </div>
                     <div className="flex gap-2">
                       <Button variant="outline" size="icon">

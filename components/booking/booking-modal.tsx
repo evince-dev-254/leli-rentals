@@ -73,7 +73,7 @@ export function BookingModal({ listing, isOpen, onClose }: BookingModalProps) {
     email: formData.email,
     amount: calculateTotal() * 100, // Paystack expects cents
     publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "",
-    currency: 'KES',
+    currency: 'USD',
     metadata: {
       listing_id: listing.id,
       renter_name: formData.fullName,
@@ -95,7 +95,7 @@ export function BookingModal({ listing, isOpen, onClose }: BookingModalProps) {
     email: formData.email,
     amount: calculateTotal() * 100, // Paystack expects cents
     publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "",
-    currency: 'KES',
+    currency: 'USD',
     metadata: {
       listing_id: listing.id,
       renter_name: formData.fullName,
@@ -230,19 +230,19 @@ export function BookingModal({ listing, isOpen, onClose }: BookingModalProps) {
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="daily" id="daily" />
                   <Label htmlFor="daily" className="text-sm">
-                    Daily (KSh {listing.pricePerDay.toLocaleString()})
+                    Daily (${listing.pricePerDay.toLocaleString()})
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="weekly" id="weekly" />
                   <Label htmlFor="weekly" className="text-sm">
-                    Weekly (KSh {listing.pricePerWeek.toLocaleString()})
+                    Weekly (${listing.pricePerWeek.toLocaleString()})
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="monthly" id="monthly" />
                   <Label htmlFor="monthly" className="text-sm">
-                    Monthly (KSh {listing.pricePerMonth.toLocaleString()})
+                    Monthly (${listing.pricePerMonth.toLocaleString()})
                   </Label>
                 </div>
               </RadioGroup>
@@ -266,16 +266,16 @@ export function BookingModal({ listing, isOpen, onClose }: BookingModalProps) {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>Subtotal:</span>
-                  <span className="font-medium">KSh {calculateSubtotal().toLocaleString()}</span>
+                  <span className="font-medium">${calculateSubtotal().toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>Service Fee (5%):</span>
-                  <span className="font-medium">KSh {calculateServiceFee(calculateSubtotal()).toLocaleString()}</span>
+                  <span className="font-medium">${calculateServiceFee(calculateSubtotal()).toLocaleString()}</span>
                 </div>
                 <Separator className="my-1 ring-white/10" />
                 <div className="flex justify-between text-sm">
                   <span>Total Amount:</span>
-                  <span className="font-bold text-primary">KSh {calculateTotal().toLocaleString()}</span>
+                  <span className="font-bold text-primary">${calculateTotal().toLocaleString()}</span>
                 </div>
               </div>
             )}
@@ -342,15 +342,15 @@ export function BookingModal({ listing, isOpen, onClose }: BookingModalProps) {
               </div>
               <div className="flex justify-between font-bold text-base pt-2 border-t">
                 <span>Subtotal:</span>
-                <span>KSh {calculateSubtotal().toLocaleString()}</span>
+                <span>${calculateSubtotal().toLocaleString()}</span>
               </div>
               <div className="flex justify-between font-bold text-base">
                 <span>Service Fee:</span>
-                <span>KSh {calculateServiceFee(calculateSubtotal()).toLocaleString()}</span>
+                <span>${calculateServiceFee(calculateSubtotal()).toLocaleString()}</span>
               </div>
               <div className="flex justify-between font-bold text-lg pt-2 border-t text-primary">
                 <span>Total:</span>
-                <span>KSh {calculateTotal().toLocaleString()}</span>
+                <span>${calculateTotal().toLocaleString()}</span>
               </div>
             </div>
 
@@ -384,7 +384,7 @@ export function BookingModal({ listing, isOpen, onClose }: BookingModalProps) {
               <Separator />
               <div className="flex justify-between font-bold">
                 <span>Total Amount:</span>
-                <span className="text-primary">KSh {calculateTotal().toLocaleString()}</span>
+                <span className="text-primary">${calculateTotal().toLocaleString()}</span>
               </div>
             </div>
 
@@ -436,7 +436,7 @@ export function BookingModal({ listing, isOpen, onClose }: BookingModalProps) {
                 ) : (
                   <>
                     <CreditCard className="mr-2 h-4 w-4" />
-                    Pay KSh {calculateTotal().toLocaleString()}
+                    Pay ${calculateTotal().toLocaleString()}
                   </>
                 )}
               </Button>
@@ -467,7 +467,7 @@ export function BookingModal({ listing, isOpen, onClose }: BookingModalProps) {
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Amount Paid:</span>
-                <span className="font-bold text-primary">KSh {calculateTotal().toLocaleString()}</span>
+                <span className="font-bold text-primary">${calculateTotal().toLocaleString()}</span>
               </div>
             </div>
             <Button onClick={resetAndClose} className="w-full">

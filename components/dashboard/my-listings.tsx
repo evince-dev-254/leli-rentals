@@ -204,7 +204,7 @@ export function MyListings() {
 
               <div className="flex items-center justify-between">
                 <span className="font-bold text-primary">
-                  KSh {listing.price_per_day?.toLocaleString()}
+                  $ {listing.price_per_day?.toLocaleString()}
                   <span className="font-normal text-muted-foreground text-sm">/day</span>
                 </span>
                 <Button variant="outline" size="sm" asChild>

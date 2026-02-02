@@ -532,17 +532,17 @@ export function ListingDetailContent({ listing }: ListingDetailContentProps) {
               {/* Pricing */}
               <div className="mb-8 text-center sm:text-left">
                 <div className="flex items-baseline justify-center sm:justify-start gap-2 mb-4">
-                  <span className="text-4xl font-extrabold text-primary">KSh {listing.pricePerDay.toLocaleString()}</span>
+                  <span className="text-4xl font-extrabold text-primary">$ {listing.pricePerDay.toLocaleString()}</span>
                   <span className="text-muted-foreground font-medium">/ day</span>
                 </div>
                 <div className="grid grid-cols-2 gap-3 mt-6">
                   <div className="p-4 rounded-2xl bg-secondary/20 border border-secondary/30 text-center">
                     <p className="text-xs text-muted-foreground font-bold uppercase tracking-wider mb-1">Weekly</p>
-                    <p className="font-extrabold text-lg text-foreground">KSh {listing.pricePerWeek.toLocaleString()}</p>
+                    <p className="font-extrabold text-lg text-foreground">$ {listing.pricePerWeek.toLocaleString()}</p>
                   </div>
                   <div className="p-4 rounded-2xl bg-secondary/20 border border-secondary/30 text-center">
                     <p className="text-xs text-muted-foreground font-bold uppercase tracking-wider mb-1">Monthly</p>
-                    <p className="font-extrabold text-lg text-foreground">KSh {listing.pricePerMonth.toLocaleString()}</p>
+                    <p className="font-extrabold text-lg text-foreground">$ {listing.pricePerMonth.toLocaleString()}</p>
                   </div>
                 </div>
               </div>
@@ -609,7 +609,7 @@ export function ListingDetailContent({ listing }: ListingDetailContentProps) {
         <div className="container flex items-center justify-between gap-4 max-w-7xl mx-auto">
           <div className="flex flex-col">
             <div className="flex items-baseline gap-1">
-              <span className="text-xl font-extrabold text-primary">KSh {listing.pricePerDay.toLocaleString()}</span>
+              <span className="text-xl font-extrabold text-primary">$ {listing.pricePerDay.toLocaleString()}</span>
               <span className="text-xs text-muted-foreground font-medium">/ night</span>
             </div>
             <button
@@ -669,7 +669,7 @@ export function ListingDetailContent({ listing }: ListingDetailContentProps) {
               </div>
               <div className="flex flex-col justify-center">
                 <p className="font-bold text-sm line-clamp-1">{listing.title}</p>
-                <p className="text-xs text-primary font-bold">KSh {listing.pricePerDay.toLocaleString()}/day</p>
+                <p className="text-xs text-primary font-bold">$ {listing.pricePerDay.toLocaleString()}/day</p>
               </div>
             </div>
             <div className="space-y-3">

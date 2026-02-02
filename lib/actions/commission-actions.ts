@@ -116,7 +116,7 @@ export async function requestWithdrawal(
         if (amount < MINIMUM_WITHDRAWAL) {
             return {
                 success: false,
-                error: `Minimum withdrawal amount is KSh ${MINIMUM_WITHDRAWAL.toLocaleString()}`
+                error: `Minimum withdrawal amount is $ ${MINIMUM_WITHDRAWAL.toLocaleString()}`
             }
         }
 
@@ -125,7 +125,7 @@ export async function requestWithdrawal(
         if (balance < amount) {
             return {
                 success: false,
-                error: `Insufficient balance. Available: KSh ${balance.toLocaleString()}`
+                error: `Insufficient balance. Available: $ ${balance.toLocaleString()}`
             }
         }
 
