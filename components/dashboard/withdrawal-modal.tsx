@@ -52,12 +52,12 @@ export function WithdrawalModal({
         }
 
         if (amountVal < MINIMUM_WITHDRAWAL) {
-            toast.error(`Minimum withdrawal is KSh ${MINIMUM_WITHDRAWAL.toLocaleString()}`)
+            toast.error(`Minimum withdrawal is $${MINIMUM_WITHDRAWAL.toLocaleString()}`)
             return
         }
 
-        if (amountVal > 50000) {
-            toast.error("Maximum withdrawal is KSh 50,000")
+        if (amountVal > 500) {
+            toast.error("Maximum withdrawal is $500")
             return
         }
 
@@ -136,7 +136,7 @@ export function WithdrawalModal({
                                 Balance
                             </Label>
                             <div className="col-span-3 text-sm font-bold text-green-600">
-                                KSh {availableBalance.toLocaleString()}
+                                ${availableBalance.toLocaleString()}
                             </div>
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
@@ -160,7 +160,7 @@ export function WithdrawalModal({
                             </div>
                         </div>
                         <p className="text-xs text-muted-foreground pl-[25%]">
-                            Min: KSh {MINIMUM_WITHDRAWAL.toLocaleString()} | Max: KSh 50,000
+                            Min: ${MINIMUM_WITHDRAWAL.toLocaleString()} | Max: $500
                         </p>
                     </form>
                 )}

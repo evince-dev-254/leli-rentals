@@ -27,10 +27,6 @@ export function WithdrawalRequest({ userType }: WithdrawalRequestProps) {
     const [loading, setLoading] = useState(false)
     const [loadingBalance, setLoadingBalance] = useState(true)
 
-    useEffect(() => {
-        loadBalance()
-    }, [loadBalance])
-
     const loadBalance = useCallback(async () => {
         setLoadingBalance(true)
         try {
@@ -48,6 +44,10 @@ export function WithdrawalRequest({ userType }: WithdrawalRequestProps) {
         }
     }, [userType])
 
+    useEffect(() => {
+        loadBalance()
+    }, [loadBalance])
+
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault()
         setLoading(true)
@@ -62,7 +62,7 @@ export function WithdrawalRequest({ userType }: WithdrawalRequestProps) {
             const withdrawalAmount = parseFloat(amount)
 
             if (isNaN(withdrawalAmount) || withdrawalAmount < MINIMUM_WITHDRAWAL) {
-                toast.error(`Minimum withdrawal is KSh ${MINIMUM_WITHDRAWAL.toLocaleString()}`)
+                toast.error(`Minimum withdrawal is $${MINIMUM_WITHDRAWAL.toLocaleString()}`)
                 return
             }
 
@@ -121,7 +121,7 @@ export function WithdrawalRequest({ userType }: WithdrawalRequestProps) {
                                     <span>Loading...</span>
                                 </div>
                             ) : (
-                                <p className="text-3xl font-bold">KSh {balance.toLocaleString()}</p>
+                                <p className="text-3xl font-bold">${balance.toLocaleString()}</p>
                             )}
                         </div>
                         <Wallet className="h-12 w-12 text-green-500 opacity-50" />
@@ -145,7 +145,7 @@ export function WithdrawalRequest({ userType }: WithdrawalRequestProps) {
                                 : 'Minimum withdrawal not reached'}
                         </p>
                         <p className="text-sm text-muted-foreground mt-1">
-                            Minimum withdrawal amount: KSh {MINIMUM_WITHDRAWAL.toLocaleString()}
+                            Minimum withdrawal amount: ${MINIMUM_WITHDRAWAL.toLocaleString()}
                         </p>
                     </div>
                 </div>
@@ -153,7 +153,7 @@ export function WithdrawalRequest({ userType }: WithdrawalRequestProps) {
                 {/* Withdrawal Form */}
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <Label htmlFor="amount">Withdrawal Amount (KSh)</Label>
+                        <Label htmlFor="amount">Withdrawal Amount ($)</Label>
                         <Input
                             id="amount"
                             type="number"

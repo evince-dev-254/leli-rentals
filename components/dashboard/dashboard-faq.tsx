@@ -41,7 +41,7 @@ const FAQ_DATA = {
     owner: [
         {
             question: "How do I get paid?",
-            answer: "Earnings from your rentals are credited to your Available Balance. You can request a payout once your balance reaches KSh 1,000."
+            answer: "Earnings from your rentals are credited to your Available Balance. You can request a payout once your balance reaches $10."
         },
         {
             question: "When are funds cleared?",
@@ -63,7 +63,7 @@ const FAQ_DATA = {
         },
         {
             question: "What is the minimum withdrawal?",
-            answer: "You can request a payout to your registered M-Pesa or bank account once your earnings reach a minimum of KSh 1,000."
+            answer: "You can request a payout to your registered M-Pesa or bank account once your earnings reach a minimum of $10."
         },
         {
             question: "How often are commissions calculated?",

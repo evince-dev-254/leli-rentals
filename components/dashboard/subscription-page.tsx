@@ -21,7 +21,7 @@ const plans = [
   {
     id: "weekly",
     name: "Weekly Plan",
-    price: 500,
+    price: 5,
     duration: "7 days",
     listingLimit: 10,
     commitment: "Low, flexible",
@@ -29,7 +29,7 @@ const plans = [
   {
     id: "monthly",
     name: "Monthly Plan",
-    price: 1000,
+    price: 10,
     duration: "30 days",
     listingLimit: -1, // Unlimited
     commitment: "High value, stable",
@@ -194,7 +194,7 @@ export function SubscriptionPage() {
               </div>
               <div className="p-4 rounded-xl bg-background/60 backdrop-blur-sm border border-border/50">
                 <p className="text-sm text-muted-foreground mb-1">Plan Price</p>
-                <p className="text-2xl font-bold">KSh {subscription?.plan_type === 'monthly' ? '1,000' : '500'}</p>
+                <p className="text-2xl font-bold">${subscription?.plan_type === 'monthly' ? '10' : '5'}</p>
                 <p className="text-xs text-muted-foreground">per {subscription?.plan_type === 'monthly' ? 'month' : 'week'}</p>
               </div>
             </div>
@@ -237,7 +237,7 @@ export function SubscriptionPage() {
               </div>
               <h3 className="text-2xl font-bold mb-2">Weekly Plan</h3>
               <div className="flex items-baseline gap-1 mb-2">
-                <span className="text-4xl font-bold">KSh 500</span>
+                <span className="text-4xl font-bold">$5</span>
                 <span className="text-muted-foreground">/ 7 days</span>
               </div>
               <p className="text-muted-foreground">Perfect for trying out the platform or short-term listing needs.</p>
@@ -296,7 +296,7 @@ export function SubscriptionPage() {
               </div>
               <h3 className="text-2xl font-bold mb-2">Monthly Plan</h3>
               <div className="flex items-baseline gap-1 mb-2">
-                <span className="text-4xl font-bold">KSh 1,000</span>
+                <span className="text-4xl font-bold">$10</span>
                 <span className="text-muted-foreground">/ 30 days</span>
               </div>
               <p className="text-muted-foreground">For serious renters wanting maximum exposure and unlimited growth.</p>
@@ -350,8 +350,8 @@ export function SubscriptionPage() {
             <TabsContent value="all" className="mt-4">
               <div className="space-y-3">
                 {[
-                  { type: "subscription", desc: "Weekly Plan", date: "Dec 1, 2025", amount: -500 },
-                  { type: "payout", desc: "Earnings Payout", date: "Nov 30, 2025", amount: 45000 },
+                  { type: "subscription", desc: "Weekly Plan", date: "Dec 1, 2025", amount: -5 },
+                  { type: "payout", desc: "Earnings Payout", date: "Nov 30, 2025", amount: 450 },
                 ].map((transaction, index) => (
                   <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-background/50">
                     <div className="flex items-center gap-3">
@@ -373,7 +373,7 @@ export function SubscriptionPage() {
                       </div>
                     </div>
                     <span className={`font-semibold ${transaction.amount > 0 ? "text-green-500" : "text-foreground"}`}>
-                      {transaction.amount > 0 ? "+" : ""}KSh {Math.abs(transaction.amount).toLocaleString()}
+                      {transaction.amount > 0 ? "+" : ""}${Math.abs(transaction.amount).toLocaleString()}
                     </span>
                   </div>
                 ))}
@@ -405,7 +405,7 @@ export function SubscriptionPage() {
               <div className="flex justify-between">
                 <span>Amount</span>
                 <span className="font-bold text-primary">
-                  KSh {plans.find((p) => p.id === selectedPlan)?.price.toLocaleString()}
+                  ${plans.find((p) => p.id === selectedPlan)?.price.toLocaleString()}
                 </span>
               </div>
             </div>
@@ -430,7 +430,7 @@ export function SubscriptionPage() {
                   }}
                   onSuccess={handlePaymentSuccess}
                   onClose={() => setShowPaymentDialog(false)}
-                  text={`Pay KSh ${plans.find((p) => p.id === selectedPlan)?.price.toLocaleString()}`}
+                  text={`Pay $${plans.find((p) => p.id === selectedPlan)?.price.toLocaleString()}`}
                   subaccount={process.env.NEXT_PUBLIC_PAYSTACK_SUBACCOUNT_ID}
                 />
                 <div className="bg-yellow-500/10 p-3 rounded-md text-xs text-yellow-600 border border-yellow-500/20">

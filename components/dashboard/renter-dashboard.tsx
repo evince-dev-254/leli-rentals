@@ -206,7 +206,7 @@ export function RenterDashboard() {
                                                 </div>
 
                                                 <div className="flex flex-wrap items-center justify-between gap-4 mt-4 pt-2 border-t border-border/30">
-                                                    <p className="font-bold text-lg">KSh {booking.total_amount?.toLocaleString()}</p>
+                                                    <p className="font-bold text-lg">${booking.total_amount?.toLocaleString()}</p>
                                                     <div className="flex gap-2">
                                                         <Button variant="outline" size="sm" asChild>
                                                             <Link href="/messages">
@@ -248,7 +248,7 @@ export function RenterDashboard() {
                                     className="bg-green-600 hover:bg-green-700 text-white gap-2 shadow-lg shadow-green-500/20"
                                 >
                                     <DollarSign className="h-4 w-4" />
-                                    Withdraw KSh {balance.toLocaleString()}
+                                    Withdraw ${balance.toLocaleString()}
                                 </Button>
                             )}
                         </CardHeader>
@@ -275,7 +275,7 @@ export function RenterDashboard() {
                                                 </div>
                                             </div>
                                             <div className="text-right w-full sm:w-auto flex flex-row sm:flex-col justify-between sm:justify-end items-center sm:items-end">
-                                                <p className="font-bold text-foreground">- KSh {payment.total_amount?.toLocaleString()}</p>
+                                                <p className="font-bold text-foreground">- ${payment.total_amount?.toLocaleString()}</p>
                                                 <Badge variant="outline" className="text-[10px] text-green-600 border-green-200 dark:border-green-800">
                                                     Paid
                                                 </Badge>
@@ -341,7 +341,7 @@ export function RenterDashboard() {
                                         </div>
 
                                         <div className="flex items-center justify-between mt-4 border-t pt-4 border-dashed">
-                                            <p className="font-bold text-xl text-primary">KSh {fav.listing.price_per_day?.toLocaleString()}<span className="text-xs font-normal text-muted-foreground">/day</span></p>
+                                            <p className="font-bold text-xl text-primary">${fav.listing.price_per_day?.toLocaleString()}<span className="text-xs font-normal text-muted-foreground">/day</span></p>
                                             <Button size="sm" asChild className="shadow-lg shadow-primary/20">
                                                 <Link href={`/listings/${fav.listing.id}`}>
                                                     Book Now
