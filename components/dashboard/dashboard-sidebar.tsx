@@ -134,7 +134,7 @@ function SidebarContent({ role, isStaff, pathname, onLinkClick }: SidebarContent
   )
 }
 
-function useDashboardRole() {
+function useDashboardRole(pathname: string) {
   const [role, setRole] = useState<string | null>(null)
   const [isStaff, setIsStaff] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -144,20 +144,32 @@ function useDashboardRole() {
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
         const { data } = await supabase.from('user_profiles').select('role, is_staff').eq('id', user.id).single()
-        setRole(data?.role || 'renter')
+
+        let currentRole = data?.role || 'renter'
+
+        // Check if we are on a specific dashboard path to override display role
+        if (pathname?.includes('/dashboard/owner') || pathname?.includes('/dashboard/listings') || pathname?.includes('/dashboard/subscription') || pathname?.includes('/dashboard/verification')) {
+          currentRole = 'owner'
+        } else if (pathname?.includes('/dashboard/renter') || pathname?.includes('/dashboard/payments')) {
+          currentRole = 'renter'
+        } else if (pathname?.includes('/dashboard/affiliate')) {
+          currentRole = 'affiliate'
+        }
+
+        setRole(currentRole)
         setIsStaff(data?.is_staff || false || data?.role === 'staff')
       }
       setLoading(false)
     }
     getRole()
-  }, [])
+  }, [pathname])
 
   return { role, isStaff, loading }
 }
 
 export function DashboardSidebar() {
   const pathname = usePathname()
-  const { role, isStaff, loading } = useDashboardRole()
+  const { role, isStaff, loading } = useDashboardRole(pathname)
 
   if (loading) return <div className="hidden md:block w-64 h-screen bg-card border-r border-border flex items-center justify-center">
     <AppLoader size="sm" />
@@ -174,7 +186,7 @@ export function DashboardSidebar() {
 
 export function MobileDashboardSidebar() {
   const pathname = usePathname()
-  const { role, isStaff } = useDashboardRole()
+  const { role, isStaff } = useDashboardRole(pathname)
   const [open, setOpen] = useState(false)
 
   return (

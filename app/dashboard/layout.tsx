@@ -17,7 +17,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const getUserRole = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
-        setUserRole(user.user_metadata?.role || 'renter')
+        // Fetch from profile for accurate role
+        const { data } = await supabase.from('user_profiles').select('role').eq('id', user.id).single()
+        setUserRole(data?.role || 'renter')
       }
     }
     getUserRole()
@@ -30,6 +32,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     gradientClass = "gradient-mesh-affiliate"
   } else if (pathname?.includes('/renter')) {
     gradientClass = "gradient-mesh-renter"
+  } else if (pathname?.includes('/owner')) {
+    gradientClass = "gradient-mesh-owner"
   }
 
   // Determine dashboard title from path
@@ -42,6 +46,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     dashboardTitle = "Renter Dashboard"
   } else if (pathname?.includes('/admin')) {
     dashboardTitle = "Admin Dashboard"
+  } else if (pathname?.includes('/dashboard/listings') || pathname?.includes('/dashboard/subscription') || pathname?.includes('/dashboard/verification')) {
+    // These are typically owner pages
+    dashboardTitle = "Owner Dashboard"
   } else if (userRole) {
     // Fallback to user role if at root /dashboard
     dashboardTitle = `${userRole.charAt(0).toUpperCase() + userRole.slice(1)} Dashboard`

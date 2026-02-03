@@ -64,6 +64,11 @@ export function DashboardWelcomeHeader({ user, subtitle, role, children, isVerif
                     <div>
                         <h1 className="text-3xl font-bold tracking-tight flex flex-col md:flex-row items-center gap-2 justify-center md:justify-start">
                             {greeting}, {name}!
+                            {role && (
+                                <span className="text-xs font-bold uppercase tracking-wider bg-white/20 px-2 py-1 rounded-full backdrop-blur-sm border border-white/20">
+                                    {role}
+                                </span>
+                            )}
                             {isVerified && (
                                 <div className="bg-green-500 text-white p-1 rounded-full shadow-sm mt-2 md:mt-0" title="Verified Owner">
                                     <ShieldCheck className="h-5 w-5" />
