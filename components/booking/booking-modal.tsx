@@ -18,6 +18,7 @@ import type { DateRange } from "react-day-picker"
 import { createBooking } from "@/lib/actions/booking-actions"
 import { supabase } from "@/lib/supabase"
 import { toast } from "sonner"
+import { EXCHANGE_RATE, PAYMENT_CURRENCY } from "@/lib/constants"
 
 interface BookingModalProps {
   listing: Listing
@@ -68,47 +69,35 @@ export function BookingModal({ listing, isOpen, onClose }: BookingModalProps) {
     return Math.ceil((dateRange.to.getTime() - dateRange.from.getTime()) / (1000 * 60 * 60 * 24))
   }, [dateRange])
 
-  const paystackConfig = useMemo(() => ({
-    reference: (new Date()).getTime().toString(),
-    email: formData.email,
-    amount: calculateTotal() * 100, // Paystack expects cents
-    publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "",
-    currency: 'USD',
-    metadata: {
-      listing_id: listing.id,
-      renter_name: formData.fullName,
-      custom_fields: [
-        {
-          display_name: "Listing",
-          variable_name: "listing_title",
-          value: listing.title
-        }
-      ]
-    },
-    subaccount: process.env.NEXT_PUBLIC_PAYSTACK_SUBACCOUNT_ID
-  }), [formData.email, formData.fullName, listing.id, listing.title, calculateTotal]);
+  const paystackConfig = useMemo(() => {
+    const totalAmount = calculateTotal()
+    const paymentAmount = PAYMENT_CURRENCY === 'USD' ? totalAmount : totalAmount * EXCHANGE_RATE
+
+    return {
+      reference: (new Date()).getTime().toString(),
+      email: formData.email,
+      amount: Math.round(paymentAmount * 100), // Paystack expects smallest units
+      publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "",
+      currency: PAYMENT_CURRENCY,
+      metadata: {
+        listing_id: listing.id,
+        renter_name: formData.fullName,
+        original_amount: totalAmount,
+        original_currency: 'USD',
+        exchange_rate: EXCHANGE_RATE,
+        custom_fields: [
+          {
+            display_name: "Listing",
+            variable_name: "listing_title",
+            value: listing.title
+          }
+        ]
+      },
+      subaccount: process.env.NEXT_PUBLIC_PAYSTACK_SUBACCOUNT_ID
+    }
+  }, [formData.email, formData.fullName, listing.id, listing.title, calculateTotal]);
 
   const initializePayment = usePaystackPayment(paystackConfig);
-
-  const getPaystackConfig = () => ({
-    reference: (new Date()).getTime().toString(),
-    email: formData.email,
-    amount: calculateTotal() * 100, // Paystack expects cents
-    publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "",
-    currency: 'USD',
-    metadata: {
-      listing_id: listing.id,
-      renter_name: formData.fullName,
-      custom_fields: [
-        {
-          display_name: "Listing",
-          variable_name: "listing_title",
-          value: listing.title
-        }
-      ]
-    },
-    subaccount: process.env.NEXT_PUBLIC_PAYSTACK_SUBACCOUNT_ID
-  });
 
   const handlePayWithPaystack = async () => {
     if (!isClient || !usePaystackPayment) {

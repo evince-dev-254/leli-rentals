@@ -2,6 +2,8 @@
 
 import { Button } from '@/components/ui/button'
 import { usePaystackPayment } from 'react-paystack'
+import { EXCHANGE_RATE, PAYMENT_CURRENCY } from '@/lib/constants'
+// ... existing imports
 
 interface PaystackPaymentProps {
     amount: number // in USD
@@ -30,13 +32,21 @@ export const PaystackPaymentButton = ({
 }: PaystackPaymentProps) => {
     const publicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || ""
 
+    // Convert USD to the target payment currency (e.g. KES)
+    const paymentAmount = PAYMENT_CURRENCY === 'USD' ? amount : amount * EXCHANGE_RATE
+
     const config: any = {
         reference: (new Date()).getTime().toString(),
         email,
-        amount: amount * 100, // Convert to cents
+        amount: Math.round(paymentAmount * 100), // Convert to cents/kobo/shilling cents
         publicKey,
-        currency: 'USD',
-        metadata: metadata || {},
+        currency: PAYMENT_CURRENCY,
+        metadata: {
+            ...metadata,
+            original_amount: amount,
+            original_currency: 'USD',
+            exchange_rate: EXCHANGE_RATE
+        },
         phone,
     };
 
