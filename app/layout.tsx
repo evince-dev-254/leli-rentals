@@ -161,7 +161,7 @@ export default function RootLayout({
               (function(){
                 var s=document.createElement('script');
                 s.src='https://analytics.ahrefs.com/analytics.js';
-                s.setAttribute('data-key','ShZx2eLOXdw8j+XqKVfzDw');
+                s.setAttribute('data-key','bcams7MVBROOcLRki5Khtg');
                 s.async=true;
                 document.head.appendChild(s);
               })();
