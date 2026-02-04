@@ -1,11 +1,14 @@
-"use client"
-
 import { Search, MapPin, Sparkles } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
-import { motion } from "framer-motion"
 import { AdvancedSearch } from "./advanced-search"
-import { staggerContainer, fadeInUp } from "@/lib/animations"
+import {
+  HeroAnimatedWrapper,
+  HeroHeading,
+  HeroSubheading,
+  HeroSearchWrapper,
+  HeroQuickLinks
+} from "./hero-animated-wrapper"
 
 export function HeroSection() {
   return (
@@ -30,41 +33,25 @@ export function HeroSection() {
       {/* Additional Gradient for depth - hidden on small mobile to save GPU */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/40 hidden sm:block" />
 
-      <motion.div
-        variants={staggerContainer}
-        initial="initial"
-        animate="animate"
-        className="container relative z-10 px-4 py-12 sm:py-20"
-      >
+      <HeroAnimatedWrapper>
         <div className="max-w-4xl mx-auto text-center">
           {/* Heading */}
-          <motion.h1
-            variants={fadeInUp}
-            className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-4 sm:mb-6 text-balance text-white drop-shadow-lg"
-          >
+          <HeroHeading>
             Find Your Perfect <span className="text-primary">Rental</span>
-          </motion.h1>
+          </HeroHeading>
 
           {/* Subheading */}
-          <motion.p
-            variants={fadeInUp}
-            className="text-base sm:text-lg md:text-xl text-white/80 mb-10 max-w-2xl mx-auto text-pretty px-4"
-          >
+          <HeroSubheading>
             The premier peer-to-peer rental marketplace. Discover amazing rentals for every occasion — from cars to equipment, homes to fashion.
-          </motion.p>
+          </HeroSubheading>
 
           {/* Advanced Search Engine */}
-          <motion.div
-            variants={fadeInUp}
-          >
+          <HeroSearchWrapper>
             <AdvancedSearch />
-          </motion.div>
+          </HeroSearchWrapper>
 
           {/* Quick Links */}
-          <motion.div
-            variants={fadeInUp}
-            className="flex flex-wrap justify-center gap-2 sm:gap-3 px-4 mt-8"
-          >
+          <HeroQuickLinks>
             <span className="text-xs sm:text-sm text-white/70 w-full sm:w-auto">Popular:</span>
             {["Cars", "Apartments", "Cameras", "Event Spaces", "Designer Wear"].map((item) => (
               <Link
@@ -75,9 +62,9 @@ export function HeroSection() {
                 {item}
               </Link>
             ))}
-          </motion.div>
+          </HeroQuickLinks>
         </div>
-      </motion.div>
+      </HeroAnimatedWrapper>
     </section>
   )
 }

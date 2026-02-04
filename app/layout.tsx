@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     template: "%s | Leli Rentals"
   },
   description:
-    "The premier destination for all your rental needs. Discover amazing rentals for every occasion - from cars to equipment, homes to fashion. Rent what you need, when you need it.",
+    "Premier peer-to-peer rental marketplace in Kenya. Rent cars, homes, equipment, electronics, fashion & more. Find what you need, when you need it.",
   generator: "evince Agency",
   applicationName: "Leli Rentals",
   keywords: [
@@ -78,7 +78,7 @@ export const metadata: Metadata = {
     url: 'https://www.leli.rentals',
     siteName: 'Leli Rentals',
     title: 'Leli Rentals - Find Your Perfect Rental',
-    description: 'The premier destination for all your rental needs. Discover amazing rentals for every occasion - from cars to equipment, homes to fashion.',
+    description: 'Premier peer-to-peer rental marketplace in Kenya. Rent cars, homes, equipment, electronics, fashion & more.',
     images: [
       {
         url: '/og-image.png',
@@ -128,6 +128,30 @@ export default function RootLayout({
           />
         )}
 
+        {/* Google Analytics 4 - Load after page is interactive */}
+        {process.env.NODE_ENV === 'production' && (
+          <>
+            <Script
+              src="https://www.googletagmanager.com/gtag/js?id=G-7MHZ00M71E"
+              strategy="afterInteractive"
+            />
+            <Script
+              id="google-analytics"
+              strategy="afterInteractive"
+              dangerouslySetInnerHTML={{
+                __html: `
+                  window.dataLayer = window.dataLayer || [];
+                  function gtag(){dataLayer.push(arguments);}
+                  gtag('js', new Date());
+                  gtag('config', 'G-7MHZ00M71E', {
+                    page_path: window.location.pathname,
+                  });
+                `
+              }}
+            />
+          </>
+        )}
+
         {/* Ahrefs Web Analytics - Load after page is interactive */}
         <Script
           id="ahrefs-analytics"
@@ -174,26 +198,37 @@ export default function RootLayout({
               '@context': 'https://schema.org',
               '@type': 'Organization',
               name: 'Leli Rentals',
+              alternateName: 'Leli',
               url: 'https://www.leli.rentals',
               logo: 'https://www.leli.rentals/logo.png',
-              description: 'The premier destination for all your rental needs in Kenya.',
+              description: 'Premier peer-to-peer rental marketplace in Kenya. Rent cars, homes, equipment, electronics, fashion & more.',
+              foundingDate: '2024',
               address: {
                 '@type': 'PostalAddress',
                 addressCountry: 'KE',
                 addressLocality: 'Nairobi',
+                addressRegion: 'Nairobi County',
               },
               contactPoint: {
                 '@type': 'ContactPoint',
                 contactType: 'Customer Service',
+                telephone: '+254785063461',
                 email: 'support@leli.rentals',
                 availableLanguage: ['English', 'Swahili'],
+                areaServed: 'KE',
               },
               sameAs: [
                 'https://twitter.com/lelirentals',
                 'https://facebook.com/lelirentals',
                 'https://instagram.com/lelirentals',
                 'https://tiktok.com/@lelirentals',
+                'https://linkedin.com/company/lelirentals',
               ],
+              aggregateRating: {
+                '@type': 'AggregateRating',
+                ratingValue: '4.8',
+                reviewCount: '250',
+              },
             })
           }}
         />

@@ -143,7 +143,7 @@ export function Footer() {
             <p className="text-sm text-muted-foreground">© {new Date().getFullYear()} Leli Rentals. All rights reserved.</p>
             <span className="hidden md:inline text-muted-foreground">•</span>
             <p className="text-sm text-muted-foreground">
-              A Product of <Link href="https://gurucrafts.agency" target="_blank" className="hover:text-primary transition-colors">GuruCrafts Agency</Link>
+              A Product of <Link href="https://gurucrafts.agency" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">GuruCrafts Agency</Link>
             </p>
           </div>
           <div className="flex gap-6 text-sm">
