@@ -1,141 +1,157 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 import { Users, Wallet, BarChart3, Sparkles, Copy, Share2, Trophy, Target, ChevronRight, MousePointerClick } from 'lucide-react-native';
-import { MotiView, AnimatePresence } from 'moti';
-import { cn } from '@/lib/utils';
+import { MotiView } from 'moti';
+import { PerspectiveView } from '@/components/ui/perspective-view';
+import { GlassView } from '@/components/ui/glass-view';
+import { useTheme } from '@/components/theme-provider';
 
-const StatCard = ({ label, value, icon: Icon, color, role }: any) => (
-    <View className="flex-1 p-5 rounded-[32px] bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-sm items-center">
-        <View className={cn("h-14 w-14 rounded-2xl items-center justify-center mb-4", color)}>
-            <Icon size={28} color="#a855f7" />
-        </View>
-        <Text className="text-slate-900 dark:text-white text-xl font-black mb-1">{value}</Text>
-        <Text className="text-slate-400 dark:text-slate-300 text-[10px] font-black uppercase tracking-[0.1em] text-center leading-tight">{label}</Text>
-    </View>
+const StatCard = ({ label, value, icon: Icon, isDark }: any) => (
+    <GlassView intensity={15} tint={isDark ? 'dark' : 'light'} style={{ flex: 1, padding: 24, borderRadius: 32, alignItems: 'center' }}>
+        <PerspectiveView floatEnabled={true} style={{ marginBottom: 16 }}>
+            <View style={{ height: 56, width: 56, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: isDark ? 'rgba(168, 85, 247, 0.1)' : 'rgba(168, 85, 247, 0.05)' }}>
+                <Icon size={28} color="#a855f7" strokeWidth={2.5} />
+            </View>
+        </PerspectiveView>
+        <Text style={{ color: isDark ? 'white' : '#0f172a', fontSize: 20, fontWeight: '900', textAlign: 'center' }}>{value}</Text>
+        <Text style={{ color: '#94a3b8', fontSize: 9, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 1, marginTop: 4 }}>{label}</Text>
+    </GlassView>
 );
 
-const WelcomeBanner = ({ name }: { name?: string }) => {
+const WelcomeBanner = ({ name, isDark }: { name?: string, isDark: boolean }) => {
     return (
-        <MotiView
-            from={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="p-6 rounded-[32px] flex-row items-center mb-6 bg-purple-500/10"
-        >
-            <View className="flex-1">
-                <Text className="text-2xl font-black mb-1 text-purple-500">Hi, {name || 'Partner'}!</Text>
-                <Text className="text-slate-500 dark:text-slate-300 font-bold text-xs uppercase tracking-widest">Track your impact and rewards.</Text>
-            </View>
-            <View className="h-14 w-14 rounded-2xl bg-white/80 dark:bg-slate-900/80 items-center justify-center shadow-sm">
-                <Users size={28} color="#a855f7" />
-            </View>
-        </MotiView>
+        <PerspectiveView style={{ marginBottom: 32 }}>
+            <GlassView
+                intensity={30}
+                tint={isDark ? 'dark' : 'light'}
+                style={{ padding: 32, borderRadius: 40, flexDirection: 'row', alignItems: 'center', borderWidth: 2, borderColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(168, 85, 247, 0.1)' }}
+            >
+                <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 28, fontWeight: '900', color: isDark ? 'white' : '#0f172a', marginBottom: 4 }}>Hey, {name || 'Partner'}!</Text>
+                    <Text style={{ fontSize: 12, color: '#94a3b8', fontWeight: '800', textTransform: 'uppercase', letterSpacing: 1 }}>Expanding the Network</Text>
+                </View>
+                <View style={{ height: 60, width: 60, borderRadius: 24, backgroundColor: '#a855f7', alignItems: 'center', justifyContent: 'center', shadowColor: '#a855f7', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.3, shadowRadius: 15, elevation: 12 }}>
+                    <Users size={28} color="white" strokeWidth={2.5} />
+                </View>
+            </GlassView>
+        </PerspectiveView>
     );
 };
 
 export const AffiliateDashboardView = ({ router, user, stats }: any) => {
+    const { theme } = useTheme();
+    const isDark = theme === 'dark';
+
     return (
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
-            <WelcomeBanner name={user?.user_metadata?.full_name?.split(' ')[0]} />
+            <WelcomeBanner name={user?.user_metadata?.full_name?.split(' ')[0]} isDark={isDark} />
 
-            <View className="flex-row gap-4 mb-8">
-                <StatCard label="Total Rev" value={`KSh ${stats?.affiliateEarnings || 0}`} icon={Trophy} color="bg-purple-50" role="affiliate" />
-                <StatCard label="Network" value={stats?.referralCount || 0} icon={Users} color="bg-purple-50" role="affiliate" />
+            <View style={{ flexDirection: 'row', gap: 16, marginBottom: 32 }}>
+                <StatCard label="Total Vol" value={`KSh ${stats?.affiliateEarnings || 0}`} icon={Trophy} isDark={isDark} />
+                <StatCard label="Network" value={stats?.referralCount || 0} icon={Users} isDark={isDark} />
             </View>
 
-            {/* Performance Analytics Mock */}
-            <View className="bg-white dark:bg-slate-900 p-8 rounded-[40px] mb-8 border border-slate-100 dark:border-slate-800 shadow-sm">
-                <View className="flex-row items-center justify-between mb-8 px-1">
-                    <View>
-                        <Text className="text-slate-900 dark:text-white font-black text-lg">Performance Metrics</Text>
-                        <Text className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Last 30 days</Text>
-                    </View>
-                    <BarChart3 size={20} color="#a855f7" />
-                </View>
-
-                <View className="flex-row justify-between mb-8">
-                    <View className="items-center flex-1">
-                        <Text className="text-slate-400 font-bold text-[10px] uppercase mb-1">Clicks</Text>
-                        <Text className="text-slate-900 dark:text-white font-black text-xl">1.2k</Text>
-                        <View className="h-1 w-8 bg-blue-500 rounded-full mt-2" />
-                    </View>
-                    <View className="items-center flex-1">
-                        <Text className="text-slate-400 font-bold text-[10px] uppercase mb-1">Conv.</Text>
-                        <Text className="text-slate-900 dark:text-white font-black text-xl">4.2%</Text>
-                        <View className="h-1 w-8 bg-emerald-500 rounded-full mt-2" />
-                    </View>
-                    <View className="items-center flex-1">
-                        <Text className="text-slate-400 font-bold text-[10px] uppercase mb-1">Earned</Text>
-                        <Text className="text-slate-900 dark:text-white font-black text-xl">KSh 500</Text>
-                        <View className="h-1 w-8 bg-purple-500 rounded-full mt-2" />
-                    </View>
-                </View>
-
-                {/* Growth Path Mock */}
-                <View className="bg-slate-50 dark:bg-slate-800/50 p-5 rounded-3xl border border-slate-100 dark:border-slate-800">
-                    <View className="flex-row justify-between mb-2">
-                        <Text className="text-slate-700 dark:text-slate-300 font-bold text-[10px] uppercase">Goal: Elite Partner</Text>
-                        <Text className="text-slate-900 dark:text-white font-black text-[10px]">65%</Text>
-                    </View>
-                    <View className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                        <MotiView
-                            from={{ width: '0%' }}
-                            animate={{ width: '65%' }}
-                            transition={{ type: 'timing', duration: 1000 }}
-                            className="h-full bg-purple-500"
-                        />
-                    </View>
-                </View>
-            </View>
-
-            {/* Marketing Kit */}
-            <View className="mb-8">
-                <View className="flex-row items-center justify-between mb-4 px-1">
-                    <Text className="text-sm font-black uppercase tracking-widest text-slate-400">Marketing Kit</Text>
-                    <Sparkles size={16} color="#a855f7" />
-                </View>
-
-                <View className="bg-slate-900 p-8 rounded-[40px] shadow-xl shadow-purple-500/10 overflow-hidden relative">
-                    <View className="absolute top-[-20] right-[-20] rotate-12 opacity-10">
-                        <Target size={120} color="white" />
-                    </View>
-
-                    <Text className="text-white/60 font-black text-[10px] uppercase tracking-[0.2em] mb-4">Master Referral Link</Text>
-                    <View className="bg-white/10 px-6 py-5 rounded-2xl border border-white/10 flex-row items-center mb-8">
-                        <Text className="flex-1 text-white font-bold text-xs" numberOfLines={1}>leli.shop/join?ref={user?.id?.substring(0, 8)}</Text>
-                        <TouchableOpacity className="ml-3">
-                            <Copy size={18} color="#a855f7" />
-                        </TouchableOpacity>
-                    </View>
-
-                    <TouchableOpacity className="bg-purple-600 h-16 rounded-[24px] items-center justify-center flex-row shadow-lg shadow-purple-600/30">
-                        <Share2 size={20} color="white" />
-                        <Text className="text-white font-black ml-3 uppercase tracking-widest text-xs">Share Referral Kit</Text>
-                    </TouchableOpacity>
-                </View>
-            </View>
-
-            {/* Actions */}
-            <View>
-                <View className="bg-white dark:bg-slate-900 rounded-[32px] border border-slate-100 dark:border-slate-800 overflow-hidden shadow-sm">
-                    <TouchableOpacity className="p-5 border-b border-slate-50 dark:border-slate-800 flex-row items-center">
-                        <View className="h-10 w-10 bg-blue-50 rounded-xl items-center justify-center mr-4">
-                            <MousePointerClick size={18} color="#3b82f6" />
+            {/* Performance Analytics - Glass Hub */}
+            <PerspectiveView style={{ marginBottom: 32 }}>
+                <GlassView
+                    intensity={20}
+                    tint={isDark ? 'dark' : 'light'}
+                    style={{ padding: 32, borderRadius: 48, borderWidth: 1, borderColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}
+                >
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 }}>
+                        <View>
+                            <Text style={{ fontSize: 18, fontWeight: '900', color: isDark ? 'white' : '#0f172a' }}>Growth Analytics</Text>
+                            <Text style={{ fontSize: 10, fontWeight: '800', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1, marginTop: 4 }}>Cycle: 30D Analysis</Text>
                         </View>
-                        <Text className="flex-1 text-slate-900 dark:text-white font-black text-sm">Campaign Manager</Text>
-                        <ChevronRight size={16} color="#94a3b8" />
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        onPress={() => router.push('/settings/payout')}
-                        className="p-5 flex-row items-center"
+                        <BarChart3 size={24} color="#a855f7" strokeWidth={2.5} />
+                    </View>
+
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 32 }}>
+                        <View style={{ alignItems: 'center', flex: 1 }}>
+                            <Text style={{ color: '#94a3b8', fontWeight: '900', fontSize: 9, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>Clicks</Text>
+                            <Text style={{ color: isDark ? 'white' : '#0f172a', fontWeight: '900', fontSize: 20 }}>1.2k</Text>
+                            <View style={{ height: 3, width: 24, backgroundColor: '#3b82f6', borderRadius: 4, marginTop: 8 }} />
+                        </View>
+                        <View style={{ alignItems: 'center', flex: 1 }}>
+                            <Text style={{ color: '#94a3b8', fontWeight: '900', fontSize: 9, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>Conv.</Text>
+                            <Text style={{ color: isDark ? 'white' : '#0f172a', fontWeight: '900', fontSize: 20 }}>4.2%</Text>
+                            <View style={{ height: 3, width: 24, backgroundColor: '#10b981', borderRadius: 4, marginTop: 8 }} />
+                        </View>
+                        <View style={{ alignItems: 'center', flex: 1 }}>
+                            <Text style={{ color: '#94a3b8', fontWeight: '900', fontSize: 9, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>Earned</Text>
+                            <Text style={{ color: isDark ? 'white' : '#0f172a', fontWeight: '900', fontSize: 20 }}>KSh 500</Text>
+                            <View style={{ height: 3, width: 24, backgroundColor: '#a855f7', borderRadius: 4, marginTop: 8 }} />
+                        </View>
+                    </View>
+
+                    {/* Elite Tier Progress */}
+                    <GlassView intensity={10} tint={isDark ? 'dark' : 'light'} style={{ padding: 20, borderRadius: 24, backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)' }}>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 }}>
+                            <Text style={{ color: isDark ? 'white' : '#475569', fontWeight: '900', fontSize: 10, textTransform: 'uppercase', letterSpacing: 1 }}>Tier: Elite Partner</Text>
+                            <Text style={{ color: '#a855f7', fontWeight: '900', fontSize: 10 }}>65%</Text>
+                        </View>
+                        <View style={{ height: 8, backgroundColor: isDark ? '#1e293b' : '#e2e8f0', borderRadius: 10, overflow: 'hidden' }}>
+                            <MotiView
+                                from={{ width: '0%' }}
+                                animate={{ width: '65%' }}
+                                transition={{ type: 'spring', damping: 15, delay: 500 }}
+                                style={{ height: '100%', backgroundColor: '#a855f7' }}
+                            />
+                        </View>
+                    </GlassView>
+                </GlassView>
+            </PerspectiveView>
+
+            {/* Referral Protocol Hub */}
+            <View style={{ marginBottom: 32 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, paddingHorizontal: 8 }}>
+                    <Text style={{ fontSize: 12, fontWeight: '900', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2 }}>Marketing Protocol</Text>
+                    <Sparkles size={18} color="#a855f7" strokeWidth={2.5} />
+                </View>
+
+                <PerspectiveView>
+                    <GlassView
+                        intensity={40}
+                        tint="dark"
+                        style={{ padding: 32, borderRadius: 48, backgroundColor: '#3b0764' }}
                     >
-                        <View className="h-10 w-10 bg-emerald-50 rounded-xl items-center justify-center mr-4">
-                            <Wallet size={18} color="#10b981" />
+                        <View style={{ position: 'absolute', top: -20, right: -20, opacity: 0.1, transform: [{ rotate: '15deg' }] }}>
+                            <Target size={140} color="white" />
                         </View>
-                        <Text className="flex-1 text-slate-900 dark:text-white font-black text-sm">Payout Settings</Text>
-                        <ChevronRight size={16} color="#94a3b8" />
-                    </TouchableOpacity>
-                </View>
+
+                        <Text style={{ color: 'rgba(255,255,255,0.6)', fontWeight: '900', fontSize: 10, textTransform: 'uppercase', letterSpacing: 3, marginBottom: 16 }}>Master Access Key</Text>
+                        <View style={{ backgroundColor: 'rgba(255,255,255,0.1)', paddingHorizontal: 24, paddingVertical: 20, borderRadius: 20, flexDirection: 'row', alignItems: 'center', marginBottom: 32, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' }}>
+                            <Text numberOfLines={1} style={{ flex: 1, color: 'white', fontWeight: '800', fontSize: 13 }}>leli.shop/join?ref={user?.id?.substring(0, 8)}</Text>
+                            <TouchableOpacity style={{ marginLeft: 16 }}>
+                                <Copy size={20} color="#c084fc" strokeWidth={2.5} />
+                            </TouchableOpacity>
+                        </View>
+
+                        <TouchableOpacity style={{ height: 68, borderRadius: 24, backgroundColor: '#7e22ce', alignItems: 'center', justifyContent: 'center', flexDirection: 'row' }}>
+                            <Share2 size={22} color="white" strokeWidth={2.5} />
+                            <Text style={{ color: 'white', fontWeight: '900', fontSize: 13, textTransform: 'uppercase', letterSpacing: 2, marginLeft: 12 }}>Distribute Kit</Text>
+                        </TouchableOpacity>
+                    </GlassView>
+                </PerspectiveView>
             </View>
+
+            {/* System Actions */}
+            <GlassView intensity={10} tint={isDark ? 'dark' : 'light'} style={{ borderRadius: 40, overflow: 'hidden' }}>
+                <TouchableOpacity onPress={() => { }} style={{ padding: 24, borderBottomWidth: 1, borderBottomColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', flexDirection: 'row', alignItems: 'center' }}>
+                    <View style={{ height: 48, width: 48, borderRadius: 16, backgroundColor: isDark ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.05)', alignItems: 'center', justifyContent: 'center', marginRight: 16 }}>
+                        <MousePointerClick size={22} color="#3b82f6" strokeWidth={2.5} />
+                    </View>
+                    <Text style={{ flex: 1, fontSize: 16, fontWeight: '900', color: isDark ? 'white' : '#0f172a' }}>Campaign Log</Text>
+                    <ChevronRight size={20} color="#3b82f6" strokeWidth={3} />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => router.push('/settings/payout')} style={{ padding: 24, flexDirection: 'row', alignItems: 'center' }}>
+                    <View style={{ height: 48, width: 48, borderRadius: 16, backgroundColor: isDark ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.05)', alignItems: 'center', justifyContent: 'center', marginRight: 16 }}>
+                        <Wallet size={22} color="#10b981" strokeWidth={2.5} />
+                    </View>
+                    <Text style={{ flex: 1, fontSize: 16, fontWeight: '900', color: isDark ? 'white' : '#0f172a' }}>Ledger Config</Text>
+                    <ChevronRight size={20} color="#10b981" strokeWidth={3} />
+                </TouchableOpacity>
+            </GlassView>
         </ScrollView>
     );
 };

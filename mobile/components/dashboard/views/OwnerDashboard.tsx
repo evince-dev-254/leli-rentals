@@ -1,152 +1,156 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
-import { Key, TrendingUp, ClipboardList, Plus, ChevronRight, Zap, Target, ShieldCheck, Clock } from 'lucide-react-native';
-import { MotiView, AnimatePresence } from 'moti';
-import { cn } from '@/lib/utils';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import { Key, TrendingUp, ClipboardList, Plus, ChevronRight, Zap, ShieldCheck, Clock } from 'lucide-react-native';
+import { MotiView } from 'moti';
+import { PerspectiveView } from '@/components/ui/perspective-view';
+import { GlassView } from '@/components/ui/glass-view';
+import { useTheme } from '@/components/theme-provider';
 
-const StatCard = ({ label, value, icon: Icon, color, role }: any) => (
-    <View className="flex-1 p-5 rounded-[32px] bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-sm items-center">
-        <View className={cn("h-14 w-14 rounded-2xl items-center justify-center mb-4", color)}>
-            <Icon size={28} color="#10b981" />
-        </View>
-        <Text className="text-slate-900 dark:text-white text-xl font-black mb-1">{value}</Text>
-        <Text className="text-slate-400 dark:text-slate-300 text-[10px] font-black uppercase tracking-[0.1em] text-center leading-tight">{label}</Text>
-    </View>
+const StatCard = ({ label, value, icon: Icon, isDark }: any) => (
+    <GlassView intensity={15} tint={isDark ? 'dark' : 'light'} style={{ flex: 1, padding: 24, borderRadius: 32, alignItems: 'center' }}>
+        <PerspectiveView floatEnabled={true} style={{ marginBottom: 16 }}>
+            <View style={{ height: 56, width: 56, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: isDark ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.05)' }}>
+                <Icon size={28} color="#10b981" strokeWidth={2.5} />
+            </View>
+        </PerspectiveView>
+        <Text style={{ color: isDark ? 'white' : '#0f172a', fontSize: 20, fontWeight: '900', textAlign: 'center' }}>{value}</Text>
+        <Text style={{ color: '#94a3b8', fontSize: 9, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 1, marginTop: 4 }}>{label}</Text>
+    </GlassView>
 );
 
-const WelcomeBanner = ({ name }: { name?: string }) => {
+const WelcomeBanner = ({ name, isDark }: { name?: string, isDark: boolean }) => {
     return (
-        <MotiView
-            from={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="p-6 rounded-[32px] flex-row items-center mb-6 bg-emerald-500/10"
-        >
-            <View className="flex-1">
-                <Text className="text-2xl font-black mb-1 text-emerald-500">Welcome, {name || 'Host'}!</Text>
-                <Text className="text-slate-500 dark:text-slate-300 font-bold text-xs uppercase tracking-widest">Manage your assets and earnings.</Text>
-            </View>
-            <View className="h-14 w-14 rounded-2xl bg-white/80 dark:bg-slate-900/80 items-center justify-center shadow-sm">
-                <Key size={28} color="#10b981" />
-            </View>
-        </MotiView>
+        <PerspectiveView style={{ marginBottom: 32 }}>
+            <GlassView
+                intensity={30}
+                tint={isDark ? 'dark' : 'light'}
+                style={{ padding: 32, borderRadius: 40, flexDirection: 'row', alignItems: 'center', borderWidth: 2, borderColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(16, 185, 129, 0.1)' }}
+            >
+                <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 28, fontWeight: '900', color: isDark ? 'white' : '#0f172a', marginBottom: 4 }}>Hello, {name || 'Host'}!</Text>
+                    <Text style={{ fontSize: 12, color: '#94a3b8', fontWeight: '800', textTransform: 'uppercase', letterSpacing: 1 }}>Scaling Your Fleet Today</Text>
+                </View>
+                <View style={{ height: 60, width: 60, borderRadius: 24, backgroundColor: '#10b981', alignItems: 'center', justifyContent: 'center', shadowColor: '#10b981', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.3, shadowRadius: 15, elevation: 12 }}>
+                    <Key size={28} color="white" strokeWidth={2.5} />
+                </View>
+            </GlassView>
+        </PerspectiveView>
     );
 };
 
 export const OwnerDashboardView = ({ router, user, stats }: any) => {
+    const { theme } = useTheme();
+    const isDark = theme === 'dark';
     const isVerified = stats?.profile?.id_verified || false;
 
     return (
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
-            <WelcomeBanner name={user?.user_metadata?.full_name?.split(' ')[0]} />
+            <WelcomeBanner name={user?.user_metadata?.full_name?.split(' ')[0]} isDark={isDark} />
 
-            <View className="flex-row gap-4 mb-8">
-                <StatCard label="Live Ads" value={stats?.listingCount || 0} icon={ClipboardList} color="bg-emerald-50" role="owner" />
-                <StatCard label="Total Vol" value={`KSh ${stats?.totalEarnings || 0}`} icon={TrendingUp} color="bg-emerald-50" role="owner" />
+            <View style={{ flexDirection: 'row', gap: 16, marginBottom: 32 }}>
+                <StatCard label="Active Ads" value={stats?.listingCount || 0} icon={ClipboardList} isDark={isDark} />
+                <StatCard label="Total Vol" value={`KSh ${stats?.totalEarnings || 0}`} icon={TrendingUp} isDark={isDark} />
             </View>
 
-            {/* Verification Status */}
-            <TouchableOpacity
-                onPress={() => router.push('/dashboard/verification')}
-                className={cn(
-                    "p-6 rounded-[32px] mb-8 flex-row items-center border",
-                    isVerified
-                        ? "bg-slate-900 border-slate-700 shadow-xl"
-                        : "bg-amber-50 border-amber-100"
-                )}
-            >
-                <View className={cn(
-                    "h-12 w-12 rounded-2xl items-center justify-center mr-4",
-                    isVerified ? "bg-white/10" : "bg-amber-100"
-                )}>
-                    {isVerified ? <ShieldCheck size={24} color="#10b981" /> : <Clock size={24} color="#f59e0b" />}
-                </View>
-                <View className="flex-1">
-                    <Text className={cn("font-black text-sm", isVerified ? "text-white" : "text-amber-900")}>
-                        {isVerified ? "Trusted Seller Status" : "Verification in Progress"}
-                    </Text>
-                    <Text className={cn("text-[10px] font-bold uppercase tracking-widest", isVerified ? "text-slate-400" : "text-amber-700/60")}>
-                        {isVerified ? "Leli verified host" : "Upload ID to activate full features"}
-                    </Text>
-                </View>
-                {!isVerified && <ChevronRight size={16} color="#f59e0b" />}
-            </TouchableOpacity>
-
-            {/* Earnings Analytics Mock */}
-            <TouchableOpacity
-                onPress={() => router.push('/settings/payout')}
-                className="bg-emerald-600 p-8 rounded-[40px] mb-8 shadow-xl shadow-emerald-500/20"
-            >
-                <View className="flex-row items-center justify-between mb-8">
-                    <View>
-                        <View className="flex-row items-center">
-                            <Text className="text-white/80 font-black text-xs uppercase tracking-widest mb-1">Total Payouts</Text>
-                            <ChevronRight size={14} color="rgba(255,255,255,0.5)" className="ml-2" />
+            {/* Verification Priority Hub */}
+            <TouchableOpacity onPress={() => router.push('/dashboard/verification')}>
+                <PerspectiveView style={{ marginBottom: 32 }}>
+                    <GlassView
+                        intensity={isVerified ? 10 : 30}
+                        tint={isDark ? 'dark' : 'light'}
+                        style={{ padding: 24, borderRadius: 40, flexDirection: 'row', alignItems: 'center', backgroundColor: isVerified ? 'transparent' : (isDark ? 'rgba(245, 158, 11, 0.1)' : 'rgba(245, 158, 11, 0.05)'), borderWidth: 1, borderColor: isVerified ? 'rgba(16, 185, 129, 0.2)' : 'rgba(245, 158, 11, 0.3)' }}
+                    >
+                        <View style={{ height: 56, width: 56, borderRadius: 20, backgroundColor: isVerified ? '#10b981' : '#f59e0b', alignItems: 'center', justifyContent: 'center', marginRight: 20, shadowColor: isVerified ? '#10b981' : '#f59e0b', shadowOpacity: 0.3, shadowRadius: 10 }}>
+                            {isVerified ? <ShieldCheck size={28} color="white" strokeWidth={2.5} /> : <Clock size={28} color="white" strokeWidth={2.5} />}
                         </View>
-                        <Text className="text-white text-3xl font-black">KSh {stats?.totalEarnings || '0.00'}</Text>
-                    </View>
-                    <View className="h-14 w-14 bg-white/20 rounded-3xl items-center justify-center">
-                        <TrendingUp size={28} color="white" />
-                    </View>
-                </View>
-
-                <View className="flex-row gap-2 items-end justify-between h-20 px-2">
-                    {[30, 50, 45, 80, 55, 100, 75, 60, 90, 110, 85, 120].map((h, i) => (
-                        <MotiView
-                            key={i}
-                            from={{ height: 0 }}
-                            animate={{ height: (h / 120) * 80 }}
-                            transition={{ delay: i * 50, type: 'timing' }}
-                            className="bg-white/40 flex-1 rounded-t-sm"
-                            style={{ maxWidth: 6 }}
-                        />
-                    ))}
-                </View>
-
-                <TouchableOpacity className="bg-white/20 mt-6 py-4 rounded-2xl items-center border border-white/20">
-                    <Text className="text-white font-black uppercase tracking-widest text-[10px]">View Financial Reports</Text>
-                </TouchableOpacity>
+                        <View style={{ flex: 1 }}>
+                            <Text style={{ fontSize: 16, fontWeight: '900', color: isDark ? 'white' : '#0f172a' }}>
+                                {isVerified ? "Secure Host Protocol" : "Verify Ecosystem ID"}
+                            </Text>
+                            <Text style={{ fontSize: 10, fontWeight: '800', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1, marginTop: 4 }}>
+                                {isVerified ? "Verified Asset Provider" : "Action Required for Full Access"}
+                            </Text>
+                        </View>
+                        {!isVerified && <ChevronRight size={20} color="#f59e0b" strokeWidth={3} />}
+                    </GlassView>
+                </PerspectiveView>
             </TouchableOpacity>
 
-            {/* Asset Management */}
+            {/* Revenue Analytics - Immersive Card */}
+            <TouchableOpacity onPress={() => router.push('/settings/payout')}>
+                <PerspectiveView style={{ marginBottom: 32 }}>
+                    <GlassView
+                        intensity={40}
+                        tint="dark"
+                        style={{ padding: 32, borderRadius: 48, backgroundColor: '#064e3b' }}
+                    >
+                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 }}>
+                            <View>
+                                <Text style={{ color: 'rgba(255,255,255,0.6)', fontWeight: '900', fontSize: 10, textTransform: 'uppercase', letterSpacing: 2 }}>Gross Yield</Text>
+                                <Text style={{ color: 'white', fontWeight: '900', fontSize: 32, marginTop: 4 }}>KSh {stats?.totalEarnings || '0.00'}</Text>
+                            </View>
+                            <GlassView intensity={10} tint="dark" style={{ height: 60, width: 60, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.1)' }}>
+                                <TrendingUp size={32} color="#10b981" strokeWidth={2.5} />
+                            </GlassView>
+                        </View>
+
+                        <View style={{ height: 100, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', gap: 6 }}>
+                            {[30, 50, 45, 80, 55, 100, 75, 60, 90, 110, 85, 120].map((h, i) => (
+                                <MotiView
+                                    key={i}
+                                    from={{ height: 0, opacity: 0 }}
+                                    animate={{ height: (h / 120) * 80, opacity: 1 }}
+                                    transition={{ delay: 300 + i * 50, type: 'spring' }}
+                                    style={{ flex: 1, backgroundColor: '#10b981', borderRadius: 4 }}
+                                />
+                            ))}
+                        </View>
+
+                        <GlassView intensity={10} tint="dark" style={{ marginTop: 32, padding: 16, borderRadius: 20, alignItems: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' }}>
+                            <Text style={{ color: 'white', fontWeight: '900', fontSize: 11, textTransform: 'uppercase', letterSpacing: 2 }}>Access Ledger</Text>
+                        </GlassView>
+                    </GlassView>
+                </PerspectiveView>
+            </TouchableOpacity>
+
+            {/* Fleet Management Area */}
             <View>
-                <View className="flex-row items-center justify-between mb-4 px-1">
-                    <Text className="text-sm font-black uppercase tracking-widest text-slate-400">Inventory Status</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, paddingHorizontal: 8 }}>
+                    <Text style={{ fontSize: 12, fontWeight: '900', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2 }}>Asset Management</Text>
                     <TouchableOpacity onPress={() => router.push('/listings/manage')}>
-                        <Text className="text-emerald-500 font-black text-xs">Manage All</Text>
+                        <Text style={{ color: '#10b981', fontWeight: '900', fontSize: 12 }}>SYSTEM LOG</Text>
                     </TouchableOpacity>
                 </View>
 
                 <TouchableOpacity
                     onPress={() => router.push('/listings/create')}
-                    className="bg-emerald-50 dark:bg-emerald-900/20 p-8 rounded-[40px] border border-dashed border-emerald-200 dark:border-emerald-800 items-center justify-center mb-4"
+                    style={{ marginBottom: 24 }}
                 >
-                    <Plus size={32} color="#10b981" strokeWidth={3} className="mb-4" />
-                    <Text className="text-emerald-700 dark:text-emerald-400 font-black text-sm uppercase tracking-widest">List New Equipment</Text>
+                    <GlassView intensity={15} tint={isDark ? 'dark' : 'light'} style={{ padding: 40, borderRadius: 48, borderStyle: 'dashed', borderWidth: 2, borderColor: isDark ? 'rgba(16, 185, 129, 0.2)' : 'rgba(16, 185, 129, 0.4)', alignItems: 'center', justifyContent: 'center' }}>
+                        <Plus size={40} color="#10b981" strokeWidth={3} style={{ marginBottom: 16 }} />
+                        <Text style={{ color: '#10b981', fontWeight: '900', fontSize: 14, textTransform: 'uppercase', letterSpacing: 2 }}>Initialize Asset</Text>
+                    </GlassView>
                 </TouchableOpacity>
 
-                <View className="bg-white dark:bg-slate-900 rounded-[32px] border border-slate-100 dark:border-slate-800 overflow-hidden shadow-sm">
-                    <TouchableOpacity className="p-5 border-b border-slate-50 dark:border-slate-800 flex-row items-center">
-                        <View className="h-10 w-10 bg-blue-50 rounded-xl items-center justify-center mr-4">
-                            <ClipboardList size={18} color="#3b82f6" />
+                <GlassView intensity={10} tint={isDark ? 'dark' : 'light'} style={{ borderRadius: 40, overflow: 'hidden' }}>
+                    <TouchableOpacity onPress={() => { }} style={{ padding: 24, borderBottomWidth: 1, borderBottomColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', flexDirection: 'row', alignItems: 'center' }}>
+                        <View style={{ height: 48, width: 48, borderRadius: 16, backgroundColor: isDark ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.05)', alignItems: 'center', justifyContent: 'center', marginRight: 16 }}>
+                            <ClipboardList size={22} color="#3b82f6" strokeWidth={2.5} />
                         </View>
-                        <Text className="flex-1 text-slate-900 dark:text-white font-black text-sm">Active Listings</Text>
-                        <Badge value={stats?.listingCount || 0} color="bg-blue-100" textColor="text-blue-700" />
-                    </TouchableOpacity>
-                    <TouchableOpacity className="p-5 flex-row items-center">
-                        <View className="h-10 w-10 bg-purple-50 rounded-xl items-center justify-center mr-4">
-                            <Zap size={18} color="#a855f7" />
+                        <Text style={{ flex: 1, fontSize: 16, fontWeight: '900', color: isDark ? 'white' : '#0f172a' }}>Active Protocol</Text>
+                        <View style={{ backgroundColor: isDark ? '#1e293b' : '#f1f5f9', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12 }}>
+                            <Text style={{ color: '#3b82f6', fontWeight: '900', fontSize: 12 }}>{stats?.listingCount || 0}</Text>
                         </View>
-                        <Text className="flex-1 text-slate-900 dark:text-white font-black text-sm">Boost Rankings</Text>
-                        <ChevronRight size={16} color="#94a3b8" />
                     </TouchableOpacity>
-                </View>
+                    <TouchableOpacity onPress={() => { }} style={{ padding: 24, flexDirection: 'row', alignItems: 'center' }}>
+                        <View style={{ height: 48, width: 48, borderRadius: 16, backgroundColor: isDark ? 'rgba(168, 85, 247, 0.1)' : 'rgba(168, 85, 247, 0.05)', alignItems: 'center', justifyContent: 'center', marginRight: 16 }}>
+                            <Zap size={22} color="#a855f7" strokeWidth={2.5} />
+                        </View>
+                        <Text style={{ flex: 1, fontSize: 16, fontWeight: '900', color: isDark ? 'white' : '#0f172a' }}>Boost Reach</Text>
+                        <ChevronRight size={20} color="#a855f7" strokeWidth={3} />
+                    </TouchableOpacity>
+                </GlassView>
             </View>
         </ScrollView>
     );
 };
-
-const Badge = ({ value, color, textColor }: any) => (
-    <View className={cn("px-2 py-0.5 rounded-md", color)}>
-        <Text className={cn("text-[10px] font-black", textColor)}>{value}</Text>
-    </View>
-);

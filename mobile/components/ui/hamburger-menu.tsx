@@ -5,7 +5,7 @@ import {
     X, Heart, MessageCircle, Bell, Shield,
     RefreshCw, HelpCircle, Mail, FileText,
     Lock, ChevronRight, Settings, Info, Sparkles, LogOut,
-    Receipt, Star, Crown, DollarSign, Users, HelpCircle as HelpHub
+    Receipt, Star, Crown, DollarSign, Users, HelpCircle as HelpHub, Briefcase
 } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MotiView, AnimatePresence } from 'moti';
@@ -44,7 +44,7 @@ export function HamburgerMenu({ visible, onClose, activeRole }: HamburgerMenuPro
                 { icon: Sparkles, label: 'AI Assistant', color: '#8b5cf6', href: '/support/ai-assistant', roles: ['renter', 'owner', 'affiliate'] },
                 { icon: Users, label: 'Affiliate Program', color: '#a855f7', href: '/affiliate', roles: ['renter', 'owner'] },
                 { icon: Crown, label: 'Become an Owner', color: '#f97316', href: '/dashboard/verification', roles: ['renter'] },
-                { icon: Settings, label: 'Asset Manager', color: '#3b82f6', href: '/listings/manage', roles: ['owner'] },
+                { icon: Settings, label: 'Asset Manager', color: '#3b82f6', href: '/listings/', roles: ['owner'] },
                 { icon: Receipt, label: 'Payments', color: '#3b82f6', href: '/payments', roles: ['renter'] },
                 { icon: Star, label: 'My Reviews', color: '#f59e0b', href: '/reviews', roles: ['renter', 'owner'] },
                 { icon: Crown, label: 'Subscription', color: '#8b5cf6', href: '/subscription', roles: ['owner'] },
@@ -64,6 +64,8 @@ export function HamburgerMenu({ visible, onClose, activeRole }: HamburgerMenuPro
             title: "Resource Hub",
             items: [
                 { icon: Info, label: 'About Leli Rentals', color: '#94a3b8', href: '/support/about' },
+                { icon: Info, label: 'Leli Blog', color: '#3b82f6', href: '/support/blog' },
+                { icon: Briefcase, label: 'Careers', color: '#10b981', href: '/support/careers' },
                 { icon: RefreshCw, label: 'Check Updates', color: '#64748b', href: '/settings/updates' },
             ]
         },

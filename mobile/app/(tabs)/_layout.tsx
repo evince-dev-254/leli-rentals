@@ -18,22 +18,31 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: isDark ? '#fb923c' : '#ed8936',
+        tabBarActiveTintColor: '#f97316',
         tabBarInactiveTintColor: '#94a3b8',
         headerShown: false,
         tabBarStyle: {
           position: 'absolute',
+          bottom: 24,
+          left: 24,
+          right: 24,
+          height: 64,
+          borderRadius: 32,
+          backgroundColor: isDark ? 'rgba(15, 23, 42, 0.8)' : 'rgba(255, 255, 255, 0.8)',
           borderTopWidth: 0,
-          elevation: 0,
-          // Adjust height based on insets and platform
-          height: Platform.OS === 'ios' ? 88 + insets.bottom : 74 + insets.bottom,
-          backgroundColor: 'transparent',
-          paddingBottom: insets.bottom > 0 ? insets.bottom : (Platform.OS === 'ios' ? 30 : 15),
-          paddingTop: 12,
+          elevation: 10,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 10 },
+          shadowOpacity: 0.1,
+          shadowRadius: 20,
+          paddingBottom: 0,
+          overflow: 'hidden',
+          borderWidth: 1.5,
+          borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.2)',
         },
         tabBarBackground: () => (
           <BlurView
-            intensity={95}
+            intensity={40}
             tint={isDark ? 'dark' : 'light'}
             style={StyleSheet.absoluteFill}
           />
@@ -41,13 +50,12 @@ export default function TabLayout() {
         tabBarLabelStyle: {
           fontSize: 10,
           fontWeight: '900',
-          marginTop: 4,
-          marginBottom: 0,
+          marginBottom: 8,
           textTransform: 'uppercase',
           letterSpacing: 0.5,
         },
         tabBarIconStyle: {
-          marginTop: 0,
+          marginTop: 8,
         }
       }}>
       <Tabs.Screen

@@ -4,15 +4,20 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../context/auth-context';
 import { BackgroundGradient } from '@/components/ui/background-gradient';
 import { Button } from '@/components/ui/button';
-import { LogOut, User, Settings, Shield, Bell, HelpCircle, MessageCircle, ShoppingBag, Plus, Star, RefreshCw, Wallet, ChevronRight, MousePointerClick, Users, Heart, Moon, Landmark, CreditCard } from 'lucide-react-native';
+import { LogOut, User, Settings, Shield, Bell, HelpCircle, RefreshCw, Wallet, ChevronRight, MousePointerClick, Users, Heart, Moon, Landmark, CreditCard, ShoppingBag, Plus, Star } from 'lucide-react-native';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'expo-router';
 import { MotiView } from 'moti';
-import { cn } from '@/lib/utils';
+import { PerspectiveView } from '@/components/ui/perspective-view';
+import { GlassView } from '@/components/ui/glass-view';
+import { useTheme } from '@/components/theme-provider';
 
 export default function ProfileScreen() {
     const { user, signOut } = useAuth();
     const router = useRouter();
+    const { theme } = useTheme();
+    const isDark = theme === 'dark';
+
     const [stats, setStats] = useState({
         renter: { rentals: '0', saved: '0', rating: '0.0' },
         owner: { listings: '0', earnings: '0', rating: '0.0' },
@@ -68,21 +73,21 @@ export default function ProfileScreen() {
         switch (userRole) {
             case 'owner':
                 return [
-                    { label: 'Listings', value: stats.owner.listings, icon: Plus, color: 'text-emerald-600', bg: 'bg-emerald-100' },
-                    { label: 'Earnings', value: stats.owner.earnings, icon: Wallet, color: 'text-blue-600', bg: 'bg-blue-100' },
-                    { label: 'Rating', value: stats.owner.rating, icon: Star, color: 'text-amber-500', bg: 'bg-amber-100' },
+                    { label: 'Listings', value: stats.owner.listings, icon: Plus, color: '#10b981' },
+                    { label: 'Earnings', value: stats.owner.earnings, icon: Wallet, color: '#3b82f6' },
+                    { label: 'Rating', value: stats.owner.rating, icon: Star, color: '#f59e0b' },
                 ];
             case 'affiliate':
                 return [
-                    { label: 'Referrals', value: stats.affiliate.referrals, icon: Users, color: 'text-purple-600', bg: 'bg-purple-100' },
-                    { label: 'Earnings', value: stats.affiliate.earnings, icon: Wallet, color: 'text-emerald-600', bg: 'bg-emerald-100' },
-                    { label: 'Clicks', value: stats.affiliate.clicks, icon: MousePointerClick, color: 'text-blue-600', bg: 'bg-blue-100' },
+                    { label: 'Referrals', value: stats.affiliate.referrals, icon: Users, color: '#a855f7' },
+                    { label: 'Earnings', value: stats.affiliate.earnings, icon: Wallet, color: '#10b981' },
+                    { label: 'Clicks', value: stats.affiliate.clicks, icon: MousePointerClick, color: '#3b82f6' },
                 ];
             default:
                 return [
-                    { label: 'Rentals', value: stats.renter.rentals, icon: ShoppingBag, color: 'text-orange-600', bg: 'bg-orange-100' },
-                    { label: 'Saved', value: stats.renter.saved, icon: Heart, color: 'text-pink-600', bg: 'bg-pink-100' },
-                    { label: 'Rating', value: stats.renter.rating, icon: Star, color: 'text-amber-500', bg: 'bg-amber-100' },
+                    { label: 'Rentals', value: stats.renter.rentals, icon: ShoppingBag, color: '#f97316' },
+                    { label: 'Saved', value: stats.renter.saved, icon: Heart, color: '#ec4899' },
+                    { label: 'Rating', value: stats.renter.rating, icon: Star, color: '#f59e0b' },
                 ];
         }
     };
@@ -106,10 +111,9 @@ export default function ProfileScreen() {
 
     const isStaff = user?.user_metadata?.is_staff === true || user?.user_metadata?.role === 'staff' || user?.user_metadata?.role === 'admin';
 
-
     const legalItems = [
-        { label: 'Terms of Service', href: '/legal/terms' },
-        { label: 'Privacy Policy', href: '/legal/privacy' },
+        { label: 'Terms', href: '/legal/terms' },
+        { label: 'Privacy', href: '/legal/privacy' },
     ];
 
     const handleSignOut = async () => {
@@ -122,123 +126,126 @@ export default function ProfileScreen() {
     };
 
     return (
-        <View className="flex-1 bg-white dark:bg-slate-950">
+        <View style={{ flex: 1 }} className="bg-white dark:bg-slate-950">
             <BackgroundGradient />
-            <SafeAreaView className="flex-1" edges={['bottom']}>
-                <ScrollView className="flex-1 px-8" showsVerticalScrollIndicator={false}>
-                    <View className="h-20" />
-                    <MotiView
-                        from={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="items-center mb-10"
-                    >
-                        <View className="h-24 w-24 rounded-[32px] bg-orange-100 items-center justify-center border-4 border-white dark:border-slate-800 shadow-sm overflow-hidden mb-4">
-                            {user?.user_metadata?.avatar_url ? (
-                                <Image source={{ uri: user.user_metadata.avatar_url }} className="h-full w-full" alt="User Avatar" />
-                            ) : (
-                                <User size={40} color="#f97316" strokeWidth={1.5} />
-                            )}
-                        </View>
-                        <Text className="text-2xl font-black text-slate-900 dark:text-white">
-                            {user?.user_metadata?.full_name || 'Leli Member'}
-                        </Text>
-                        <View className="bg-[#f97316] px-4 py-1 rounded-full mt-2">
-                            <Text className="text-[10px] font-black text-white uppercase tracking-widest">
-                                {user?.user_metadata?.role || 'Renter'}
-                            </Text>
-                        </View>
-                    </MotiView>
+            <SafeAreaView style={{ flex: 1 }} edges={['bottom']}>
+                <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+                    <View style={{ height: 20 }} />
 
-                    <View className="flex-row gap-4 mb-10">
-                        {getStatsData().map((stat, idx) => (
-                            <View key={idx} className="flex-1 bg-white/60 dark:bg-slate-900/60 p-4 rounded-3xl border border-slate-100 dark:border-slate-800 items-center">
-                                <View className={cn("h-10 w-10 rounded-2xl items-center justify-center mb-2", stat.bg)}>
-                                    <stat.icon size={18} color={
-                                        stat.color === 'text-orange-600' ? '#f97316' :
-                                            stat.color === 'text-emerald-600' ? '#10b981' :
-                                                stat.color === 'text-purple-600' ? '#a855f7' :
-                                                    stat.color === 'text-blue-600' ? '#3b82f6' :
-                                                        stat.color === 'text-pink-600' ? '#ec4899' :
-                                                            '#f59e0b'} />
+                    {/* High-Def 3D User Card */}
+                    <PerspectiveView style={{ marginBottom: 40 }}>
+                        <GlassView
+                            intensity={40}
+                            tint={isDark ? 'dark' : 'light'}
+                            style={{ padding: 32, borderRadius: 56, alignItems: 'center', borderWidth: 2, borderColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(249, 115, 22, 0.1)' }}
+                        >
+                            <PerspectiveView floatEnabled={true} style={{ marginBottom: 20 }}>
+                                <View style={{ height: 110, width: 110, borderRadius: 40, backgroundColor: '#f97316', padding: 4, shadowColor: '#f97316', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.3, shadowRadius: 20, elevation: 15 }}>
+                                    <View style={{ flex: 1, borderRadius: 36, backgroundColor: isDark ? '#0f172a' : 'white', overflow: 'hidden', alignItems: 'center', justifyContent: 'center' }}>
+                                        {user?.user_metadata?.avatar_url ? (
+                                            <Image source={{ uri: user.user_metadata.avatar_url }} style={{ width: '100%', height: '100%' }} />
+                                        ) : (
+                                            <User size={48} color="#f97316" strokeWidth={2.5} />
+                                        )}
+                                    </View>
                                 </View>
-                                <Text className="text-sm font-black text-slate-900 dark:text-white">{stat.value}</Text>
-                                <Text className="text-[8px] font-black text-slate-400 dark:text-slate-300 uppercase tracking-widest">{stat.label}</Text>
+                            </PerspectiveView>
+
+                            <Text style={{ fontSize: 32, fontWeight: '900', color: isDark ? 'white' : '#0f172a', textAlign: 'center' }}>
+                                {user?.user_metadata?.full_name?.split(' ')[0] || 'Leli Member'}
+                            </Text>
+
+                            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12 }}>
+                                <View style={{ backgroundColor: '#f97316', paddingHorizontal: 16, paddingVertical: 6, borderRadius: 14 }}>
+                                    <Text style={{ fontSize: 10, fontWeight: '900', color: 'white', textTransform: 'uppercase', letterSpacing: 1.5 }}>
+                                        {user?.user_metadata?.role || 'Premium'}
+                                    </Text>
+                                </View>
+                                <View style={{ marginLeft: 8, backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 14, flexDirection: 'row', alignItems: 'center' }}>
+                                    <Shield size={12} color="#10b981" fill="#10b981" />
+                                    <Text style={{ fontSize: 10, fontWeight: '900', color: '#10b981', marginLeft: 4 }}>VERIFIED</Text>
+                                </View>
                             </View>
+                        </GlassView>
+                    </PerspectiveView>
+
+                    {/* Quick Stats Grid */}
+                    <View style={{ flexDirection: 'row', gap: 12, marginBottom: 40 }}>
+                        {getStatsData().map((stat, idx) => (
+                            <GlassView key={idx} intensity={15} tint={isDark ? 'dark' : 'light'} style={{ flex: 1, padding: 16, borderRadius: 28, alignItems: 'center' }}>
+                                <stat.icon size={20} color="#f97316" strokeWidth={2.5} style={{ marginBottom: 8 }} />
+                                <Text style={{ fontSize: 16, fontWeight: '900', color: isDark ? 'white' : '#0f172a' }}>{stat.value}</Text>
+                                <Text style={{ fontSize: 8, fontWeight: '900', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1, marginTop: 2 }}>{stat.label}</Text>
+                            </GlassView>
                         ))}
                     </View>
 
-                    <Text className="text-[10px] font-black text-slate-400 dark:text-slate-300 uppercase tracking-[0.2em] px-2 mb-3">Account</Text>
-                    <View className="bg-white/80 dark:bg-slate-900/80 rounded-[32px] border-2 border-slate-50 dark:border-slate-800 overflow-hidden mb-8 shadow-sm">
+                    {/* Settings Sections - Glass Hubs */}
+                    <Text style={{ fontSize: 11, fontWeight: '900', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 3, marginLeft: 8, marginBottom: 16 }}>Authorized Modules</Text>
+                    <GlassView intensity={20} tint={isDark ? 'dark' : 'light'} style={{ borderRadius: 40, overflow: 'hidden', marginBottom: 32 }}>
                         {accountItems.map((item, idx) => (
                             <TouchableOpacity
                                 key={idx}
                                 onPress={() => item.href && router.push(item.href as any)}
-                                className="flex-row items-center p-5 border-b-2 border-slate-50/50 dark:border-slate-800/50 last:border-b-0"
+                                style={{ flexDirection: 'row', alignItems: 'center', padding: 24, borderBottomWidth: idx === accountItems.length - 1 ? 0 : 1, borderBottomColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}
                             >
-                                <View className="h-10 w-10 rounded-2xl bg-white dark:bg-slate-800 items-center justify-center mr-4 shadow-sm">
-                                    <item.icon size={20} color={item.color} />
+                                <View style={{ height: 48, width: 48, borderRadius: 16, backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)', alignItems: 'center', justifyContent: 'center', marginRight: 16 }}>
+                                    <item.icon size={22} color={item.color} strokeWidth={2.5} />
                                 </View>
-                                <Text className="flex-1 text-base font-black text-slate-900 dark:text-white">{item.label}</Text>
-                                <ChevronRight size={18} color="#94a3b8" />
+                                <Text style={{ flex: 1, fontSize: 17, fontWeight: '900', color: isDark ? 'white' : '#0f172a' }}>{item.label}</Text>
+                                <ChevronRight size={18} color="#f97316" strokeWidth={3} />
                             </TouchableOpacity>
                         ))}
-                    </View>
+                    </GlassView>
 
-                    <Text className="text-[10px] font-black text-slate-400 dark:text-slate-300 uppercase tracking-[0.2em] px-2 mb-3">Others</Text>
-                    <View className="bg-white/80 dark:bg-slate-900/80 rounded-[32px] border-2 border-slate-50 dark:border-slate-800 overflow-hidden mb-6 shadow-sm">
+                    <Text style={{ fontSize: 11, fontWeight: '900', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 3, marginLeft: 8, marginBottom: 16 }}>Protocols & Tools</Text>
+                    <GlassView intensity={20} tint={isDark ? 'dark' : 'light'} style={{ borderRadius: 40, overflow: 'hidden', marginBottom: 40 }}>
                         {otherItems.map((item, idx) => (
                             <TouchableOpacity
                                 key={idx}
                                 onPress={() => item.href && router.push(item.href as any)}
-                                className="flex-row items-center p-5 border-b-2 border-slate-50/50 dark:border-slate-800/50 last:border-b-0"
+                                style={{ flexDirection: 'row', alignItems: 'center', padding: 24, borderBottomWidth: idx === otherItems.length - 1 ? 0 : 1, borderBottomColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}
                             >
-                                <View className="h-10 w-10 rounded-2xl bg-white dark:bg-slate-800 items-center justify-center mr-4 shadow-sm">
-                                    <item.icon size={20} color={item.color} />
+                                <View style={{ height: 48, width: 48, borderRadius: 16, backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)', alignItems: 'center', justifyContent: 'center', marginRight: 16 }}>
+                                    <item.icon size={22} color={item.color} strokeWidth={2.5} />
                                 </View>
-                                <Text className="flex-1 text-base font-black text-slate-900 dark:text-white">{item.label}</Text>
-                                <ChevronRight size={18} color="#94a3b8" />
+                                <Text style={{ flex: 1, fontSize: 17, fontWeight: '900', color: isDark ? 'white' : '#0f172a' }}>{item.label}</Text>
+                                <ChevronRight size={18} color="#f97316" strokeWidth={3} />
                             </TouchableOpacity>
                         ))}
-                    </View>
+                    </GlassView>
 
                     {isStaff && (
-                        <>
-                            <Text className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-2 mb-3">Admin</Text>
-                            <View className="bg-blue-50/50 dark:bg-blue-900/10 rounded-[32px] border-2 border-blue-100 dark:border-blue-900/30 overflow-hidden mb-6 shadow-sm">
-                                <TouchableOpacity
-                                    onPress={() => router.push('/staff')}
-                                    className="flex-row items-center p-5"
-                                >
-                                    <View className="h-10 w-10 rounded-2xl bg-blue-500 items-center justify-center mr-4 shadow-sm">
-                                        <Shield size={20} color="white" />
+                        <PerspectiveView style={{ marginBottom: 40 }}>
+                            <GlassView intensity={40} tint="dark" style={{ padding: 24, borderRadius: 40, backgroundColor: '#3b82f620', borderWidth: 2, borderColor: '#3b82f640' }}>
+                                <TouchableOpacity onPress={() => router.push('/staff')} style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                    <View style={{ height: 56, width: 56, borderRadius: 20, backgroundColor: '#3b82f6', alignItems: 'center', justifyContent: 'center', marginRight: 16 }}>
+                                        <Shield size={24} color="white" />
                                     </View>
-                                    <View className="flex-1">
-                                        <Text className="text-base font-black text-blue-900 dark:text-blue-100">Staff Portal</Text>
-                                        <Text className="text-[10px] font-bold text-blue-500 uppercase tracking-widest">Management & Reviews</Text>
+                                    <View style={{ flex: 1 }}>
+                                        <Text style={{ fontSize: 18, fontWeight: '900', color: 'white' }}>Staff Command Portal</Text>
+                                        <Text style={{ fontSize: 10, fontWeight: '900', color: '#60a5fa', textTransform: 'uppercase', letterSpacing: 1.5, marginTop: 4 }}>System Monitoring Active</Text>
                                     </View>
-                                    <ChevronRight size={18} color="#3b82f6" />
+                                    <ChevronRight size={22} color="#3b82f6" strokeWidth={3} />
                                 </TouchableOpacity>
-                            </View>
-                        </>
+                            </GlassView>
+                        </PerspectiveView>
                     )}
 
-
-                    <View className="flex-row justify-center gap-6 mb-10">
+                    <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 24, marginBottom: 48 }}>
                         {legalItems.map((item, idx) => (
                             <TouchableOpacity key={idx} onPress={() => router.push(item.href as any)}>
-                                <Text className="text-xs font-black text-slate-400 uppercase tracking-widest">{item.label}</Text>
+                                <Text style={{ fontSize: 10, fontWeight: '900', color: '#64748b', textTransform: 'uppercase', letterSpacing: 2 }}>{item.label}</Text>
                             </TouchableOpacity>
                         ))}
                     </View>
 
-                    <Button
-                        title="Sign Out"
-                        variant="ghost"
+                    <TouchableOpacity
                         onPress={handleSignOut}
-                        className="mb-32"
-                        textClassName="text-red-500"
-                    />
-                    <View className="h-12" />
+                        style={{ height: 68, borderRadius: 30, backgroundColor: isDark ? 'rgba(239, 68, 68, 0.1)' : 'rgba(239, 68, 68, 0.05)', alignItems: 'center', justifyContent: 'center', marginBottom: 120, borderWidth: 1, borderColor: 'rgba(239, 68, 68, 0.2)' }}
+                    >
+                        <Text style={{ fontSize: 15, fontWeight: '900', color: '#ef4444', textTransform: 'uppercase', letterSpacing: 2 }}>Terminate Session</Text>
+                    </TouchableOpacity>
                 </ScrollView>
             </SafeAreaView>
         </View>

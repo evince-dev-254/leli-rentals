@@ -14,26 +14,36 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 const THEME_STORAGE_KEY = 'leli-theme-preference';
 
+import { useColorScheme as useNativeWindColorScheme } from 'nativewind';
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const deviceColorScheme = useDeviceColorScheme();
-    const [mode, setMode] = useState<ThemeMode>('light'); // Default to light
+    const { setColorScheme } = useNativeWindColorScheme();
+    const [mode, setMode] = useState<ThemeMode>('system');
 
     useEffect(() => {
         // Load persisted preference
         AsyncStorage.getItem(THEME_STORAGE_KEY).then((savedMode) => {
             if (savedMode) {
-                setMode(savedMode as ThemeMode);
+                const newMode = savedMode as ThemeMode;
+                setMode(newMode);
+                // Sync with NativeWind
+                const resolved = newMode === 'system' ? (deviceColorScheme || 'light') : newMode;
+                setColorScheme(resolved);
             }
         });
-    }, []);
+    }, [deviceColorScheme]);
 
     const setThemeMode = async (newMode: ThemeMode) => {
         setMode(newMode);
         await AsyncStorage.setItem(THEME_STORAGE_KEY, newMode);
+        // Sync with NativeWind
+        const resolved = newMode === 'system' ? (deviceColorScheme || 'light') : newMode;
+        setColorScheme(resolved);
     };
 
-    // Logical theme applied to UI - FORCED TO LIGHT ONLY
-    const theme = 'light'; // Always use light theme, dark mode disabled
+    // Logical theme applied to UI
+    const theme = mode === 'system' ? (deviceColorScheme || 'light') : mode;
 
     return (
         <ThemeContext.Provider value={{ theme, mode, setThemeMode }}>

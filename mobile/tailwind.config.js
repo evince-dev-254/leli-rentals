@@ -6,7 +6,7 @@ module.exports = {
     theme: {
         extend: {
             colors: {
-                primary: "#3b82f6", // Default blue, will update based on branding
+                primary: "#f97316", // Leli Orange
                 secondary: "#64748b",
                 accent: {
                     purple: "#a855f7",

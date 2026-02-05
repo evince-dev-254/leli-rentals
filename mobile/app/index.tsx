@@ -30,7 +30,8 @@ export default function StartupScreen() {
             if (user) {
                 router.replace('/(tabs)');
             } else {
-                router.replace('/auth/login');
+                // REDIRECT TO THE NEW HIGH-DEF ONBOARDING FOR v1.0.2
+                router.replace('/onboarding');
             }
         }
     }, [loading, user, router]);
@@ -72,7 +73,7 @@ export default function StartupScreen() {
     }));
 
     return (
-        <View className="flex-1 bg-white dark:bg-slate-950 items-center justify-center overflow-hidden">
+        <View style={{ flex: 1 }} className="bg-white dark:bg-slate-950 items-center justify-center overflow-hidden">
             <Animated.View style={[StyleSheet.absoluteFill, animatedBgStyle]}>
                 <BackgroundGradient />
             </Animated.View>

@@ -15,6 +15,9 @@ import { RenterDashboardView } from '@/components/dashboard/views/RenterDashboar
 import { OwnerDashboardView } from '@/components/dashboard/views/OwnerDashboard';
 import { AffiliateDashboardView } from '@/components/dashboard/views/AffiliateDashboard';
 
+import { GlassView } from '@/components/ui/glass-view';
+import { PerspectiveView } from '@/components/ui/perspective-view';
+
 type UserRole = 'renter' | 'owner' | 'affiliate';
 
 export default function UnifiedDashboardScreen() {
@@ -34,49 +37,92 @@ export default function UnifiedDashboardScreen() {
         }
     }, [user?.user_metadata?.role]);
 
+    const roles: { id: UserRole; label: string; color: string }[] = [
+        { id: 'renter', label: 'Renter', color: '#f97316' },
+        { id: 'owner', label: 'Owner', color: '#10b981' },
+        { id: 'affiliate', label: 'Partner', color: '#a855f7' },
+    ];
+
     return (
-        <View className="flex-1 bg-white dark:bg-slate-950">
+        <View style={{ flex: 1, backgroundColor: isDark ? '#020617' : 'white' }}>
             <BackgroundGradient />
             <HamburgerMenu visible={menuVisible} onClose={() => setMenuVisible(false)} activeRole={activeRole} />
 
-            <SafeAreaView className="flex-1" edges={['top']}>
-                {/* Header Section */}
-                <View className="px-6 pt-10 pb-4 flex-row items-center justify-between">
-                    <View className="flex-1 mr-4">
-                        <MotiView
-                            from={{ opacity: 0, translateX: -20 }}
-                            animate={{ opacity: 1, translateX: 0 }}
-                            transition={{ type: 'timing', duration: 800 }}
-                        >
-                            <Image
-                                source={isDark ? require('../../assets/images/logo_white.png') : require('../../assets/images/logo_black.png')}
-                                className="w-32 h-10 mb-2"
-                                resizeMode="contain"
-                                alt="Leli Rentals"
-                            />
-                            <Text className="text-slate-400 dark:text-slate-300 font-bold text-[10px] uppercase tracking-[0.2em]">
-                                {activeRole === 'renter' ? 'Find & Rent Equipment' : activeRole === 'owner' ? 'Host & Earn Revenue' : 'Scale Partner Network'}
-                            </Text>
-                        </MotiView>
+            <SafeAreaView style={{ flex: 1 }} edges={['top']}>
+                {/* Premium Header */}
+                <View style={{ paddingHorizontal: 24, paddingTop: 20, paddingBottom: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <View style={{ flex: 1 }}>
+                        <Image
+                            source={isDark ? require('../../assets/images/logo_white.png') : require('../../assets/images/logo_black.png')}
+                            style={{ width: 100, height: 32, marginBottom: 4 }}
+                            resizeMode="contain"
+                        />
+                        <Text style={{ fontSize: 9, fontWeight: '900', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2 }}>
+                            {activeRole === 'renter' ? 'Protocol: RENTER_CORE' : activeRole === 'owner' ? 'Protocol: HOST_ACTIVE' : 'Protocol: NETWORK_PARTNER'}
+                        </Text>
                     </View>
-                    <View className="flex-row gap-5">
-                        <TouchableOpacity
-                            onPress={() => setMenuVisible(true)}
-                            className="h-12 w-12 bg-white/80 dark:bg-slate-900/80 rounded-2xl items-center justify-center border-2 border-slate-50 dark:border-slate-800 shadow-sm"
-                        >
-                            <Menu size={20} color={isDark ? "#ffffff" : "#0f172a"} />
+                    <View style={{ flexDirection: 'row', gap: 12 }}>
+                        <TouchableOpacity onPress={() => setMenuVisible(true)}>
+                            <GlassView intensity={15} tint={isDark ? 'dark' : 'light'} style={{ height: 48, width: 48, borderRadius: 16, alignItems: 'center', justifyContent: 'center' }}>
+                                <Menu size={20} color={isDark ? "white" : "#0f172a"} strokeWidth={2.5} />
+                            </GlassView>
                         </TouchableOpacity>
-                        <TouchableOpacity
-                            onPress={() => router.push('/notifications')}
-                            className="h-12 w-12 bg-white/80 dark:bg-slate-900/80 rounded-2xl items-center justify-center border-2 border-slate-50 dark:border-slate-800 shadow-sm"
-                        >
-                            <Bell size={20} color={isDark ? "#ffffff" : "#0f172a"} />
+                        <TouchableOpacity onPress={() => router.push('/notifications')}>
+                            <GlassView intensity={15} tint={isDark ? 'dark' : 'light'} style={{ height: 48, width: 48, borderRadius: 16, alignItems: 'center', justifyContent: 'center' }}>
+                                <Bell size={20} color={isDark ? "white" : "#0f172a"} strokeWidth={2.5} />
+                            </GlassView>
                         </TouchableOpacity>
                     </View>
                 </View>
 
-                {/* Main Content Areas */}
-                <View className="flex-1 px-6 mt-4">
+                {/* Role Switcher - Premium Segmented Control */}
+                <View style={{ paddingHorizontal: 24, marginBottom: 24 }}>
+                    <GlassView intensity={10} tint={isDark ? 'dark' : 'light'} style={{ height: 64, borderRadius: 24, padding: 6, flexDirection: 'row' }}>
+                        {roles.map((role) => {
+                            const isActive = activeRole === role.id;
+                            return (
+                                <TouchableOpacity
+                                    key={role.id}
+                                    onPress={() => setActiveRole(role.id)}
+                                    style={{ flex: 1 }}
+                                >
+                                    <View style={{
+                                        flex: 1,
+                                        borderRadius: 18,
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        backgroundColor: isActive ? (isDark ? 'rgba(255,255,255,0.1)' : 'white') : 'transparent',
+                                        shadowColor: isActive ? '#000' : 'transparent',
+                                        shadowOffset: { width: 0, height: 4 },
+                                        shadowOpacity: 0.1,
+                                        shadowRadius: 8,
+                                        elevation: isActive ? 4 : 0
+                                    }}>
+                                        <Text style={{
+                                            fontSize: 11,
+                                            fontWeight: '900',
+                                            color: isActive ? role.color : '#94a3b8',
+                                            textTransform: 'uppercase',
+                                            letterSpacing: 1
+                                        }}>
+                                            {role.label}
+                                        </Text>
+                                        {isActive && (
+                                            <MotiView
+                                                from={{ scale: 0 }}
+                                                animate={{ scale: 1 }}
+                                                style={{ height: 4, width: 4, borderRadius: 2, backgroundColor: role.color, marginTop: 4 }}
+                                            />
+                                        )}
+                                    </View>
+                                </TouchableOpacity>
+                            );
+                        })}
+                    </GlassView>
+                </View>
+
+                {/* Main Content Area */}
+                <View style={{ flex: 1, paddingHorizontal: 24 }}>
                     <AnimatePresence>
                         {activeRole === 'renter' && (
                             <MotiView

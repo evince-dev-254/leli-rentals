@@ -1,23 +1,35 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, KeyboardAvoidingView, Platform, ScrollView, Dimensions, useColorScheme, Image, TouchableOpacity } from 'react-native';
+import {
+    View,
+    Text,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    Dimensions,
+    useColorScheme,
+    Image,
+    TouchableOpacity,
+    TextInput
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { supabase, performNativeGoogleSignIn } from '@/lib/supabase';
-import { GoogleSigninButton, GoogleSignin } from '@/lib/google-auth';
 import { Mail, Lock } from 'lucide-react-native';
 import { MotiView } from 'moti';
 import { BrandedAlert } from '@/components/ui/branded-alert';
 import { BackgroundGradient } from '@/components/ui/background-gradient';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { BackButton } from '@/components/ui/back-button';
-import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
-
+import { useTheme } from '@/components/theme-provider';
+import { PerspectiveView } from '@/components/ui/perspective-view';
+import { GlassView } from '@/components/ui/glass-view';
 
 const { width } = Dimensions.get('window');
 
 export default function LoginScreen() {
+    const { theme } = useTheme();
+    const isDark = theme === 'dark';
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
@@ -28,8 +40,6 @@ export default function LoginScreen() {
         type: 'info'
     });
     const router = useRouter();
-    const colorScheme = useColorScheme();
-    const isDark = colorScheme === 'dark';
 
     const handleUrl = useCallback(async (url: string) => {
         if (url.includes('auth/callback')) {
@@ -65,20 +75,12 @@ export default function LoginScreen() {
 
     useEffect(() => {
         const handleDeepLink = (event: Linking.EventType) => {
-            console.info('[DeepLink] Event received:', event.url);
             handleUrl(event.url);
         };
-
         const subscription = Linking.addEventListener('url', handleDeepLink);
-
-        // Check for initial URL if the app was opened via a link
         Linking.getInitialURL().then((url) => {
-            if (url) {
-                console.info('[DeepLink] Initial URL:', url);
-                handleUrl(url);
-            }
+            if (url) handleUrl(url);
         });
-
         return () => subscription.remove();
     }, [handleUrl]);
 
@@ -114,30 +116,19 @@ export default function LoginScreen() {
             } else if (!role) {
                 router.replace('/auth/select-role');
             } else {
-                // Global redirection to tabs which handles internal dashboard state
                 router.replace('/(tabs)');
             }
             setLoading(false);
         }
     };
 
-
-
     const handleGoogleLogin = async () => {
         setLoading(true);
         try {
-            console.info('[GoogleLogin] Starting native sign-in');
             const { data, error } = await performNativeGoogleSignIn();
-
             if (error) throw error;
-
             if (data?.user) {
-                console.info('[GoogleLogin] Native success!');
-
-                // 1. Check metadata
                 let role = data.user.user_metadata?.role;
-
-                // 2. If metadata missing, check user_profiles table
                 if (!role) {
                     const { data: profile } = await supabase
                         .from('user_profiles')
@@ -146,7 +137,6 @@ export default function LoginScreen() {
                         .single();
                     role = profile?.role;
                 }
-
                 if (!role) {
                     router.replace('/auth/select-role');
                 } else {
@@ -154,10 +144,7 @@ export default function LoginScreen() {
                 }
             }
         } catch (error: any) {
-            if (error.code === '7' || error.message?.includes('Sign in action cancelled')) {
-                console.info('[GoogleLogin] User cancelled');
-            } else {
-                console.error('[GoogleLogin] Error:', error);
+            if (error.code !== '7') {
                 showAlert('Google Error', error.message, 'error');
             }
         } finally {
@@ -166,7 +153,7 @@ export default function LoginScreen() {
     };
 
     return (
-        <View className="flex-1 bg-white dark:bg-slate-950">
+        <View style={{ flex: 1 }} className="bg-white dark:bg-slate-950">
             <BrandedAlert
                 visible={alertConfig.visible}
                 title={alertConfig.title}
@@ -177,85 +164,113 @@ export default function LoginScreen() {
 
             <BackgroundGradient />
 
-            <SafeAreaView className="flex-1">
+            <SafeAreaView style={{ flex: 1 }}>
                 <KeyboardAvoidingView
                     behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                    className="flex-1"
+                    style={{ flex: 1 }}
                 >
-                    <View className="px-8 py-4">
+                    <View style={{ paddingHorizontal: 24, paddingVertical: 16 }}>
                         <BackButton />
                     </View>
 
                     <ScrollView
-                        contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 32, paddingBottom: 40 }}
+                        contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 24, paddingBottom: 40 }}
                         showsVerticalScrollIndicator={false}
                     >
-                        <View className="mt-8 mb-10 items-center">
-                            <MotiView
-                                from={{ opacity: 0, scale: 0.9 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{ type: 'timing', duration: 800 }}
-                            >
-                                <Text className="text-5xl font-black text-slate-900 dark:text-white text-center">Log In</Text>
-                                <Text className="text-slate-500 dark:text-slate-400 mt-4 text-center font-bold">
-                                    Enter your credentials to access your account
+                        <View style={{ marginTop: 20, marginBottom: 40, alignItems: 'center' }}>
+                            <PerspectiveView floatEnabled={true}>
+                                <Text style={{ fontSize: 56, fontWeight: '900', color: isDark ? 'white' : '#0f172a', textAlign: 'center' }}>
+                                    Log In
                                 </Text>
-                            </MotiView>
+                            </PerspectiveView>
+                            <Text style={{ color: '#94a3b8', fontWeight: '700', fontSize: 16, textAlign: 'center', marginTop: 8 }}>
+                                Welcome back to the Premium Ecosystem.
+                            </Text>
                         </View>
 
-                        {Platform.OS !== 'web' && (
-                            <GoogleSigninButton
-                                size={GoogleSigninButton.Size.Wide}
-                                color={isDark ? GoogleSigninButton.Color.Dark : GoogleSigninButton.Color.Light}
-                                onPress={handleGoogleLogin}
-                                disabled={loading}
-                                style={{ width: '100%', height: 60, marginBottom: 32 }}
-                            />
-                        )}
-
-
-
-                        <View>
-                            <Input
-                                label="Email address"
-                                placeholder="Enter your email address"
-                                value={email}
-                                onChangeText={setEmail}
-                                keyboardType="email-address"
-                                autoCapitalize="none"
-                                icon={<Mail size={20} color="#f97316" />}
-                            />
-
-                            <Input
-                                label="Password"
-                                placeholder="Enter your password"
-                                value={password}
-                                onChangeText={setPassword}
-                                isPassword
-                                icon={<Lock size={20} color="#f97316" />}
-                            />
-                        </View>
-
-                        <Button
-                            onPress={handleLogin}
-                            title="Log In"
-                            loading={loading}
-                            className="mt-4"
-                        />
-
-                        <TouchableOpacity
-                            onPress={() => router.push('/auth/forgot-password')}
-                            className="mt-8 items-center"
+                        <GlassView
+                            intensity={30}
+                            tint={isDark ? 'dark' : 'light'}
+                            style={{ padding: 32, borderRadius: 48, borderWidth: 2, borderColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}
                         >
-                            <Text className="text-slate-500 font-bold underline">Forgot Password?</Text>
-                        </TouchableOpacity>
+                            {Platform.OS !== 'web' && (
+                                <View style={{ marginBottom: 32 }}>
+                                    <TouchableOpacity
+                                        onPress={handleGoogleLogin}
+                                        disabled={loading}
+                                        style={{ height: 64, backgroundColor: isDark ? '#1e293b' : 'white', borderRadius: 24, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: isDark ? '#334155' : '#e2e8f0', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 10, elevation: 5 }}
+                                    >
+                                        <Image
+                                            source={{ uri: 'https://img.icons8.com/color/48/000000/google-logo.png' }}
+                                            style={{ width: 24, height: 24, marginRight: 12 }}
+                                        />
+                                        <Text style={{ fontSize: 16, fontWeight: '900', color: isDark ? 'white' : '#0f172a' }}>
+                                            Continue with Google
+                                        </Text>
+                                    </TouchableOpacity>
+
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 32 }}>
+                                        <View style={{ flex: 1, height: 1, backgroundColor: isDark ? '#334155' : '#e2e8f0' }} />
+                                        <Text style={{ marginHorizontal: 16, color: '#94a3b8', fontWeight: '900', fontSize: 10, textTransform: 'uppercase' }}>OR</Text>
+                                        <View style={{ flex: 1, height: 1, backgroundColor: isDark ? '#334155' : '#e2e8f0' }} />
+                                    </View>
+                                </View>
+                            )}
+
+                            <View style={{ gap: 24 }}>
+                                <View>
+                                    <Text style={{ color: isDark ? 'white' : '#0f172a', fontWeight: '900', fontSize: 12, marginBottom: 12, marginLeft: 4, textTransform: 'uppercase', letterSpacing: 1 }}>Email Address</Text>
+                                    <GlassView intensity={10} tint={isDark ? 'dark' : 'light'} style={{ height: 68, borderRadius: 24, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, borderWidth: 1, borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }}>
+                                        <Mail size={20} color="#f97316" strokeWidth={3} />
+                                        <TextInput
+                                            placeholder="you@example.com"
+                                            placeholderTextColor="#64748b"
+                                            value={email}
+                                            onChangeText={setEmail}
+                                            style={{ flex: 1, marginLeft: 16, color: isDark ? 'white' : '#0f172a', fontWeight: '800', fontSize: 16 }}
+                                            keyboardType="email-address"
+                                            autoCapitalize="none"
+                                        />
+                                    </GlassView>
+                                </View>
+
+                                <View>
+                                    <Text style={{ color: isDark ? 'white' : '#0f172a', fontWeight: '900', fontSize: 12, marginBottom: 12, marginLeft: 4, textTransform: 'uppercase', letterSpacing: 1 }}>Password</Text>
+                                    <GlassView intensity={10} tint={isDark ? 'dark' : 'light'} style={{ height: 68, borderRadius: 24, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, borderWidth: 1, borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }}>
+                                        <Lock size={20} color="#f97316" strokeWidth={3} />
+                                        <TextInput
+                                            placeholder="••••••••"
+                                            placeholderTextColor="#64748b"
+                                            value={password}
+                                            onChangeText={setPassword}
+                                            secureTextEntry
+                                            style={{ flex: 1, marginLeft: 16, color: isDark ? 'white' : '#0f172a', fontWeight: '800', fontSize: 16 }}
+                                        />
+                                    </GlassView>
+                                </View>
+                            </View>
+
+                            <Button
+                                onPress={handleLogin}
+                                title="Authenticate"
+                                loading={loading}
+                                className="mt-12 h-16 rounded-[24px]"
+                            />
+
+                            <TouchableOpacity
+                                onPress={() => router.push('/auth/forgot-password')}
+                                style={{ marginTop: 24, alignSelf: 'center' }}
+                            >
+                                <Text style={{ color: '#f97316', fontWeight: '900', fontSize: 13, textTransform: 'uppercase', letterSpacing: 1 }}>Forgot Security Key?</Text>
+                            </TouchableOpacity>
+                        </GlassView>
 
                         <TouchableOpacity
                             onPress={() => router.push('/auth/signup')}
-                            className="mt-12 items-center"
+                            style={{ marginTop: 40, alignSelf: 'center', padding: 20 }}
                         >
-                            <Text className="text-slate-500 font-bold text-lg">
-                                Don&apos;t have an account? <Text className="text-[#f97316]">Sign up.</Text>
+                            <Text style={{ color: '#94a3b8', fontWeight: '700', fontSize: 15 }}>
+                                New to Premium? <Text style={{ color: '#f97316', fontWeight: '900' }}>Join Ecosystem.</Text>
                             </Text>
                         </TouchableOpacity>
                     </ScrollView>
