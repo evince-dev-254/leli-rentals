@@ -118,29 +118,94 @@ export function AffiliateOverview({ user, stats, refreshing, onRefresh }: Affili
                 </motion.div>
             </motion.div>
 
-            {/* Performance Chart */}
-            <Card className="glass-card border-none shadow-xl bg-gradient-to-br from-white/80 to-white/40 dark:from-black/40 dark:to-black/20">
-                <CardHeader className="p-4 md:p-6">
-                    <CardTitle className="text-xl md:text-2xl">Performance Overview</CardTitle>
+            {/* Referral Link & Performance */}
+            <div className="grid gap-6 md:grid-cols-2">
+                <Card className="glass-card border-none shadow-md bg-gradient-to-br from-primary/5 to-purple-500/5">
+                    <CardHeader>
+                        <CardTitle className="text-lg">Your Referral Link</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="flex items-center gap-2 p-3 bg-white/50 dark:bg-black/20 rounded-xl border border-border/50">
+                            <code className="text-sm font-mono flex-1 truncate">
+                                {typeof window !== 'undefined' ? `${window.location.origin}/signup?ref=${user?.id}` : `/signup?ref=${user?.id}`}
+                            </code>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                    const link = `${window.location.origin}/signup?ref=${user?.id}`;
+                                    navigator.clipboard.writeText(link);
+                                    alert("Link copied to clipboard!");
+                                }}
+                            >
+                                <RefreshCw className="h-4 w-4 mr-2" />
+                                Copy
+                            </Button>
+                        </div>
+                        <p className="text-xs text-muted-foreground italic">
+                            Share this link with your audience to earn commissions on every successful booking they make.
+                        </p>
+                    </CardContent>
+                </Card>
+
+                <Card className="glass-card border-none shadow-md overflow-hidden bg-gradient-to-br from-white/80 to-white/40 dark:from-black/40 dark:to-black/20">
+                    <CardHeader className="p-4 md:p-6 pb-2">
+                        <CardTitle className="text-xl md:text-2xl">Performance Overview</CardTitle>
+                    </CardHeader>
+                    <CardContent className="h-[200px] p-2 md:p-4 pt-0 min-w-0">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={chartData}>
+                                <defs>
+                                    <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8} />
+                                        <stop offset="95%" stopColor="#8884d8" stopOpacity={0} />
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.1} />
+                                <XAxis dataKey="name" tick={{ fontSize: 10 }} strokeOpacity={0.2} />
+                                <YAxis tick={{ fontSize: 10 }} strokeOpacity={0.2} tickFormatter={(value) => `Kes ${value}`} />
+                                <Tooltip
+                                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                                />
+                                <Area type="monotone" dataKey="value" stroke="#8884d8" fillOpacity={1} fill="url(#colorValue)" />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    </CardContent>
+                </Card>
+            </div>
+
+            {/* Recent Referrals Placeholder */}
+            <Card className="glass-card border-none shadow-md overflow-hidden">
+                <CardHeader className="bg-white/50 dark:bg-black/20 border-b border-border/50">
+                    <CardTitle>Recent Referrals</CardTitle>
                 </CardHeader>
-                <CardContent className="h-[250px] md:h-[350px] p-2 md:p-4 pt-4 min-w-0">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={chartData}>
-                            <defs>
-                                <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8} />
-                                    <stop offset="95%" stopColor="#8884d8" stopOpacity={0} />
-                                </linearGradient>
-                            </defs>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.1} />
-                            <XAxis dataKey="name" tick={{ fontSize: 12 }} strokeOpacity={0.2} />
-                            <YAxis tick={{ fontSize: 12 }} strokeOpacity={0.2} tickFormatter={(value) => `Kes ${value}`} />
-                            <Tooltip
-                                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-                            />
-                            <Area type="monotone" dataKey="value" stroke="#8884d8" fillOpacity={1} fill="url(#colorValue)" />
-                        </AreaChart>
-                    </ResponsiveContainer>
+                <CardContent className="p-0">
+                    {(!stats?.recent_referrals || stats.recent_referrals.length === 0) ? (
+                        <div className="text-center py-12 px-6">
+                            <Users className="h-12 w-12 mx-auto text-muted-foreground opacity-20 mb-4" />
+                            <h3 className="font-semibold text-lg mb-2">No referrals yet</h3>
+                            <p className="text-muted-foreground max-w-sm mx-auto">Once users sign up using your link, they will appear here.</p>
+                        </div>
+                    ) : (
+                        <div className="divide-y divide-border/50">
+                            {stats.recent_referrals.map((ref: any, i: number) => (
+                                <div key={i} className="p-4 flex items-center justify-between hover:bg-muted/30 transition-colors">
+                                    <div className="flex items-center gap-3">
+                                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                                            <Users className="h-5 w-5" />
+                                        </div>
+                                        <div>
+                                            <p className="font-medium">{ref.full_name || "New User"}</p>
+                                            <p className="text-xs text-muted-foreground">{new Date(ref.created_at).toLocaleDateString()}</p>
+                                        </div>
+                                    </div>
+                                    <div className={`px-2 py-1 rounded-full text-[10px] font-bold ${ref.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
+                                        {ref.status || 'Joined'}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </CardContent>
             </Card>
 

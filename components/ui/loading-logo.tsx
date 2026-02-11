@@ -21,8 +21,9 @@ export function LoadingLogo({ className, size = 60 }: LoadingLogoProps) {
                     src="/logo.png"
                     alt="Loading..."
                     width={size}
-                    height={size}
-                    className="h-auto w-auto object-contain dark:invert animate-pulse duration-1000"
+                    height={size} // Keep aspect ratio if known, or if unknown, this is just a placeholder with h-auto overriding it.
+                    style={{ width: 'auto', height: 'auto' }} // Explicitly tell Next.js we are overriding
+                    className="object-contain dark:invert animate-pulse duration-1000"
                     priority
                 />
             </div>

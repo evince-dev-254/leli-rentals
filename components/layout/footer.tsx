@@ -42,11 +42,11 @@ export function Footer() {
             <Link href="/" className="flex items-center gap-2 mb-4">
               <Image
                 src="/logo.png"
-                alt="leli rentals"
+                alt="Leli Rentals - Rent Anything, Anytime"
                 width={140}
                 height={36}
-                className="h-9 w-auto dark:invert"
-                style={{ width: "auto", height: "auto" }}
+                className="h-9 w-auto dark:invert object-contain"
+                style={{ width: "auto" }}
                 suppressHydrationWarning
               />
             </Link>
@@ -128,10 +128,7 @@ export function Footer() {
               </li>
               <li className="flex items-center gap-2 text-muted-foreground">
                 <Mail className="h-5 w-5 shrink-0" />
-                <span>support</span>
-                <span className="hidden">ignore</span>
-                <span>@</span>
-                <span>gurucrafts.agency</span>
+                <span>support@gurucrafts.agency</span>
               </li>
             </ul>
           </div>

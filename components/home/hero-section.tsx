@@ -16,9 +16,10 @@ export function HeroSection() {
       {/* Optimized Background Image (LCP Optimization) */}
       <Image
         src="/leli-home-hero-corrected.png"
-        alt="Leli Rentals Hero"
+        alt="Leli Rentals - Your Perfect Rental Marketplace"
         fill
         priority
+        fetchPriority="high"
         className="object-cover object-[center_10%] animate-ken-burns"
         sizes="100vw"
         loading="eager"

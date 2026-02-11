@@ -21,6 +21,7 @@ export function BlogHero({ post }: BlogHeroProps) {
                     fill
                     className="object-cover"
                     priority
+                    unoptimized
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-black/30" />
                 <div className="absolute inset-0 bg-background/20 backdrop-blur-[1px]" />
@@ -37,7 +38,7 @@ export function BlogHero({ post }: BlogHeroProps) {
                 </Link>
 
                 <div className="space-y-6">
-                    <Badge size="lg" className="px-4 py-1 text-base">{post.category}</Badge>
+                    <Badge className="px-4 py-1.5 text-base">{post.category}</Badge>
 
                     <h1 className="text-4xl font-extrabold tracking-tight md:text-5xl lg:text-6xl text-balance text-foreground shadow-sm">
                         {post.title}

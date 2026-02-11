@@ -3,6 +3,15 @@ import { updateSession } from "@/utils/supabase/middleware";
 import { createServerClient } from "@supabase/ssr";
 
 export async function middleware(request: NextRequest) {
+    const hostname = request.headers.get("host") || "";
+    const redirectUrl = request.nextUrl.clone();
+
+    // Force WWW redirect for canonicalization
+    if (hostname === "leli.rentals") {
+        redirectUrl.hostname = "www.leli.rentals";
+        return NextResponse.redirect(redirectUrl, 301);
+    }
+
     // Check if the request is for a webhook
     if (request.nextUrl.pathname.startsWith('/api/webhooks')) {
         return NextResponse.next();

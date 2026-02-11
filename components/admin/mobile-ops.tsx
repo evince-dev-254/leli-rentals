@@ -230,7 +230,7 @@ export function MobileOps() {
                                                 <div className="flex items-center gap-3">
                                                     <div className="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-400 overflow-hidden ring-2 ring-white">
                                                         {user.avatar_url ? (
-                                                            <img src={`https://tdtjevpnqrwqcjnuywrn.supabase.co/storage/v1/object/public/avatars/${user.avatar_url}`} alt="" />
+                                                            <img src={`https://tdtjevpnqrwqcjnuywrn.supabase.co/storage/v1/object/public/avatars/${user.avatar_url}`} alt={user.full_name || 'User Avatar'} />
                                                         ) : <User size={18} />}
                                                     </div>
                                                     <div>

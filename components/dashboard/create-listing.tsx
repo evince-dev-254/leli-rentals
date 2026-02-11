@@ -290,7 +290,7 @@ export function CreateListing() {
                     <div key={index} className="relative aspect-square rounded-lg overflow-hidden">
                       <Image
                         src={image || "/placeholder.svg"}
-                        alt=""
+                        alt={`Listing Image ${index + 1}`}
                         fill
                         className="object-cover"
                       />

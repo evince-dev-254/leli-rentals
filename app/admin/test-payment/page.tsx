@@ -17,7 +17,7 @@ export default function AdminTestPaymentPage() {
                     <p className="font-semibold text-blue-600 dark:text-blue-400 mb-2">ℹ️ How it works:</p>
                     <ol className="space-y-1 text-muted-foreground list-decimal list-inside">
                         <li>Enter your email and amount (default 1 KES)</li>
-                        <li>Click "Pay" to open Paystack payment modal</li>
+                        <li>Click &quot;Pay&quot; to open Paystack payment modal</li>
                         <li>Use the test card details provided</li>
                         <li>Complete the payment flow</li>
                         <li>Check the payment in <strong>Payments & Subscriptions</strong></li>

@@ -18,12 +18,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         '/cookies',
     ].map((route) => ({
         url: `${baseUrl}${route}`,
-        lastModified: new Date(),
+        lastModified: new Date('2026-02-11'), // Use a fixed recent date for static pages
         changeFrequency: 'monthly' as const,
         priority: route === '' ? 1 : 0.8,
     }))
 
-    // Category pages - using actual category IDs from categories-data.ts
+    // Category pages
     const categories = [
         'vehicles',
         'living',
@@ -59,12 +59,28 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         priority: 0.9,
     }
 
-    const blogPostEntries = blogPosts.map((post) => ({
+    // Fetch dynamic blogs from Supabase
+    const { data: dbBlogs } = await supabase
+        .from('blogs')
+        .select('slug, updated_at')
+
+    const dbBlogEntries = (dbBlogs || []).map((post) => ({
         url: `${baseUrl}/blog/${post.slug}`,
-        lastModified: new Date(post.date),
+        lastModified: new Date(post.updated_at),
         changeFrequency: 'monthly' as const,
         priority: 0.8,
     }))
+
+    // Keep static blogs as fallback (only those not in DB)
+    const dbSlugs = new Set((dbBlogs || []).map(b => b.slug))
+    const staticBlogEntries = blogPosts
+        .filter(post => !dbSlugs.has(post.slug))
+        .map((post) => ({
+            url: `${baseUrl}/blog/${post.slug}`,
+            lastModified: new Date(post.date),
+            changeFrequency: 'monthly' as const,
+            priority: 0.7, // Lower priority for legacy static posts
+        }))
 
     const blogCategoryEntries = blogCategories.map((category) => ({
         url: `${baseUrl}/blog/category/${slugify(category)}`,
@@ -87,5 +103,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         priority: 0.8,
     }))
 
-    return [...staticPages, categoriesIndex, ...categories, blogIndex, ...blogPostEntries, ...blogCategoryEntries, ...listingEntries]
+    return [
+        ...staticPages,
+        categoriesIndex,
+        ...categories,
+        blogIndex,
+        ...dbBlogEntries,
+        ...staticBlogEntries,
+        ...blogCategoryEntries,
+        ...listingEntries
+    ]
 }

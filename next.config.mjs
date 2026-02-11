@@ -34,6 +34,10 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: '**.imagekit.io',
+      },
+      {
+        protocol: 'https',
+        hostname: 'image.pollinations.ai',
       }
     ],
   },
@@ -47,6 +51,11 @@ const nextConfig = {
   // Redirect non-www to www for domain canonicalization
   async redirects() {
     return [
+      {
+        source: '/download',
+        destination: '/mobile-app',
+        permanent: true,
+      },
       {
         source: '/:path*',
         has: [
@@ -83,6 +92,10 @@ const nextConfig = {
           {
             key: 'Cache-Control',
             value: 'public, max-age=31536000, immutable',
+          },
+          {
+            key: 'Expires',
+            value: new Date(Date.now() + 31536000000).toUTCString(),
           },
         ],
       },

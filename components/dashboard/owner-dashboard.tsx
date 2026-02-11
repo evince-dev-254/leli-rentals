@@ -190,6 +190,34 @@ export default function OwnerDashboard() {
                 </motion.div>
             </motion.div>
 
+            {/* Performance Analytics Placeholder (similar to Affiliate) */}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+            >
+                <Card className="glass-card border-none shadow-md overflow-hidden bg-gradient-to-br from-indigo-500/5 to-purple-500/5">
+                    <CardHeader className="flex flex-row items-center justify-between">
+                        <div>
+                            <CardTitle>Performance Analytics</CardTitle>
+                            <CardDescription>Visualizing your listing reach over time</CardDescription>
+                        </div>
+                        <Button variant="outline" size="sm" asChild>
+                            <Link href="/dashboard/earnings" className="flex items-center gap-2">
+                                <DollarSign className="h-4 w-4" />
+                                Detailed Earnings
+                            </Link>
+                        </Button>
+                    </CardHeader>
+                    <CardContent className="h-[200px] flex items-center justify-center border-t border-border/50">
+                        <div className="text-center space-y-2">
+                            <BarChart3 className="h-10 w-10 mx-auto text-indigo-400 opacity-50" />
+                            <p className="text-sm text-muted-foreground italic">Detailed visualization of views and clicks coming soon.</p>
+                        </div>
+                    </CardContent>
+                </Card>
+            </motion.div>
+
             {/* Main Content Areas */}
             <motion.div
                 className="grid gap-6 md:grid-cols-2 lg:grid-cols-7"

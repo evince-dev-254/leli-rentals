@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Loader2, CalendarCheck, Heart, Star, MessageCircle, MapPin, Search, ArrowUpRight, DollarSign, Wallet } from "lucide-react"
+import { Loader2, CalendarCheck, Heart, Star, MessageCircle, MapPin, Search, ArrowUpRight, DollarSign, Wallet, HelpCircle } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import { motion } from "framer-motion"
@@ -103,6 +103,58 @@ export function RenterDashboard() {
                 subtitle="Manage your bookings, payments, and favorite items."
                 role="Renter"
             />
+
+            {/* Quick Actions Section */}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                className="grid grid-cols-2 md:grid-cols-4 gap-4"
+            >
+                <Card className="glass-card border-none shadow-sm hover:shadow-md transition-all cursor-pointer group" asChild>
+                    <Link href="/categories">
+                        <CardContent className="p-4 flex flex-col items-center justify-center text-center space-y-2">
+                            <div className="p-3 rounded-full bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+                                <Search className="h-5 w-5" />
+                            </div>
+                            <span className="font-semibold text-sm">Browse Items</span>
+                        </CardContent>
+                    </Link>
+                </Card>
+
+                <Card className="glass-card border-none shadow-sm hover:shadow-md transition-all cursor-pointer group" asChild>
+                    <Link href="/favorites">
+                        <CardContent className="p-4 flex flex-col items-center justify-center text-center space-y-2">
+                            <div className="p-3 rounded-full bg-red-50 text-red-500 group-hover:bg-red-500 group-hover:text-white transition-colors">
+                                <Heart className="h-5 w-5" />
+                            </div>
+                            <span className="font-semibold text-sm">My Wishlist</span>
+                        </CardContent>
+                    </Link>
+                </Card>
+
+                <Card className="glass-card border-none shadow-sm hover:shadow-md transition-all cursor-pointer group" asChild>
+                    <Link href="/messages">
+                        <CardContent className="p-4 flex flex-col items-center justify-center text-center space-y-2">
+                            <div className="p-3 rounded-full bg-blue-50 text-blue-500 group-hover:bg-blue-500 group-hover:text-white transition-colors">
+                                <MessageCircle className="h-5 w-5" />
+                            </div>
+                            <span className="font-semibold text-sm">Messages</span>
+                        </CardContent>
+                    </Link>
+                </Card>
+
+                <Card className="glass-card border-none shadow-sm hover:shadow-md transition-all cursor-pointer group" asChild>
+                    <Link href="/help">
+                        <CardContent className="p-4 flex flex-col items-center justify-center text-center space-y-2">
+                            <div className="p-3 rounded-full bg-purple-50 text-purple-500 group-hover:bg-purple-500 group-hover:text-white transition-colors">
+                                <HelpCircle className="h-5 w-5" />
+                            </div>
+                            <span className="font-semibold text-sm">Help Center</span>
+                        </CardContent>
+                    </Link>
+                </Card>
+            </motion.div>
 
             <Tabs defaultValue="bookings" className="space-y-6">
                 <TabsList className="bg-muted/50 p-1 overflow-x-auto flex w-full justify-start md:justify-center md:hidden">

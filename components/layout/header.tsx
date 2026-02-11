@@ -167,11 +167,12 @@ export function Header() {
           <Link href="/" className="flex items-center gap-2 flex-shrink-0">
             <Image
               src="/logo.png"
-              alt="Leli Rentals"
+              alt="Leli Rentals - Rent Anything, Anytime"
               width={100}
               height={28}
               priority
-              className="h-4 sm:h-5 w-auto invert"
+              fetchPriority="high"
+              className="h-4 sm:h-5 w-auto invert object-contain"
               style={{ width: "auto" }}
               suppressHydrationWarning
             />

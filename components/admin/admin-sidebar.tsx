@@ -94,6 +94,12 @@ export function AdminSidebar({ className }: { className?: string }) {
       active: pathname === "/admin/communications",
     },
     {
+      label: "Blogs",
+      icon: MessageSquare,
+      href: "/admin/blogs",
+      active: pathname === "/admin/blogs",
+    },
+    {
       label: "Reviews",
       icon: MessageSquare,
       href: "/admin/reviews",

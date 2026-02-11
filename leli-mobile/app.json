@@ -1,0 +1,53 @@
+{
+  "expo": {
+    "name": "Leli Rentals",
+    "slug": "leli-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/favicon.png",
+    "scheme": "lelimobile",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "updates": {
+      "url": "https://u.expo.dev/7eb969d6-c8bd-498e-aab5-c8a3d46e4098"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "splash": {
+      "image": "./assets/images/favicon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/favicon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": false,
+      "softwareKeyboardLayoutMode": "pan",
+      "package": "com.evincek254.lelimobile"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-notifications"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "7eb969d6-c8bd-498e-aab5-c8a3d46e4098"
+      }
+    }
+  }
+}

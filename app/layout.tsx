@@ -23,27 +23,34 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://www.leli.rentals'),
-  alternates: {
-    canonical: './',
-  },
   title: {
     default: "Leli Rentals - Find Your Perfect Rental",
     template: "%s | Leli Rentals"
   },
   description:
-    "Premier peer-to-peer rental marketplace in Kenya. Rent cars, homes, equipment, electronics, fashion & more. Find what you need, when you need it.",
+    "Leli Rentals is Kenya's premier peer-to-peer rental marketplace. Rent cars, homes, equipment, electronics, fashion & more. Find exactly what you need, when you need it safely.",
   generator: "evince Agency",
   applicationName: "Leli Rentals",
   keywords: [
     "rentals Kenya",
     "car rental Nairobi",
     "home rental Kenya",
+    "apartment rental Kenya",
+    "commercial space for rent",
+    "office space rental Nairobi",
     "equipment rental",
+    "tool hire Kenya",
     "vehicle hire Kenya",
+    "luxury car rentals",
     "property rental",
     "event space rental",
     "electronics rental",
+    "camera lens rental Kenya",
+    "photography equipment rental",
     "fashion rental",
+    "party supplies rental",
+    "fitness equipment rental",
+    "baby gear rental",
     "rent items Kenya",
     "peer to peer rental",
     "rental marketplace",
@@ -51,7 +58,18 @@ export const metadata: Metadata = {
     "rental tips Kenya",
     "rental market insights",
     "sharing economy blog",
-    "rental guides Kenya"
+    "rental guides Kenya",
+    "vehicles",
+    "living spaces",
+    "equipment and tools",
+    "electronics",
+    "fashion and accessories",
+    "entertainment",
+    "utility spaces",
+    "business spaces",
+    "photography",
+    "fitness",
+    "baby and kids"
   ],
   authors: [{ name: "Leli Rentals" }],
   creator: "evince Agency",
@@ -189,10 +207,10 @@ export default function RootLayout({
         />
 
         {/* Structured Data for SEO */}
-        <Script
+        {/* Structured Data for SEO */}
+        <script
           id="organization-schema"
           type="application/ld+json"
-          strategy="afterInteractive"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               '@context': 'https://schema.org',
@@ -232,10 +250,9 @@ export default function RootLayout({
             })
           }}
         />
-        <Script
+        <script
           id="website-schema"
           type="application/ld+json"
-          strategy="afterInteractive"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               '@context': 'https://schema.org',

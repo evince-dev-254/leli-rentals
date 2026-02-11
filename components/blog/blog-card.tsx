@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { BlogPost } from "@/lib/blog-data"
-import { Clock } from "lucide-react"
+import { Clock, Star } from "lucide-react"
 
 interface BlogCardProps {
     post: BlogPost
@@ -20,13 +20,14 @@ export function BlogCard({ post }: BlogCardProps) {
                         alt={post.title}
                         fill
                         className="object-cover transition-transform duration-500 group-hover:scale-105"
+                        unoptimized
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                     <Badge className="absolute top-4 left-4 z-10" variant="secondary">
                         {post.category}
                     </Badge>
                 </div>
-                <CardHeader className="space-y-2 p-6">
+                <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <span>{new Date(post.date).toLocaleDateString(undefined, {
                             year: 'numeric',
@@ -39,10 +40,16 @@ export function BlogCard({ post }: BlogCardProps) {
                             <span>{post.readingTime}</span>
                         </div>
                     </div>
-                    <h3 className="line-clamp-2 text-xl font-bold tracking-tight group-hover:text-primary transition-colors">
-                        {post.title}
-                    </h3>
-                </CardHeader>
+                    {(post as any).average_rating > 0 && (
+                        <div className="flex items-center gap-1 text-xs font-bold text-yellow-600 bg-yellow-50 px-2 py-0.5 rounded-full">
+                            <Star className="h-3 w-3 fill-yellow-600" />
+                            <span>{(post as any).average_rating.toFixed(1)} ({(post as any).review_count})</span>
+                        </div>
+                    )}
+                </div>
+                <h3 className="line-clamp-2 text-xl font-bold tracking-tight group-hover:text-primary transition-colors">
+                    {post.title}
+                </h3>
                 <CardContent className="p-6 pt-0">
                     <p className="line-clamp-3 text-muted-foreground text-sm">
                         {post.excerpt}

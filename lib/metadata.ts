@@ -5,22 +5,22 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.leli.rentals'
 export const defaultMetadata: Metadata = {
     metadataBase: new URL(siteUrl),
     title: {
-        default: "leli rentals - Find Your Perfect Rental in Kenya",
-        template: "%s | leli rentals"
+        default: "Leli Rentals - Find Your Perfect Rental in Kenya",
+        template: "%s | Leli Rentals"
     },
     description:
-        "The premier destination for all your rental needs in Kenya. Discover amazing rentals for every occasion - from cars to equipment, homes to fashion.",
+        "Leli Rentals is Kenya's premier peer-to-peer rental marketplace. Rent cars, homes, equipment, electronics, fashion & more. Find exactly what you need, when you need it safely.",
     openGraph: {
         type: 'website',
         locale: 'en_KE',
         url: siteUrl,
-        siteName: 'leli rentals',
+        siteName: 'Leli Rentals',
         images: [
             {
                 url: '/og-image.png',
                 width: 1200,
                 height: 630,
-                alt: 'leli rentals - Rent Anything, Anytime',
+                alt: 'Leli Rentals - Rent Anything, Anytime',
             },
         ],
     },
@@ -38,11 +38,13 @@ export function generatePageMetadata({
     description,
     path = '',
     image,
+    keywords = [],
 }: {
     title: string
     description: string
     path?: string
     image?: string
+    keywords?: string[]
 }): Metadata {
     const url = `${siteUrl}${path}`
     const ogImage = image || '/og-image.png'
@@ -50,6 +52,13 @@ export function generatePageMetadata({
     return {
         title,
         description,
+        keywords: [
+            "rentals", "peer to peer", "Kenya", "marketplace",
+            ...keywords
+        ],
+        alternates: {
+            canonical: url,
+        },
         openGraph: {
             title,
             description,
