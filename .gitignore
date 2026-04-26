@@ -28,3 +28,5 @@ google-key.json
 noted-function-*.json
 *.pem
 credentials.json
+.vercel
+.env*.local

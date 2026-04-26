@@ -9,6 +9,7 @@ const platformLinks = [
   { name: "Pricing", href: "/pricing" },
   { name: "Contact", href: "/contact" },
   { name: "Privacy Policy", href: "/privacy" },
+  { name: "Explore All Rentals", href: "/explore" },
 ]
 
 const categoryLinks = [

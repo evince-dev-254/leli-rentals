@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next'
 import { blogPosts, categories as blogCategories, slugify } from '@/lib/blog-data'
 import { supabase } from '@/lib/supabase'
+import { getAllSeoSlugs } from '@/lib/seo-pages-data'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const baseUrl = 'https://www.leli.rentals'
@@ -13,6 +14,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         '/help',
         '/careers',
         '/become-owner',
+        '/explore',
         '/terms',
         '/privacy',
         '/cookies',
@@ -103,6 +105,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         priority: 0.8,
     }))
 
+  // SEO Programmatic Pages (16,808 pages)
+  const seoSlugs = getAllSeoSlugs()
+  const seoEntries = seoSlugs.map((slug) => ({
+    url: `${baseUrl}/${slug}`,
+    lastModified: new Date('2026-04-26'),
+    changeFrequency: 'monthly' as const,
+    priority: 0.7,
+  }))
+
     return [
         ...staticPages,
         categoriesIndex,
@@ -111,6 +122,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         ...dbBlogEntries,
         ...staticBlogEntries,
         ...blogCategoryEntries,
-        ...listingEntries
+        ...listingEntries,
+        ...seoEntries
     ]
 }
