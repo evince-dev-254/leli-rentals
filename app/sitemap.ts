@@ -2,6 +2,7 @@ import type { MetadataRoute } from 'next'
 import { blogPosts, categories as blogCategories, slugify } from '@/lib/blog-data'
 import { supabase } from '@/lib/supabase'
 import { getAllSeoSlugs } from '@/lib/seo-pages-data'
+import { calculatorCategories } from '@/lib/calculator-data'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const baseUrl = 'https://www.leli.rentals'
@@ -24,6 +25,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         changeFrequency: 'monthly' as const,
         priority: route === '' ? 1 : 0.8,
     }))
+
+  // Earning Calculator Pages (11 pages)
+  const earnEntries = calculatorCategories.map((cat) => ({
+    url: `${baseUrl}/earn/${cat.slug}`,
+    lastModified: new Date('2026-04-27'),
+    changeFrequency: 'monthly' as const,
+    priority: 0.9,
+  }))
 
     // Category pages
     const categories = [
@@ -116,6 +125,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     return [
         ...staticPages,
+        ...earnEntries,
         categoriesIndex,
         ...categories,
         blogIndex,

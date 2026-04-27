@@ -26,6 +26,20 @@ const categoryLinks = [
   { name: "Baby & Kids", href: "/categories/baby" },
 ]
 
+const earnLinks = [
+  { name: "Earn from Vehicles", href: "/earn/vehicles" },
+  { name: "Earn from Living Spaces", href: "/earn/living-spaces" },
+  { name: "Earn from Photography", href: "/earn/photography" },
+  { name: "Earn from Electronics", href: "/earn/electronics" },
+  { name: "Earn from Fashion", href: "/earn/fashion-accessories" },
+  { name: "Earn from Equipment", href: "/earn/equipment-tools" },
+  { name: "Earn from Business Spaces", href: "/earn/business-spaces" },
+  { name: "Earn from Entertainment", href: "/earn/entertainment" },
+  { name: "Earn from Fitness & Sports", href: "/earn/fitness-sports" },
+  { name: "Earn from Utility Spaces", href: "/earn/utility-spaces" },
+  { name: "Earn from Baby & Kids", href: "/earn/baby-kids" },
+]
+
 const supportLinks = [
   { name: "Help Center", href: "/help" },
   { name: "How It Works", href: "/how-it-works" },
@@ -37,7 +51,7 @@ export function Footer() {
   return (
     <footer className="border-t border-border/50 bg-secondary/30">
       <div className="container mx-auto px-4 py-12">
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-5">
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-6">
           {/* Brand Column */}
           <div className="lg:col-span-2">
             <Link href="/" className="flex items-center gap-2 mb-4">
@@ -106,6 +120,20 @@ export function Footer() {
             <h3 className="font-semibold mb-4">Categories</h3>
             <ul className="space-y-3">
               {categoryLinks.map((link) => (
+                <li key={link.name}>
+                  <Link href={link.href} className="text-muted-foreground hover:text-foreground transition-colors">
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Earn Links */}
+          <div>
+            <h3 className="font-semibold mb-4">Start Earning</h3>
+            <ul className="space-y-3">
+              {earnLinks.map((link) => (
                 <li key={link.name}>
                   <Link href={link.href} className="text-muted-foreground hover:text-foreground transition-colors">
                     {link.name}
