@@ -231,7 +231,7 @@ export default function RootLayout({
                 '@type': 'ContactPoint',
                 contactType: 'Customer Service',
                 telephone: '+254785063461',
-                email: 'support@leli.rentals',
+                email: 'support@gurucrafts.agency',
                 availableLanguage: ['English', 'Swahili'],
                 areaServed: 'KE',
               },

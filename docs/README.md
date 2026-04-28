@@ -372,14 +372,14 @@ See [LICENSE.md](./LICENSE.md) for full terms and conditions.
 
 ### Project Maintainer
 - **Name**: Evince Dev
-- **Email**: support@leli.rentals
+- **Email**: support@gurucrafts.agency
 - **Website**: [https://leli.rentals](https://leli.rentals)
 - **GitHub**: [@evince-dev-254](https://github.com/evince-dev-254)
 
 ### Support
 - **Documentation**: [WALKTHROUGH.md](./WALKTHROUGH.md)
 - **Issues**: [GitHub Issues](https://github.com/evince-dev-254/leli-rentals/issues)
-- **Email**: support@leli.rentals
+- **Email**: support@gurucrafts.agency
 
 ---
 
@@ -415,6 +415,6 @@ If you discover a security vulnerability, please email security@leli.rentals. Do
 
 **Built with ❤️ by Evince Dev**
 
-[Website](https://leli.rentals) • [GitHub](https://github.com/evince-dev-254) • [Support](mailto:support@leli.rentals)
+[Website](https://leli.rentals) • [GitHub](https://github.com/evince-dev-254) • [Support](mailto:support@gurucrafts.agency)
 
 </div>

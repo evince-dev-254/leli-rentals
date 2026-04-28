@@ -3,6 +3,7 @@ import { blogPosts, categories as blogCategories, slugify } from '@/lib/blog-dat
 import { supabase } from '@/lib/supabase'
 import { getAllSeoSlugs } from '@/lib/seo-pages-data'
 import { calculatorCategories } from '@/lib/calculator-data'
+import { getAllCompareSlugs, getAllReviewSlugs } from '@/lib/comparison-data'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const baseUrl = 'https://www.leli.rentals'
@@ -32,6 +33,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     lastModified: new Date('2026-04-27'),
     changeFrequency: 'monthly' as const,
     priority: 0.9,
+  }))
+
+  // Compare Pages (11 pages)
+  const compareEntries = getAllCompareSlugs().map((slug) => ({
+    url: `${baseUrl}/compare/${slug}`,
+    lastModified: new Date('2026-04-27'),
+    changeFrequency: 'monthly' as const,
+    priority: 0.9,
+  }))
+
+  // Review Pages (11 pages)
+  const reviewEntries = getAllReviewSlugs().map((slug) => ({
+    url: `${baseUrl}/review/${slug}`,
+    lastModified: new Date('2026-04-27'),
+    changeFrequency: 'monthly' as const,
+    priority: 0.8,
   }))
 
     // Category pages
@@ -133,6 +150,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         ...staticBlogEntries,
         ...blogCategoryEntries,
         ...listingEntries,
+        ...compareEntries,
+        ...reviewEntries,
         ...seoEntries
     ]
 }

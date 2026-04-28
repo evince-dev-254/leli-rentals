@@ -32,7 +32,7 @@ export const organizationSchema = {
     contactPoint: {
         '@type': 'ContactPoint',
         contactType: 'Customer Service',
-        email: 'support@leli.rentals',
+        email: 'support@gurucrafts.agency',
         availableLanguage: ['English', 'Swahili'],
     },
     sameAs: [

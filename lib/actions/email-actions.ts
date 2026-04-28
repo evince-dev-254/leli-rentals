@@ -271,7 +271,7 @@ export async function sendContactFormEmail(formData: {
     try {
         const data = await resend.emails.send({
             from: "Leli Rentals <support@updates.leli.rentals>",
-            to: "support@leli.rentals",
+            to: "support@gurucrafts.agency",
             replyTo: formData.email,
             subject: `Contact Form: ${formData.subject}`,
             react: ContactFormEmail({
