@@ -59,13 +59,13 @@ export function GuidePage({ guide, relatedGuides }: Props) {
                     <img
                         src={guide.heroImage}
                         alt={guide.heroAlt}
-                        className="w-full h-[420px] object-cover"
+                        className="w-full h-[280px] sm:h-[340px] md:h-[420px] object-cover"
                     />
-                    <div className="absolute inset-0 z-20 flex flex-col justify-end pb-12 px-4">
+                    <div className="absolute inset-0 z-20 flex flex-col justify-end pb-6 sm:pb-10 md:pb-12 px-4">
                         <div className="max-w-4xl mx-auto w-full">
                             {/* Breadcrumb */}
-                            <nav className="mb-4">
-                                <ol className="flex items-center gap-2 text-sm text-slate-300">
+                            <nav className="mb-3 sm:mb-4">
+                                <ol className="flex items-center gap-2 text-xs sm:text-sm text-slate-300">
                                     <li><Link href="/" className="hover:text-white transition-colors">Home</Link></li>
                                     <li className="text-slate-500">/</li>
                                     <li><Link href="/guides" className="hover:text-white transition-colors">Rental Guides</Link></li>
@@ -84,10 +84,10 @@ export function GuidePage({ guide, relatedGuides }: Props) {
                                 <span className="text-slate-400 text-sm">Updated {guide.lastUpdated}</span>
                             </div>
 
-                            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight mb-4">
+                            <h1 className="text-xl sm:text-3xl lg:text-5xl font-bold text-white leading-tight mb-3 sm:mb-4">
                                 {guide.headline}
                             </h1>
-                            <p className="text-slate-300 text-lg max-w-2xl">
+                            <p className="text-slate-300 text-sm sm:text-lg max-w-2xl hidden sm:block">
                                 {guide.subheadline}
                             </p>
                         </div>
