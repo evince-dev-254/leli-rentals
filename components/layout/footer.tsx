@@ -12,6 +12,7 @@ const platformLinks = [
   { name: "Explore All Rentals", href: "/explore" },
   { name: "Compare Platforms", href: "/compare" },
   { name: "Platform Reviews", href: "/review" },
+  { name: "Rental Guides", href: "/guides" },
 ]
 
 const categoryLinks = [

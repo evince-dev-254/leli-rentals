@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase'
 import { getAllSeoSlugs } from '@/lib/seo-pages-data'
 import { calculatorCategories } from '@/lib/calculator-data'
 import { getAllCompareSlugs, getAllReviewSlugs } from '@/lib/comparison-data'
+import { getAllGuideSlugs } from '@/lib/guides-data'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const baseUrl = 'https://www.leli.rentals'
@@ -20,6 +21,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         '/terms',
         '/privacy',
         '/cookies',
+        '/guides',
     ].map((route) => ({
         url: `${baseUrl}${route}`,
         lastModified: new Date('2026-02-11'), // Use a fixed recent date for static pages
@@ -47,6 +49,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const reviewEntries = getAllReviewSlugs().map((slug) => ({
     url: `${baseUrl}/review/${slug}`,
     lastModified: new Date('2026-04-27'),
+    changeFrequency: 'monthly' as const,
+    priority: 0.8,
+  }))
+
+  const guideEntries = getAllGuideSlugs().map((slug) => ({
+    url: `${baseUrl}/guides/${slug}`,
+    lastModified: new Date('2026-04-29'),
     changeFrequency: 'monthly' as const,
     priority: 0.8,
   }))
@@ -152,6 +161,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         ...listingEntries,
         ...compareEntries,
         ...reviewEntries,
+        ...guideEntries,
         ...seoEntries
     ]
 }

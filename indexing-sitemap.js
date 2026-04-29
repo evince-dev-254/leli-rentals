@@ -1,7 +1,21 @@
 import { google } from "googleapis";
 import { readFileSync, writeFileSync, existsSync } from "fs";
+import { config } from "dotenv";
+config({ path: ".env.local" });
 
-const KEY_FILE = "./service-account.json";
+function getAuth() {
+  if (process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
+    const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY);
+    return new google.auth.GoogleAuth({
+      credentials,
+      scopes: ["https://www.googleapis.com/auth/indexing"],
+    });
+  }
+  return new google.auth.GoogleAuth({
+    keyFile: "./service-account.json",
+    scopes: ["https://www.googleapis.com/auth/indexing"],
+  });
+}
 const BATCH_SIZE = 200;
 const PROGRESS_FILE = "./indexing-progress.json";
 const SITEMAP_URL = "https://www.leli.rentals/sitemap.xml";
@@ -66,10 +80,7 @@ async function runIndexing() {
   const batch = pending.slice(0, BATCH_SIZE);
   console.log(`\n🚀 Submitting ${batch.length} URLs...\n`);
 
-  const auth = new google.auth.GoogleAuth({
-    keyFile: KEY_FILE,
-    scopes: ["https://www.googleapis.com/auth/indexing"],
-  });
+  const auth = getAuth();
 
   const client = await auth.getClient();
   const indexing = google.indexing({ version: "v3", auth: client });
