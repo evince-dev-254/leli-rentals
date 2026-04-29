@@ -2,6 +2,9 @@ node_modules
 # Node modules directory
 node_modules/
 
+# Service account credentials
+service-account.json
+
 # Environment variables file (THIS IS CRITICAL)
 .env
 .env.local
