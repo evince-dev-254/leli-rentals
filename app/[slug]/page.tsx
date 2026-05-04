@@ -9,7 +9,8 @@ import { SeoLandingPage } from "@/components/seo/seo-landing-page"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 
-export const revalidate = 2592000 // 30 days
+// export const revalidate = 2592000 // 30 days
+export const revalidate = false
 
 // ─── STATIC PARAMS ────────────────────────────────────────────────────────────
 export async function generateStaticParams() {
