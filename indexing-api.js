@@ -4,8 +4,8 @@ import { config } from "dotenv";
 config({ path: ".env.local" });
 
 function getAuth() {
-  if (process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
-    const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY);
+  if (process.env.GOOGLE_SERVICE_ACCOUNT_KEY_1) {
+    const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY_1);
     return new google.auth.GoogleAuth({
       credentials,
       scopes: ["https://www.googleapis.com/auth/indexing"],

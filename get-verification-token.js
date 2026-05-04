@@ -1,9 +1,17 @@
 import { google } from "googleapis";
+import { config } from "dotenv";
+config({ path: ".env.local" });
 
-const KEY_FILE = "./service-account.json";
+const KEY_FILE = process.argv[2];
 const DOMAIN = "leli.rentals";
 
 async function getToken() {
+  if (!KEY_FILE) {
+    console.error("❌ Please provide a key file path:");
+    console.error("   node get-token.js ./path-to-key.json");
+    process.exit(1);
+  }
+
   const auth = new google.auth.GoogleAuth({
     keyFile: KEY_FILE,
     scopes: ["https://www.googleapis.com/auth/siteverification"],
@@ -22,8 +30,12 @@ async function getToken() {
     },
   });
 
-  console.log("\n✅ Your DNS TXT verification token:");
+  console.log("\n✅ DNS TXT verification token for:", KEY_FILE);
   console.log(response.data.token);
+  console.log("\n📋 Add this TXT record to Cloudflare DNS:");
+  console.log("   Type: TXT");
+  console.log("   Name: @");
+  console.log("   Value:", response.data.token);
 }
 
 getToken().catch(console.error);
