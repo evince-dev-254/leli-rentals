@@ -177,9 +177,54 @@ async function handleSubscriptionCreated(data: any) {
 
         if (error) {
             console.error('Failed to create subscription:', error)
-        } else {
-            console.log('Subscription created successfully:', subscription_code)
+            return
         }
+
+        console.log('Subscription created successfully:', subscription_code)
+
+        // Activate all pending listings for this user
+        const { data: pendingListings, error: listingsError } = await supabaseAdmin
+            .from('listings')
+            .update({
+                status: 'approved',
+                updated_at: new Date().toISOString()
+            })
+            .eq('owner_id', profile.id)
+            .eq('status', 'pending')
+            .select('id')
+
+        if (listingsError) {
+            console.error('Failed to activate listings:', listingsError)
+            return
+        }
+
+        if (pendingListings && pendingListings.length > 0) {
+            console.log(`Activated ${pendingListings.length} listings for user:`, profile.id)
+
+            // Ping IndexNow for each newly activated listing
+            const urls = pendingListings.map(l =>
+                `https://www.leli.rentals/listings/${l.id}`
+            )
+
+            try {
+                const indexNowRes = await fetch('https://api.indexnow.org/indexnow', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json; charset=utf-8' },
+                    body: JSON.stringify({
+                        host: 'www.leli.rentals',
+                        key: 'f996acd3-12a1-42fc-bfbe-ac5cf0ad766a',
+                        keyLocation: 'https://www.leli.rentals/f996acd3-12a1-42fc-bfbe-ac5cf0ad766a.txt',
+                        urlList: urls
+                    })
+                })
+                console.log(`IndexNow ping status: ${indexNowRes.status} for ${urls.length} listings`)
+            } catch (indexNowError) {
+                console.error('IndexNow ping failed:', indexNowError)
+            }
+        } else {
+            console.log('No pending listings to activate for user:', profile.id)
+        }
+
     } catch (error) {
         console.error('Error handling subscription creation:', error)
     }

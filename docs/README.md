@@ -416,7 +416,7 @@ If you discover a security vulnerability, please email security@leli.rentals. Do
 
 Copy env variables from Vercel to their local .env.local
 Run "node verify-domain.js" to verify all keys
-Run "node indexing-sitemap.js" daily
+Run "node indexing-sitemap.js" AND "node indexnow.js" daily
 
 ---
 
