@@ -411,6 +411,15 @@ If you discover a security vulnerability, please email security@leli.rentals. Do
 
 ---
 
+---
+## SEO Pages submission via google API for indexing
+
+Copy env variables from Vercel to their local .env.local
+Run "node verify-domain.js" to verify all keys
+Run "node indexing-sitemap.js" daily
+
+---
+
 <div align="center">
 
 **Built with ❤️ by Evince Dev**
