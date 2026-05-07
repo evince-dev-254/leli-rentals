@@ -313,7 +313,9 @@ export function SeoLandingPage({ page, category }: Props) {
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight mb-6 max-w-3xl">
               {intent === "renter"
                 ? `${keyword} in ${cityName}`
-                : keyword}
+                : intent === "owner"
+                  ? `${keyword} — Keep 100% of What You Earn`
+                  : `${keyword} — Zero Commission, Full Earnings`}
             </h1>
 
             <p className="text-lg sm:text-xl text-slate-200 max-w-2xl mb-10 leading-relaxed">

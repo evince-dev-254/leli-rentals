@@ -1012,7 +1012,7 @@ export function generateSeoPageMeta(page: SeoPage, category: SeoCategoryData) {
 
   if (page.intent === "renter") {
     return {
-      title: `${keyword} in ${cityName} — Find the Best Deals | Leli Rentals`,
+      title: `${keyword} in ${cityName} — Best Deals, 0% Commission | Leli Rentals`,
       description: `Looking to ${keyword.toLowerCase()} in ${cityName}? Browse trusted local listings on Leli Rentals. No hidden fees, verified owners, flexible booking. Find your perfect ${category.name.toLowerCase()} rental in ${cityName} today.`,
       keywords: [
         `${keyword.toLowerCase()} in ${cityName}`,
@@ -1033,7 +1033,7 @@ export function generateSeoPageMeta(page: SeoPage, category: SeoCategoryData) {
 
   if (page.intent === "owner") {
     return {
-      title: `${keyword} — Earn From Your Assets | Leli Rentals`,
+      title: `${keyword} — Keep 100%, List for Just $10/Month | Leli Rentals`,
       description: `${keyword}? List your ${category.name.toLowerCase()} on Leli Rentals and start earning passive income. No commission fees — just a flat monthly subscription. Join thousands of owners already earning on Leli Rentals.`,
       keywords: [
         keyword.toLowerCase(),
@@ -1054,7 +1054,7 @@ export function generateSeoPageMeta(page: SeoPage, category: SeoCategoryData) {
 
   // competitor
   return {
-    title: `${keyword} — Switch to Leli Rentals | No Commission Fees`,
+    title: `${keyword} — 0% Commission, Keep 100% of Your Earnings | Leli Rentals`,
     description: `Searching for a ${keyword.toLowerCase()}? Leli Rentals charges zero commission — just a flat monthly fee. Keep 100% of your rental earnings. Join thousands of owners who have already made the switch from expensive platforms.`,
     keywords: [
       keyword.toLowerCase(),
