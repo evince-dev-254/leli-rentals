@@ -158,6 +158,77 @@ function generateWebpageSchema(
   }
 }
 
+// ─── SEEDED NUMBER HELPER ─────────────────────────────────────────────────────
+function seededNumber(seed: string, min: number, max: number): number {
+  let hash = 0
+  for (let i = 0; i < seed.length; i++) {
+    hash = seed.charCodeAt(i) + ((hash << 5) - hash)
+  }
+  return min + (Math.abs(hash) % (max - min + 1))
+}
+
+// ─── DEMAND TICKER MESSAGES ───────────────────────────────────────────────────
+function getDemandMessages(
+  intent: string,
+  cityName: string,
+  categoryName: string,
+  keyword: string
+): string[] {
+  const seed = `${categoryName}-${cityName}`
+  const n1 = seededNumber(seed + "1", 18, 54)
+  const n2 = seededNumber(seed + "2", 12, 41)
+  const n3 = seededNumber(seed + "3", 23, 67)
+  const n4 = seededNumber(seed + "4", 9, 38)
+  const n5 = seededNumber(seed + "5", 14, 49)
+  const cat = categoryName.toLowerCase()
+  const kw = keyword.toLowerCase()
+
+  if (intent === "renter") {
+    return [
+      `${n1} people searched for ${kw} in ${cityName} in the last 24 hours`,
+      `${n2} renters in ${cityName} are looking for ${cat} right now`,
+      `Someone in ${cityName} just booked a ${cat} listing`,
+      `${n3} ${kw} searches in ${cityName} this week — limited listings available`,
+      `High demand — ${n4} renters in ${cityName} couldn't find what they needed`,
+    ]
+  }
+
+  // owner
+  return [
+    `${n1} people in ${cityName} searched for ${cat} with no owner listed`,
+    `${n2} unanswered ${cat} rental requests in ${cityName} this week`,
+    `Be the first — ${n3} renters in ${cityName} are waiting for ${cat} listings`,
+    `${n4} renters in ${cityName} left without finding ${cat} to book`,
+    `High demand, no supply — ${n5} ${cat} searches in ${cityName} went unanswered`,
+  ]
+}
+
+// ─── TRENDING TICKER ──────────────────────────────────────────────────────────
+function TrendingTicker({ messages }: { messages: string[] }) {
+  const [current, setCurrent] = useState(0)
+  const [visible, setVisible] = useState(true)
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setVisible(false)
+      setTimeout(() => {
+        setCurrent((prev) => (prev + 1) % messages.length)
+        setVisible(true)
+      }, 400)
+    }, 4000)
+    return () => clearInterval(interval)
+  }, [messages.length])
+
+  return (
+    <div className="flex items-center gap-3 bg-green-50 border border-green-200 rounded-xl px-4 py-3">
+      <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse shrink-0" />
+      <p className={`text-sm text-green-800 font-medium transition-opacity duration-400 ${visible ? "opacity-100" : "opacity-0"}`}>
+        {messages[current]}
+      </p>
+    </div>
+  )
+}
+
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
 export function SeoLandingPage({ page, category }: Props) {
   const [listings, setListings] = useState<Listing[]>([])
@@ -356,6 +427,23 @@ export function SeoLandingPage({ page, category }: Props) {
             </div>
           </div>
         </section>
+
+        {/* ── DEMAND TICKER (renter + owner pages only) ── */}
+        {intent === "renter" && cityName && (
+          <div className="max-w-6xl mx-auto px-4 pt-6">
+            <TrendingTicker
+              messages={getDemandMessages(intent, cityName, category.name, keyword)}
+            />
+          </div>
+        )}
+
+        {intent === "owner" && (
+          <div className="max-w-6xl mx-auto px-4 pt-6">
+            <TrendingTicker
+              messages={getDemandMessages(intent, cityName || "your city", category.name, keyword)}
+            />
+          </div>
+        )}
 
         <div className="max-w-6xl mx-auto px-4 py-16 space-y-20">
           {/* ── CITY CONTEXT (renter pages only) ── */}
