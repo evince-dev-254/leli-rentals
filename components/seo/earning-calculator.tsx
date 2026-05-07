@@ -297,6 +297,15 @@ export function EarningCalculator({ category }: Props) {
                         >
                             Calculate My Earnings →
                         </button>
+                        <p className="text-center text-sm text-slate-500 mt-3">
+                            Already decided?{" "}
+                            <Link
+                                href="/dashboard/listings/new"
+                                className="text-blue-600 hover:underline font-medium"
+                            >
+                                Create a listing directly →
+                            </Link>
+                        </p>
                     </div>
                 </div>
             </section>

@@ -254,6 +254,22 @@ export function SeoLandingPage({ page, category }: Props) {
     fetchListings()
   }, [category.id, cityName, page.intent])
 
+  const earnSlugMap: Record<string, string> = {
+    vehicles: "vehicles",
+    photography: "photography",
+    living: "living-spaces",
+    equipment: "equipment-tools",
+    electronics: "electronics",
+    fashion: "fashion-accessories",
+    entertainment: "entertainment",
+    utility: "utility-spaces",
+    business: "business-spaces",
+    fitness: "fitness-sports",
+    baby: "baby-kids",
+  }
+
+  const earnSlug = earnSlugMap[category.id] ?? category.id
+
   return (
     <>
       {/* Schema Markup */}
@@ -533,6 +549,36 @@ export function SeoLandingPage({ page, category }: Props) {
               </div>
             )}
           </section>
+
+          {/* ── EARN BANNER (renter pages only) ── */}
+          {intent === "renter" && cityName && (
+            <section className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-3xl p-8 border border-emerald-200">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                <div className="flex items-start gap-4">
+                  <div className="text-4xl">💡</div>
+                  <div>
+                    <h2 className="text-xl font-bold text-slate-900 mb-2">
+                      Own a {category.name.toLowerCase()} in {cityName}?
+                    </h2>
+                    <p className="text-slate-600 leading-relaxed max-w-xl">
+                      Don&apos;t let it sit idle. List it on Leli Rentals for just{" "}
+                      <span className="font-semibold text-emerald-700">$5/week</span> and keep{" "}
+                      <span className="font-semibold text-emerald-700">100% of what you earn</span> — no
+                      commission, no hidden fees.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex-shrink-0">
+                  <Link
+                    href={`/earn/${earnSlug}`}
+                    className="inline-flex items-center justify-center px-8 py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl transition-colors text-base whitespace-nowrap"
+                  >
+                    Start Earning →
+                  </Link>
+                </div>
+              </div>
+            </section>
+          )}
 
           {/* ── WHY LELI RENTALS ── */}
           <section className="bg-blue-50 rounded-3xl p-10 border border-blue-100">
