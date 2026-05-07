@@ -1013,7 +1013,7 @@ export function generateSeoPageMeta(page: SeoPage, category: SeoCategoryData) {
   if (page.intent === "renter") {
     return {
       title: `${keyword} in ${cityName} — Best Deals, 0% Commission | Leli Rentals`,
-      description: `Looking to ${keyword.toLowerCase()} in ${cityName}? Browse trusted local listings on Leli Rentals. No hidden fees, verified owners, flexible booking. Find your perfect ${category.name.toLowerCase()} rental in ${cityName} today.`,
+      description: `Looking to ${keyword.toLowerCase()} in ${cityName}? Browse verified listings now — limited availability, transparent pricing, 0% commission. Find your perfect ${category.name.toLowerCase()} rental in ${cityName} today.`,
       keywords: [
         `${keyword.toLowerCase()} in ${cityName}`,
         `${keyword.toLowerCase()} ${cityName}`,
@@ -1034,7 +1034,7 @@ export function generateSeoPageMeta(page: SeoPage, category: SeoCategoryData) {
   if (page.intent === "owner") {
     return {
       title: `${keyword} — Keep 100%, List for Just $10/Month | Leli Rentals`,
-      description: `${keyword}? List your ${category.name.toLowerCase()} on Leli Rentals and start earning passive income. No commission fees — just a flat monthly subscription. Join thousands of owners already earning on Leli Rentals.`,
+      description: `${keyword}? List on Leli Rentals today — early listers get maximum exposure. Keep 100% of every booking, just $10/month. Join owners already earning on Leli Rentals.`,
       keywords: [
         keyword.toLowerCase(),
         `earn from ${category.name.toLowerCase()}`,
@@ -1055,7 +1055,7 @@ export function generateSeoPageMeta(page: SeoPage, category: SeoCategoryData) {
   // competitor
   return {
     title: `${keyword} — 0% Commission, Keep 100% of Your Earnings | Leli Rentals`,
-    description: `Searching for a ${keyword.toLowerCase()}? Leli Rentals charges zero commission — just a flat monthly fee. Keep 100% of your rental earnings. Join thousands of owners who have already made the switch from expensive platforms.`,
+    description: `Searching for a ${keyword.toLowerCase()}? Switch now — 0% commission, keep 100% of every booking. Early access open. Join owners already making the switch to Leli Rentals.`,
     keywords: [
       keyword.toLowerCase(),
       `${keyword.toLowerCase()} 2026`,
